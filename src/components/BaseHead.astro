@@ -49,3 +49,24 @@ const { title, description, image = FallbackImage } = Astro.props;
 <meta property="twitter:title" content={title} />
 <meta property="twitter:description" content={description} />
 <meta property="twitter:image" content={new URL(image.src, Astro.url)} />
+
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-7EFMWQDNMH"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-7EFMWQDNMH');
+
+  document.addEventListener('click', function(e) {
+    const el = e.target.closest('a, button, [role="button"]');
+    if (!el) return;
+
+    gtag('event', 'click', {
+      element: el.tagName.toLowerCase(),
+      label: (el.innerText || el.getAttribute('aria-label') || '').trim().slice(0, 100),
+      href: el.href || null,
+      page: window.location.pathname,
+    });
+  });
+</script>
