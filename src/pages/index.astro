@@ -5,8 +5,6 @@ import { getCollection } from 'astro:content';
 
 const posts = (await getCollection('labs'))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
-
-let lastYear = 0;
 ---
 
 <!doctype html>
@@ -118,18 +116,19 @@ let lastYear = 0;
 
       .post {
         display: flex;
-        align-items: center;
-        padding: 2px 0;
+        align-items: baseline;
+        padding: 6px 0;
+        transition: opacity 0.15s ease;
       }
+      .post:hover { opacity: 0.6; }
 
-      .post-year {
-        flex: 0 0 56px;
+      .post-date {
+        flex: 0 0 52px;
         color: #737373;
+        font-family: 'Geist Mono', monospace;
         font-size: 12px;
         font-variant-numeric: tabular-nums;
-        line-height: 1;
-        align-self: flex-start;
-        padding-top: 7px;
+        line-height: 1.6;
       }
 
       .post-title {
@@ -137,18 +136,7 @@ let lastYear = 0;
         color: var(--fg);
         font-size: 14px;
         font-weight: 400;
-        line-height: 1;
-      }
-
-      .post-title-inner {
-        display: inline;
-        border-radius: 12px;
-        padding: 6px 6px;
-        transition: background-color 0.1s;
-      }
-
-      .post:hover .post-title-inner {
-        background-color: #404040;
+        line-height: 1.6;
       }
 
       @media (max-width: 480px) {
@@ -181,13 +169,12 @@ let lastYear = 0;
 
       <div class="posts">
         {posts.map((post) => {
-          const year = new Date(post.data.pubDate).getFullYear();
-          const showYear = year !== lastYear;
-          lastYear = year;
+          const d = new Date(post.data.pubDate);
+          const date = `${String(d.getFullYear()).slice(2)}.${String(d.getMonth() + 1).padStart(2, '0')}`;
           return (
             <a class="post" href={`/labs/${post.id}`}>
-              <span class="post-year">{showYear ? year : ''}</span>
-              <span class="post-title"><span class="post-title-inner">{post.data.title}</span></span>
+              <span class="post-date">{date}</span>
+              <span class="post-title">{post.data.title}</span>
             </a>
           );
         })}
