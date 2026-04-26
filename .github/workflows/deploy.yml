@@ -34,4 +34,4 @@ jobs:
           local-dir: ./dist/
           protocol: ftps
           security: loose
-          dangerous-clean-slate: false
+          dangerous-clean-slate: true
