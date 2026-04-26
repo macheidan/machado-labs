@@ -1,5 +1,5 @@
 ---
-title: 'Como estou construindo meu segundo cérebro com IA — do vault ao assistente pessoal'
+title: 'Como estou construindo meu segundo cérebro com IA'
 description: 'Um sistema em markdown puro, versionado no git, sincronizado pelo Google Drive e lido por qualquer modelo. Contexto persistente para trabalhar com múltiplos projetos e agentes ao mesmo tempo.'
 pubDate: 'Apr 26 2026'
 ---
