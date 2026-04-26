@@ -1,10 +1,10 @@
 ---
 title: 'Como estou construindo meu segundo cérebro com IA — do vault ao assistente pessoal'
-description: 'Um sistema em markdown puro, versionado no git, sincronizado pelo Google Drive e lido por qualquer modelo. A solução que encontrei para compensar as limitações da minha memória de trabalho.'
+description: 'Um sistema em markdown puro, versionado no git, sincronizado pelo Google Drive e lido por qualquer modelo. Contexto persistente para trabalhar com múltiplos projetos e agentes ao mesmo tempo.'
 pubDate: 'Apr 26 2026'
 ---
 
-Sou dono de duas pizzarias em Porto Alegre e estou em transição para consultoria em IA aplicada a restaurantes. Tenho TEA nível 1 e TDAH desatento — o que significa que minha memória de trabalho é um gargalo real. Perco contexto, esqueço decisões que já tomei, não consigo manter o histórico de relacionamentos e projetos na cabeça ao mesmo tempo.
+Gerencio duas pizzarias em Porto Alegre e estou em transição para consultoria em IA aplicada a restaurantes. São muitos projetos simultâneos, decisões tomadas em contextos diferentes, e cada agente de IA começa do zero sem saber nada sobre mim.
 
 A solução que encontrei: construir um "cérebro externo" em markdown que serve como fonte única de verdade para qualquer agente de IA.
 
@@ -52,8 +52,8 @@ Capturei como eu tomo decisões — não como eu acho que tomo, mas como eu real
 
 - Decido sozinho, raramente peço opinião antes
 - Prefiro dados e números, mas o impulso consegue contornar a análise
-- Dois modos: rápido/impulsivo (TDAH) e analítico (quando forço)
-- Histórico financeiro tem lacunas que distorcem minha percepção de risco
+- Dois modos: rápido/reativo e analítico (quando forço)
+- Tendência a superestimar familiaridade com um problema e subestimar o esforço real
 
 O arquivo não é aspiracional. É descritivo. O agente usa isso para me dar alertas quando percebe que estou no modo errado para uma decisão importante.
 
@@ -79,4 +79,4 @@ A automação que alimenta o vault precisa ser conservadora — melhor não escr
 
 Gmail e Google Calendar entram na Fase 3 — resumo de emails importantes, alertas de compromissos, integração com o vault. Depois vem a Fase 4: gatilhos automáticos que disparam ações sem eu precisar pedir.
 
-O objetivo final é um sistema que conhece meu contexto melhor do que eu mesmo num dia ruim de TDAH.
+O objetivo final é um sistema que conhece meu contexto melhor do que eu mesmo em qualquer dia de sobrecarga.
