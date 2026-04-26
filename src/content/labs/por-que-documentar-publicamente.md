@@ -2,7 +2,6 @@
 title: 'Por que estou documentando isso publicamente'
 description: 'Começa aqui. A decisão de expor o processo de construir um time de agentes de IA dentro das pizzerias é estratégica, não estética.'
 pubDate: 'Apr 25 2026'
-heroImage: '../../assets/blog-placeholder-1.jpg'
 ---
 
 Há uma diferença grande entre montar um agente de IA num laboratório e colocar um time inteiro deles para trabalhar dentro de uma empresa real. A maior parte do que você lê sobre IA na internet ignora essa diferença. Eu não posso me dar ao luxo de ignorar — minhas duas pizzerias estão pagando a conta.
