@@ -1,6 +1,12 @@
 ---
 import BaseHead from '../components/BaseHead.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('labs'))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+let lastYear = 0;
 ---
 
 <!doctype html>
@@ -135,23 +141,12 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
         padding-right: 16px;
       }
 
-      .post-views {
-        flex: 0 0 auto;
-        color: var(--fg-muted);
-        font-size: 14px;
-        font-variant-numeric: tabular-nums;
-        line-height: 1.6;
-        text-align: right;
-        min-width: 64px;
-      }
-
       @media (max-width: 480px) {
         header { padding-bottom: 40px; }
         nav { gap: 18px; font-size: 14px; }
         .lang { font-size: 14px; }
         .post-year { flex-basis: 56px; font-size: 13px; }
         .post-title { font-size: 15px; }
-        .post-views { font-size: 13px; min-width: 56px; }
       }
     </style>
   </head>
@@ -176,67 +171,17 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
       </header>
 
       <div class="posts">
-
-        <a class="post" href="#">
-          <span class="post-year">2026</span>
-          <span class="post-title">Sistema multi-agente para automação de pizzaria</span>
-          <span class="post-views">1,204</span>
-        </a>
-
-        <a class="post" href="#">
-          <span class="post-year"></span>
-          <span class="post-title">DRE automatizado com 5 fontes de dados</span>
-          <span class="post-views">874</span>
-        </a>
-
-        <a class="post" href="#">
-          <span class="post-year"></span>
-          <span class="post-title">WhatsApp bot com integração Saipos</span>
-          <span class="post-views">612</span>
-        </a>
-
-        <a class="post" href="#">
-          <span class="post-year"></span>
-          <span class="post-title">Pipeline de conteúdo Instagram — Lov Pizza</span>
-          <span class="post-views">430</span>
-        </a>
-
-        <a class="post" href="#">
-          <span class="post-year">2025</span>
-          <span class="post-title">Consultoria IA para restaurantes — modelo B2B</span>
-          <span class="post-views">3,891</span>
-        </a>
-
-        <a class="post" href="#">
-          <span class="post-year"></span>
-          <span class="post-title">Downloader automatizado de notas fiscais iFood</span>
-          <span class="post-views">2,140</span>
-        </a>
-
-        <a class="post" href="#">
-          <span class="post-year"></span>
-          <span class="post-title">AI Router local com Ollama e Open WebUI</span>
-          <span class="post-views">1,987</span>
-        </a>
-
-        <a class="post" href="#">
-          <span class="post-year"></span>
-          <span class="post-title">Menu engineering com dados de vendas</span>
-          <span class="post-views">1,455</span>
-        </a>
-
-        <a class="post" href="#">
-          <span class="post-year">2024</span>
-          <span class="post-title">Reduzindo dependência do iFood — canal próprio</span>
-          <span class="post-views">5,302</span>
-        </a>
-
-        <a class="post" href="#">
-          <span class="post-year"></span>
-          <span class="post-title">18 anos de pizzaria e o que a IA mudou na operação</span>
-          <span class="post-views">4,711</span>
-        </a>
-
+        {posts.map((post) => {
+          const year = new Date(post.data.pubDate).getFullYear();
+          const showYear = year !== lastYear;
+          lastYear = year;
+          return (
+            <a class="post" href={`/labs/${post.id}`}>
+              <span class="post-year">{showYear ? year : ''}</span>
+              <span class="post-title">{post.data.title}</span>
+            </a>
+          );
+        })}
       </div>
 
     </div>

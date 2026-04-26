@@ -1,63 +1,67 @@
-# Astro Starter Kit: Blog
+# machado-labs
+
+Site pessoal do Fábio Machado em **fabiomachado.com.br** — documentação pública (labs) do processo de construir um time de agentes de IA dentro das pizzerias Dáme e Lov.
+
+## Stack
+
+- [Astro](https://astro.build) (estático, SSG)
+- Markdown / MDX para os posts
+- Hospedagem: HostGator
+- Deploy: GitHub Actions → FTP
+
+## Rodar local
 
 ```sh
-npm create astro@latest -- --template blog
+npm install
+npm run dev
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Servidor em `http://localhost:4321`.
 
-Features:
+## Build
 
-- ✅ Minimal styling (make it your own!)
-- ✅ 100/100 Lighthouse performance
-- ✅ SEO-friendly with canonical URLs and Open Graph data
-- ✅ Sitemap support
-- ✅ RSS Feed support
-- ✅ Markdown & MDX support
-
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-├── public/
-├── src/
-│   ├── assets/
-│   ├── components/
-│   ├── content/
-│   ├── layouts/
-│   └── pages/
-├── astro.config.mjs
-├── README.md
-├── package.json
-└── tsconfig.json
+```sh
+npm run build
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+Saída em `./dist/`.
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+## Estrutura
 
-The `src/content/` directory contains "collections" of related Markdown and MDX documents. Use `getCollection()` to retrieve posts from `src/content/blog/`, and type-check your frontmatter using an optional schema. See [Astro's Content Collections docs](https://docs.astro.build/en/guides/content-collections/) to learn more.
+```
+src/
+  components/    # Header, Footer, BaseHead
+  content/labs/  # posts (.md / .mdx)
+  layouts/       # BlogPost.astro
+  pages/         # rotas (index, about, labs, rss.xml)
+  consts.ts      # SITE_TITLE e SITE_DESCRIPTION
+astro.config.mjs # site URL e integrations
+```
 
-Any static assets, like images, can be placed in the `public/` directory.
+## Escrever um post novo
 
-## 🧞 Commands
+Cria `src/content/labs/<slug>.md`:
 
-All commands are run from the root of the project, from a terminal:
+```md
+---
+title: 'Título do post'
+description: 'Descrição curta — vira meta description.'
+pubDate: 'Apr 25 2026'
+heroImage: '../../assets/<imagem>.jpg'
+---
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+Conteúdo em markdown.
+```
 
-## 👀 Want to learn more?
+A imagem `heroImage` precisa existir em `src/assets/`.
 
-Check out [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+## Deploy
 
-## Credit
+Push em `main` dispara o workflow `.github/workflows/deploy.yml`, que builda e sobe `dist/` no HostGator via FTP.
 
-This theme is based off of the lovely [Bear Blog](https://github.com/HermanMartinus/bearblog/).
+Secrets necessários no repositório (Settings → Secrets and variables → Actions):
+
+- `FTP_SERVER` — host FTP do HostGator (ex: `ftp.fabiomachado.com.br`)
+- `FTP_USERNAME` — usuário FTP do cPanel
+- `FTP_PASSWORD` — senha FTP
+- `FTP_SERVER_DIR` — caminho remoto (ex: `/public_html/`)
