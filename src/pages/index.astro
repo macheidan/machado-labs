@@ -1,49 +1,249 @@
 ---
 import BaseHead from '../components/BaseHead.astro';
-import Footer from '../components/Footer.astro';
-import Header from '../components/Header.astro';
-import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 ---
 
 <!doctype html>
-<html lang="en">
-	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-	</head>
-	<body>
-		<Header />
-		<main>
-			<h1>🧑‍🚀 Hello, Astronaut!</h1>
-			<p>
-				Welcome to the official <a href="https://astro.build/">Astro</a> blog starter template. This template
-				serves as a lightweight, minimally-styled starting point for anyone looking to build a personal
-				website, blog, or portfolio with Astro.
-			</p>
-			<p>
-				This template comes with a few integrations already configured in your
-				<code>astro.config.mjs</code> file. You can customize your setup with
-				<a href="https://astro.build/integrations">Astro Integrations</a> to add tools like Tailwind,
-				React, or Vue to your project.
-			</p>
-			<p>Here are a few ideas on how to get started with the template:</p>
-			<ul>
-				<li>Edit this page in <code>src/pages/index.astro</code></li>
-				<li>Edit the site header items in <code>src/components/Header.astro</code></li>
-				<li>Add your name to the footer in <code>src/components/Footer.astro</code></li>
-				<li>Check out the included blog posts in <code>src/content/blog/</code></li>
-				<li>Customize the blog post page layout in <code>src/layouts/BlogPost.astro</code></li>
-			</ul>
-			<p>
-				Have fun! If you get stuck, remember to
-				<a href="https://docs.astro.build/">read the docs</a>
-				or <a href="https://astro.build/chat">join us on Discord</a> to ask questions.
-			</p>
-			<p>
-				Looking for a blog template with a bit more personality? Check out
-				<a href="https://github.com/Charca/astro-blog-template">astro-blog-template</a>
-				by <a href="https://twitter.com/Charca">Maxi Ferreira</a>.
-			</p>
-		</main>
-		<Footer />
-	</body>
+<html lang="pt-BR">
+  <head>
+    <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #1c1c1c;
+        --fg: #ededed;
+        --fg-muted: #a1a1a1;
+        --fg-faint: #6e6e6e;
+        --max-width: 640px;
+      }
+
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      html {
+        -webkit-text-size-adjust: 100%;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--fg);
+        font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-feature-settings: 'ss01', 'cv11';
+        font-size: 16px;
+        line-height: 1.5;
+        min-height: 100vh;
+        letter-spacing: -0.01em;
+      }
+
+      ::selection { background: rgba(255,255,255,0.15); }
+
+      a { color: inherit; text-decoration: none; }
+
+      .container {
+        max-width: var(--max-width);
+        margin: 0 auto;
+        padding: 32px 24px 64px;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding-top: 16px;
+        padding-bottom: 56px;
+      }
+
+      .site-name {
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--fg);
+        letter-spacing: -0.02em;
+        line-height: 1;
+        transition: opacity 0.15s ease;
+      }
+      .site-name:hover { opacity: 0.7; }
+
+      nav {
+        display: flex;
+        align-items: center;
+        gap: 28px;
+        font-size: 15px;
+      }
+
+      nav a {
+        color: var(--fg);
+        line-height: 1;
+        transition: opacity 0.15s ease;
+      }
+      nav a:hover { opacity: 0.65; }
+
+      .lang {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 15px;
+        line-height: 1;
+      }
+      .lang a { color: var(--fg-muted); }
+      .lang a.active { color: var(--fg); }
+      .lang .pipe { color: var(--fg-faint); }
+
+      .x-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .x-link svg {
+        display: block;
+        width: 14px;
+        height: 14px;
+        fill: currentColor;
+      }
+
+      .posts {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .post {
+        display: flex;
+        align-items: baseline;
+        padding: 8px 0;
+        transition: opacity 0.15s ease;
+      }
+      .post:hover { opacity: 0.7; }
+
+      .post-year {
+        flex: 0 0 80px;
+        color: var(--fg-muted);
+        font-size: 14px;
+        font-variant-numeric: tabular-nums;
+        line-height: 1.6;
+      }
+
+      .post-title {
+        flex: 1 1 auto;
+        color: var(--fg);
+        font-size: 16px;
+        font-weight: 400;
+        line-height: 1.6;
+        padding-right: 16px;
+      }
+
+      .post-views {
+        flex: 0 0 auto;
+        color: var(--fg-muted);
+        font-size: 14px;
+        font-variant-numeric: tabular-nums;
+        line-height: 1.6;
+        text-align: right;
+        min-width: 64px;
+      }
+
+      @media (max-width: 480px) {
+        header { padding-bottom: 40px; }
+        nav { gap: 18px; font-size: 14px; }
+        .lang { font-size: 14px; }
+        .post-year { flex-basis: 56px; font-size: 13px; }
+        .post-title { font-size: 15px; }
+        .post-views { font-size: 13px; min-width: 56px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+
+      <header>
+        <a href="/" class="site-name">Fábio Machado</a>
+        <nav>
+          <a href="/about">About</a>
+          <span class="lang">
+            <a href="?mode=cli">cli</a>
+            <span class="pipe">|</span>
+            <a href="?mode=gui" class="active">gui</a>
+          </span>
+          <span class="lang">
+            <a href="?lang=en">en</a>
+            <span class="pipe">|</span>
+            <a href="?lang=pt" class="active">pt-br</a>
+          </span>
+          <a href="https://x.com/macheidan" class="x-link" target="_blank" rel="noopener" aria-label="X">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.259 5.631 5.905-5.631zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/>
+            </svg>
+          </a>
+        </nav>
+      </header>
+
+      <div class="posts">
+
+        <a class="post" href="#">
+          <span class="post-year">2026</span>
+          <span class="post-title">Sistema multi-agente para automação de pizzaria</span>
+          <span class="post-views">1,204</span>
+        </a>
+
+        <a class="post" href="#">
+          <span class="post-year"></span>
+          <span class="post-title">DRE automatizado com 5 fontes de dados</span>
+          <span class="post-views">874</span>
+        </a>
+
+        <a class="post" href="#">
+          <span class="post-year"></span>
+          <span class="post-title">WhatsApp bot com integração Saipos</span>
+          <span class="post-views">612</span>
+        </a>
+
+        <a class="post" href="#">
+          <span class="post-year"></span>
+          <span class="post-title">Pipeline de conteúdo Instagram — Lov Pizza</span>
+          <span class="post-views">430</span>
+        </a>
+
+        <a class="post" href="#">
+          <span class="post-year">2025</span>
+          <span class="post-title">Consultoria IA para restaurantes — modelo B2B</span>
+          <span class="post-views">3,891</span>
+        </a>
+
+        <a class="post" href="#">
+          <span class="post-year"></span>
+          <span class="post-title">Downloader automatizado de notas fiscais iFood</span>
+          <span class="post-views">2,140</span>
+        </a>
+
+        <a class="post" href="#">
+          <span class="post-year"></span>
+          <span class="post-title">AI Router local com Ollama e Open WebUI</span>
+          <span class="post-views">1,987</span>
+        </a>
+
+        <a class="post" href="#">
+          <span class="post-year"></span>
+          <span class="post-title">Menu engineering com dados de vendas</span>
+          <span class="post-views">1,455</span>
+        </a>
+
+        <a class="post" href="#">
+          <span class="post-year">2024</span>
+          <span class="post-title">Reduzindo dependência do iFood — canal próprio</span>
+          <span class="post-views">5,302</span>
+        </a>
+
+        <a class="post" href="#">
+          <span class="post-year"></span>
+          <span class="post-title">18 anos de pizzaria e o que a IA mudou na operação</span>
+          <span class="post-views">4,711</span>
+        </a>
+
+      </div>
+
+    </div>
+  </body>
 </html>
