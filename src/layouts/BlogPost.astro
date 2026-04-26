@@ -133,9 +133,9 @@ const dateFormatted = new Date(pubDate).toLocaleDateString('pt-BR', {
         color: var(--fg);
       }
 
-      .prose p { margin-bottom: 1.4em; }
+      .prose :global(p) { margin-bottom: 1.4em; }
 
-      .prose h2 {
+      .prose :global(h2) {
         font-size: 15px;
         font-weight: 600;
         color: var(--fg-muted);
@@ -144,7 +144,7 @@ const dateFormatted = new Date(pubDate).toLocaleDateString('pt-BR', {
         line-height: 1.4;
       }
 
-      .prose h3 {
+      .prose :global(h3) {
         font-size: 14px;
         font-weight: 600;
         color: var(--fg-muted);
@@ -152,26 +152,26 @@ const dateFormatted = new Date(pubDate).toLocaleDateString('pt-BR', {
         margin-bottom: 0.4em;
       }
 
-      .prose a {
+      .prose :global(a) {
         color: var(--fg);
         text-decoration: underline;
         text-decoration-color: var(--fg-faint);
         text-underline-offset: 3px;
         transition: text-decoration-color 0.15s ease;
       }
-      .prose a:hover { text-decoration-color: var(--fg); }
+      .prose :global(a:hover) { text-decoration-color: var(--fg); }
 
-      .prose strong { font-weight: 600; color: var(--fg); }
-      .prose em { font-style: italic; color: var(--fg-muted); }
+      .prose :global(strong) { font-weight: 600; color: var(--fg); }
+      .prose :global(em) { font-style: italic; color: var(--fg-muted); }
 
-      .prose ul, .prose ol {
+      .prose :global(ul), .prose :global(ol) {
         padding-left: 1.5em;
         margin-bottom: 1.4em;
       }
-      .prose li { margin-bottom: 0.35em; }
-      .prose li::marker { color: var(--fg-faint); }
+      .prose :global(li) { margin-bottom: 0.35em; }
+      .prose :global(li::marker) { color: var(--fg-faint); }
 
-      .prose blockquote {
+      .prose :global(blockquote) {
         border-left: 2px solid rgba(255,255,255,0.15);
         padding-left: 1.2em;
         margin: 1.4em 0;
@@ -179,7 +179,7 @@ const dateFormatted = new Date(pubDate).toLocaleDateString('pt-BR', {
         font-style: italic;
       }
 
-      .prose code {
+      .prose :global(code) {
         font-family: 'Geist Mono', 'Courier New', monospace;
         font-size: 13.5px;
         background: rgba(255,255,255,0.07);
@@ -189,7 +189,7 @@ const dateFormatted = new Date(pubDate).toLocaleDateString('pt-BR', {
         color: var(--fg);
       }
 
-      .prose pre {
+      .prose :global(pre) {
         background: rgba(255,255,255,0.05);
         border: 1px solid rgba(255,255,255,0.08);
         border-radius: 8px;
@@ -197,7 +197,7 @@ const dateFormatted = new Date(pubDate).toLocaleDateString('pt-BR', {
         overflow-x: auto;
         margin-bottom: 1.4em;
       }
-      .prose pre code {
+      .prose :global(pre code) {
         background: none;
         border: none;
         padding: 0;
@@ -205,13 +205,13 @@ const dateFormatted = new Date(pubDate).toLocaleDateString('pt-BR', {
         line-height: 1.6;
       }
 
-      .prose img {
+      .prose :global(img) {
         width: 100%;
         border-radius: 8px;
         margin: 1.4em 0;
       }
 
-      .prose hr {
+      .prose :global(hr) {
         border: none;
         border-top: 1px solid rgba(255,255,255,0.08);
         margin: 2em 0;
