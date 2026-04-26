@@ -1,12 +1,12 @@
 ---
-import BaseHead from '../components/BaseHead.astro';
-import { SITE_TITLE } from '../consts';
+import BaseHead from '../../components/BaseHead.astro';
+import { SITE_TITLE } from '../../consts';
 ---
 
 <!doctype html>
-<html lang="pt-BR">
+<html lang="en">
   <head>
-    <BaseHead title={`About — ${SITE_TITLE}`} description="Sobre Fábio Machado — empreendedor, Lov Pizza e Dáme Pizza, automações com IA." />
+    <BaseHead title={`About — ${SITE_TITLE}`} description="About Fábio Machado — entrepreneur, Lov Pizza and Dáme Pizza, AI automation." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -147,13 +147,13 @@ import { SITE_TITLE } from '../consts';
     <div class="container">
 
       <header>
-        <a href="/" class="site-name">Fábio Macheidan</a>
+        <a href="/en" class="site-name">Fábio Machado</a>
         <nav>
-          <a href="/about">About</a>
+          <a href="/en/about">About</a>
           <span class="lang">
-            <a href="?lang=en">en</a>
+            <a href="/en/about" class="active">en</a>
             <span class="pipe">|</span>
-            <a href="?lang=pt" class="active">pt-br</a>
+            <a href="/about">pt-br</a>
           </span>
           <a href="https://x.com/machadofabio" class="x-link" target="_blank" rel="noopener" aria-label="X">
             <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -165,30 +165,30 @@ import { SITE_TITLE } from '../consts';
 
       <div class="prose">
         <p>
-          O dono de pequena empresa hoje é o gargalo do próprio negócio. Faz o financeiro, o
-          marketing, o atendimento, a operação — todos os papéis ao mesmo tempo, nenhum no nível
-          que o negócio precisa. Não é falta de competência. É falta de braço.
+          The owner of a small business today is the bottleneck of their own company. They run
+          finance, marketing, customer service, operations — every role at once, none at the level
+          the business needs. It's not a lack of skill. It's a lack of hands.
         </p>
         <p>
-          Meu nome é Fábio Machado. Tenho duas pizzarias em Porto Alegre —
-          <strong>Lov Pizza</strong> desde 2012, <strong>Dáme Pizza</strong> desde 2015. Vim da
-          tecnologia: passei vinte anos em web, software e automação antes de entrar no físico.
-          Quando entrei, levei tudo comigo. As pizzarias viraram o laboratório do que eu sempre
-          quis ter: sistemas que ocupam os papéis que eu não conseguia contratar.
+          My name is Fábio Machado. I run two pizzerias in Porto Alegre —
+          <strong>Lov Pizza</strong> since 2012, <strong>Dáme Pizza</strong> since 2015. I came
+          from tech: twenty years in web, software, and automation before stepping into a physical
+          business. When I did, I brought all of it with me. The pizzerias became the lab where I
+          built what I had always wanted: systems that take on the roles I couldn't hire for.
         </p>
         <p>
-          Hoje as duas operações rodam com um time de agentes de IA — financeiro, marketing,
-          atendimento, operações, dados. Cada um responde por uma função que antes era minha. Eu
-          deixo de ser o único cérebro do negócio.
+          Today both operations run with a team of AI agents — finance, marketing, customer service,
+          operations, data. Each one owns a function that used to be mine. I stop being the only
+          brain in the business.
         </p>
-        <p>Este site existe por três razões:</p>
+        <p>This site exists for three reasons:</p>
         <ol>
-          <li><strong>Pensar em público obriga a pensar melhor.</strong> O que cabe num post sobrevive ao próximo mês.</li>
-          <li><strong>Cada decisão registrada aqui é prova.</strong> Quem chega já tem o histórico — não precisa de pitch.</li>
-          <li><strong>O que funciona nas pizzarias funciona em outra PME.</strong> O método é o mesmo. Quem quiser trazer isso pro próprio negócio sabe onde me encontrar.</li>
+          <li><strong>Thinking in public forces better thinking.</strong> Whatever fits in a post survives the next month.</li>
+          <li><strong>Every decision recorded here is proof.</strong> Whoever shows up already has the history — no pitch required.</li>
+          <li><strong>What works in the pizzerias works in other small businesses.</strong> The method is the same. Whoever wants to bring this into their own business knows where to find me.</li>
         </ol>
         <p>
-          Sem teoria. Sem promessa fácil. Sem o que eu não rodei na minha operação primeiro.
+          No theory. No easy promises. Nothing here that I haven't run in my own operation first.
         </p>
         <p class="muted">
           X: <a href="https://x.com/machadofabio" target="_blank" rel="noopener">@machadofabio</a>
