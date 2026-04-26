@@ -17,7 +17,7 @@ const dateFormatted = new Date(pubDate).toLocaleDateString(
 
 const homeUrl = isEn ? '/en' : '/';
 const aboutUrl = isEn ? '/en/about' : '/about';
-const aboutLabel = isEn ? 'About' : 'Sobre';
+const aboutLabel = isEn ? 'about' : 'sobre';
 const backLabel = isEn ? 'all posts' : 'todos os posts';
 const fallbackAlt = isEn ? '/' : '/en';
 const switchUrl = altUrl ?? fallbackAlt;
@@ -258,7 +258,7 @@ const switchUrl = altUrl ?? fallbackAlt;
           <span class="lang">
             <a href={isEn ? Astro.url.pathname : switchUrl} class={isEn ? 'active' : ''}>en</a>
             <span class="pipe">|</span>
-            <a href={isEn ? switchUrl : Astro.url.pathname} class={isEn ? '' : 'active'}>pt-br</a>
+            <a href={isEn ? switchUrl : Astro.url.pathname} class={isEn ? '' : 'active'}>ptbr</a>
           </span>
           <a href="https://x.com/machadofabio" class="x-link" target="_blank" rel="noopener" aria-label="X">
             <svg viewBox="0 0 24 24" aria-hidden="true">
