@@ -15,8 +15,8 @@ Eu poderia escrever isso só para mim, num caderno do Obsidian. Faria mais senti
 Mas três coisas mudam quando você documenta em público:
 
 1. **A qualidade da escrita força a qualidade do pensamento.** Toda vez que tento explicar uma decisão para um leitor que não está dentro da minha cabeça, descubro furos no raciocínio. Já joguei agentes inteiros fora ao tentar escrever sobre eles.
-2. **Cada post vira um case.** Quando o método de implantação estiver maduro o suficiente para virar serviço pago, eu não preciso convencer ninguém de que funciona. A página inteira aqui é a prova.
-3. **A audiência vira fila de espera, não funil de venda.** Quem quiser implantar agentes na própria empresa vai me encontrar pronto, em vez de eu ter que prospectar.
+2. **Cada post vira um case.** Não preciso convencer ninguém de que funciona — a página inteira aqui é a prova. Quem chega já chegou convencido.
+3. **A audiência vira fila de espera, não funil de venda.** Quem quer implantar agentes na própria empresa me encontra com histórico documentado, em vez de eu ter que prospectar.
 
 ## O que você vai encontrar aqui
 

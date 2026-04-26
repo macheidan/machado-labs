@@ -4,7 +4,7 @@ description: 'Um sistema em markdown puro, versionado no git, sincronizado pelo 
 pubDate: 'Apr 26 2026'
 ---
 
-Gerencio duas pizzarias em Porto Alegre e estou em transição para consultoria em IA aplicada a restaurantes. São muitos projetos simultâneos, decisões tomadas em contextos diferentes, e cada agente de IA começa do zero sem saber nada sobre mim.
+Gerencio duas pizzarias em Porto Alegre e faço consultoria em IA aplicada a restaurantes. São muitos projetos simultâneos, decisões tomadas em contextos diferentes, e cada agente de IA começa do zero sem saber nada sobre mim.
 
 A solução que encontrei: construir um "cérebro externo" em markdown que serve como fonte única de verdade para qualquer agente de IA.
 
@@ -40,7 +40,7 @@ Vault/
 ├── 01-pizzarias/      # Dáme e Lov — marketing, ops, financeiro
 ├── 02-projetos-dev/   # todos os projetos de código
 ├── 03-pessoal/        # família, saúde, finanças, perfil
-├── 04-consultoria/    # transição para IA aplicada
+├── 04-consultoria/    # projetos e clientes
 ├── 08-secretaria-log/ # logs operacionais (gitignored)
 ```
 
