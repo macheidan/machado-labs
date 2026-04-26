@@ -118,35 +118,44 @@ let lastYear = 0;
 
       .post {
         display: flex;
-        align-items: baseline;
-        padding: 8px 0;
-        transition: opacity 0.15s ease;
+        align-items: center;
+        padding: 2px 0;
       }
-      .post:hover { opacity: 0.7; }
 
       .post-year {
-        flex: 0 0 80px;
-        color: var(--fg-muted);
-        font-size: 14px;
+        flex: 0 0 56px;
+        color: #737373;
+        font-size: 12px;
         font-variant-numeric: tabular-nums;
-        line-height: 1.6;
+        line-height: 1;
+        align-self: flex-start;
+        padding-top: 7px;
       }
 
       .post-title {
         flex: 1 1 auto;
         color: var(--fg);
-        font-size: 16px;
+        font-size: 14px;
         font-weight: 400;
-        line-height: 1.6;
-        padding-right: 16px;
+        line-height: 1;
+      }
+
+      .post-title-inner {
+        display: inline;
+        border-radius: 12px;
+        padding: 6px 6px;
+        transition: background-color 0.1s;
+      }
+
+      .post:hover .post-title-inner {
+        background-color: #404040;
       }
 
       @media (max-width: 480px) {
         header { padding-bottom: 40px; }
         nav { gap: 18px; font-size: 14px; }
         .lang { font-size: 14px; }
-        .post-year { flex-basis: 56px; font-size: 13px; }
-        .post-title { font-size: 15px; }
+        .post-year { flex-basis: 40px; }
       }
     </style>
   </head>
@@ -178,7 +187,7 @@ let lastYear = 0;
           return (
             <a class="post" href={`/labs/${post.id}`}>
               <span class="post-year">{showYear ? year : ''}</span>
-              <span class="post-title">{post.data.title}</span>
+              <span class="post-title"><span class="post-title-inner">{post.data.title}</span></span>
             </a>
           );
         })}
