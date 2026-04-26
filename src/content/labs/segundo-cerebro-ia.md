@@ -4,7 +4,7 @@ description: 'Um sistema em markdown puro, versionado no git, sincronizado pelo 
 pubDate: 'Apr 26 2026'
 ---
 
-Gerencio duas pizzarias em Porto Alegre e faço consultoria em IA aplicada a restaurantes. São muitos projetos simultâneos, decisões tomadas em contextos diferentes, e cada agente de IA começa do zero sem saber nada sobre mim.
+São muitos projetos simultâneos, decisões tomadas em contextos diferentes, e cada agente de IA começa do zero sem saber nada sobre mim.
 
 A solução que encontrei: construir um "cérebro externo" em markdown que serve como fonte única de verdade para qualquer agente de IA.
 
