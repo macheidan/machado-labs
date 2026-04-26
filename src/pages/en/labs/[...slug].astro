@@ -1,0 +1,22 @@
+---
+import { type CollectionEntry, getCollection, render } from 'astro:content';
+import BlogPost from '../../../layouts/BlogPost.astro';
+
+export async function getStaticPaths() {
+	const posts = await getCollection('labs-en');
+	const ptSlugs = new Set((await getCollection('labs')).map((p) => p.id));
+	return posts.map((post) => ({
+		params: { slug: post.id },
+		props: { post, hasPt: ptSlugs.has(post.id) },
+	}));
+}
+type Props = { post: CollectionEntry<'labs-en'>; hasPt: boolean };
+
+const { post, hasPt } = Astro.props;
+const { Content } = await render(post);
+const altUrl = hasPt ? `/labs/${post.id}` : '/';
+---
+
+<BlogPost {...post.data} lang="en" altUrl={altUrl}>
+	<Content />
+</BlogPost>

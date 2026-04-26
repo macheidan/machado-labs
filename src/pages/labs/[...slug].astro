@@ -4,17 +4,19 @@ import BlogPost from '../../layouts/BlogPost.astro';
 
 export async function getStaticPaths() {
 	const posts = await getCollection('labs');
+	const enSlugs = new Set((await getCollection('labs-en')).map((p) => p.id));
 	return posts.map((post) => ({
 		params: { slug: post.id },
-		props: post,
+		props: { post, hasEn: enSlugs.has(post.id) },
 	}));
 }
-type Props = CollectionEntry<'labs'>;
+type Props = { post: CollectionEntry<'labs'>; hasEn: boolean };
 
-const post = Astro.props;
+const { post, hasEn } = Astro.props;
 const { Content } = await render(post);
+const altUrl = hasEn ? `/en/labs/${post.id}` : '/en';
 ---
 
-<BlogPost {...post.data}>
+<BlogPost {...post.data} lang="pt" altUrl={altUrl}>
 	<Content />
 </BlogPost>

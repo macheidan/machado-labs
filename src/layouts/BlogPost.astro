@@ -2,19 +2,29 @@
 import type { CollectionEntry } from 'astro:content';
 import BaseHead from '../components/BaseHead.astro';
 
-type Props = CollectionEntry<'labs'>['data'];
+type Props = CollectionEntry<'labs'>['data'] & {
+  lang?: 'pt' | 'en';
+  altUrl?: string;
+};
 
-const { title, description, pubDate } = Astro.props;
+const { title, description, pubDate, lang = 'pt', altUrl } = Astro.props;
+const isEn = lang === 'en';
 
-const dateFormatted = new Date(pubDate).toLocaleDateString('pt-BR', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-});
+const dateFormatted = new Date(pubDate).toLocaleDateString(
+  isEn ? 'en-US' : 'pt-BR',
+  { year: 'numeric', month: 'long', day: 'numeric' },
+);
+
+const homeUrl = isEn ? '/en' : '/';
+const aboutUrl = isEn ? '/en/about' : '/about';
+const aboutLabel = isEn ? 'About' : 'Sobre';
+const backLabel = isEn ? 'all posts' : 'todos os posts';
+const fallbackAlt = isEn ? '/' : '/en';
+const switchUrl = altUrl ?? fallbackAlt;
 ---
 
 <!doctype html>
-<html lang="pt-BR">
+<html lang={isEn ? 'en' : 'pt-BR'}>
   <head>
     <BaseHead title={title} description={description} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -242,13 +252,13 @@ const dateFormatted = new Date(pubDate).toLocaleDateString('pt-BR', {
     <div class="container">
 
       <header>
-        <a href="/" class="site-name">Fábio Machado</a>
+        <a href={homeUrl} class="site-name">Fábio Machado</a>
         <nav>
-          <a href="/about">Sobre</a>
+          <a href={aboutUrl}>{aboutLabel}</a>
           <span class="lang">
-            <a href="?lang=en">en</a>
+            <a href={isEn ? Astro.url.pathname : switchUrl} class={isEn ? 'active' : ''}>en</a>
             <span class="pipe">|</span>
-            <a href="?lang=pt" class="active">pt-br</a>
+            <a href={isEn ? switchUrl : Astro.url.pathname} class={isEn ? '' : 'active'}>pt-br</a>
           </span>
           <a href="https://x.com/machadofabio" class="x-link" target="_blank" rel="noopener" aria-label="X">
             <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -259,7 +269,7 @@ const dateFormatted = new Date(pubDate).toLocaleDateString('pt-BR', {
       </header>
 
       <article>
-        <a href="/" class="back">todos os posts</a>
+        <a href={homeUrl} class="back">{backLabel}</a>
 
         <h1 class="post-title">{title}</h1>
 

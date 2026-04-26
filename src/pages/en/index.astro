@@ -1,14 +1,14 @@
 ---
-import BaseHead from '../components/BaseHead.astro';
-import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+import BaseHead from '../../components/BaseHead.astro';
+import { SITE_TITLE, SITE_DESCRIPTION } from '../../consts';
 import { getCollection } from 'astro:content';
 
-const posts = (await getCollection('labs'))
+const posts = (await getCollection('labs-en'))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 ---
 
 <!doctype html>
-<html lang="pt-BR">
+<html lang="en">
   <head>
     <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -151,13 +151,13 @@ const posts = (await getCollection('labs'))
     <div class="container">
 
       <header>
-        <a href="/" class="site-name">Fábio Machado</a>
+        <a href="/en" class="site-name">Fábio Machado</a>
         <nav>
-          <a href="/about">Sobre</a>
+          <a href="/en/about">About</a>
           <span class="lang">
-            <a href="/en">en</a>
+            <a href="/en" class="active">en</a>
             <span class="pipe">|</span>
-            <a href="/" class="active">pt-br</a>
+            <a href="/">pt-br</a>
           </span>
           <a href="https://x.com/machadofabio" class="x-link" target="_blank" rel="noopener" aria-label="X">
             <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -172,7 +172,7 @@ const posts = (await getCollection('labs'))
           const d = new Date(post.data.pubDate);
           const date = `${String(d.getFullYear()).slice(2)}.${String(d.getMonth() + 1).padStart(2, '0')}`;
           return (
-            <a class="post" href={`/labs/${post.id}`}>
+            <a class="post" href={`/en/labs/${post.id}`}>
               <span class="post-date">{date}</span>
               <span class="post-title">{post.data.title}</span>
             </a>
