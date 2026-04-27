@@ -11,6 +11,7 @@ interface Props {
 	ogType?: 'website' | 'article';
 	publishedTime?: Date | string;
 	jsonLd?: Record<string, any> | Record<string, any>[];
+	noindex?: boolean;
 }
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
@@ -24,6 +25,7 @@ const {
 	ogType = 'website',
 	publishedTime,
 	jsonLd,
+	noindex = false,
 } = Astro.props;
 
 const imageSrc = typeof image === 'string' ? image : image?.src ?? '/og-default.png';
@@ -42,9 +44,12 @@ const publishedISO = publishedTime
 <!-- Global Metadata -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="theme-color" content="#1c1c1c" />
+{noindex && <meta name="robots" content="noindex, nofollow" />}
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <link rel="icon" href="/favicon.ico" />
 <link rel="sitemap" href="/sitemap-index.xml" />
+<link rel="me" href="https://x.com/machadofabio" />
 <link
 	rel="alternate"
 	type="application/rss+xml"
