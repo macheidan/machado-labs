@@ -1,24 +1,20 @@
 ---
-import BaseHead from '../../components/BaseHead.astro';
-import { SITE_DESCRIPTION_EN, HOME_TITLE_EN } from '../../consts';
-import { homeGraph } from '../../lib/seo';
+import BaseHead from '../components/BaseHead.astro';
+import { SITE_TITLE } from '../consts';
 import { getCollection } from 'astro:content';
 
-const posts = (await getCollection('labs-en'))
-  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
-
-const jsonLd = homeGraph('en', SITE_DESCRIPTION_EN);
+const posts = (await getCollection('labs'))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 5);
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <BaseHead
-      title={HOME_TITLE_EN}
-      description={SITE_DESCRIPTION_EN}
-      lang="en"
-      alternateUrl="/"
-      jsonLd={jsonLd}
+      title={`Página não encontrada — ${SITE_TITLE}`}
+      description="Essa página não existe ou foi movida. Volte para a home ou veja os posts mais recentes."
+      lang="pt-BR"
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -52,8 +48,6 @@ const jsonLd = homeGraph('en', SITE_DESCRIPTION_EN);
         letter-spacing: -0.01em;
       }
 
-      ::selection { background: rgba(255,255,255,0.15); }
-
       a { color: inherit; text-decoration: none; }
 
       .container {
@@ -68,7 +62,7 @@ const jsonLd = homeGraph('en', SITE_DESCRIPTION_EN);
         justify-content: space-between;
         gap: 16px;
         padding-top: 16px;
-        padding-bottom: 56px;
+        padding-bottom: 80px;
       }
 
       .site-name {
@@ -77,9 +71,7 @@ const jsonLd = homeGraph('en', SITE_DESCRIPTION_EN);
         color: var(--fg);
         letter-spacing: -0.02em;
         line-height: 1;
-        transition: opacity 0.15s ease;
       }
-      .site-name:hover { opacity: 0.7; }
 
       nav {
         display: flex;
@@ -87,42 +79,43 @@ const jsonLd = homeGraph('en', SITE_DESCRIPTION_EN);
         gap: 28px;
         font-size: 15px;
       }
-
-      nav a {
-        color: var(--fg);
-        line-height: 1;
-        transition: opacity 0.15s ease;
-      }
+      nav a { color: var(--fg); line-height: 1; transition: opacity 0.15s ease; }
       nav a:hover { opacity: 0.65; }
 
-      .lang {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 15px;
-        line-height: 1;
-      }
+      .lang { display: inline-flex; align-items: center; gap: 6px; font-size: 15px; line-height: 1; }
       .lang a { color: var(--fg-muted); }
       .lang a.active { color: var(--fg); }
       .lang .pipe { color: var(--fg-faint); }
 
-      .x-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
+      .code {
+        font-family: 'Geist Mono', monospace;
+        font-size: 12px;
+        color: var(--fg-faint);
+        margin-bottom: 12px;
       }
-      .x-link svg {
-        display: block;
-        width: 14px;
-        height: 14px;
-        fill: currentColor;
+      .h1 {
+        font-size: 28px;
+        font-weight: 700;
+        line-height: 1.25;
+        margin-bottom: 16px;
+      }
+      .lede {
+        color: var(--fg-muted);
+        margin-bottom: 32px;
+      }
+      .lede a { color: var(--fg); border-bottom: 1px solid var(--fg-faint); }
+      .lede a:hover { border-color: var(--fg); }
+
+      .section-label {
+        font-family: 'Geist Mono', monospace;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--fg-faint);
+        margin-bottom: 12px;
       }
 
-      .posts {
-        display: flex;
-        flex-direction: column;
-      }
-
+      .posts { display: flex; flex-direction: column; }
       .post {
         display: flex;
         align-items: baseline;
@@ -130,7 +123,6 @@ const jsonLd = homeGraph('en', SITE_DESCRIPTION_EN);
         transition: opacity 0.15s ease;
       }
       .post:hover { opacity: 0.6; }
-
       .post-date {
         flex: 0 0 52px;
         color: #737373;
@@ -139,7 +131,6 @@ const jsonLd = homeGraph('en', SITE_DESCRIPTION_EN);
         font-variant-numeric: tabular-nums;
         line-height: 1.6;
       }
-
       .post-title {
         flex: 1 1 auto;
         color: var(--fg);
@@ -149,46 +140,45 @@ const jsonLd = homeGraph('en', SITE_DESCRIPTION_EN);
       }
 
       @media (max-width: 480px) {
-        header { padding-bottom: 40px; }
-        nav { gap: 18px; font-size: 14px; }
-        .lang { font-size: 14px; }
-        .post-year { flex-basis: 40px; }
+        header { padding-bottom: 56px; }
+        .h1 { font-size: 22px; }
       }
     </style>
   </head>
   <body>
     <div class="container">
-
       <header>
-        <a href="/en" class="site-name">Fábio Machado</a>
+        <a href="/" class="site-name">Fábio Machado</a>
         <nav>
-          <a href="/en/about">about</a>
+          <a href="/about">sobre</a>
           <span class="lang">
-            <a href="/en" class="active">en</a>
+            <a href="/en">en</a>
             <span class="pipe">|</span>
-            <a href="/">ptbr</a>
+            <a href="/" class="active">ptbr</a>
           </span>
-          <a href="https://x.com/machadofabio" class="x-link" target="_blank" rel="noopener" aria-label="X">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.259 5.631 5.905-5.631zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/>
-            </svg>
-          </a>
         </nav>
       </header>
 
+      <p class="code">404 · página não encontrada</p>
+      <h1 class="h1">Esse caminho não leva a lugar nenhum.</h1>
+      <p class="lede">
+        A página pode ter sido movida ou nunca ter existido. Volta pra <a href="/">home</a>,
+        lê <a href="/about">sobre</a>, ou pega um dos posts abaixo.
+      </p>
+
+      <p class="section-label">posts recentes</p>
       <div class="posts">
         {posts.map((post) => {
           const d = new Date(post.data.pubDate);
           const date = `${String(d.getFullYear()).slice(2)}.${String(d.getMonth() + 1).padStart(2, '0')}`;
           return (
-            <a class="post" href={`/en/labs/${post.id}`}>
+            <a class="post" href={`/labs/${post.id}`}>
               <span class="post-date">{date}</span>
               <span class="post-title">{post.data.title}</span>
             </a>
           );
         })}
       </div>
-
     </div>
   </body>
 </html>

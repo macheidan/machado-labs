@@ -1,14 +1,14 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import BaseHead from '../components/BaseHead.astro';
-import { SITE_TITLE, AUTHOR_NAME, AUTHOR_X } from '../consts';
+import { articleGraph, SITE_URL } from '../lib/seo';
 
 type Props = CollectionEntry<'labs'>['data'] & {
   lang?: 'pt' | 'en';
   altUrl?: string;
 };
 
-const { title, description, pubDate, lang = 'pt', altUrl } = Astro.props;
+const { title, description, pubDate, updatedDate, lang = 'pt', altUrl } = Astro.props;
 const isEn = lang === 'en';
 
 const dateFormatted = new Date(pubDate).toLocaleDateString(
@@ -23,34 +23,18 @@ const backLabel = isEn ? 'all posts' : 'todos os posts';
 const fallbackAlt = isEn ? '/' : '/en';
 const switchUrl = altUrl ?? fallbackAlt;
 
-const authorAboutUrl = isEn
-  ? 'https://fabiomachado.com.br/en/about'
-  : 'https://fabiomachado.com.br/about';
-const pageUrl = new URL(Astro.url.pathname, 'https://fabiomachado.com.br/').toString();
+const slug = Astro.url.pathname.replace(/^\/(en\/)?labs\//, '').replace(/\/$/, '');
+const ogImageUrl = `${SITE_URL}/og-default.png`;
 
-const jsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'Article',
-  headline: title,
+const jsonLd = articleGraph({
+  lang,
+  title,
   description,
-  datePublished: new Date(pubDate).toISOString(),
-  inLanguage: isEn ? 'en' : 'pt-BR',
-  author: {
-    '@type': 'Person',
-    name: AUTHOR_NAME,
-    url: authorAboutUrl,
-    sameAs: [AUTHOR_X],
-  },
-  publisher: {
-    '@type': 'Organization',
-    name: SITE_TITLE,
-    url: 'https://fabiomachado.com.br/',
-  },
-  mainEntityOfPage: {
-    '@type': 'WebPage',
-    '@id': pageUrl,
-  },
-};
+  pubDate: new Date(pubDate),
+  updatedDate: updatedDate ? new Date(updatedDate) : undefined,
+  slug,
+  imageUrl: ogImageUrl,
+});
 ---
 
 <!doctype html>
@@ -278,6 +262,27 @@ const jsonLd = {
       .back:hover { color: var(--fg); }
       .back::before { content: '←'; }
 
+      /* ── Author bio ── */
+      .author-bio {
+        margin-top: 56px;
+        padding-top: 28px;
+        border-top: 1px solid rgba(255,255,255,0.08);
+        font-size: 14px;
+        color: var(--fg-muted);
+        line-height: 1.6;
+      }
+      .author-bio strong {
+        color: var(--fg);
+        font-weight: 600;
+      }
+      .author-bio a {
+        color: var(--fg);
+        text-decoration: underline;
+        text-decoration-color: var(--fg-faint);
+        text-underline-offset: 2px;
+      }
+      .author-bio a:hover { text-decoration-color: var(--fg); }
+
       /* ── Mobile ── */
       @media (max-width: 480px) {
         header { padding-bottom: 40px; }
@@ -319,6 +324,24 @@ const jsonLd = {
 
         <div class="prose">
           <slot />
+        </div>
+
+        <div class="author-bio">
+          {isEn ? (
+            <p>
+              <strong>Fábio Machado</strong> runs Lov Pizza and Dáme Pizza in Porto Alegre and
+              builds AI agents to take roles small business owners can't hire for.
+              {' '}<a href="/en/about">Read more about him</a> or follow on
+              {' '}<a href="https://x.com/machadofabio" target="_blank" rel="noopener">X</a>.
+            </p>
+          ) : (
+            <p>
+              <strong>Fábio Machado</strong> toca a Lov Pizza e a Dáme Pizza em Porto Alegre e
+              constrói agentes de IA pra ocupar papéis que dono de PME não consegue contratar.
+              {' '}<a href="/about">Saiba mais sobre ele</a> ou siga no
+              {' '}<a href="https://x.com/machadofabio" target="_blank" rel="noopener">X</a>.
+            </p>
+          )}
         </div>
       </article>
 
