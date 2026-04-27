@@ -4,7 +4,7 @@ description: 'A pure markdown system, version-controlled in git, synced through 
 pubDate: 'Apr 26 2026'
 ---
 
-There are many simultaneous projects, decisions made in different contexts, and every AI agent starts from scratch knowing nothing about me.
+The problem: There are many simultaneous projects, decisions made in different contexts, and every AI agent starts from scratch knowing nothing about me.
 
 The solution I found: build an "external brain" in markdown that serves as the single source of truth for any AI agent.
 
