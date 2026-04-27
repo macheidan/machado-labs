@@ -124,24 +124,30 @@ const jsonLd = homeGraph('pt', SITE_DESCRIPTION);
       }
 
       .post {
-        display: flex;
-        align-items: baseline;
-        padding: 6px 0;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        column-gap: 14px;
+        padding: 10px 0;
         transition: opacity 0.15s ease;
       }
       .post:hover { opacity: 0.6; }
 
       .post-date {
-        flex: 0 0 52px;
-        color: #737373;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        border-right: 1px solid var(--fg-faint);
+        padding-right: 14px;
         font-family: 'Geist Mono', monospace;
         font-size: 12px;
         font-variant-numeric: tabular-nums;
-        line-height: 1.6;
+        color: #737373;
+        line-height: 1.5;
+        min-width: 44px;
       }
 
       .post-title {
-        flex: 1 1 auto;
+        align-self: end;
         color: var(--fg);
         font-size: 14px;
         font-weight: 400;
@@ -152,7 +158,6 @@ const jsonLd = homeGraph('pt', SITE_DESCRIPTION);
         header { padding-bottom: 40px; }
         nav { gap: 18px; font-size: 14px; }
         .lang { font-size: 14px; }
-        .post-year { flex-basis: 40px; }
       }
     </style>
   </head>
@@ -179,10 +184,14 @@ const jsonLd = homeGraph('pt', SITE_DESCRIPTION);
       <div class="posts">
         {posts.map((post) => {
           const d = new Date(post.data.pubDate);
-          const date = `${String(d.getFullYear()).slice(2)}.${String(d.getMonth() + 1).padStart(2, '0')}`;
+          const year = String(d.getFullYear());
+          const month = String(d.getMonth() + 1).padStart(2, '0');
           return (
             <a class="post" href={`/labs/${post.id}`}>
-              <span class="post-date">{date}</span>
+              <span class="post-date">
+                <span>{year}</span>
+                <span>{month}</span>
+              </span>
               <span class="post-title">{post.data.title}</span>
             </a>
           );
