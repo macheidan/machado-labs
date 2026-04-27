@@ -1,16 +1,51 @@
 ---
 import BaseHead from '../components/BaseHead.astro';
-import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+import { SITE_TITLE, SITE_DESCRIPTION, HOME_TITLE, AUTHOR_NAME, AUTHOR_X } from '../consts';
 import { getCollection } from 'astro:content';
 
 const posts = (await getCollection('labs'))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: SITE_TITLE,
+    url: 'https://fabiomachado.com.br/',
+    inLanguage: 'pt-BR',
+    description: SITE_DESCRIPTION,
+    publisher: {
+      '@type': 'Person',
+      name: AUTHOR_NAME,
+      url: 'https://fabiomachado.com.br/about',
+      sameAs: [AUTHOR_X],
+    },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: AUTHOR_NAME,
+    url: 'https://fabiomachado.com.br/about',
+    jobTitle: 'Empresário e consultor em IA',
+    sameAs: [AUTHOR_X],
+    worksFor: [
+      { '@type': 'Organization', name: 'Lov Pizza' },
+      { '@type': 'Organization', name: 'Dáme Pizza' },
+    ],
+  },
+];
 ---
 
 <!doctype html>
 <html lang="pt-BR">
   <head>
-    <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+    <BaseHead
+      title={HOME_TITLE}
+      description={SITE_DESCRIPTION}
+      lang="pt-BR"
+      alternateUrl="/en"
+      jsonLd={jsonLd}
+    />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
