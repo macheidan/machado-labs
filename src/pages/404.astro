@@ -6,6 +6,14 @@ import { getCollection } from 'astro:content';
 const posts = (await getCollection('labs'))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
   .slice(0, 5);
+
+const grouped = new Map<string, typeof posts>();
+for (const post of posts) {
+  const year = String(new Date(post.data.pubDate).getFullYear());
+  if (!grouped.has(year)) grouped.set(year, []);
+  grouped.get(year)!.push(post);
+}
+const years = [...grouped.keys()].sort((a, b) => Number(b) - Number(a));
 ---
 
 <!doctype html>
@@ -117,27 +125,34 @@ const posts = (await getCollection('labs'))
       }
 
       .posts { display: flex; flex-direction: column; }
+      .year-group + .year-group { margin-top: 24px; }
+      .year-header {
+        font-family: 'Geist Mono', monospace;
+        font-size: 12px;
+        font-variant-numeric: tabular-nums;
+        color: var(--fg-muted);
+        text-align: right;
+        width: 44px;
+        margin-bottom: 4px;
+      }
       .post {
         display: grid;
-        grid-template-columns: auto 1fr;
+        grid-template-columns: 44px 1fr;
         column-gap: 14px;
-        padding: 10px 0;
+        padding: 6px 0;
+        align-items: baseline;
         transition: opacity 0.15s ease;
       }
       .post:hover { opacity: 0.6; }
-      .post-date {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
+      .post-month {
+        text-align: right;
         font-family: 'Geist Mono', monospace;
         font-size: 12px;
         font-variant-numeric: tabular-nums;
         color: #737373;
-        line-height: 1.5;
-        min-width: 44px;
+        line-height: 1.6;
       }
       .post-title {
-        align-self: end;
         color: var(--fg);
         font-size: 14px;
         font-weight: 400;
@@ -173,20 +188,20 @@ const posts = (await getCollection('labs'))
 
       <p class="section-label">posts recentes</p>
       <div class="posts">
-        {posts.map((post) => {
-          const d = new Date(post.data.pubDate);
-          const year = String(d.getFullYear());
-          const month = String(d.getMonth() + 1).padStart(2, '0');
-          return (
-            <a class="post" href={`/labs/${post.id}`}>
-              <span class="post-date">
-                <span>{year}</span>
-                <span>{month}</span>
-              </span>
-              <span class="post-title">{post.data.title}</span>
-            </a>
-          );
-        })}
+        {years.map((year) => (
+          <div class="year-group">
+            <div class="year-header">{year}</div>
+            {grouped.get(year)!.map((post) => {
+              const month = String(new Date(post.data.pubDate).getMonth() + 1).padStart(2, '0');
+              return (
+                <a class="post" href={`/labs/${post.id}`}>
+                  <span class="post-month">{month}</span>
+                  <span class="post-title">{post.data.title}</span>
+                </a>
+              );
+            })}
+          </div>
+        ))}
       </div>
     </div>
   </body>
