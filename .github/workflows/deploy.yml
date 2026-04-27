@@ -35,3 +35,48 @@ jobs:
           protocol: ftps
           security: loose
           dangerous-clean-slate: false
+
+      - name: Notify IndexNow
+        run: |
+          set -e
+          KEY="24100a5ba16c1c93f366c99b706040bb"
+          HOST="fabiomachado.com.br"
+          KEY_LOCATION="https://${HOST}/${KEY}.txt"
+
+          # Wait briefly so the FTP upload settles before crawlers fetch
+          sleep 30
+
+          # Extract URLs from the freshly built sitemap
+          URLS=$(grep -oE '<loc>[^<]+</loc>' dist/sitemap-0.xml | sed -E 's|</?loc>||g')
+          if [ -z "$URLS" ]; then
+            echo "No URLs found in sitemap; skipping IndexNow notification."
+            exit 0
+          fi
+
+          # Build JSON payload
+          URL_LIST_JSON=$(echo "$URLS" | jq -R . | jq -s .)
+          PAYLOAD=$(jq -n \
+            --arg host "$HOST" \
+            --arg key "$KEY" \
+            --arg keyLocation "$KEY_LOCATION" \
+            --argjson urlList "$URL_LIST_JSON" \
+            '{host:$host, key:$key, keyLocation:$keyLocation, urlList:$urlList}')
+
+          echo "Submitting $(echo "$URLS" | wc -l) URLs to IndexNow"
+          echo "$PAYLOAD"
+
+          HTTP_STATUS=$(curl -sS -o /tmp/indexnow.body -w "%{http_code}" \
+            -X POST "https://api.indexnow.org/IndexNow" \
+            -H "Content-Type: application/json; charset=utf-8" \
+            --data "$PAYLOAD")
+
+          echo "IndexNow response: HTTP $HTTP_STATUS"
+          cat /tmp/indexnow.body || true
+
+          # IndexNow returns 200 (accepted) or 202 (accepted, pending validation).
+          if [ "$HTTP_STATUS" = "200" ] || [ "$HTTP_STATUS" = "202" ]; then
+            exit 0
+          else
+            echo "IndexNow rejected the submission (HTTP $HTTP_STATUS)."
+            exit 1
+          fi
