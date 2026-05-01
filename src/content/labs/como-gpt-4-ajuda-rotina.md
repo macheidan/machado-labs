@@ -17,7 +17,7 @@ Sempre usei CRM e Excel bem estruturado. Não é falta de organização que me t
 
 Quando não lembro a fórmula que compara o mesmo dia da semana com 4 semanas atrás, pergunto ali. Resposta com a fórmula pronta pra Google Sheets, com explicação do porquê. O que antes exigia pesquisa ou um analista disponível agora sai em segundos dentro do próprio contexto da planilha aberta.
 
-O dado sempre existiu. O que mudou foi a velocidade de chegar na pergunta certa.
+O dado sempre existiu. O que mudou foi **a velocidade de chegar na pergunta certa**.
 
 ## Comparativo de vendas e projeções
 
@@ -27,7 +27,7 @@ Já usava o GPT-4 pra analisar números. Mas com o upload, o processo ficou dife
 
 A análise não é perfeita. Mas é 80% do que um analista júnior entregaria, em 30 segundos, sem reunião e sem custo.
 
-E é aqui que está caindo a ficha de uma coisa que eu suspeitava: o ganho de IA não é fazer mais rápido o que já faço. É me mostrar o que eu não estava vendo.
+E é aqui que está caindo a ficha de uma coisa que eu suspeitava: o ganho de IA não é fazer mais rápido o que já faço. É **me mostrar o que eu não estava vendo**.
 
 ## Conferência de caixa
 
@@ -45,4 +45,4 @@ O GPT-4 lê dado, cruza informação e devolve hipótese. Quem usa só pra gerar
 
 O que mudou de verdade com o upload é a fricção zero: não preciso tratar o dado antes de perguntar. Subo o arquivo como está e começo. Planilha de três sistemas diferentes, extrato bancário direto do banco, resultado de cartão por operadora. Tudo entra.
 
-E o aprendizado que mais importa: o ROI desses três usos juntos não é economia de horas. É espaço mental. Esse efeito não cabe em métrica, mas é o que faz dono dormir.
+E o aprendizado que mais importa: o ROI desses três usos juntos não é economia de horas. É **espaço mental**. Esse efeito não cabe em métrica, mas é o que faz dono dormir.

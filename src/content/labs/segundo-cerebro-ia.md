@@ -6,7 +6,7 @@ pubDate: 'Apr 26 2026'
 
 O problema: São muitos projetos simultâneos, decisões tomadas em contextos diferentes, e cada agente de IA começa do zero sem saber nada sobre mim.
 
-A solução que encontrei: construir um "cérebro externo" em markdown que serve como fonte única de verdade para qualquer agente de IA.
+A solução que encontrei: construir um "cérebro externo" em markdown que serve como **fonte única de verdade para qualquer agente de IA**.
 
 ## A ideia central
 
@@ -73,10 +73,10 @@ O mais interessante: todo domingo o bot lê meus arquivos `perfil-fabio.md`, `pe
 
 O vault só funciona se for fácil de manter. Arquivos complicados não são lidos, não são atualizados e morrem. Markdown puro, frontmatter simples, sem plugin proprietário.
 
-A automação que alimenta o vault precisa ser conservadora — melhor não escrever nada do que escrever errado. Por isso o bot usa um prompt que instrui o Gemini a retornar "nada novo" se não houver observações claras baseadas nas mensagens.
+A automação que alimenta o vault precisa ser conservadora — **melhor não escrever nada do que escrever errado**. Por isso o bot usa um prompt que instrui o Gemini a retornar "nada novo" se não houver observações claras baseadas nas mensagens.
 
 ## Próximos passos
 
 Gmail e Google Calendar entram na Fase 3 — resumo de emails importantes, alertas de compromissos, integração com o vault. Depois vem a Fase 4: gatilhos automáticos que disparam ações sem eu precisar pedir.
 
-O objetivo final é um sistema que conhece meu contexto melhor do que eu mesmo em qualquer dia de sobrecarga.
+O objetivo final é um sistema que **conhece meu contexto melhor do que eu mesmo** em qualquer dia de sobrecarga.

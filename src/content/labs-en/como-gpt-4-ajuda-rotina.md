@@ -17,7 +17,7 @@ I've always used a well-structured CRM and Excel. The bottleneck wasn't organiza
 
 When I can't remember the formula to compare the same weekday against 4 weeks ago, I ask. The answer comes back as a ready-made Google Sheets formula, with the why behind it. What used to require research or an available analyst now arrives in seconds, inside the context of the spreadsheet I have open.
 
-The data always existed. What changed was the speed of getting to the right question.
+The data always existed. What changed was **the speed of getting to the right question**.
 
 ## Sales comparison and projections
 
@@ -27,7 +27,7 @@ I was already using GPT-4 to analyze numbers. But with file upload, the process 
 
 The analysis isn't perfect. But it's 80% of what a junior analyst would deliver, in 30 seconds, with no meeting and no cost.
 
-And this is where something I suspected is finally clicking: the AI gain isn't doing what I already do faster. It's showing me what I wasn't seeing.
+And this is where something I suspected is finally clicking: the AI gain isn't doing what I already do faster. It's **showing me what I wasn't seeing**.
 
 ## Cash reconciliation
 
@@ -45,4 +45,4 @@ GPT-4 reads data, cross-references information, and returns hypotheses. Whoever 
 
 What really changed with file upload is the zero-friction part: I don't need to clean the data before asking. I drop the file as-is and start. Spreadsheet from three different systems, bank statement straight from the bank, card results per operator. It all goes in.
 
-And the lesson that matters most: the ROI of these three uses together isn't time savings. It's mental space. That effect doesn't fit in a metric, but it's what lets the owner sleep.
+And the lesson that matters most: the ROI of these three uses together isn't time savings. It's **mental space**. That effect doesn't fit in a metric, but it's what lets the owner sleep.

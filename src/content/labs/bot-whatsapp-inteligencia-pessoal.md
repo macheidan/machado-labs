@@ -22,7 +22,7 @@ Queria três coisas:
 2. Resumo diário e semanal dos grupos — o que rolou, sem ter que rolar 800 mensagens pra trás. Com indicação se fui citado e qual contexto.
 3. Análise do que **eu** mandei — o bot lendo minhas próprias mensagens e atualizando meus arquivos de perfil no vault com o que conseguiu observar.
 
-A última parte é a que mais me interessa. É um agente que melhora a memória que ele mesmo consulta.
+A última parte é a que mais me interessa. É **um agente que melhora a memória que ele mesmo consulta**.
 
 ## Stack
 
@@ -195,11 +195,11 @@ O que faz esse projeto valer a pena não é o bot isolado. É o loop:
 4. Toda semana, ele lê meu próprio perfil no vault e adiciona o que observou de novo sobre mim.
 5. Próxima vez que **qualquer agente de IA** (Claude Code, Cursor, ChatGPT) abre meu vault pra me ajudar com qualquer coisa, ele já sabe quem eu sou, com quem ando falando, do que ando reclamando.
 
-O bot não é o produto. O produto é um segundo cérebro que se atualiza sozinho.
+O bot não é o produto. O produto é **um segundo cérebro que se atualiza sozinho**.
 
 ## O que aprendi até agora
 
-Bot de leitura é mais útil do que bot de resposta pra quem não escala atendimento. Atendimento eu já tenho otimizado. O que eu não tenho é alguém olhando pelo lado de fora pra padrões que eu deixo passar.
+Bot de leitura é mais útil do que bot de resposta pra quem não escala atendimento. Atendimento eu já tenho otimizado. O que eu não tenho é alguém olhando pelo lado de fora pra **padrões que eu deixo passar**.
 
 Prompt conservador vence prompt criativo quando o output vira insumo de decisão. Em todo lugar que pude trocar liberdade por formato fixo, troquei.
 

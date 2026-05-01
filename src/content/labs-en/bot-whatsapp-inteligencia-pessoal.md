@@ -22,7 +22,7 @@ I wanted three things:
 2. A daily and weekly summary of groups — what happened, without scrolling 800 messages back. With a flag if I was mentioned and in what context.
 3. Analysis of what **I** sent — the bot reading my own messages and updating my profile files in the vault with what it observed.
 
-The last part is the one I care about most. It's an agent that improves the memory it itself reads from.
+The last part is the one I care about most. It's **an agent that improves the memory it itself reads from**.
 
 ## Stack
 
@@ -195,11 +195,11 @@ What makes this project worth it isn't the bot in isolation. It's the loop:
 4. Every week, it reads my own profile in the vault and adds what it newly observed about me.
 5. The next time **any AI agent** (Claude Code, Cursor, ChatGPT) opens my vault to help me with anything, it already knows who I am, who I've been talking to, and what I've been complaining about.
 
-The bot isn't the product. The product is a second brain that updates itself.
+The bot isn't the product. The product is **a second brain that updates itself**.
 
 ## What I've learned so far
 
-A reading bot is more useful than a replying bot for someone who doesn't scale customer service. I already have customer service optimized. What I don't have is someone watching from the outside for patterns I let slip.
+A reading bot is more useful than a replying bot for someone who doesn't scale customer service. I already have customer service optimized. What I don't have is someone watching from the outside for **patterns I let slip**.
 
 Conservative prompts beat creative prompts when the output becomes input for a decision. Anywhere I could trade freedom for fixed format, I did.
 

@@ -4,9 +4,9 @@ description: 'Start here. The decision to expose the process of building a team 
 pubDate: 'Apr 25 2026'
 ---
 
-There's a big difference between building one AI agent in a lab and putting an entire team of them to work inside a real company. Most of what you read about AI online ignores this difference. I can't afford to ignore it — my two pizzerias are paying the bill.
+There's a big difference between building one AI agent in a lab and putting an entire team of them to work inside a real company. Most of what you read about AI online ignores this difference. I can't afford to ignore it — **my two pizzerias are paying the bill**.
 
-Dáme Pizza and Lov Pizza aren't hypotheticals. There are suppliers to pay, teams to manage, menus to review, ads to run, customers to answer. All of it, every day, without overheating. Over the last few months I've started replacing parts of my brain with agents — finance, marketing, operations, customer service, data — and the result is strange to explain to anyone who hasn't seen it working.
+Dáme Pizza and Lov Pizza aren't hypotheticals. There are suppliers to pay, teams to manage, menus to review, ads to run, customers to answer. All of it, every day, without overheating. Over the last few months I've started **replacing parts of my brain with agents** — finance, marketing, operations, customer service, data — and the result is strange to explain to anyone who hasn't seen it working.
 
 ## Why public, not private
 

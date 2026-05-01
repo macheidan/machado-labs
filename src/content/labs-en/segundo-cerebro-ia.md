@@ -6,7 +6,7 @@ pubDate: 'Apr 26 2026'
 
 The problem: There are many simultaneous projects, decisions made in different contexts, and every AI agent starts from scratch knowing nothing about me.
 
-The solution I found: build an "external brain" in markdown that serves as the single source of truth for any AI agent.
+The solution I found: build an "external brain" in markdown that serves as **the single source of truth for any AI agent**.
 
 ## The core idea
 
@@ -73,10 +73,10 @@ The most interesting part: every Sunday the bot reads my `profile-fabio.md`, `pe
 
 The vault only works if it's easy to maintain. Complicated files don't get read, don't get updated, and die. Pure markdown, simple frontmatter, no proprietary plugins.
 
-The automation that feeds the vault has to be conservative — better to write nothing than to write the wrong thing. That's why the bot uses a prompt that instructs Gemini to return "nothing new" if there are no clear observations based on the messages.
+The automation that feeds the vault has to be conservative — **better to write nothing than to write the wrong thing**. That's why the bot uses a prompt that instructs Gemini to return "nothing new" if there are no clear observations based on the messages.
 
 ## Next steps
 
 Gmail and Google Calendar enter Phase 3 — important email summaries, appointment alerts, vault integration. Then comes Phase 4: automatic triggers that fire actions without me having to ask.
 
-The end goal is a system that knows my context better than I do myself on any overloaded day.
+The end goal is a system that **knows my context better than I do myself** on any overloaded day.
