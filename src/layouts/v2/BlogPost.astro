@@ -1,6 +1,5 @@
 ---
 import type { CollectionEntry } from 'astro:content';
-import { getCollection } from 'astro:content';
 import BaseHead from '../../components/BaseHead.astro';
 
 type Props = CollectionEntry<'labs'>['data'];
@@ -9,13 +8,6 @@ const { title, description, pubDate } = Astro.props;
 const dateFormatted = new Date(pubDate).toLocaleDateString('pt-BR', {
   year: 'numeric', month: 'long', day: 'numeric',
 });
-
-const allPosts = (await getCollection('labs'))
-  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
-const currentSlug = Astro.url.pathname.replace(/^\/v2\/labs\//, '').replace(/\/$/, '');
-const idx = allPosts.findIndex((p) => p.id === currentSlug);
-const prev = idx > 0 ? allPosts[idx - 1] : null;
-const next = idx >= 0 && idx < allPosts.length - 1 ? allPosts[idx + 1] : null;
 ---
 
 <!doctype html>
@@ -32,7 +24,6 @@ const next = idx >= 0 && idx < allPosts.length - 1 ? allPosts[idx + 1] : null;
         --muted: #3F3F46;
         --acid: #DFE104;
         --line: 2px solid #09090B;
-        --ease: cubic-bezier(0.25, 1, 0.5, 1);
       }
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
       html { -webkit-text-size-adjust: 100%; }
@@ -42,79 +33,88 @@ const next = idx >= 0 && idx < allPosts.length - 1 ? allPosts[idx + 1] : null;
         font-family: 'Space Mono', ui-monospace, monospace;
         font-size: 16px;
         line-height: 1.55;
+        text-transform: none;
       }
       ::selection { background: var(--acid); color: var(--fg); }
       a { color: inherit; text-decoration: none; }
-      :focus-visible { outline: 3px solid var(--acid); outline-offset: 2px; }
 
       .marquee {
-        border-bottom: var(--line); background: var(--fg); color: var(--bg);
-        overflow: hidden; white-space: nowrap;
+        border-bottom: var(--line);
+        background: var(--fg);
+        color: var(--bg);
+        overflow: hidden;
+        white-space: nowrap;
       }
       .marquee-track {
-        display: inline-block; padding: 10px 0; animation: scroll 28s linear infinite;
-        font-weight: 700; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase;
+        display: inline-block;
+        padding: 10px 0;
+        animation: scroll 22s linear infinite;
+        font-weight: 700;
+        font-size: 13px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
       }
       .marquee-track span { padding: 0 28px; }
-      .marquee-track .acid { color: var(--acid); }
-      @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-      @media (prefers-reduced-motion: reduce) { .marquee-track { animation: none; } }
+      @keyframes scroll {
+        from { transform: translateX(0); }
+        to { transform: translateX(-50%); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .marquee-track { animation: none; }
+      }
 
-      .container { max-width: 920px; margin: 0 auto; padding: 0 28px 96px; }
+      .container { max-width: 880px; margin: 0 auto; padding: 0 24px 96px; }
 
       header.top {
         display: flex; align-items: center; justify-content: space-between;
-        padding: 22px 0; border-bottom: var(--line); margin-bottom: 56px;
-        gap: 16px;
+        padding: 20px 0;
+        border-bottom: var(--line);
+        margin-bottom: 56px;
       }
-      .brand { font-weight: 700; font-size: 20px; text-transform: uppercase; letter-spacing: -0.02em; line-height: 1; }
-      .brand a { display: inline-block; padding: 4px 0; }
+      .brand { font-weight: 700; font-size: 20px; text-transform: uppercase; letter-spacing: -0.02em; }
       .brand a:hover { background: var(--acid); }
-      nav.top-nav { display: flex; gap: 14px; font-size: 12px; text-transform: uppercase; font-weight: 700; align-items: center; }
-      nav.top-nav > a { padding: 7px 11px; border: var(--line); transition: background 180ms var(--ease), color 180ms var(--ease); }
-      nav.top-nav > a:hover { background: var(--fg); color: var(--bg); }
-      .skin-switch { display: flex; gap: 6px; font-size: 11px; }
-      .skin-switch a, .skin-switch span.current { padding: 5px 9px; border: 1px solid var(--fg); transition: background 180ms var(--ease), color 180ms var(--ease); }
-      .skin-switch span.current { background: var(--fg); color: var(--bg); cursor: default; }
-      .skin-switch a:hover { background: var(--acid); color: var(--fg); }
+      nav.top-nav { display: flex; gap: 14px; font-size: 12px; text-transform: uppercase; font-weight: 700; }
+      nav.top-nav a { padding: 6px 10px; border: var(--line); transition: background 100ms, color 100ms; }
+      nav.top-nav a:hover, nav.top-nav a.active { background: var(--fg); color: var(--bg); }
+      nav.top-nav a.acid:hover { background: var(--acid); color: var(--fg); }
 
-      .breadcrumb {
-        font-size: 11px; text-transform: uppercase; letter-spacing: 0.16em;
-        font-weight: 700; color: var(--muted); margin-bottom: 32px;
-        display: flex; align-items: center; gap: 10px;
+      .skin-switch { display: flex; gap: 6px; font-size: 11px; }
+      .skin-switch a { padding: 4px 8px; border: 1px solid var(--fg); }
+      .skin-switch a.active { background: var(--fg); color: var(--bg); }
+
+      .back {
+        display: inline-block; font-size: 12px; text-transform: uppercase;
+        font-weight: 700; padding: 8px 12px; border: var(--line);
+        margin-bottom: 40px; transition: background 100ms;
       }
-      .breadcrumb a:hover { color: var(--fg); background: var(--acid); padding: 0 4px; }
-      .breadcrumb .sep { opacity: 0.5; }
+      .back:hover { background: var(--acid); }
 
       h1.post-title {
-        font-size: clamp(40px, 6.5vw, 80px);
+        font-size: clamp(40px, 7vw, 72px);
         font-weight: 700;
         line-height: 0.95;
         letter-spacing: -0.04em;
         text-transform: uppercase;
-        margin-bottom: 28px;
+        margin-bottom: 24px;
       }
-
       .meta {
-        font-size: 11px;
+        font-size: 12px;
         text-transform: uppercase;
-        letter-spacing: 0.12em;
+        letter-spacing: 0.08em;
         font-weight: 700;
-        padding: 12px 0;
+        padding: 14px 0;
         border-top: var(--line);
         border-bottom: var(--line);
-        margin-bottom: 56px;
-        display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+        margin-bottom: 48px;
+        display: flex; justify-content: space-between;
       }
-      .meta .left, .meta .right { display: flex; gap: 16px; flex-wrap: wrap; }
-      .meta .key { color: var(--muted); }
 
-      .prose { font-size: 17px; line-height: 1.78; max-width: 70ch; }
+      .prose { font-size: 17px; line-height: 1.75; max-width: 680px; }
       .prose :global(p) { margin-bottom: 1.4em; }
       .prose :global(h2) {
-        font-size: clamp(24px, 3vw, 32px); font-weight: 700; text-transform: uppercase;
-        letter-spacing: -0.02em; margin: 2.4em 0 0.6em; padding-bottom: 10px;
-        border-bottom: var(--line); line-height: 1.05;
+        font-size: 28px; font-weight: 700; text-transform: uppercase;
+        letter-spacing: -0.02em; margin: 2.5em 0 0.6em; padding-bottom: 8px;
+        border-bottom: var(--line); line-height: 1.1;
       }
       .prose :global(h3) {
         font-size: 18px; font-weight: 700; text-transform: uppercase;
@@ -122,101 +122,47 @@ const next = idx >= 0 && idx < allPosts.length - 1 ? allPosts[idx + 1] : null;
       }
       .prose :global(a) {
         background: var(--fg); color: var(--bg); padding: 0 4px;
-        transition: background 180ms var(--ease), color 180ms var(--ease);
+        transition: background 100ms;
       }
       .prose :global(a:hover) { background: var(--acid); color: var(--fg); }
       .prose :global(strong) { background: var(--acid); padding: 0 3px; font-weight: 700; }
       .prose :global(blockquote) {
-        border: var(--line);
-        padding: 18px 22px;
-        margin: 2em 0;
-        background: var(--acid);
-        font-style: normal;
-        font-weight: 400;
-        position: relative;
+        border-left: 6px solid var(--fg); padding: 12px 0 12px 20px;
+        margin: 2em 0; background: var(--acid); font-style: normal;
       }
-      .prose :global(blockquote)::before {
-        content: '✱'; position: absolute; top: -14px; left: 16px;
-        background: var(--bg); border: var(--line);
-        padding: 0 8px; font-weight: 700;
-      }
-      .prose :global(blockquote p:last-child) { margin-bottom: 0; }
       .prose :global(code) {
         background: var(--fg); color: var(--bg);
         padding: 2px 6px; font-size: 14px; border-radius: 0;
       }
       .prose :global(pre) {
         background: var(--fg); color: var(--bg);
-        border: var(--line); padding: 22px; overflow-x: auto;
-        margin: 1.6em 0; font-size: 13px; line-height: 1.65;
+        border: var(--line); padding: 20px; overflow-x: auto;
+        margin: 1.6em 0; font-size: 13px; line-height: 1.6;
       }
       .prose :global(pre code) { background: none; padding: 0; }
       .prose :global(ul), .prose :global(ol) { padding-left: 1.5em; margin-bottom: 1.4em; }
       .prose :global(li) { margin-bottom: 0.4em; }
-      .prose :global(li::marker) { color: var(--muted); }
       .prose :global(hr) { border: none; border-top: var(--line); margin: 2.5em 0; }
 
-      /* Post navigation */
-      .post-nav {
-        margin-top: 80px;
-        padding-top: 32px;
-        border-top: var(--line);
-        display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
-      }
-      .post-nav-item {
-        display: flex; flex-direction: column; gap: 6px;
-        padding: 18px 20px; border: var(--line);
-        transition: background 180ms var(--ease), color 180ms var(--ease);
-        min-height: 92px;
-      }
-      .post-nav-item:hover { background: var(--fg); color: var(--bg); }
-      .post-nav-item.next { text-align: right; }
-      .post-nav-item.empty { background: transparent; border-style: dashed; opacity: 0.35; cursor: default; pointer-events: none; }
-      .post-nav-label {
-        font-size: 10px; text-transform: uppercase; letter-spacing: 0.16em;
-        font-weight: 700; opacity: 0.6;
-      }
-      .post-nav-title {
-        font-size: 14px; font-weight: 700; line-height: 1.3;
-        text-transform: uppercase; letter-spacing: -0.01em;
-      }
-
-      .all-posts {
-        margin-top: 16px; padding: 16px;
-        text-align: center;
-        font-size: 12px; text-transform: uppercase; letter-spacing: 0.14em;
-        font-weight: 700;
-        border: var(--line);
-        transition: background 180ms var(--ease), color 180ms var(--ease);
-        display: block;
-      }
-      .all-posts:hover { background: var(--acid); }
-
       footer.bottom {
-        margin-top: 64px; padding-top: 28px; border-top: var(--line);
-        font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em;
-        font-weight: 700; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+        margin-top: 96px; padding-top: 32px; border-top: var(--line);
+        font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
+        font-weight: 700; display: flex; justify-content: space-between;
       }
-      footer.bottom a:hover { background: var(--acid); padding: 0 4px; }
 
-      @media (max-width: 640px) {
-        h1.post-title { font-size: 38px; }
+      @media (max-width: 600px) {
+        h1.post-title { font-size: 40px; }
         .prose :global(h2) { font-size: 22px; }
-        .prose :global(pre) { padding: 16px; font-size: 12px; }
-        .post-nav { grid-template-columns: 1fr; }
-        .post-nav-item.next { text-align: left; }
         nav.top-nav { gap: 8px; font-size: 10px; }
-        nav.top-nav > a { padding: 6px 8px; }
-        header.top { margin-bottom: 32px; }
-        .meta { font-size: 10px; }
+        nav.top-nav a { padding: 5px 7px; }
       }
     </style>
   </head>
   <body>
     <div class="marquee" aria-hidden="true">
       <div class="marquee-track">
-        <span>MACHADO LABS</span><span class="acid">★</span><span>FASE 1 / OBSERVAR</span><span class="acid">★</span><span>FASE 2 / RESPONDER</span><span class="acid">★</span><span>AGENTES DE IA</span><span class="acid">★</span><span>EM PRODUÇÃO</span><span class="acid">★</span>
-        <span>MACHADO LABS</span><span class="acid">★</span><span>FASE 1 / OBSERVAR</span><span class="acid">★</span><span>FASE 2 / RESPONDER</span><span class="acid">★</span><span>AGENTES DE IA</span><span class="acid">★</span><span>EM PRODUÇÃO</span><span class="acid">★</span>
+        <span>MACHADO LABS</span><span>★</span><span>FASE 1 — OBSERVAR</span><span>★</span><span>FASE 2 — RESPONDER</span><span>★</span><span>AGENTES DE IA</span><span>★</span><span>AUTOMAÇÃO</span><span>★</span>
+        <span>MACHADO LABS</span><span>★</span><span>FASE 1 — OBSERVAR</span><span>★</span><span>FASE 2 — RESPONDER</span><span>★</span><span>AGENTES DE IA</span><span>★</span><span>AUTOMAÇÃO</span><span>★</span>
       </div>
     </div>
 
@@ -227,7 +173,7 @@ const next = idx >= 0 && idx < allPosts.length - 1 ? allPosts[idx + 1] : null;
           <a href="/v2/about">SOBRE</a>
           <span class="skin-switch">
             <a href={Astro.url.pathname.replace('/v2/', '/')}>v1</a>
-            <span class="current" aria-current="page">v2</span>
+            <a href="" class="active">v2</a>
             <a href={Astro.url.pathname.replace('/v2/', '/v3/')}>v3</a>
             <a href={Astro.url.pathname.replace('/v2/', '/v4/')}>v4</a>
           </span>
@@ -235,53 +181,18 @@ const next = idx >= 0 && idx < allPosts.length - 1 ? allPosts[idx + 1] : null;
       </header>
 
       <article>
-        <div class="breadcrumb">
-          <a href="/v2">/</a> <span class="sep">//</span> <a href="/v2">LABS</a> <span class="sep">//</span> POST {String(allPosts.length - idx).padStart(3, '0')}
-        </div>
+        <a href="/v2" class="back">← TODOS OS POSTS</a>
         <h1 class="post-title">{title}</h1>
         <div class="meta">
-          <span class="left">
-            <span><span class="key">AUTOR:</span> @MACHADOFABIO</span>
-            <span><span class="key">DATA:</span> {dateFormatted.toUpperCase()}</span>
-          </span>
-          <span class="right">
-            <span><span class="key">N°:</span> {String(allPosts.length - idx).padStart(3, '0')} / {String(allPosts.length).padStart(3, '0')}</span>
-          </span>
+          <span>@MACHADOFABIO</span>
+          <span>{dateFormatted.toUpperCase()}</span>
         </div>
         <div class="prose"><slot /></div>
       </article>
 
-      <nav class="post-nav" aria-label="Navegação de posts">
-        {next ? (
-          <a class="post-nav-item prev" href={`/v2/labs/${next.id}`}>
-            <span class="post-nav-label">← ANTERIOR</span>
-            <span class="post-nav-title">{next.data.title}</span>
-          </a>
-        ) : (
-          <span class="post-nav-item empty">
-            <span class="post-nav-label">← ANTERIOR</span>
-            <span class="post-nav-title">—</span>
-          </span>
-        )}
-        {prev ? (
-          <a class="post-nav-item next" href={`/v2/labs/${prev.id}`}>
-            <span class="post-nav-label">PRÓXIMO →</span>
-            <span class="post-nav-title">{prev.data.title}</span>
-          </a>
-        ) : (
-          <span class="post-nav-item empty next">
-            <span class="post-nav-label">PRÓXIMO →</span>
-            <span class="post-nav-title">—</span>
-          </span>
-        )}
-      </nav>
-
-      <a class="all-posts" href="/v2">VER TODOS OS POSTS</a>
-
       <footer class="bottom">
         <span>© FÁBIO MACHADO</span>
         <span>SKIN V2 / KINETIC BRUTALISM</span>
-        <a href="https://x.com/machadofabio" target="_blank" rel="noopener">@MACHADOFABIO ↗</a>
       </footer>
     </div>
   </body>

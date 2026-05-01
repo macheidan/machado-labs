@@ -15,149 +15,70 @@ const description = 'Sobre Fábio Machado — empresário, consultor e construto
       :root {
         --bg: #FAFAFA;
         --fg: #09090B;
-        --muted: #3F3F46;
         --acid: #DFE104;
         --line: 2px solid #09090B;
-        --ease: cubic-bezier(0.25, 1, 0.5, 1);
       }
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
       body { background: var(--bg); color: var(--fg); font-family: 'Space Mono', ui-monospace, monospace; font-size: 16px; line-height: 1.55; }
       ::selection { background: var(--acid); }
       a { color: inherit; text-decoration: none; }
-      :focus-visible { outline: 3px solid var(--acid); outline-offset: 2px; }
 
       .marquee { border-bottom: var(--line); background: var(--fg); color: var(--bg); overflow: hidden; white-space: nowrap; }
-      .marquee-track { display: inline-block; padding: 10px 0; animation: scroll 28s linear infinite; font-weight: 700; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; }
+      .marquee-track { display: inline-block; padding: 10px 0; animation: scroll 22s linear infinite; font-weight: 700; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; }
       .marquee-track span { padding: 0 28px; }
-      .marquee-track .acid { color: var(--acid); }
       @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
       @media (prefers-reduced-motion: reduce) { .marquee-track { animation: none; } }
 
-      .container { max-width: 1080px; margin: 0 auto; padding: 0 28px 96px; }
-
-      header.top {
-        display: flex; align-items: center; justify-content: space-between;
-        padding: 22px 0; border-bottom: var(--line); margin-bottom: 64px;
-        gap: 16px;
-      }
-      .brand { font-weight: 700; font-size: 20px; text-transform: uppercase; letter-spacing: -0.02em; line-height: 1; }
-      .brand a { display: inline-block; padding: 4px 0; }
+      .container { max-width: 880px; margin: 0 auto; padding: 0 24px 96px; }
+      header.top { display: flex; align-items: center; justify-content: space-between; padding: 20px 0; border-bottom: var(--line); margin-bottom: 56px; }
+      .brand { font-weight: 700; font-size: 20px; text-transform: uppercase; letter-spacing: -0.02em; }
       .brand a:hover { background: var(--acid); }
       nav.top-nav { display: flex; gap: 14px; font-size: 12px; text-transform: uppercase; font-weight: 700; align-items: center; }
-      nav.top-nav > a { padding: 7px 11px; border: var(--line); transition: background 180ms var(--ease), color 180ms var(--ease); }
+      nav.top-nav > a { padding: 6px 10px; border: var(--line); }
       nav.top-nav > a:hover, nav.top-nav > a.active { background: var(--fg); color: var(--bg); }
       .skin-switch { display: flex; gap: 6px; font-size: 11px; }
-      .skin-switch a, .skin-switch span.current { padding: 5px 9px; border: 1px solid var(--fg); transition: background 180ms var(--ease), color 180ms var(--ease); }
-      .skin-switch span.current { background: var(--fg); color: var(--bg); cursor: default; }
-      .skin-switch a:hover { background: var(--acid); color: var(--fg); }
-
-      .breadcrumb {
-        font-size: 11px; text-transform: uppercase; letter-spacing: 0.16em;
-        font-weight: 700; color: var(--muted); margin-bottom: 24px;
-      }
-      .breadcrumb a:hover { color: var(--fg); background: var(--acid); }
+      .skin-switch a { padding: 4px 8px; border: 1px solid var(--fg); }
+      .skin-switch a.active { background: var(--fg); color: var(--bg); }
 
       h1.title {
-        font-size: clamp(64px, 12vw, 152px);
-        font-weight: 700; line-height: 0.88; letter-spacing: -0.045em;
-        text-transform: uppercase; margin-bottom: 56px;
+        font-size: clamp(48px, 9vw, 96px);
+        font-weight: 700; line-height: 0.95; letter-spacing: -0.04em;
+        text-transform: uppercase; margin-bottom: 48px;
       }
-      h1.title .acid {
-        background: var(--acid); padding: 0 8px;
-        display: inline-block; transform: skew(-4deg);
-      }
+      h1.title .highlight { background: var(--acid); padding: 0 8px; }
 
-      .layout {
-        display: grid; grid-template-columns: 280px 1fr; gap: 48px; align-items: start;
-        padding-bottom: 56px; border-bottom: var(--line);
-      }
-      .photo-wrap { position: relative; }
+      .layout { display: grid; grid-template-columns: 200px 1fr; gap: 48px; align-items: start; }
       .photo {
-        width: 100%; aspect-ratio: 1; object-fit: cover;
-        border: var(--line); filter: grayscale(100%) contrast(1.1);
-        transition: filter 280ms var(--ease);
-        display: block;
+        width: 200px; height: 200px; object-fit: cover;
+        border: var(--line); filter: grayscale(100%);
+        transition: filter 200ms;
       }
-      .photo:hover { filter: grayscale(0%) contrast(1); }
-      .photo-tag {
-        position: absolute; top: -10px; left: -10px;
-        background: var(--acid); padding: 4px 10px;
-        font-size: 11px; font-weight: 700; text-transform: uppercase;
-        letter-spacing: 0.12em; border: var(--line);
-      }
-      .vitals {
-        margin-top: 20px;
-        font-size: 12px; line-height: 1.8;
-      }
-      .vitals dt {
-        text-transform: uppercase; letter-spacing: 0.14em;
-        color: var(--muted); font-size: 10px; font-weight: 700;
-        margin-top: 10px;
-      }
-      .vitals dt:first-child { margin-top: 0; }
-      .vitals dd { font-weight: 700; }
-      .vitals dd a:hover { background: var(--acid); padding: 0 3px; }
+      .photo:hover { filter: grayscale(0%); }
 
-      .prose p {
-        font-size: clamp(16px, 1.4vw, 18px); line-height: 1.75;
-        margin-bottom: 1.4em; max-width: 62ch;
-      }
-      .prose .lede {
-        font-size: clamp(20px, 2vw, 26px); font-weight: 700;
-        line-height: 1.35; letter-spacing: -0.01em;
-        margin-bottom: 1.6em; max-width: 22ch;
-      }
+      .prose p { font-size: 17px; line-height: 1.75; margin-bottom: 1.4em; max-width: 620px; }
       .prose strong { background: var(--acid); padding: 0 3px; font-weight: 700; }
       .prose a {
         background: var(--fg); color: var(--bg); padding: 0 4px;
-        transition: background 180ms var(--ease);
+        transition: background 100ms;
       }
       .prose a:hover { background: var(--acid); color: var(--fg); }
 
-      .timeline {
-        padding: 64px 0;
-        border-bottom: var(--line);
-      }
-      .timeline-title {
-        font-size: 13px; text-transform: uppercase; letter-spacing: 0.18em;
-        font-weight: 700; padding-bottom: 12px;
-        border-bottom: var(--line); margin-bottom: 28px;
-      }
-      .tl-row {
-        display: grid; grid-template-columns: 80px 1fr;
-        gap: 24px; padding: 14px 0;
-        border-bottom: 1px solid rgba(9,9,11,0.12);
-      }
-      .tl-row:last-child { border-bottom: none; }
-      .tl-year {
-        font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums;
-      }
-      .tl-text { font-size: 15px; line-height: 1.6; }
-      .tl-text strong { background: var(--acid); padding: 0 3px; }
+      footer.bottom { margin-top: 96px; padding-top: 32px; border-top: var(--line); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; display: flex; justify-content: space-between; }
 
-      footer.bottom {
-        margin-top: 64px; padding-top: 28px; border-top: var(--line);
-        font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em;
-        font-weight: 700; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px;
-      }
-      footer.bottom a:hover { background: var(--acid); padding: 0 4px; }
-
-      @media (max-width: 760px) {
-        h1.title { font-size: 56px; }
-        .layout { grid-template-columns: 1fr; gap: 32px; padding-bottom: 40px; }
-        .photo-wrap { max-width: 280px; }
-        .tl-row { grid-template-columns: 60px 1fr; gap: 14px; }
+      @media (max-width: 720px) {
+        h1.title { font-size: 48px; }
+        .layout { grid-template-columns: 1fr; gap: 24px; }
+        .photo { width: 140px; height: 140px; }
         nav.top-nav { gap: 8px; font-size: 10px; }
-        nav.top-nav > a { padding: 6px 8px; }
-        header.top { margin-bottom: 40px; }
+        nav.top-nav > a { padding: 5px 7px; }
       }
     </style>
   </head>
   <body>
     <div class="marquee" aria-hidden="true">
       <div class="marquee-track">
-        <span>MACHADO LABS</span><span class="acid">★</span><span>FASE 1 / OBSERVAR</span><span class="acid">★</span><span>FASE 2 / RESPONDER</span><span class="acid">★</span><span>AGENTES DE IA</span><span class="acid">★</span><span>EM PRODUÇÃO</span><span class="acid">★</span>
-        <span>MACHADO LABS</span><span class="acid">★</span><span>FASE 1 / OBSERVAR</span><span class="acid">★</span><span>FASE 2 / RESPONDER</span><span class="acid">★</span><span>AGENTES DE IA</span><span class="acid">★</span><span>EM PRODUÇÃO</span><span class="acid">★</span>
+        <span>MACHADO LABS</span><span>★</span><span>FASE 1 — OBSERVAR</span><span>★</span><span>FASE 2 — RESPONDER</span><span>★</span><span>AGENTES DE IA</span><span>★</span><span>AUTOMAÇÃO</span><span>★</span>
+        <span>MACHADO LABS</span><span>★</span><span>FASE 1 — OBSERVAR</span><span>★</span><span>FASE 2 — RESPONDER</span><span>★</span><span>AGENTES DE IA</span><span>★</span><span>AUTOMAÇÃO</span><span>★</span>
       </div>
     </div>
 
@@ -168,53 +89,29 @@ const description = 'Sobre Fábio Machado — empresário, consultor e construto
           <a href="/v2/about" class="active">SOBRE</a>
           <span class="skin-switch">
             <a href="/about">v1</a>
-            <span class="current" aria-current="page">v2</span>
+            <a href="/v2/about" class="active">v2</a>
             <a href="/v3/about">v3</a>
             <a href="/v4/about">v4</a>
           </span>
         </nav>
       </header>
 
-      <div class="breadcrumb"><a href="/v2">/</a> &nbsp;//&nbsp; SOBRE</div>
+      <h1 class="title">SOU O <span class="highlight">FÁBIO</span>.</h1>
 
-      <h1 class="title">SOU O <span class="acid">FÁBIO</span>.</h1>
-
-      <section class="layout">
-        <div class="photo-wrap">
-          <span class="photo-tag">FOUNDER</span>
-          <img src="/fabio.jpg" alt="Fábio Machado" class="photo" width="280" height="280" />
-          <dl class="vitals">
-            <dt>Local</dt><dd>Porto Alegre, BR</dd>
-            <dt>Stack</dt><dd>AI agents · Node · Astro</dd>
-            <dt>Empresas</dt><dd>Lov · Dáme</dd>
-            <dt>Twitter</dt><dd><a href="https://x.com/machadofabio" target="_blank" rel="noopener">@machadofabio ↗</a></dd>
-          </dl>
-        </div>
+      <div class="layout">
+        <img src="/fabio.jpg" alt="Fábio Machado" class="photo" width="200" height="200" />
         <div class="prose">
-          <p class="lede">Empresário e consultor que passa o dia construindo sistemas de IA. Não é ironia. É o ponto.</p>
-          <p>Comecei em 1999, aos 15 anos, montando computadores e criando sites. Em 2003 abri minha primeira empresa de webdesign. Vinte e poucos anos depois, passei pela gestão de marcas como Latam, Petrobras, Gerdau, XP e Vivo via Pcom Marketing Estratégico, onde aprendi o que funciona quando o cliente é grande e a margem pra erro é pequena.</p>
-          <p>Em 2012 abri a <strong>Lov Pizza</strong>. Em 2015 comprei a M&E Pizza, hoje <strong>Dáme Pizza</strong>. Cheguei a operar 6 marcas simultâneas: o melhor stress test que eu poderia ter pedido. Operação real, margem apertada, time reduzido, decisão todo dia. Negócio que não perdoa teoria.</p>
-          <p>Foi com elas que entendi o problema: o dono de PME não consegue contratar todos os papéis que a operação exige. Em 2022 comecei a construir a resposta com IA. Hoje minhas empresas rodam com um time de agentes cobrindo essas funções. Como infraestrutura. Não como experimento.</p>
-          <p>Este site documenta o processo. Cada decisão registrada aqui tem contexto, resultado e erro junto. <a href="https://x.com/machadofabio" target="_blank" rel="noopener">@machadofabio</a></p>
+          <p>Empresário e consultor. Passo a maior parte do tempo construindo sistemas de IA. Não é ironia — é o ponto.</p>
+          <p>Comecei em 1999 aos 15 anos montando computadores e criando sites. Em 2003 abri minha primeira empresa de webdesign. Vinte e poucos anos depois, passei pela gestão de marcas como Latam, Petrobras, Gerdau, XP e Vivo via Pcom Marketing Estratégico, onde aprendi o que funciona quando o cliente é grande e a margem pra erro é pequena.</p>
+          <p>Em 2012 abri a <strong>Lov Pizza</strong>. Em 2015 comprei a M&E Pizza, hoje <strong>Dáme Pizza</strong>. Cheguei a operar 6 marcas simultâneas — o melhor stress test que eu poderia ter pedido: operação real, margem apertada, time reduzido, decisão todo dia. Negócio que não perdoa teoria.</p>
+          <p>Foi com elas que entendi o problema: o dono de PME não consegue contratar todos os papéis que a operação exige. Em 2022 comecei a construir a resposta com IA. Hoje minhas empresas rodam com um time de agentes cobrindo essas funções. Como infraestrutura — não como experimento.</p>
+          <p>Este site documenta o processo. <a href="https://x.com/machadofabio" target="_blank" rel="noopener">@machadofabio</a></p>
         </div>
-      </section>
-
-      <section class="timeline">
-        <div class="timeline-title">// LINHA DO TEMPO</div>
-        <div class="tl-row"><span class="tl-year">1999</span><span class="tl-text">Começa montando PCs e criando sites, aos 15.</span></div>
-        <div class="tl-row"><span class="tl-year">2003</span><span class="tl-text">Primeira empresa de webdesign.</span></div>
-        <div class="tl-row"><span class="tl-year">2009</span><span class="tl-text">Sócio na <strong>Pcom</strong>. Latam, Petrobras, Gerdau, XP, Vivo.</span></div>
-        <div class="tl-row"><span class="tl-year">2012</span><span class="tl-text">Abre a <strong>Lov Pizza</strong>.</span></div>
-        <div class="tl-row"><span class="tl-year">2015</span><span class="tl-text">Compra a M&E, hoje <strong>Dáme Pizza</strong>.</span></div>
-        <div class="tl-row"><span class="tl-year">2016—20</span><span class="tl-text">Adquire mais 4 operações. Pico: 6 marcas em paralelo.</span></div>
-        <div class="tl-row"><span class="tl-year">2022</span><span class="tl-text">Começa a construir o time de agentes de IA.</span></div>
-        <div class="tl-row"><span class="tl-year">2026</span><span class="tl-text"><strong>Machado Labs</strong>. Documentação aberta do processo.</span></div>
-      </section>
+      </div>
 
       <footer class="bottom">
         <span>© FÁBIO MACHADO</span>
         <span>SKIN V2 / KINETIC BRUTALISM</span>
-        <a href="https://x.com/machadofabio" target="_blank" rel="noopener">@MACHADOFABIO ↗</a>
       </footer>
     </div>
   </body>
