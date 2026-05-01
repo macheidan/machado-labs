@@ -5,6 +5,11 @@ import { getCollection } from 'astro:content';
 
 const posts = (await getCollection('labs'))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const latest = posts[0];
+const latestDate = latest && new Date(latest.data.pubDate);
+const latestStr = latestDate
+  ? `${String(latestDate.getDate()).padStart(2,'0')}.${String(latestDate.getMonth()+1).padStart(2,'0')}.${latestDate.getFullYear()}`
+  : '';
 ---
 
 <!doctype html>
@@ -21,6 +26,7 @@ const posts = (await getCollection('labs'))
         --muted: #3F3F46;
         --acid: #DFE104;
         --line: 2px solid #09090B;
+        --ease: cubic-bezier(0.25, 1, 0.5, 1);
       }
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
       body {
@@ -28,112 +34,217 @@ const posts = (await getCollection('labs'))
         font-family: 'Space Mono', ui-monospace, monospace;
         font-size: 16px; line-height: 1.55;
       }
-      ::selection { background: var(--acid); }
+      ::selection { background: var(--acid); color: var(--fg); }
       a { color: inherit; text-decoration: none; }
+      :focus-visible {
+        outline: 3px solid var(--acid);
+        outline-offset: 2px;
+      }
 
       .marquee { border-bottom: var(--line); background: var(--fg); color: var(--bg); overflow: hidden; white-space: nowrap; }
       .marquee-track {
-        display: inline-block; padding: 10px 0; animation: scroll 22s linear infinite;
+        display: inline-block; padding: 10px 0; animation: scroll 28s linear infinite;
         font-weight: 700; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase;
+        will-change: transform;
       }
       .marquee-track span { padding: 0 28px; }
+      .marquee-track .acid { color: var(--acid); }
       @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
       @media (prefers-reduced-motion: reduce) { .marquee-track { animation: none; } }
 
-      .container { max-width: 1200px; margin: 0 auto; padding: 0 24px 96px; }
+      .container { max-width: 1240px; margin: 0 auto; padding: 0 28px 96px; }
 
       header.top {
         display: flex; align-items: center; justify-content: space-between;
-        padding: 20px 0; border-bottom: var(--line); margin-bottom: 0;
+        padding: 22px 0; border-bottom: var(--line); margin-bottom: 0;
+        gap: 16px;
       }
-      .brand { font-weight: 700; font-size: 20px; text-transform: uppercase; letter-spacing: -0.02em; }
+      .brand { font-weight: 700; font-size: 20px; text-transform: uppercase; letter-spacing: -0.02em; line-height: 1; }
+      .brand a { display: inline-block; padding: 4px 0; }
       .brand a:hover { background: var(--acid); }
+      .status-pulse {
+        display: inline-flex; align-items: center; gap: 8px;
+        font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em;
+        font-weight: 700;
+      }
+      .status-pulse::before {
+        content: ''; width: 8px; height: 8px; background: #16A34A;
+        border-radius: 50%; animation: pulse 2s var(--ease) infinite;
+      }
+      @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+      @media (prefers-reduced-motion: reduce) { .status-pulse::before { animation: none; } }
+
       nav.top-nav { display: flex; gap: 14px; font-size: 12px; text-transform: uppercase; font-weight: 700; align-items: center; }
-      nav.top-nav > a { padding: 6px 10px; border: var(--line); transition: background 100ms, color 100ms; }
+      nav.top-nav > a { padding: 7px 11px; border: var(--line); transition: background 180ms var(--ease), color 180ms var(--ease); }
       nav.top-nav > a:hover { background: var(--fg); color: var(--bg); }
       .skin-switch { display: flex; gap: 6px; font-size: 11px; }
-      .skin-switch a { padding: 4px 8px; border: 1px solid var(--fg); }
-      .skin-switch a.active { background: var(--fg); color: var(--bg); }
+      .skin-switch a, .skin-switch span.current { padding: 5px 9px; border: 1px solid var(--fg); transition: background 180ms var(--ease), color 180ms var(--ease); }
+      .skin-switch span.current { background: var(--fg); color: var(--bg); cursor: default; }
+      .skin-switch a:hover { background: var(--acid); color: var(--fg); }
 
+      /* HERO */
       .hero {
-        padding: 80px 0 64px; border-bottom: var(--line);
+        padding: clamp(64px, 9vw, 112px) 0 clamp(48px, 7vw, 96px);
+        border-bottom: var(--line);
+        position: relative;
       }
-      .hero h1 {
-        font-size: clamp(56px, 12vw, 156px);
-        font-weight: 700;
-        line-height: 0.9;
-        letter-spacing: -0.05em;
-        text-transform: uppercase;
-        margin-bottom: 32px;
+      .hero-meta {
+        display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+        font-size: 11px; text-transform: uppercase; letter-spacing: 0.14em;
+        font-weight: 700; margin-bottom: 32px;
       }
-      .hero h1 .highlight { background: var(--acid); padding: 0 8px; display: inline-block; }
-      .hero p {
-        font-size: 18px; max-width: 640px; line-height: 1.6;
-        font-weight: 400;
-      }
-      .hero .tag {
+      .hero-meta .tag {
         display: inline-block; padding: 6px 12px; background: var(--fg); color: var(--bg);
-        font-size: 11px; font-weight: 700; text-transform: uppercase;
-        letter-spacing: 0.1em; margin-bottom: 32px;
       }
+      .hero-meta .pos { color: var(--muted); }
 
+      .hero h1 {
+        font-weight: 700; line-height: 0.88; letter-spacing: -0.045em;
+        text-transform: uppercase; margin-bottom: 32px;
+      }
+      .hero h1 .l1, .hero h1 .l3, .hero h1 .l4 {
+        display: block; font-size: clamp(32px, 4.5vw, 56px);
+      }
+      .hero h1 .l2 {
+        display: block; font-size: clamp(72px, 14vw, 188px);
+        line-height: 0.85; letter-spacing: -0.06em;
+        margin: 4px 0;
+      }
+      .hero h1 .l2 .acid {
+        background: var(--acid); padding: 0 8px;
+        display: inline-block; transform: skew(-4deg);
+      }
+      .hero h1 .l4 { color: var(--muted); }
+
+      .hero-lede {
+        font-size: clamp(15px, 1.4vw, 17px);
+        max-width: 56ch; line-height: 1.55;
+      }
+      .hero-lede strong { background: var(--acid); padding: 0 4px; font-weight: 700; }
+
+      .hero-corner {
+        position: absolute; top: 24px; right: 0;
+        font-size: 10px; text-transform: uppercase; letter-spacing: 0.2em;
+        color: var(--muted); font-weight: 700;
+      }
+      .hero-corner span { display: block; line-height: 1.4; }
+
+      /* NOW SLAB — current focus */
+      .now {
+        display: grid; grid-template-columns: 220px 1fr auto;
+        gap: 32px; align-items: center;
+        padding: 22px 0; border-bottom: var(--line);
+        transition: background 180ms var(--ease);
+      }
+      .now:hover { background: var(--acid); }
+      .now-label {
+        font-size: 11px; text-transform: uppercase; letter-spacing: 0.16em;
+        font-weight: 700;
+      }
+      .now-label .blink { display: inline-block; }
+      @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+      .now-label .blink { animation: blink 1.1s steps(1) infinite; }
+      @media (prefers-reduced-motion: reduce) { .now-label .blink { animation: none; } }
+      .now-text {
+        font-size: clamp(15px, 1.6vw, 18px); line-height: 1.45;
+      }
+      .now-text strong { font-weight: 700; }
+      .now-arrow {
+        font-size: 22px; line-height: 1; transition: transform 200ms var(--ease);
+      }
+      .now:hover .now-arrow { transform: translateX(8px); }
+
+      /* SECTION TITLE */
       .section-title {
-        font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.15em;
-        padding: 24px 0 16px; border-bottom: var(--line); margin: 0 0 0 0;
+        font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.18em;
+        padding: 28px 0 16px;
         display: flex; justify-content: space-between; align-items: baseline;
+        border-bottom: var(--line);
       }
-      .section-title .count { font-size: 11px; opacity: 0.6; }
+      .section-title .count { font-size: 11px; opacity: 0.55; }
 
+      /* POST LIST */
       .post-list { border-bottom: var(--line); }
       .post-row {
         display: grid;
-        grid-template-columns: 100px 100px 1fr auto;
-        gap: 24px;
-        padding: 20px 0;
+        grid-template-columns: 80px 110px 1fr 24px;
+        gap: 28px;
+        padding: 18px 12px 18px 12px;
         border-bottom: var(--line);
         align-items: center;
-        transition: background 100ms, padding-left 100ms;
+        position: relative;
+        transition: background 180ms var(--ease), color 180ms var(--ease);
+        will-change: background, color;
       }
       .post-row:last-child { border-bottom: none; }
-      .post-row:hover { background: var(--fg); color: var(--bg); padding-left: 16px; }
+      .post-row:hover {
+        background: var(--fg);
+        color: var(--bg);
+      }
+      .post-row::before {
+        content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+        width: 4px; background: var(--acid);
+        transform: scaleX(0); transform-origin: left;
+        transition: transform 220ms var(--ease);
+      }
+      .post-row:hover::before { transform: scaleX(1); }
       .post-row:hover .arrow { transform: translateX(8px); }
-      .post-num { font-size: 12px; font-weight: 700; opacity: 0.5; }
-      .post-date { font-size: 12px; font-weight: 700; text-transform: uppercase; }
-      .post-title { font-size: 22px; font-weight: 700; line-height: 1.15; letter-spacing: -0.02em; text-transform: uppercase; }
-      .arrow { font-size: 24px; transition: transform 150ms; }
-
-      footer.bottom {
-        margin-top: 96px; padding-top: 32px; border-top: var(--line);
-        font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em;
-        font-weight: 700; display: flex; justify-content: space-between;
+      .post-num { font-size: 12px; font-weight: 700; opacity: 0.55; font-variant-numeric: tabular-nums; }
+      .post-date { font-size: 12px; font-weight: 700; text-transform: uppercase; font-variant-numeric: tabular-nums; }
+      .post-title {
+        font-size: clamp(16px, 1.7vw, 22px);
+        font-weight: 700; line-height: 1.15;
+        letter-spacing: -0.02em; text-transform: uppercase;
+      }
+      .arrow {
+        font-size: 22px; line-height: 1;
+        transition: transform 220ms var(--ease);
+        justify-self: end;
       }
 
+      footer.bottom {
+        margin-top: 80px; padding-top: 28px; border-top: var(--line);
+        font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em;
+        font-weight: 700; display: flex; justify-content: space-between;
+        gap: 16px; flex-wrap: wrap;
+      }
+      footer.bottom a:hover { background: var(--acid); padding: 0 4px; }
+
       @media (max-width: 720px) {
-        .hero h1 { font-size: 56px; }
-        .post-row { grid-template-columns: 60px 1fr auto; gap: 12px; }
+        .hero-corner { display: none; }
+        .hero h1 .l1, .hero h1 .l3, .hero h1 .l4 { font-size: 28px; }
+        .hero h1 .l2 { font-size: 64px; }
+        .now { grid-template-columns: 1fr; gap: 12px; padding: 20px 0; }
+        .now-arrow { display: none; }
+        .post-row { grid-template-columns: 70px 1fr 20px; gap: 14px; padding: 16px 10px; }
         .post-num { display: none; }
         .post-title { font-size: 16px; }
         nav.top-nav { gap: 8px; font-size: 10px; }
-        nav.top-nav > a { padding: 5px 7px; }
+        nav.top-nav > a { padding: 6px 8px; }
+        .status-pulse { display: none; }
+      }
+      @media (max-width: 420px) {
+        .hero h1 .l2 { font-size: 52px; }
       }
     </style>
   </head>
   <body>
     <div class="marquee" aria-hidden="true">
       <div class="marquee-track">
-        <span>MACHADO LABS</span><span>★</span><span>FASE 1 — OBSERVAR</span><span>★</span><span>FASE 2 — RESPONDER</span><span>★</span><span>AGENTES DE IA</span><span>★</span><span>AUTOMAÇÃO</span><span>★</span>
-        <span>MACHADO LABS</span><span>★</span><span>FASE 1 — OBSERVAR</span><span>★</span><span>FASE 2 — RESPONDER</span><span>★</span><span>AGENTES DE IA</span><span>★</span><span>AUTOMAÇÃO</span><span>★</span>
+        <span>MACHADO LABS</span><span class="acid">★</span><span>FASE 1 / OBSERVAR</span><span class="acid">★</span><span>FASE 2 / RESPONDER</span><span class="acid">★</span><span>AGENTES DE IA</span><span class="acid">★</span><span>EM PRODUÇÃO</span><span class="acid">★</span>
+        <span>MACHADO LABS</span><span class="acid">★</span><span>FASE 1 / OBSERVAR</span><span class="acid">★</span><span>FASE 2 / RESPONDER</span><span class="acid">★</span><span>AGENTES DE IA</span><span class="acid">★</span><span>EM PRODUÇÃO</span><span class="acid">★</span>
       </div>
     </div>
 
     <div class="container">
       <header class="top">
         <div class="brand"><a href="/v2">FÁBIO//MACHADO</a></div>
+        <span class="status-pulse" aria-label="online">ONLINE</span>
         <nav class="top-nav">
           <a href="/v2/about">SOBRE</a>
           <span class="skin-switch">
-            <a href="/">v1</a>
-            <a href="/v2" class="active">v2</a>
+            <a href="/" aria-label="skin v1">v1</a>
+            <span class="current" aria-current="page">v2</span>
             <a href="/v3">v3</a>
             <a href="/v4">v4</a>
           </span>
@@ -141,14 +252,37 @@ const posts = (await getCollection('labs'))
       </header>
 
       <section class="hero">
-        <span class="tag">EMPRESÁRIO / CONSULTOR / BUILDER</span>
-        <h1>Construo<br/><span class="highlight">agentes</span> de IA<br/>que rodam<br/>negócio.</h1>
-        <p>Documentação aberta de quem usa IA como infraestrutura — não como experimento. Cada decisão registrada com contexto, resultado e erro junto.</p>
+        <div class="hero-corner">
+          <span>FM/LABS</span>
+          <span>SKIN v2</span>
+          <span>{posts.length} POSTS</span>
+        </div>
+        <div class="hero-meta">
+          <span class="tag">EMPRESÁRIO / CONSULTOR / BUILDER</span>
+          <span class="pos">POA — BR</span>
+        </div>
+        <h1>
+          <span class="l1">Construo</span>
+          <span class="l2"><span class="acid">AGENTES</span></span>
+          <span class="l3">de IA que rodam</span>
+          <span class="l4">negócio. Em produção.</span>
+        </h1>
+        <p class="hero-lede">
+          Documentação aberta de quem usa IA como <strong>infraestrutura</strong>, não como experimento. Cada decisão registrada com contexto, resultado e erro junto.
+        </p>
       </section>
 
+      {latest && (
+        <a class="now" href={`/v2/labs/${latest.id}`}>
+          <span class="now-label">/// NOW PLAYING<span class="blink">_</span></span>
+          <span class="now-text"><strong>{latest.data.title}</strong></span>
+          <span class="now-arrow" aria-hidden="true">→</span>
+        </a>
+      )}
+
       <div class="section-title">
-        <span>// LABS</span>
-        <span class="count">{posts.length} POSTS</span>
+        <span>// ARQUIVO</span>
+        <span class="count">{posts.length} POSTS · {latestStr}</span>
       </div>
 
       <div class="post-list">
@@ -160,7 +294,7 @@ const posts = (await getCollection('labs'))
               <span class="post-num">N°{String(posts.length - i).padStart(3, '0')}</span>
               <span class="post-date">{ddmm}</span>
               <span class="post-title">{post.data.title}</span>
-              <span class="arrow">→</span>
+              <span class="arrow" aria-hidden="true">→</span>
             </a>
           );
         })}
@@ -169,6 +303,7 @@ const posts = (await getCollection('labs'))
       <footer class="bottom">
         <span>© FÁBIO MACHADO</span>
         <span>SKIN V2 / KINETIC BRUTALISM</span>
+        <a href="https://x.com/machadofabio" target="_blank" rel="noopener">@MACHADOFABIO ↗</a>
       </footer>
     </div>
   </body>
