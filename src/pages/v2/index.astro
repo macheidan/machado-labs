@@ -87,7 +87,7 @@ const posts = (await getCollection('labs'))
       .post-list { border-bottom: var(--line); }
       .post-row {
         display: grid;
-        grid-template-columns: 100px 100px 1fr auto;
+        grid-template-columns: 110px 1fr auto;
         gap: 24px;
         padding: 20px 0;
         border-bottom: var(--line);
@@ -97,8 +97,7 @@ const posts = (await getCollection('labs'))
       .post-row:last-child { border-bottom: none; }
       .post-row:hover { background: var(--fg); color: var(--bg); padding-left: 16px; }
       .post-row:hover .arrow { transform: translateX(8px); }
-      .post-num { font-size: 12px; font-weight: 700; opacity: 0.5; }
-      .post-date { font-size: 12px; font-weight: 700; text-transform: uppercase; }
+      .post-date { font-size: 12px; font-weight: 700; text-transform: uppercase; font-variant-numeric: tabular-nums; }
       .post-title { font-size: 22px; font-weight: 700; line-height: 1.15; letter-spacing: -0.02em; text-transform: uppercase; }
       .arrow { font-size: 24px; transition: transform 150ms; }
 
@@ -110,8 +109,7 @@ const posts = (await getCollection('labs'))
 
       @media (max-width: 720px) {
         .hero h1 { font-size: 56px; }
-        .post-row { grid-template-columns: 60px 1fr auto; gap: 12px; }
-        .post-num { display: none; }
+        .post-row { grid-template-columns: 80px 1fr auto; gap: 12px; }
         .post-title { font-size: 16px; }
         nav.top-nav { gap: 8px; font-size: 10px; }
         nav.top-nav > a { padding: 5px 7px; }
@@ -152,13 +150,12 @@ const posts = (await getCollection('labs'))
       </div>
 
       <div class="post-list">
-        {posts.map((post, i) => {
+        {posts.map((post) => {
           const d = new Date(post.data.pubDate);
-          const ddmm = `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+          const my = `${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
           return (
             <a class="post-row" href={`/v2/labs/${post.id}`}>
-              <span class="post-num">N°{String(posts.length - i).padStart(3, '0')}</span>
-              <span class="post-date">{ddmm}</span>
+              <span class="post-date">{my}</span>
               <span class="post-title">{post.data.title}</span>
               <span class="arrow">→</span>
             </a>
