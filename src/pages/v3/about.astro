@@ -1,0 +1,131 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import { SITE_TITLE } from '../../consts';
+const description = 'Sobre Fábio Machado — empresário, consultor e construtor de sistemas de IA.';
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <BaseHead title={`Sobre — ${SITE_TITLE} v3`} description={description} lang="pt-BR" noindex={true} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #020617; --bg-2: #0F172A; --fg: #F8FAFC; --fg-muted: #94A3B8;
+        --accent: #22C55E; --accent-2: #06B6D4; --danger: #EF4444; --border: #1E293B;
+      }
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        background: var(--bg);
+        background-image: linear-gradient(rgba(34, 197, 94, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(34, 197, 94, 0.03) 1px, transparent 1px);
+        background-size: 32px 32px;
+        color: var(--fg); font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 15px; line-height: 1.7; min-height: 100vh;
+      }
+      ::selection { background: var(--accent); color: var(--bg); }
+      a { color: inherit; text-decoration: none; }
+
+      .container { max-width: 880px; margin: 0 auto; padding: 24px 24px 96px; }
+      .terminal-bar { display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: var(--bg-2); border: 1px solid var(--border); border-bottom: none; font-size: 12px; color: var(--fg-muted); }
+      .dot { width: 11px; height: 11px; border-radius: 50%; }
+      .dot.r { background: var(--danger); } .dot.y { background: #EAB308; } .dot.g { background: var(--accent); }
+      .terminal-bar .path { margin-left: 12px; opacity: 0.6; }
+      .terminal-body { background: var(--bg); border: 1px solid var(--border); padding: 32px 28px; }
+
+      .top-nav { display: flex; align-items: center; justify-content: space-between; padding-bottom: 24px; margin-bottom: 40px; border-bottom: 1px dashed var(--border); }
+      .brand { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 18px; letter-spacing: 0.04em; color: var(--accent); text-shadow: 0 0 12px rgba(34, 197, 94, 0.4); }
+      .nav-right { display: flex; gap: 12px; align-items: center; font-size: 12px; }
+      .nav-right > a { color: var(--fg-muted); transition: color 150ms; }
+      .nav-right > a:hover, .nav-right > a.active { color: var(--accent); }
+      .skin-switch { display: flex; gap: 4px; }
+      .skin-switch a { padding: 3px 7px; border: 1px solid var(--border); color: var(--fg-muted); font-size: 11px; border-radius: 3px; }
+      .skin-switch a.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+      .prompt { color: var(--accent); font-weight: 700; }
+      .cmd { font-size: 12px; color: var(--fg-muted); margin-bottom: 12px; }
+      .cursor { display: inline-block; width: 8px; height: 16px; background: var(--accent); animation: blink 1s steps(1) infinite; vertical-align: text-bottom; margin-left: 4px; }
+      @keyframes blink { 50% { opacity: 0; } }
+
+      h1.title { font-family: 'Orbitron', sans-serif; font-size: clamp(32px, 5vw, 48px); font-weight: 900; line-height: 1.1; margin-bottom: 32px; text-shadow: 0 0 20px rgba(34, 197, 94, 0.2); }
+      h1.title .accent { color: var(--accent); }
+
+      .layout { display: grid; grid-template-columns: 180px 1fr; gap: 40px; align-items: start; margin-bottom: 32px; }
+      .photo {
+        width: 180px; height: 180px; object-fit: cover;
+        border: 2px solid var(--accent);
+        box-shadow: 0 0 30px rgba(34, 197, 94, 0.25);
+      }
+      .photo-meta {
+        font-size: 11px; color: var(--fg-muted); margin-top: 12px; line-height: 1.6;
+      }
+      .photo-meta .key { color: var(--accent); }
+
+      .prose p { font-size: 15px; line-height: 1.85; margin-bottom: 1.4em; }
+      .prose strong { color: var(--accent); font-weight: 700; }
+      .prose a { color: var(--accent-2); border-bottom: 1px dashed var(--accent-2); transition: color 150ms; }
+      .prose a:hover { color: var(--accent); border-color: var(--accent); }
+
+      .end { margin-top: 56px; padding-top: 24px; border-top: 1px dashed var(--border); font-size: 12px; color: var(--fg-muted); display: flex; justify-content: space-between; }
+      .end .status { color: var(--accent); }
+
+      @media (max-width: 720px) {
+        .terminal-body { padding: 20px 16px; }
+        h1.title { font-size: 30px; }
+        .layout { grid-template-columns: 1fr; gap: 24px; }
+        .photo { width: 140px; height: 140px; }
+        .nav-right { gap: 8px; font-size: 11px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="terminal-bar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="path">~/machado-labs/about</span>
+      </div>
+      <div class="terminal-body">
+        <header class="top-nav">
+          <a href="/v3" class="brand">[ FM://LABS ]</a>
+          <div class="nav-right">
+            <a href="/v3/about" class="active">~/about</a>
+            <span class="skin-switch">
+              <a href="/about">v1</a>
+              <a href="/v2/about">v2</a>
+              <a href="/v3/about" class="active">v3</a>
+              <a href="/v4/about">v4</a>
+            </span>
+          </div>
+        </header>
+
+        <div class="cmd"><span class="prompt">$</span> cat /etc/fabio.profile<span class="cursor"></span></div>
+        <h1 class="title">Fábio <span class="accent">Machado</span></h1>
+
+        <div class="layout">
+          <div>
+            <img src="/fabio.jpg" alt="Fábio Machado" class="photo" width="180" height="180" />
+            <div class="photo-meta">
+              <div><span class="key">role:</span> founder</div>
+              <div><span class="key">stack:</span> ai_agents</div>
+              <div><span class="key">loc:</span> POA, BR</div>
+              <div><span class="key">twitter:</span> @machadofabio</div>
+            </div>
+          </div>
+          <div class="prose">
+            <p>Empresário e consultor. Passo a maior parte do tempo construindo sistemas de IA. Não é ironia — é o ponto.</p>
+            <p>Comecei em 1999 aos 15 anos montando computadores e criando sites. Em 2003 abri minha primeira empresa de webdesign. Vinte e poucos anos depois, passei pela gestão de marcas como Latam, Petrobras, Gerdau, XP e Vivo via Pcom Marketing Estratégico — onde aprendi o que funciona quando o cliente é grande e a margem pra erro é pequena.</p>
+            <p>Em 2012 abri a <strong>Lov Pizza</strong>. Em 2015 comprei a <strong>Dáme Pizza</strong>. Cheguei a operar 6 marcas simultâneas — o melhor stress test que eu poderia ter pedido: operação real, margem apertada, time reduzido, decisão todo dia.</p>
+            <p>Foi com elas que entendi o problema: o dono de PME não consegue contratar todos os papéis que a operação exige. Em 2022 comecei a construir a resposta com IA. Hoje minhas empresas rodam com um time de agentes cobrindo essas funções — como infraestrutura, não como experimento.</p>
+            <p>Este site documenta o processo. <a href="https://x.com/machadofabio" target="_blank" rel="noopener">@machadofabio</a></p>
+          </div>
+        </div>
+
+        <div class="end">
+          <span><span class="prompt">$</span> _<span class="cursor"></span></span>
+          <span class="status">// SKIN V3 / TERMINAL</span>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

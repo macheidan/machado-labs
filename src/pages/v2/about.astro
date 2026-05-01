@@ -1,0 +1,118 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import { SITE_TITLE } from '../../consts';
+const description = 'Sobre Fábio Machado — empresário, consultor e construtor de sistemas de IA.';
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <BaseHead title={`Sobre — ${SITE_TITLE} v2`} description={description} lang="pt-BR" noindex={true} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #FAFAFA;
+        --fg: #09090B;
+        --acid: #DFE104;
+        --line: 2px solid #09090B;
+      }
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      body { background: var(--bg); color: var(--fg); font-family: 'Space Mono', ui-monospace, monospace; font-size: 16px; line-height: 1.55; }
+      ::selection { background: var(--acid); }
+      a { color: inherit; text-decoration: none; }
+
+      .marquee { border-bottom: var(--line); background: var(--fg); color: var(--bg); overflow: hidden; white-space: nowrap; }
+      .marquee-track { display: inline-block; padding: 10px 0; animation: scroll 22s linear infinite; font-weight: 700; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; }
+      .marquee-track span { padding: 0 28px; }
+      @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+      @media (prefers-reduced-motion: reduce) { .marquee-track { animation: none; } }
+
+      .container { max-width: 880px; margin: 0 auto; padding: 0 24px 96px; }
+      header.top { display: flex; align-items: center; justify-content: space-between; padding: 20px 0; border-bottom: var(--line); margin-bottom: 56px; }
+      .brand { font-weight: 700; font-size: 20px; text-transform: uppercase; letter-spacing: -0.02em; }
+      .brand a:hover { background: var(--acid); }
+      nav.top-nav { display: flex; gap: 14px; font-size: 12px; text-transform: uppercase; font-weight: 700; align-items: center; }
+      nav.top-nav > a { padding: 6px 10px; border: var(--line); }
+      nav.top-nav > a:hover, nav.top-nav > a.active { background: var(--fg); color: var(--bg); }
+      .skin-switch { display: flex; gap: 6px; font-size: 11px; }
+      .skin-switch a { padding: 4px 8px; border: 1px solid var(--fg); }
+      .skin-switch a.active { background: var(--fg); color: var(--bg); }
+
+      h1.title {
+        font-size: clamp(48px, 9vw, 96px);
+        font-weight: 700; line-height: 0.95; letter-spacing: -0.04em;
+        text-transform: uppercase; margin-bottom: 48px;
+      }
+      h1.title .highlight { background: var(--acid); padding: 0 8px; }
+
+      .layout { display: grid; grid-template-columns: 200px 1fr; gap: 48px; align-items: start; }
+      .photo {
+        width: 200px; height: 200px; object-fit: cover;
+        border: var(--line); filter: grayscale(100%);
+        transition: filter 200ms;
+      }
+      .photo:hover { filter: grayscale(0%); }
+
+      .prose p { font-size: 17px; line-height: 1.75; margin-bottom: 1.4em; max-width: 620px; }
+      .prose strong { background: var(--acid); padding: 0 3px; font-weight: 700; }
+      .prose a {
+        background: var(--fg); color: var(--bg); padding: 0 4px;
+        transition: background 100ms;
+      }
+      .prose a:hover { background: var(--acid); color: var(--fg); }
+
+      footer.bottom { margin-top: 96px; padding-top: 32px; border-top: var(--line); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; display: flex; justify-content: space-between; }
+
+      @media (max-width: 720px) {
+        h1.title { font-size: 48px; }
+        .layout { grid-template-columns: 1fr; gap: 24px; }
+        .photo { width: 140px; height: 140px; }
+        nav.top-nav { gap: 8px; font-size: 10px; }
+        nav.top-nav > a { padding: 5px 7px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track">
+        <span>MACHADO LABS</span><span>★</span><span>FASE 1 — OBSERVAR</span><span>★</span><span>FASE 2 — RESPONDER</span><span>★</span><span>AGENTES DE IA</span><span>★</span><span>AUTOMAÇÃO</span><span>★</span>
+        <span>MACHADO LABS</span><span>★</span><span>FASE 1 — OBSERVAR</span><span>★</span><span>FASE 2 — RESPONDER</span><span>★</span><span>AGENTES DE IA</span><span>★</span><span>AUTOMAÇÃO</span><span>★</span>
+      </div>
+    </div>
+
+    <div class="container">
+      <header class="top">
+        <div class="brand"><a href="/v2">FÁBIO//MACHADO</a></div>
+        <nav class="top-nav">
+          <a href="/v2/about" class="active">SOBRE</a>
+          <span class="skin-switch">
+            <a href="/about">v1</a>
+            <a href="/v2/about" class="active">v2</a>
+            <a href="/v3/about">v3</a>
+            <a href="/v4/about">v4</a>
+          </span>
+        </nav>
+      </header>
+
+      <h1 class="title">SOU O <span class="highlight">FÁBIO</span>.</h1>
+
+      <div class="layout">
+        <img src="/fabio.jpg" alt="Fábio Machado" class="photo" width="200" height="200" />
+        <div class="prose">
+          <p>Empresário e consultor. Passo a maior parte do tempo construindo sistemas de IA. Não é ironia — é o ponto.</p>
+          <p>Comecei em 1999 aos 15 anos montando computadores e criando sites. Em 2003 abri minha primeira empresa de webdesign. Vinte e poucos anos depois, passei pela gestão de marcas como Latam, Petrobras, Gerdau, XP e Vivo via Pcom Marketing Estratégico, onde aprendi o que funciona quando o cliente é grande e a margem pra erro é pequena.</p>
+          <p>Em 2012 abri a <strong>Lov Pizza</strong>. Em 2015 comprei a M&E Pizza, hoje <strong>Dáme Pizza</strong>. Cheguei a operar 6 marcas simultâneas — o melhor stress test que eu poderia ter pedido: operação real, margem apertada, time reduzido, decisão todo dia. Negócio que não perdoa teoria.</p>
+          <p>Foi com elas que entendi o problema: o dono de PME não consegue contratar todos os papéis que a operação exige. Em 2022 comecei a construir a resposta com IA. Hoje minhas empresas rodam com um time de agentes cobrindo essas funções. Como infraestrutura — não como experimento.</p>
+          <p>Este site documenta o processo. <a href="https://x.com/machadofabio" target="_blank" rel="noopener">@machadofabio</a></p>
+        </div>
+      </div>
+
+      <footer class="bottom">
+        <span>© FÁBIO MACHADO</span>
+        <span>SKIN V2 / KINETIC BRUTALISM</span>
+      </footer>
+    </div>
+  </body>
+</html>

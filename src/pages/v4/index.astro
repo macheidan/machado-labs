@@ -1,0 +1,253 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import { SITE_DESCRIPTION, HOME_TITLE } from '../../consts';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('labs'))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const featured = posts[0];
+const rest = posts.slice(1);
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <BaseHead title={`${HOME_TITLE} — v4`} description={SITE_DESCRIPTION} lang="pt-BR" noindex={true} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #FAFAFA; --fg: #09090B; --muted: #3F3F46;
+        --faint: #71717A; --line: #E4E4E7; --accent: #EC4899;
+      }
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        background: var(--bg); color: var(--fg);
+        font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 17px; line-height: 1.55; min-height: 100vh;
+        -webkit-font-smoothing: antialiased;
+      }
+      ::selection { background: var(--accent); color: #fff; }
+      a { color: inherit; text-decoration: none; }
+
+      .container { max-width: 1200px; margin: 0 auto; padding: 0 32px; }
+
+      header.top {
+        display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px;
+        align-items: center; padding: 28px 0 24px;
+        border-bottom: 1px solid var(--line);
+      }
+      .brand { grid-column: 1 / 4; font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 0.02em; line-height: 1; }
+      .brand .dot { color: var(--accent); }
+      .nav { grid-column: 8 / 13; display: flex; gap: 32px; justify-content: flex-end; align-items: center; font-size: 14px; font-weight: 500; }
+      .nav > a { color: var(--muted); transition: color 150ms; }
+      .nav > a:hover { color: var(--fg); }
+      .skin-switch { display: flex; gap: 4px; }
+      .skin-switch a { padding: 4px 9px; font-size: 12px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); transition: all 150ms; }
+      .skin-switch a.active { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+      .skin-switch a:hover { border-color: var(--fg); color: var(--fg); }
+
+      /* HERO */
+      .hero {
+        display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px;
+        padding: 80px 0 56px;
+      }
+      .hero h1 {
+        grid-column: 1 / 9;
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: clamp(60px, 11vw, 144px);
+        line-height: 0.92; letter-spacing: 0.005em;
+        text-transform: uppercase;
+      }
+      .hero h1 .accent { color: var(--accent); }
+      .hero .lede {
+        grid-column: 9 / 13;
+        align-self: end;
+        font-size: 16px; line-height: 1.55; color: var(--muted);
+      }
+      .hero .lede .pill {
+        display: inline-block; background: var(--fg); color: var(--bg);
+        padding: 4px 10px; border-radius: 999px;
+        font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+        text-transform: uppercase; margin-bottom: 16px;
+      }
+
+      /* BENTO */
+      .bento {
+        display: grid; grid-template-columns: repeat(12, 1fr); grid-auto-rows: minmax(120px, auto);
+        gap: 16px; padding: 24px 0 80px;
+      }
+      .cell {
+        background: #fff; border: 1px solid var(--line); border-radius: 18px;
+        padding: 24px; transition: transform 200ms ease, border-color 200ms;
+        display: flex; flex-direction: column; justify-content: space-between;
+      }
+      .cell:hover { transform: translateY(-2px); border-color: var(--fg); }
+      .cell .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--faint); margin-bottom: 8px; font-weight: 600; }
+      .cell .num { font-family: 'Bebas Neue', sans-serif; font-size: 56px; line-height: 1; color: var(--fg); }
+      .cell .desc { font-size: 14px; color: var(--muted); margin-top: 4px; }
+
+      .cell.featured {
+        grid-column: 1 / 8; grid-row: span 2;
+        background: var(--fg); color: #FAFAFA; border-color: var(--fg);
+        position: relative; overflow: hidden;
+      }
+      .cell.featured::before {
+        content: ''; position: absolute; top: -40%; right: -20%;
+        width: 240px; height: 240px; background: var(--accent);
+        border-radius: 50%; filter: blur(80px); opacity: 0.45;
+      }
+      .cell.featured .label { color: var(--accent); }
+      .cell.featured h2 {
+        font-family: 'Bebas Neue', sans-serif; font-size: clamp(34px, 4.5vw, 56px);
+        line-height: 1.05; letter-spacing: 0.005em; text-transform: uppercase;
+        margin: 12px 0 16px; position: relative;
+      }
+      .cell.featured p { font-size: 15px; line-height: 1.55; opacity: 0.7; position: relative; }
+      .cell.featured .meta { font-size: 12px; opacity: 0.5; margin-top: 18px; position: relative; font-variant-numeric: tabular-nums; }
+
+      .cell.stat-1 { grid-column: 8 / 11; background: var(--accent); color: #fff; border-color: var(--accent); }
+      .cell.stat-1 .label { color: rgba(255,255,255,0.7); }
+      .cell.stat-2 { grid-column: 11 / 13; }
+      .cell.stat-3 { grid-column: 8 / 11; }
+      .cell.stat-4 { grid-column: 11 / 13; background: var(--fg); color: #FAFAFA; border-color: var(--fg); }
+      .cell.stat-4 .label { color: rgba(250,250,250,0.55); }
+
+      /* POSTS */
+      .section-title {
+        display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px;
+        padding: 24px 0 16px; align-items: baseline;
+        border-top: 1px solid var(--line);
+      }
+      .section-title h2 {
+        grid-column: 1 / 7;
+        font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 0.01em;
+        text-transform: uppercase;
+      }
+      .section-title .count { grid-column: 7 / 13; text-align: right; font-size: 13px; color: var(--faint); }
+
+      .posts { padding-bottom: 32px; }
+      .post-row {
+        display: grid; grid-template-columns: 80px 110px 1fr auto;
+        gap: 24px; padding: 20px 0; align-items: center;
+        border-bottom: 1px solid var(--line);
+        transition: padding-left 200ms;
+      }
+      .post-row:hover { padding-left: 12px; }
+      .post-row:hover .arrow { transform: translateX(6px); color: var(--accent); }
+      .post-num { font-size: 12px; color: var(--faint); font-variant-numeric: tabular-nums; }
+      .post-date { font-size: 12px; color: var(--faint); font-variant-numeric: tabular-nums; }
+      .post-title { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 0.01em; text-transform: uppercase; line-height: 1.1; }
+      .arrow { color: var(--muted); font-size: 18px; transition: transform 200ms, color 200ms; }
+
+      footer.bottom {
+        display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px;
+        padding: 32px 0; border-top: 1px solid var(--line); margin-top: 56px;
+        font-size: 13px; color: var(--muted);
+      }
+      footer .left { grid-column: 1 / 7; }
+      footer .right { grid-column: 7 / 13; text-align: right; }
+
+      @media (max-width: 800px) {
+        header.top { grid-template-columns: 1fr 1fr; }
+        .brand, .nav { grid-column: span 1; }
+        .nav { gap: 12px; flex-wrap: wrap; }
+        .hero h1, .hero .lede { grid-column: 1 / 13; }
+        .hero { padding: 56px 0 40px; gap: 16px; }
+        .cell.featured { grid-column: 1 / 13; grid-row: span 1; }
+        .cell.stat-1, .cell.stat-2, .cell.stat-3, .cell.stat-4 { grid-column: span 6; }
+        .section-title h2 { grid-column: 1 / 8; }
+        .section-title .count { grid-column: 8 / 13; }
+        .post-row { grid-template-columns: 60px 1fr auto; gap: 12px; }
+        .post-num { display: none; }
+        .post-title { font-size: 18px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header class="top">
+        <a class="brand" href="/v4">FÁBIO MACHADO<span class="dot">.</span></a>
+        <nav class="nav">
+          <a href="/v4/about">sobre</a>
+          <span class="skin-switch">
+            <a href="/">v1</a>
+            <a href="/v2">v2</a>
+            <a href="/v3">v3</a>
+            <a href="/v4" class="active">v4</a>
+          </span>
+        </nav>
+      </header>
+
+      <section class="hero">
+        <h1>Construo agentes de <span class="accent">IA</span> que rodam negócio.</h1>
+        <div class="lede">
+          <span class="pill">Empresário · Consultor</span>
+          <p>Documentação aberta de quem usa IA como infraestrutura — não como experimento. Cada decisão registrada com contexto, resultado e erro junto.</p>
+        </div>
+      </section>
+
+      <div class="bento">
+        {featured && (
+          <a class="cell featured" href={`/v4/labs/${featured.id}`}>
+            <div>
+              <div class="label">Último post</div>
+              <h2>{featured.data.title}</h2>
+              <p>{featured.data.description}</p>
+            </div>
+            <div class="meta">
+              {new Date(featured.data.pubDate).toLocaleDateString('pt-BR', { year: 'numeric', month: 'long', day: 'numeric' })}
+            </div>
+          </a>
+        )}
+        <div class="cell stat-1">
+          <div>
+            <div class="label">Posts</div>
+            <div class="num">{posts.length}</div>
+          </div>
+          <div class="desc" style="color: rgba(255,255,255,0.7);">Documentando ao vivo</div>
+        </div>
+        <div class="cell stat-2">
+          <div class="label">Empresas</div>
+          <div class="num">2</div>
+          <div class="desc">Lov · Dáme</div>
+        </div>
+        <div class="cell stat-3">
+          <div class="label">Anos</div>
+          <div class="num">25+</div>
+          <div class="desc">Tech · gestão · marketing</div>
+        </div>
+        <div class="cell stat-4">
+          <div class="label">Stack</div>
+          <div class="num" style="font-size: 30px;">AI agents</div>
+          <div class="desc" style="color: rgba(250,250,250,0.55);">Como infraestrutura</div>
+        </div>
+      </div>
+
+      <div class="section-title">
+        <h2>Arquivo</h2>
+        <span class="count">{posts.length} posts no total</span>
+      </div>
+      <div class="posts">
+        {rest.map((post, i) => {
+          const d = new Date(post.data.pubDate);
+          const ddmm = `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+          return (
+            <a class="post-row" href={`/v4/labs/${post.id}`}>
+              <span class="post-num">№ {String(rest.length - i).padStart(2, '0')}</span>
+              <span class="post-date">{ddmm}</span>
+              <span class="post-title">{post.data.title}</span>
+              <span class="arrow">→</span>
+            </a>
+          );
+        })}
+      </div>
+
+      <footer class="bottom">
+        <span class="left">© Fábio Machado</span>
+        <span class="right">Skin v4 · Swiss Modernism</span>
+      </footer>
+    </div>
+  </body>
+</html>
