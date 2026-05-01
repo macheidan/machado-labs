@@ -1,7 +1,7 @@
 ---
-title: 'How I built a WhatsApp bot that reads me instead of replying'
+title: 'A WhatsApp bot that reads me instead of replying'
 description: 'A bot running in the background on my own WhatsApp: reads messages from contacts and groups, sends a weekly summary to me, and updates my second brain with what it observed. Node + Baileys + Gemini, no official API, no server.'
-pubDate: 'Apr 30 2026'
+pubDate: 'May 01 2026'
 ---
 
 Everyone who builds a WhatsApp bot builds a customer-service bot. Takes the order, sends the menu, closes the sale. I flipped it: my bot doesn't talk to anyone. It reads me.

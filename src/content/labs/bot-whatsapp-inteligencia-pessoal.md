@@ -1,7 +1,7 @@
 ---
-title: 'Como construí um bot de WhatsApp que me lê em vez de responder'
+title: 'Um bot de WhatsApp que me lê em vez de responder'
 description: 'Bot rodando em background no meu próprio WhatsApp: lê mensagens de contatos e grupos, manda resumo semanal pra mim mesmo e atualiza meu segundo cérebro com o que observou. Node + Baileys + Gemini, sem API oficial, sem servidor.'
-pubDate: 'Apr 30 2026'
+pubDate: 'May 01 2026'
 ---
 
 Todo mundo que monta bot de WhatsApp monta bot de atendimento. Recebe pedido, responde menu, fecha venda. Eu virei o jogo: o bot não fala com ninguém. Ele me lê.
