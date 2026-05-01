@@ -1,14 +1,16 @@
 ---
-title: 'A WhatsApp bot that reads me instead of replying'
-description: 'A bot running in the background on my own WhatsApp: reads messages from contacts and groups, sends a weekly summary to me, and updates my second brain with what it observed. Node + Baileys + Gemini, no official API, no server.'
+title: 'Built an AI agent to take care of my WhatsApp'
+description: 'Phase 1 of the project: an agent running in the background on my own WhatsApp, reading messages from contacts and groups, sending me a weekly summary, and updating my second brain with what it observed. Node + Baileys + Gemini, no official API, no server. Phase 2: it starts replying.'
 pubDate: 'May 01 2026'
 ---
 
-Everyone who builds a WhatsApp bot builds a customer-service bot. Takes the order, sends the menu, closes the sale. I flipped it: my bot doesn't talk to anyone. It reads me.
+Everyone who builds a WhatsApp bot builds a customer-service bot. Takes the order, sends the menu, closes the sale. I flipped it: in this **phase 1**, the agent doesn't talk to anyone. It reads me.
 
 I run my businesses and have a network of personal and professional contacts I can no longer keep up with the way they deserve. Supplier groups, family group, building group, partner groups, individual chats with accountants, managers, friends. An important message gets buried under fifty "good mornings" and eleven 4-minute voice notes.
 
 The question was: what if instead of me reading everything, someone read it for me and sent me what mattered?
+
+> **Where we are:** this post documents phase 1 — the agent as a silent observer. **Phase 2**, already in development, is giving it a voice: letting the agent reply to messages on my WhatsApp on my behalf, within rules I define. Reading needs to be solid first. Speaking comes after.
 
 ## The goal
 
@@ -205,8 +207,16 @@ State as JSON in a file is more than enough for a single-user system. I added ze
 
 Multi-provider isn't a luxury, it's hygiene. A single provider is a broken promise waiting to happen.
 
-## Next steps
+## Phase 2: the agent replies
 
-The reading is done. What's missing is an active trigger: the bot detecting that an important contact has gone silent for 30 days and nudging me with a suggested message. The bot detecting that a supplier group has shifted in tone (a price hike on the way) and warning me before the order goes out.
+Phase 1 is reading. Phase 2 — which I'm starting to build now — is **replying**.
 
-The difference between an observer and an agent is just one layer of "when this, do that." Enough data is being captured for that layer to start making sense.
+The idea: the same agent that reads me today starts speaking for me in controlled situations. Not end-customer service, but the boring part of my personal/professional WhatsApp that eats time without adding value — confirming receipt, saying thanks, sending "on my way", answering "what time?", agreeing on a slot with a supplier, relaying a payment status the finance team already gave me.
+
+For this to work without becoming a nightmare, three things need to be solved:
+
+1. **A profile of who each contact is** — the agent is already building this in phase 1. It needs to know whether Joaquim is a packaging supplier or my uncle from the countryside before replying anything on my behalf.
+2. **Rules for when to act and when to stay quiet** — a clear list of what the agent can answer on its own, what it can draft for me to approve with one click, and what it never touches.
+3. **Voice** — the agent reading my own messages (already running in phase 1) is precisely so it learns the way I write.
+
+The difference between an observer and an agent is just one layer of "when this, do that." Phase 1 is already capturing enough data for that layer to start making sense. Phase 2 is what I'll be posting next.

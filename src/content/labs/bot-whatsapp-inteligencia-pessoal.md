@@ -1,14 +1,16 @@
 ---
-title: 'Um bot de WhatsApp que me lê em vez de responder'
-description: 'Bot rodando em background no meu próprio WhatsApp: lê mensagens de contatos e grupos, manda resumo semanal pra mim mesmo e atualiza meu segundo cérebro com o que observou. Node + Baileys + Gemini, sem API oficial, sem servidor.'
+title: 'Criei um agente de IA que cuida do meu WhatsApp'
+description: 'Fase 1 do projeto: agente rodando em background no meu próprio WhatsApp, lendo mensagens de contatos e grupos, mandando resumo semanal pra mim e atualizando meu segundo cérebro com o que observou. Node + Baileys + Gemini, sem API oficial, sem servidor. Fase 2: ele começa a responder.'
 pubDate: 'May 01 2026'
 ---
 
-Todo mundo que monta bot de WhatsApp monta bot de atendimento. Recebe pedido, responde menu, fecha venda. Eu virei o jogo: o bot não fala com ninguém. Ele me lê.
+Todo mundo que monta bot de WhatsApp monta bot de atendimento. Recebe pedido, responde menu, fecha venda. Eu virei o jogo: nesta **fase 1**, o agente não fala com ninguém. Ele me lê.
 
 Toco meus negócios e tenho uma rede de contatos pessoais e profissionais que não consigo mais acompanhar com a atenção que mereciam. Grupos de fornecedor, grupo da família, grupo do condomínio, grupo de associados, conversas individuais com contadores, gerentes, amigos. Mensagem importante se perde no meio de cinquenta "bom dias" e onze áudios de 4 minutos.
 
 A pergunta era: e se em vez de eu ler tudo, alguém lesse pra mim e me mandasse o que importa?
+
+> **Onde estamos:** este post documenta a fase 1 — o agente como observador silencioso. A **fase 2**, em desenvolvimento, é dar voz pra ele: deixar o agente responder mensagens no meu WhatsApp por mim, dentro de regras que eu defino. Primeiro a leitura precisa estar madura. Depois a fala.
 
 ## O objetivo
 
@@ -205,8 +207,16 @@ Estado em JSON num arquivo é mais que suficiente pra quem é único usuário. A
 
 Multi-provider não é luxo, é higiene. Um único provider é uma promessa quebrada esperando acontecer.
 
-## Próximos passos
+## Fase 2: o agente responde
 
-A leitura tá pronta. Falta o gatilho ativo: bot detectar que um contato importante sumiu há 30 dias e me empurrar uma sugestão de mensagem. Bot detectar que um grupo de fornecedor mudou de tom (alta de preço chegando) e me alertar antes do pedido sair.
+A fase 1 é leitura. A fase 2 — que já tô começando a montar — é **resposta**.
 
-A diferença entre observador e agente é só uma camada de "quando isso, faz aquilo". Já tem dado o suficiente sendo capturado pra essa camada começar a fazer sentido.
+A ideia: o mesmo agente que hoje me lê passa a falar por mim em situações controladas. Não atendimento de cliente final, e sim a parte chata do meu WhatsApp pessoal/profissional que consome tempo sem agregar — confirmar recebimento, agradecer, mandar "tô a caminho", responder "que horas?", fechar combinado de horário com fornecedor, dar status de pagamento que o financeiro já me passou.
+
+Pra isso funcionar sem virar pesadelo, três coisas precisam estar resolvidas:
+
+1. **Perfil de quem é cada contato** — o agente já tá construindo isso na fase 1. Ele precisa saber se o Joaquim é fornecedor de embalagem ou tio do interior antes de responder qualquer coisa por mim.
+2. **Regras de quando agir e quando ficar quieto** — lista clara do que o agente pode responder sozinho, do que ele pode rascunhar pra eu aprovar com um clique, e do que ele nunca toca.
+3. **Voz** — o agente lendo minhas próprias mensagens (que já roda na fase 1) é justamente pra ele aprender o jeito que eu escrevo.
+
+A diferença entre observador e agente é só uma camada de "quando isso, faz aquilo". A fase 1 já tá capturando dado suficiente pra essa camada começar a fazer sentido. A fase 2 é o que eu vou postar aqui na sequência.
