@@ -18,11 +18,15 @@ Montei numa noite. Tá rodando no PC que já fica ligado em casa. Plugado no meu
 
 Primeira semana já valeu. Domingo de noite chegou o resumo no meu celular e tinham dois assuntos que eu não tinha visto. Um fornecedor cobrando cotação que eu jurava ter respondido. Um lembrete da escola do meu filho que eu ia perder o prazo. Nenhum dos dois ia me quebrar. Os dois iam me dar dor de cabeça.
 
-Ficou óbvio que o problema não era WhatsApp. Era atenção. WhatsApp só era o lugar onde ela vazava primeiro.
+> O problema não era WhatsApp. Era atenção.
+
+WhatsApp só era o lugar onde ela vazava primeiro.
 
 A parte que mais me interessou não foi nem o resumo dos grupos, foi o resumo dos contatos individuais. O bot olha as últimas semanas com cada pessoa relevante, escreve em duas linhas o que tá rolando no relacionamento, marca quando alguém sumiu. Eu lembrava de pessoas no automático, no susto, quando algo me cobrava. Agora tem alguém me empurrando isso pra cima toda semana antes de virar problema.
 
-Outra coisa que ele faz é ler as **minhas próprias mensagens**. Domingo de noite ele compara o que eu falei na semana com o que ele já sabia sobre mim e atualiza meu perfil dentro do Cortex. Sem inventar, só o que dá pra observar do que eu mesmo escrevi. Aqui tem uma pegadinha que demorei pra entender. Esse é justamente o ponto onde um modelo solto inventa o universo. A primeira versão me devolveu romance. Traçou perfil psicológico de gente com quem troquei três mensagens. Deduziu intenção que ninguém disse. Pareceu profundo. Era invenção.
+Outra coisa que ele faz é ler as **minhas próprias mensagens**. Domingo de noite ele compara o que eu falei na semana com o que ele já sabia sobre mim e atualiza meu perfil dentro do Cortex. Sem inventar, só o que dá pra observar do que eu mesmo escrevi.
+
+Aqui tem uma pegadinha que demorei pra entender. Esse é justamente o ponto onde um modelo solto inventa o universo. A primeira versão me devolveu romance. Traçou perfil psicológico de gente com quem troquei três mensagens. Deduziu intenção que ninguém disse. Pareceu profundo. Era invenção.
 
 Reescrevi o prompt obrigando formato fixo e proibindo invenção. Se não tem o que dizer, não diz. A regra que ficou foi essa: prefiro nada do que errado. Esse bot escreve no Cortex. Se ele inventar, eu vou tomar decisão na próxima semana baseado em invenção dele. O custo de uma alucinação aqui não compensa a graça de um relatório mais "rico".
 
@@ -32,7 +36,13 @@ Custo até hoje: zero. Tudo cabe nos planos gratuitos pra escala de uma pessoa.
 
 Tem uma coisa que ainda tô amassando, que é a **fase 2**. A fase 1 é leitura. A fase 2 é deixar ele responder coisa pequena por mim, dentro de regra clara. "Tô a caminho", "recebi sim", "que horas a gente combinou", confirmação de pagamento que o financeiro já tinha me passado. Nada de cliente final, nada de decisão. Só o agradecimento e a confirmação que comem o meu dia sem agregar nada.
 
-Pra isso funcionar sem virar pesadelo, preciso de três coisas no lugar. Saber quem é cada contato (a fase 1 já tá construindo isso no Cortex). Regra clara do que ele pode responder sozinho, do que ele pode rascunhar pra eu aprovar com um clique, e do que ele nunca toca. E aprender o jeito que eu escrevo, que é pra coisa que ele responder por mim parecer comigo. Os três caminhos saem da mesma fonte: o agente lendo o que eu mesmo escrevo.
+Pra isso funcionar sem virar pesadelo, preciso de três coisas no lugar.
+
+1. Saber quem é cada contato. A fase 1 já tá construindo isso no Cortex.
+2. Regra clara do que ele responde sozinho, do que ele rascunha pra eu aprovar com um clique, e do que ele nunca toca.
+3. Aprender o jeito que eu escrevo, pra resposta dele parecer comigo.
+
+Os três caminhos saem da mesma fonte: o agente lendo o que eu mesmo escrevo.
 
 Por enquanto ele só lê. E só de ler já mudou a forma como eu chego em segunda de manhã.
 

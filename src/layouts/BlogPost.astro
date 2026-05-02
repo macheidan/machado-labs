@@ -295,12 +295,17 @@ const jsonLd = articleGraph({
       .prose :global(li::marker) { color: var(--fg-faint); }
 
       .prose :global(blockquote) {
-        border-left: 2px solid rgba(255,255,255,0.15);
-        padding-left: 1.2em;
-        margin: 1.4em 0;
-        color: var(--fg-muted);
-        font-style: italic;
+        border-left: 2px solid rgba(255,255,255,0.3);
+        padding: 0.1em 0 0.1em 1.25em;
+        margin: 1.8em 0;
+        color: var(--fg);
+        font-size: 18px;
+        font-weight: 500;
+        line-height: 1.5;
+        letter-spacing: -0.015em;
       }
+      .prose :global(blockquote p) { margin-bottom: 0.4em; }
+      .prose :global(blockquote p:last-child) { margin-bottom: 0; }
 
       .prose :global(code) {
         font-family: 'Geist Mono', 'Courier New', monospace;

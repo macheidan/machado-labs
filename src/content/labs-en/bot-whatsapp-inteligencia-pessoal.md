@@ -18,11 +18,15 @@ I built it in one night. It runs on the PC that's already on at home all day. Pl
 
 The first week paid off. Sunday night the summary hit my phone and there were two things I hadn't seen. A supplier chasing a quote I swore I had answered. A reminder from my kid's school about a deadline I was about to miss. Neither was going to break me. Both were going to give me a headache.
 
-It became obvious that the problem wasn't WhatsApp. It was attention. WhatsApp was just the place where it leaked first.
+> The problem wasn't WhatsApp. It was attention.
+
+WhatsApp was just the place where it leaked first.
 
 The part that got me the most wasn't even the group summaries, it was the per-contact summaries. The bot looks at the last few weeks with each relevant person, writes two lines on what's going on in the relationship, and flags when someone has gone silent. I used to remember people on autopilot, in a panic, only when something was already chasing me. Now there's something pushing it up to me every week before it turns into a problem.
 
-Another thing it does is read **my own messages**. Sunday night it compares what I said over the week with what it already knew about me, and updates my profile inside the Cortex. No invention, just what can be observed from what I actually wrote. There's a trap here that took me a while to get. This is exactly where a loose model invents the universe. The first version handed me a novel. It drew up a psychological profile of people I had traded three messages with. It deduced intentions nobody had stated. It looked deep. It was made up.
+Another thing it does is read **my own messages**. Sunday night it compares what I said over the week with what it already knew about me, and updates my profile inside the Cortex. No invention, just what can be observed from what I actually wrote.
+
+There's a trap here that took me a while to get. This is exactly where a loose model invents the universe. The first version handed me a novel. It drew up a psychological profile of people I had traded three messages with. It deduced intentions nobody had stated. It looked deep. It was made up.
 
 I rewrote the prompt forcing a fixed format and forbidding invention. If there's nothing to say, say nothing. The rule that stuck: I'd rather have nothing than wrong. This bot writes into the Cortex. If it makes things up, I'm going to be making decisions next week based on its made-up nonsense. The cost of a hallucination here doesn't make up for the upside of a "richer" report.
 
@@ -32,7 +36,13 @@ Cost so far: zero. Everything fits inside free tiers at the scale of one person.
 
 There's something I'm still chewing on, which is **phase 2**. Phase 1 is reading. Phase 2 is letting it reply to small stuff for me, within clear rules. "On my way", "got it", "what time did we agree on", confirming a payment that the finance side already passed me. No end customer, no decision. Just the thank-yous and the confirmations that eat my day without adding anything.
 
-For that to work without becoming a nightmare, I need three things in place. Knowing who each contact is (phase 1 is already building that inside the Cortex). Clear rules on what it can answer alone, what it can draft for me to approve with one click, and what it never touches. And learning the way I write, so that whatever it does reply on my behalf actually sounds like me. The three paths come from the same source: the agent reading what I myself write.
+For that to work without becoming a nightmare, I need three things in place.
+
+1. Knowing who each contact is. Phase 1 is already building that inside the Cortex.
+2. Clear rules on what it answers alone, what it drafts for me to approve with one click, and what it never touches.
+3. Learning the way I write, so the reply sounds like me.
+
+The three paths come from the same source: the agent reading what I myself write.
 
 For now it only reads. And just from reading, it has already changed the way I show up on Monday morning.
 
