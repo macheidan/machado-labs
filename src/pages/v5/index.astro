@@ -76,28 +76,31 @@ const rest = posts.slice(1);
       .skin-switch a.active { background: #2c1f15; color: #f4ecdc; border-color: #2c1f15; opacity: 1; }
       .skin-switch a:hover { opacity: 1; border-color: rgba(44,31,21,0.6); }
 
-      /* HERO INTRO */
+      /* HERO INTRO — links to the latest post */
       .dawn-hero {
         position: relative; z-index: 1;
+        display: block;
         text-align: center;
         padding: 16vh 24px 22vh;
         max-width: 1280px;
         margin: 0 auto;
+        color: inherit;
+        text-decoration: none;
+        transition: opacity 200ms;
       }
+      .dawn-hero:hover { opacity: 0.78; }
       .dawn-hero h1 {
         font-family: 'Fraunces', serif;
-        font-weight: 300; font-style: italic;
-        font-size: clamp(64px, 12vw, 184px);
-        line-height: 0.95; letter-spacing: -0.02em;
+        font-weight: 400; font-style: italic;
+        font-size: clamp(56px, 11vw, 168px);
+        line-height: 0.98; letter-spacing: -0.02em;
         color: #2a1a0e;
         text-wrap: balance;
       }
-      .dawn-hero h1 em { font-style: italic; font-weight: 400; color: #6b3d20; }
-      .dawn-hero h1 .accent { font-style: normal; font-weight: 500; color: #6b3d20; }
       .dawn-hero p.sub {
-        margin-top: 28px; font-size: 13px;
-        letter-spacing: 0.18em; text-transform: uppercase;
-        color: #2c1f15; opacity: 0.8;
+        margin-top: 36px; font-size: 12px;
+        letter-spacing: 0.22em; text-transform: uppercase; font-weight: 600;
+        color: #2c1f15; opacity: 0.7;
       }
 
       /* POSTS BLOCK */
@@ -272,24 +275,22 @@ const rest = posts.slice(1);
   <body>
     <section class="dawn">
       <nav class="dawn-nav">
-        <span class="left">Macheidan Labs · 2026</span>
+        <span class="left">2026</span>
         <a href="/v5" class="brand">Fábio Machado</a>
         <span class="right">
           <a href="/v5/about">sobre</a>
-          <span class="skin-switch">
-            <a href="/">v1</a>
-            <a href="/v2">v2</a>
-            <a href="/v3">v3</a>
-            <a href="/v4">v4</a>
-            <a href="/v5" class="active">v5</a>
-          </span>
+          <a href="/en">en</a>
+          <a href="/v5" class="active">ptbr</a>
+          <a href="https://x.com/machadofabio" target="_blank" rel="noopener">x</a>
         </span>
       </nav>
 
-      <div class="dawn-hero">
-        <h1>um <em>cortex</em> digital<br/>que roda <span class="accent">negócio</span></h1>
-        <p class="sub">Documentando ao vivo · Lov · Dáme · Consultoria</p>
-      </div>
+      {featured && (
+        <a class="dawn-hero" href={`/v5/labs/${featured.id}`}>
+          <h1>{featured.data.title}</h1>
+          <p class="sub">Mais recente</p>
+        </a>
+      )}
 
       <div class="dawn-posts">
         <section class="section-intro">
