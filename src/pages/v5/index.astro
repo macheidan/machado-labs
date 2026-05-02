@@ -95,7 +95,9 @@ const rest = posts.slice(1);
         text-align: center;
         gap: 28px;
         padding: 0 24px;
-        transform: translateY(-10%);
+        --scrollPara: 0px;
+        transform: translate3d(0, calc(-10% + var(--scrollPara)), 0);
+        will-change: transform;
       }
       .dawn-hero h1 {
         font-family: 'Fraunces', serif;
@@ -104,7 +106,6 @@ const rest = posts.slice(1);
         line-height: 0.95; letter-spacing: -0.02em;
         color: #2a1a0e;
         text-wrap: balance;
-        will-change: transform;
       }
       .dawn-hero h1 :global(em) {
         font-style: italic;
@@ -307,7 +308,7 @@ const rest = posts.slice(1);
         .dawn-nav { grid-template-columns: 1fr; gap: 8px; padding: 20px 24px; text-align: center; }
         .dawn-nav .left, .dawn-nav .right { justify-content: center; display: flex; }
         .dawn-hero { min-height: calc(100vh - 130px); }
-        .dawn-hero .copy { padding: 0 16px; gap: 20px; transform: translateY(calc(-30px - 5%)); }
+        .dawn-hero .copy { padding: 0 16px; gap: 20px; transform: translate3d(0, calc(-30px - 5% + var(--scrollPara)), 0); }
         .dawn-hero h1 { font-size: 12vw; }
         .dawn-posts { padding: 0 20px; }
         .section-intro { padding: 20px 0 24px; }
@@ -420,7 +421,7 @@ const rest = posts.slice(1);
       (function () {
         const topBrand = document.querySelector('.dawn-nav .brand');
         const bot = document.querySelector('.brand-bottom');
-        const title = document.querySelector('.dawn-hero h1');
+        const copy = document.querySelector('.dawn-hero .copy');
         if (!topBrand || !bot) return;
         const REST = 10; /* px between bottom brand bottom and viewport bottom once fully in */
         let raf = null;
@@ -436,10 +437,10 @@ const rest = posts.slice(1);
           const offset = Math.max(mirror, restCap);
           bot.style.transform = 'translateY(' + offset + 'px)';
 
-          /* Title parallax: 30% slower than the page.
-             Push it down by 0.3 * scrollY so net upward motion is 0.7 * scrollY. */
-          if (title) {
-            title.style.transform = 'translateY(' + (window.scrollY * 0.3) + 'px)';
+          /* Hero copy parallax (title + sub + scroll cue): 50% slower than the page.
+             Push down by 0.5 * scrollY so net upward motion is 0.5 * scrollY. */
+          if (copy) {
+            copy.style.setProperty('--scrollPara', (window.scrollY * 0.5) + 'px');
           }
           raf = null;
         }
