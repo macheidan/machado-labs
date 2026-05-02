@@ -97,6 +97,7 @@ const rest = posts.slice(1);
         text-align: center;
         gap: 28px;
         padding: 0 24px;
+        transform: translateY(-10%);
       }
       .dawn-hero h1 {
         font-family: 'Fraunces', serif;
@@ -286,7 +287,13 @@ const rest = posts.slice(1);
         .dawn-nav .left, .dawn-nav .right { justify-content: center; display: flex; }
         .dawn-hero { min-height: calc(100vh - 130px); }
         .dawn-hero .copy { padding: 0 16px; gap: 20px; transform: translateY(-30px); }
-        .dawn-hero h1 { font-size: 12vw; }
+        .dawn-hero h1 {
+          font-size: 12vw;
+          display: block;
+          -webkit-line-clamp: unset;
+          line-clamp: unset;
+          overflow: visible;
+        }
         .dawn-posts { padding: 0 20px; }
         .section-intro { padding: 56px 0 24px; }
         .section-intro h2, .section-intro p { grid-column: 1 / 13; }
