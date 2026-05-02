@@ -123,79 +123,32 @@ const rest = posts.slice(1);
         letter-spacing: 0.18em; text-transform: uppercase;
         color: #2c1f15; opacity: 0.8;
       }
-      /* Scroll mouse — port of hexagoncircle/aZWOdE, colors adapted to the dawn theme */
-      .mouse {
-        background: rgba(44, 31, 21, 0.4) linear-gradient(transparent 0%, transparent 50%, #2c1f15 50%, #2c1f15 100%);
+      .scroll-cue {
         position: relative;
-        width: 30px;
-        height: 50px;
-        border-radius: 100px;
-        background-size: 100% 200%;
-        animation: colorSlide 5s linear infinite, nudgeMouse 5s ease-out infinite;
+        width: 1px;
+        height: 48px;
+        background: rgba(44, 31, 21, 0.18);
         margin-top: 4px;
       }
-      .mouse::before,
-      .mouse::after {
-        content: "";
+      .scroll-cue::after {
+        content: '';
         position: absolute;
-        top: 0; right: 0; bottom: 0; left: 0;
-        margin: auto;
+        top: 0;
+        left: -2px;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: #2c1f15;
+        animation: scrollDot 2.2s cubic-bezier(.45, 0, .55, 1) infinite;
       }
-      .mouse::before {
-        width: 26px;
-        height: 46px;
-        background-color: #f0e3cd;
-        border-radius: 100px;
-      }
-      .mouse::after {
-        background-color: #2c1f15;
-        width: 6px;
-        height: 6px;
-        border-radius: 100%;
-        animation: trackBallSlide 5s linear infinite;
-      }
-      @keyframes colorSlide {
-        0%   { background-position: 0% 100%; }
-        20%  { background-position: 0% 0%; }
-        21%  { background-color: rgba(44,31,21,0.4); }
-        29.99% { background-color: #2c1f15; background-position: 0% 0%; }
-        30%  { background-color: rgba(44,31,21,0.4); background-position: 0% 100%; }
-        50%  { background-position: 0% 0%; }
-        51%  { background-color: rgba(44,31,21,0.4); }
-        59%  { background-color: #2c1f15; background-position: 0% 0%; }
-        60%  { background-color: rgba(44,31,21,0.4); background-position: 0% 100%; }
-        80%  { background-position: 0% 0%; }
-        81%  { background-color: rgba(44,31,21,0.4); }
-        90%, 100% { background-color: #2c1f15; }
-      }
-      @keyframes trackBallSlide {
-        0%        { opacity: 1; transform: scale(1)  translateY(-12px); }
-        6%        { opacity: 1; transform: scale(0.9) translateY(3px); }
-        14%       { opacity: 0; transform: scale(0.4) translateY(24px); }
-        15%, 19%  { opacity: 0; transform: scale(0.4) translateY(-12px); }
-        28%, 29.99% { opacity: 1; transform: scale(1) translateY(-12px); }
-        30%       { opacity: 1; transform: scale(1)  translateY(-12px); }
-        36%       { opacity: 1; transform: scale(0.9) translateY(3px); }
-        44%       { opacity: 0; transform: scale(0.4) translateY(24px); }
-        45%, 49%  { opacity: 0; transform: scale(0.4) translateY(-12px); }
-        58%, 59.99% { opacity: 1; transform: scale(1) translateY(-12px); }
-        60%       { opacity: 1; transform: scale(1)  translateY(-12px); }
-        66%       { opacity: 1; transform: scale(0.9) translateY(3px); }
-        74%       { opacity: 0; transform: scale(0.4) translateY(24px); }
-        75%, 79%  { opacity: 0; transform: scale(0.4) translateY(-12px); }
-        88%, 100% { opacity: 1; transform: scale(1)  translateY(-12px); }
-      }
-      @keyframes nudgeMouse {
-        0%   { transform: translateY(0); }
-        20%  { transform: translateY(5px); }
-        30%  { transform: translateY(0); }
-        50%  { transform: translateY(5px); }
-        60%  { transform: translateY(0); }
-        80%  { transform: translateY(5px); }
-        90%  { transform: translateY(0); }
+      @keyframes scrollDot {
+        0%   { transform: translateY(-10px); opacity: 0; }
+        18%  { transform: translateY(0); opacity: 1; }
+        82%  { transform: translateY(43px); opacity: 1; }
+        100% { transform: translateY(56px); opacity: 0; }
       }
       @media (prefers-reduced-motion: reduce) {
-        .mouse, .mouse::after { animation: none; }
+        .scroll-cue::after { animation: none; opacity: 0.6; }
       }
 
       /* POSTS BLOCK */
@@ -391,7 +344,7 @@ const rest = posts.slice(1);
               ? <h1 set:html={featured.data.heroTitle} />
               : <h1>{featured.data.title}</h1>}
             <p class="sub">Post recente</p>
-            <div class="mouse" aria-hidden="true"></div>
+            <div class="scroll-cue" aria-hidden="true"></div>
           </div>
         </a>
       )}
