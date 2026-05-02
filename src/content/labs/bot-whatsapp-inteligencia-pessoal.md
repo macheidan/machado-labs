@@ -1,5 +1,6 @@
 ---
 title: 'Criei um agente de IA que cuida do meu WhatsApp'
+heroTitle: 'Criei um <em>agente</em> de IA que cuida do meu <span class="accent">WhatsApp</span>'
 description: 'Tava perdendo coisa importante nos grupos toda semana. Coloquei um agente pra ler meu WhatsApp por mim, mandar o que precisa de resposta urgente no fim do dia, e um resumo de cada contato e cada grupo no domingo. Roda no PC de casa, custo zero, plugado no meu próprio número.'
 pubDate: 'May 01 2026'
 heroImage: '../imgs/260501.jpeg'

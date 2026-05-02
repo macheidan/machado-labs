@@ -5,6 +5,7 @@ import { z } from 'astro/zod';
 const schema = ({ image }: { image: () => any }) =>
 	z.object({
 		title: z.string(),
+		heroTitle: z.string().optional(),
 		description: z.string(),
 		pubDate: z.coerce.date(),
 		updatedDate: z.coerce.date().optional(),
