@@ -101,10 +101,15 @@ const rest = posts.slice(1);
       .dawn-hero h1 {
         font-family: 'Fraunces', serif;
         font-weight: 300; font-style: italic;
-        font-size: clamp(64px, 12vw, 184px);
+        font-size: clamp(64px, 12vw, 154px);
         line-height: 0.95; letter-spacing: -0.02em;
         color: #2a1a0e;
         text-wrap: balance;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
       }
       .dawn-hero h1 :global(em) {
         font-style: italic;
