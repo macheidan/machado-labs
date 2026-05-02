@@ -1,222 +1,47 @@
 ---
-title: 'Built an AI agent to take care of my WhatsApp'
-description: 'Phase 1 of the project: an agent running in the background on my own WhatsApp, reading messages from contacts and groups, sending me a weekly summary, and updating my second brain with what it observed. Node + Baileys + Gemini, no official API, no server. Phase 2: it starts replying.'
+title: 'I built an AI agent that takes care of my WhatsApp'
+description: 'I was missing important stuff in the groups every week. So I put an agent to read my WhatsApp for me, send me what needs an urgent reply at the end of the day, and a summary of every contact and every group on Sunday. Runs on the home PC, costs zero, plugged into my own number.'
 pubDate: 'May 01 2026'
 ---
 
-Everyone who builds a WhatsApp bot builds a customer-service bot. Takes the order, sends the menu, closes the sale. I flipped it: in this **phase 1**, the agent doesn't talk to anyone. It reads me.
+I was spending too much time on WhatsApp. Reading the supplier groups, forwarding stuff to the manager, replying to quotes, reading the family group I had already given up on two days earlier. Every night, the feeling that something important had slipped through and I had no idea what. Sometimes it was just a feeling. Sometimes it wasn't, and I'd find out on Monday when a supplier was chasing a reply that never came.
 
-I run my businesses and have a network of personal and professional contacts I can no longer keep up with the way they deserve. Supplier groups, family group, building group, partner groups, individual chats with accountants, managers, friends. An important message gets buried under fifty "good mornings" and eleven 4-minute voice notes.
+I had already been building [My Digital Cortex](https://fabiomachado.com.br/labs/segundo-cerebro-ia/) for a while. Memory ready, persona ready, and what was missing was the part I called "agency", the agent stops just answering and starts acting in my world. One of those nights it hit me that WhatsApp was the most obvious place to start. That's where my attention leaks first.
 
-The question was: what if instead of me reading everything, someone read it for me and sent me what mattered?
+Instead of a bot that talks to customers, a bot that reads me. Reads the groups for me, reads the chats for me, sends me at the end of the day what needs an urgent reply, and at the end of the week a summary of every relevant contact and every important group. Whatever it observes flows back into the Cortex, so every other AI tool I use afterwards already knows who I've been talking to, what we've been talking about, and what's still pending.
 
-> **Where we are:** this post documents phase 1 — the agent as a silent observer. **Phase 2**, already in development, is giving it a voice: letting the agent reply to messages on my WhatsApp on my behalf, within rules I define. Reading needs to be solid first. Speaking comes after.
+I built it in one night. It runs on the PC that's already on at home all day. Plugged into my own number. It sits there watching alongside me, sees everything I see, and talks to nobody.
 
-## The goal
+The first week paid off. Sunday night the summary hit my phone and there were two things I hadn't seen. A supplier chasing a quote I swore I had answered. A reminder from my kid's school about a deadline I was about to miss. Neither was going to break me. Both were going to give me a headache.
 
-Not to automate customer service. To automate **observation**.
+It became obvious that the problem wasn't WhatsApp. It was attention. WhatsApp was just the place where it leaked first.
 
-I wanted three things:
+The part that got me the most wasn't even the group summaries, it was the per-contact summaries. The bot looks at the last few weeks with each relevant person, writes two lines on what's going on in the relationship, and flags when someone has gone silent. I used to remember people on autopilot, in a panic, only when something was already chasing me. Now there's something pushing it up to me every week before it turns into a problem.
 
-1. A weekly summary of each relevant contact — topics, profile, how the relationship is going.
-2. A daily and weekly summary of groups — what happened, without scrolling 800 messages back. With a flag if I was mentioned and in what context.
-3. Analysis of what **I** sent — the bot reading my own messages and updating my profile files in the vault with what it observed.
+Another thing it does is read **my own messages**. Sunday night it compares what I said over the week with what it already knew about me, and updates my profile inside the Cortex. No invention, just what can be observed from what I actually wrote. There's a trap here that took me a while to get. This is exactly where a loose model invents the universe. The first version handed me a novel. It drew up a psychological profile of people I had traded three messages with. It deduced intentions nobody had stated. It looked deep. It was made up.
 
-The last part is the one I care about most. It's **an agent that improves the memory it itself reads from**.
+I rewrote the prompt forcing a fixed format and forbidding invention. If there's nothing to say, say nothing. The rule that stuck: I'd rather have nothing than wrong. This bot writes into the Cortex. If it makes things up, I'm going to be making decisions next week based on its made-up nonsense. The cost of a hallucination here doesn't make up for the upside of a "richer" report.
+
+To avoid depending on a single AI model, I set up a plan B, C, and D. If the first one is down or out of quota, it tries the second. If the second is down, it goes to the third. It's not a luxury. Models get deprecated from one week to the next, quotas run out, APIs go down on a Sunday night. The bot has to run.
+
+Cost so far: zero. Everything fits inside free tiers at the scale of one person.
+
+There's something I'm still chewing on, which is **phase 2**. Phase 1 is reading. Phase 2 is letting it reply to small stuff for me, within clear rules. "On my way", "got it", "what time did we agree on", confirming a payment that the finance side already passed me. No end customer, no decision. Just the thank-yous and the confirmations that eat my day without adding anything.
+
+For that to work without becoming a nightmare, I need three things in place. Knowing who each contact is (phase 1 is already building that inside the Cortex). Clear rules on what it can answer alone, what it can draft for me to approve with one click, and what it never touches. And learning the way I write, so that whatever it does reply on my behalf actually sounds like me. The three paths come from the same source: the agent reading what I myself write.
+
+For now it only reads. And just from reading, it has already changed the way I show up on Monday morning.
 
 ## Stack
 
-- **Node.js**
-- **Baileys** (`@whiskeysockets/baileys`) — a library that talks directly to the WhatsApp protocol. No headless Chrome, no Selenium, no paid official API.
-- **Google Gemini** (`@google/genai`) — content analysis, with fallback to Groq, Cerebras, and OpenRouter if Gemini breaks.
-- **node-cron** — scheduling.
-- State as **plain JSON** in a file (`.state.json`). No database. No ORM. No Docker.
-
-All on a PC that's already on at home.
-
-## Why Baileys and not the official API
-
-The official WhatsApp Business API is expensive, requires template approval, and would force me to use a separate number. I wanted the bot to live on **my** personal WhatsApp — the same number I use to talk to suppliers, managers, and family.
-
-Baileys does QR code auth once, saves credentials in `auth_info/`, and reconnects on its own. The bot is literally a WhatsApp client logged in as me, in parallel with my phone.
-
-## The architecture
-
-```
-WhatsApp (my number)
-   │
-   ▼
-Baileys (authenticated session, 24/7)
-   │
-   ├── messages.upsert → captures everything that comes in
-   │     ├── DM:    .state.json → messages[jid]
-   │     ├── group: .state.json → groups[jid]
-   │     └── me:    .state.json → myMessages[]
-   │
-   ▼
-Cron schedule
-   │
-   ├── Sunday 7pm → sweep: my vault gets new contact profiles
-   ├── Sunday 7pm → sweep: my own profile is updated
-   ├── Sunday 8pm → weekly contacts report
-   ├── Sunday 8pm → weekly groups report
-   ├── 1st of the month, 8pm → monthly report (includes "who went silent")
-   └── Every day 8pm → daily groups report
-        │
-        ▼
-   Gemini analyzes → formatted markdown
-        │
-        ▼
-   ┌────────────┴────────────┐
-   ▼                         ▼
-Vault (.md on Drive)     Me on WhatsApp
-```
-
-Each report is written to my [second brain](https://fabiomachado.com.br/labs/segundo-cerebro-ia/) (markdown vault synced through Drive) **and** sent to me on WhatsApp. I read it on the go, it's already saved for any AI agent to consult later.
-
-## The capture
-
-The simplest part to describe and the most delicate to get right:
-
-```js
-sock.ev.on('messages.upsert', async ({ messages, type }) => {
-  if (type !== 'notify') return;
-
-  for (const msg of messages) {
-    const jid = msg.key.remoteJid;
-    const text = getMessageText(msg);
-    if (!text) continue;
-
-    if (msg.key.fromMe) {
-      // message I sent → goes to myMessages
-    } else if (jid.endsWith('@g.us')) {
-      // group message → groups[jid].messages
-    } else {
-      // DM → messages[jid]
-    }
-  }
-});
-```
-
-I filter out broadcast and newsletter. I keep only text (`conversation`, `extendedTextMessage`, image caption). Audio, stickers, and documents I ignore — not worth the cost of transcribing for the kind of intelligence I want.
-
-Each bucket has a window:
-- DMs: 30 days
-- Groups: 7 days
-- My messages: 30 days
-
-Beyond the window, I drop it on save. State never grows unbounded.
-
-## The lesson — conservative prompts
-
-Here's what I learned the most.
-
-The first version of the weekly report prompt asked for "a summary of what happened." Gemini returned a novel. It made up context, drew psychological profiles of people I'd exchanged three messages with, inferred intent that had never been stated. Useless.
-
-I rewrote the prompt enforcing a fixed format and forbidding invention:
-
-```
-For each contact, return EXACTLY in this format:
-
-*[name]*:
-[topic 1]: one sentence summary.
-[topic 2]: one sentence summary.
-Profile: 1 to 2 sentences on personality observed in the messages.
-Relationship trend: one sentence.
-
-Don't include anything outside this format.
-Don't make things up. Base everything on the messages.
-```
-
-That solved 80%. The model became conservative, the format consistent, and reports easy to compare week to week.
-
-But the most important piece is the prompt that analyzes **my own messages**. That one runs against vault files describing who I am:
-
-```
-Analyze the messages sent by Fábio in the last week and
-compare them with the current content of the files below.
-
-For each file, return ONLY NEW information that can be added
-based on the messages. If there's nothing new, return
-"nothing new". Be conservative — only add what is clearly
-observable. Don't repeat what's already in the file.
-Don't make things up.
-```
-
-The rule is: **I prefer nothing over wrong**. The bot has permission to write into my second brain. If it writes nonsense, I'll be making decisions next week based on nonsense. The cost of a hallucination in the agent's context is too high to risk asking for more.
-
-## Multi-provider with fallback
-
-LLMs go down. Quotas run out. Models get deprecated from one week to the next. The bot has to run every Sunday regardless.
-
-```js
-async function callLLM(prompt) {
-  const providers = [];
-  if (process.env.GEMINI_API_KEY)     providers.push(gemini);
-  if (process.env.GROQ_API_KEY)       providers.push(groq);
-  if (process.env.CEREBRAS_API_KEY)   providers.push(cerebras);
-  if (process.env.OPENROUTER_API_KEY) providers.push(openrouter);
-
-  for (const p of providers) {
-    try {
-      const out = await p.fn();
-      if (out) return out;
-    } catch (e) {
-      // try the next one
-    }
-  }
-  throw new Error('all providers failed');
-}
-```
-
-Inside Gemini, same logic across `gemini-2.5-flash`, `gemini-2.0-flash`, and `gemini-2.0-flash-lite`. The bot only needs **some** model responding, not the best one.
-
-Average cost so far: zero. Gemini's free tier covers everything I need at a single-person scale.
-
-## Commands inside WhatsApp itself
-
-I send myself `/resumo` and the bot replies with the weekly report on demand. `/resumo grupos` brings the day's groups. `/resumo mensal` forces the monthly outside its window.
-
-```js
-if (msg.key.fromMe && text?.startsWith('/')) {
-  await handleCommand(text.trim(), sock);
-}
-```
-
-Any message **I** send starting with `/` is treated as a command. No dashboard, no app, no login. The dashboard is WhatsApp itself.
-
-## The full loop
-
-What makes this project worth it isn't the bot in isolation. It's the loop:
-
-1. I chat normally on WhatsApp.
-2. The bot silently captures everything.
-3. Every week, it writes summaries to the vault.
-4. Every week, it reads my own profile in the vault and adds what it newly observed about me.
-5. The next time **any AI agent** (Claude Code, Cursor, ChatGPT) opens my vault to help me with anything, it already knows who I am, who I've been talking to, and what I've been complaining about.
-
-The bot isn't the product. The product is **a second brain that updates itself**.
-
-## What I've learned so far
-
-A reading bot is more useful than a replying bot for someone who doesn't scale customer service. I already have customer service optimized. What I don't have is someone watching from the outside for **patterns I let slip**.
-
-Conservative prompts beat creative prompts when the output becomes input for a decision. Anywhere I could trade freedom for fixed format, I did.
-
-State as JSON in a file is more than enough for a single-user system. I added zero infrastructure. No database, no queue, no container. Runs on the PC that was already on.
-
-Multi-provider isn't a luxury, it's hygiene. A single provider is a broken promise waiting to happen.
-
-## Phase 2: the agent replies
-
-Phase 1 is reading. Phase 2 — which I'm starting to build now — is **replying**.
-
-The idea: the same agent that reads me today starts speaking for me in controlled situations. Not end-customer service, but the boring part of my personal/professional WhatsApp that eats time without adding value — confirming receipt, saying thanks, sending "on my way", answering "what time?", agreeing on a slot with a supplier, relaying a payment status the finance team already gave me.
-
-For this to work without becoming a nightmare, three things need to be solved:
-
-1. **A profile of who each contact is** — the agent is already building this in phase 1. It needs to know whether Joaquim is a packaging supplier or my uncle from the countryside before replying anything on my behalf.
-2. **Rules for when to act and when to stay quiet** — a clear list of what the agent can answer on its own, what it can draft for me to approve with one click, and what it never touches.
-3. **Voice** — the agent reading my own messages (already running in phase 1) is precisely so it learns the way I write.
-
-The difference between an observer and an agent is just one layer of "when this, do that." Phase 1 is already capturing enough data for that layer to start making sense. Phase 2 is what I'll be posting next.
+- Node running 24/7 on the home PC.
+- `@whiskeysockets/baileys` for the direct WhatsApp connection over QR code, no paid official API, no separate number. The bot stays logged in alongside the phone.
+- `@google/genai` (Gemini) for the analysis, with automatic fallback to Groq, Cerebras, and OpenRouter when Gemini is down or out of quota. Inside Gemini, fallback between `gemini-2.5-flash`, `gemini-2.0-flash`, and `gemini-2.0-flash-lite`.
+- `node-cron` for scheduling: daily report at 8pm, weekly Sunday at 8pm, monthly on the 1st.
+- State as plain JSON in a single file (`.state.json`). No database, no ORM, no container, no queue.
+- Retention windows: 30 days for DMs and for my own messages, 7 days for groups. Anything older is dropped at save time. State never grows unbounded.
+- Audio, stickers, documents, and broadcast: ignored. Text only (`conversation`, `extendedTextMessage`, image captions).
+- Commands by sending myself a message starting with `/` (`/resumo`, `/resumo grupos`, `/resumo mensal`). The dashboard is WhatsApp itself.
+- Reports are saved as markdown into the Cortex (synced over Drive) and pushed to me on WhatsApp.
+- Conservative prompts at every point where the output becomes input to a decision. Fixed format, explicit ban on invention, instruction to return "nothing new" when there's nothing to say.
+- Cost so far: zero. Gemini's free tier covers the scale of a single user.
