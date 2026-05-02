@@ -94,11 +94,12 @@ const rest = posts.slice(1);
         --scrollPara: 0px;
         transform: translate3d(0, calc(-10% + var(--scrollPara)), 0);
         will-change: transform;
-        color: inherit;
-        text-decoration: none;
+      }
+      .dawn-hero h1 a, .dawn-hero p.sub a {
+        color: inherit; text-decoration: none;
         transition: opacity 200ms;
       }
-      .dawn-hero .copy:hover { opacity: 0.82; }
+      .dawn-hero h1 a:hover, .dawn-hero p.sub a:hover { opacity: 0.82; }
       .dawn-hero h1 {
         font-family: 'Fraunces', serif;
         font-weight: 300; font-style: italic;
@@ -338,13 +339,13 @@ const rest = posts.slice(1);
 
       {featured && (
         <section class="dawn-hero">
-          <a class="copy" href={`/v5/labs/${featured.id}`}>
+          <div class="copy">
             {featured.data.heroTitle
-              ? <h1 set:html={featured.data.heroTitle} />
-              : <h1>{featured.data.title}</h1>}
-            <p class="sub">Ler</p>
+              ? <h1><a href={`/v5/labs/${featured.id}`} set:html={featured.data.heroTitle} /></h1>
+              : <h1><a href={`/v5/labs/${featured.id}`}>{featured.data.title}</a></h1>}
+            <p class="sub"><a href={`/v5/labs/${featured.id}`}>Ler</a></p>
             <div class="scroll-cue" aria-hidden="true"></div>
-          </a>
+          </div>
         </section>
       )}
 
