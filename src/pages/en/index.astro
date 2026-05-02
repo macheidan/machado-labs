@@ -70,7 +70,7 @@ const jsonLd = homeGraph('en', SITE_DESCRIPTION_EN);
     </section>
 
     <div class="archive-head">
-      <h3>Full archive</h3>
+      <h3>Full <strong>archive</strong></h3>
       <span class="count">{posts.length} posts</span>
     </div>
     <div class="posts">
@@ -259,7 +259,9 @@ const jsonLd = homeGraph('en', SITE_DESCRIPTION_EN);
     grid-column: 1 / 7;
     font-family: 'Fraunces', serif; font-weight: 400; font-style: italic;
     font-size: 30px; letter-spacing: -0.01em; color: #1a1410;
+    white-space: nowrap;
   }
+  .archive-head h3 strong { font-weight: 700; font-style: italic; }
   .archive-head .count { grid-column: 7 / 13; text-align: right; font-size: 13px; color: rgba(44,31,21,0.6); font-variant-numeric: tabular-nums; }
 
   .post-row {
@@ -270,8 +272,8 @@ const jsonLd = homeGraph('en', SITE_DESCRIPTION_EN);
     color: var(--fg);
   }
   .post-row:hover { padding-left: 12px; }
-  .post-row:hover .post-title { color: var(--accent); }
-  .post-row:hover .arrow { transform: translateX(8px); color: var(--accent); }
+  .post-row:hover .post-title { color: #fff; }
+  .post-row:hover .arrow { transform: translateX(8px); color: #fff; }
   .post-num { font-size: 12px; color: rgba(44,31,21,0.55); font-variant-numeric: tabular-nums; }
   .post-date { font-size: 12px; color: rgba(44,31,21,0.55); font-variant-numeric: tabular-nums; }
   .post-title {
@@ -292,8 +294,8 @@ const jsonLd = homeGraph('en', SITE_DESCRIPTION_EN);
     .section-intro h2 { grid-column: 1 / 13; }
     .featured a.card, .stats { grid-column: 1 / 13; }
     .featured a.card { padding: 24px; }
-    .archive-head h3 { grid-column: 1 / 8; }
-    .archive-head .count { grid-column: 8 / 13; }
+    .archive-head h3 { grid-column: 1 / 9; font-size: 22px; }
+    .archive-head .count { grid-column: 9 / 13; }
     .post-row { grid-template-columns: 90px 1fr auto; gap: 10px; }
     .post-num { display: none; }
     .post-title { font-size: 17px; }
