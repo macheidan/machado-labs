@@ -218,22 +218,22 @@ const rest = posts.slice(1);
       /* room below the last post so it can scroll above the mountain line */
       .dawn-tail { height: 50vh; }
 
-      /* BOTTOM BRAND — same as top, white, fixed 15px above the bottom edge */
+      /* BOTTOM BRAND — same brand wrapping in from the bottom edge */
       .brand-bottom {
         position: fixed;
-        left: 0; right: 0; bottom: 15px;
+        left: 0; right: 0; bottom: 0;
         z-index: 5;
         text-align: center;
         pointer-events: none;
         user-select: none;
-        opacity: 0;
-        will-change: opacity;
         font-family: 'Fraunces', serif;
         font-weight: 500;
         font-size: 22px;
         letter-spacing: 0.18em;
         text-transform: uppercase;
         color: #ffffff;
+        transform: translateY(120px);
+        will-change: transform;
       }
 
       /* MOUNTAINS — fixed at viewport bottom, in front of watermark */
@@ -359,20 +359,18 @@ const rest = posts.slice(1);
 
     <script is:inline>
       (function () {
-        const wm = document.querySelector('.brand-bottom');
         const topBrand = document.querySelector('.dawn-nav .brand');
-        if (!wm || !topBrand) return;
-        const start = 40;
-        const end = 220;
+        const bot = document.querySelector('.brand-bottom');
+        if (!topBrand || !bot) return;
+        const REST = 15; /* final px above the bottom edge */
         let raf = null;
         function update() {
-          const y = window.scrollY;
-          const t = Math.max(0, Math.min(1, (y - start) / (end - start)));
-          wm.style.opacity = t;
-          topBrand.style.opacity = String(1 - t);
+          const ty = Math.max(topBrand.getBoundingClientRect().top, -REST);
+          bot.style.transform = 'translateY(' + ty + 'px)';
           raf = null;
         }
         window.addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(update); }, { passive: true });
+        window.addEventListener('resize', () => { if (!raf) raf = requestAnimationFrame(update); }, { passive: true });
         update();
       })();
     </script>
