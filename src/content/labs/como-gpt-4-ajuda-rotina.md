@@ -3,6 +3,8 @@ title: 'Como o GPT-4 está ajudando minha rotina'
 description: 'Três tarefas de dono que parei de fazer na unha desde que o GPT-4 ganhou upload de arquivos: fórmulas de planilha, projeção de vendas e conferência de caixa.'
 pubDate: 'Apr 15 2023'
 updatedDate: 'Apr 26 2026'
+tags: ['gpt-4', 'planilhas', 'rotina']
+keywords: ['GPT-4 planilhas', 'análise com IA', 'projeção de vendas', 'fechamento de caixa', 'IA para empresas']
 ---
 
 O dono tem 3 a 5 planilhas que tomam a noite. Comparativo de venda, fechamento de caixa, planilha de produto que ninguém atualiza. Cada uma trava alguma decisão.
@@ -46,3 +48,5 @@ O GPT-4 lê dado, cruza informação e devolve hipótese. Quem usa só pra gerar
 O que mudou de verdade com o upload é a fricção zero: não preciso tratar o dado antes de perguntar. Subo o arquivo como está e começo. Planilha de três sistemas diferentes, extrato bancário direto do banco, resultado de cartão por operadora. Tudo entra.
 
 E o aprendizado que mais importa: o ROI desses três usos juntos não é economia de horas. É **espaço mental**. Esse efeito não cabe em métrica, mas é o que faz dono dormir.
+
+Três anos depois, esse mesmo princípio virou base do [Cortex Digital](/labs/segundo-cerebro-ia/): em vez de subir o mesmo arquivo toda semana, deixar o contexto persistente, lido por qualquer modelo. E [um agente acoplado ao WhatsApp](/labs/bot-whatsapp-inteligencia-pessoal/) começou a gerar a maior parte das hipóteses sozinho, sem eu precisar abrir nada.

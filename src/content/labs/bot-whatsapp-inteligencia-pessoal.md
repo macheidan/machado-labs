@@ -2,13 +2,15 @@
 title: 'Criei um agente de IA que cuida do meu WhatsApp'
 description: 'Tava perdendo coisa importante nos grupos toda semana. Coloquei um agente pra ler meu WhatsApp por mim, mandar o que precisa de resposta urgente no fim do dia, e um resumo de cada contato e cada grupo no domingo. Roda no PC de casa, custo zero, plugado no meu próprio número.'
 pubDate: 'May 01 2026'
+heroImage: '../imgs/260501.jpeg'
+heroAlt: 'Agente de IA lendo as mensagens do meu WhatsApp em segundo plano'
+tags: ['cortex', 'agentes', 'whatsapp']
+keywords: ['agente de IA WhatsApp', 'Cortex Digital', 'automação WhatsApp', 'Baileys', 'Gemini', 'agentes pessoais']
 ---
-
-![Agente de IA lendo as mensagens do meu WhatsApp em segundo plano](../imgs/260501.jpeg)
 
 Tava gastando tempo demais no WhatsApp. Lendo grupo de fornecedor, repassando coisa pro gerente, respondendo cotação, lendo o grupo da família que eu já tinha deixado de ler dois dias antes. Toda noite a sensação de que tinha passado coisa importante e eu não sabia o quê. Algumas vezes era só sensação. Algumas vezes não era, descobria na segunda quando o fornecedor cobrava resposta que nunca chegou.
 
-Eu já tava montando o [Meu Cortex Digital](https://fabiomachado.com.br/labs/segundo-cerebro-ia/) faz um tempo. Memória pronta, persona pronta, faltava a parte que eu chamei lá de "agência", o agente parar de só responder e começar a agir no meu mundo. Numa dessas noites caiu a ficha de que o WhatsApp era o lugar mais óbvio pra começar. É lá que minha atenção vaza primeiro.
+Eu já tava montando o [Meu Cortex Digital](/labs/segundo-cerebro-ia/) faz um tempo. Memória pronta, persona pronta, faltava a parte que eu chamei lá de "agência", o agente parar de só responder e começar a agir no meu mundo. Numa dessas noites caiu a ficha de que o WhatsApp era o lugar mais óbvio pra começar. É lá que minha atenção vaza primeiro.
 
 Em vez de bot que fala com cliente, bot que me lê. Lê os grupos por mim, lê as conversas por mim, e me manda no fim do dia o que precisa de resposta urgente, e no fim da semana um resumo de cada contato relevante e de cada grupo importante. Tudo o que ele observa também volta pro Cortex, então toda outra ferramenta de IA que eu uso depois já sabe quem andou falando comigo, do que andou falando, e o que ficou pendente.
 

@@ -2,6 +2,8 @@
 title: 'How I''m building My Digital Cortex'
 description: 'A pure markdown system, version-controlled in git, synced through Google Drive, and readable by any model. Persistent context for working across multiple projects and agents at once.'
 pubDate: 'Apr 26 2026'
+tags: ['cortex', 'agentes']
+keywords: ['second brain', 'Digital Cortex', 'AI memory', 'AI agents', 'markdown', 'Obsidian']
 ---
 
 The problem: There are many simultaneous projects, decisions made in different contexts, and every AI agent starts from scratch knowing nothing about me.
@@ -69,7 +71,7 @@ The bot runs in the background, no Chrome, no open window. Every week I get on m
 
 The most interesting part: every Sunday the bot reads my `perfil-fabio.md`, `persona-decisao.md`, and `familia.md` files and adds only what is genuinely new, no overwriting, no invention, only what it could observe in that week's messages.
 
-Details about this bot and how it connects with the Cortex are in [I built an AI agent that takes care of my WhatsApp](https://fabiomachado.com.br/labs-en/bot-whatsapp-inteligencia-pessoal/).
+Details about this bot and how it connects with the Cortex are in [I built an AI agent that takes care of my WhatsApp](/en/labs/bot-whatsapp-inteligencia-pessoal/).
 
 ## What I've learned so far
 

@@ -2,13 +2,15 @@
 title: 'I built an AI agent that takes care of my WhatsApp'
 description: 'I was missing important stuff in the groups every week. So I put an agent to read my WhatsApp for me, send me what needs an urgent reply at the end of the day, and a summary of every contact and every group on Sunday. Runs on the home PC, costs zero, plugged into my own number.'
 pubDate: 'May 01 2026'
+heroImage: '../imgs/260501.jpeg'
+heroAlt: 'AI agent reading my WhatsApp messages in the background'
+tags: ['cortex', 'agentes', 'whatsapp']
+keywords: ['WhatsApp AI agent', 'Digital Cortex', 'WhatsApp automation', 'Baileys', 'Gemini', 'personal agents']
 ---
-
-![AI agent reading my WhatsApp messages in the background](../imgs/260501.jpeg)
 
 I was spending too much time on WhatsApp. Reading the supplier groups, forwarding stuff to the manager, replying to quotes, reading the family group I had already given up on two days earlier. Every night, the feeling that something important had slipped through and I had no idea what. Sometimes it was just a feeling. Sometimes it wasn't, and I'd find out on Monday when a supplier was chasing a reply that never came.
 
-I had already been building [My Digital Cortex](https://fabiomachado.com.br/labs/segundo-cerebro-ia/) for a while. Memory ready, persona ready, and what was missing was the part I called "agency", the agent stops just answering and starts acting in my world. One of those nights it hit me that WhatsApp was the most obvious place to start. That's where my attention leaks first.
+I had already been building [My Digital Cortex](/en/labs/segundo-cerebro-ia/) for a while. Memory ready, persona ready, and what was missing was the part I called "agency", the agent stops just answering and starts acting in my world. One of those nights it hit me that WhatsApp was the most obvious place to start. That's where my attention leaks first.
 
 Instead of a bot that talks to customers, a bot that reads me. Reads the groups for me, reads the chats for me, sends me at the end of the day what needs an urgent reply, and at the end of the week a summary of every relevant contact and every important group. Whatever it observes flows back into the Cortex, so every other AI tool I use afterwards already knows who I've been talking to, what we've been talking about, and what's still pending.
 

@@ -2,11 +2,13 @@
 title: 'Por que estou documentando isso publicamente'
 description: 'Começa aqui. A decisão de expor o processo de construir um time de agentes de IA dentro das pizzerias é estratégica, não estética.'
 pubDate: 'Apr 25 2026'
+tags: ['manifesto', 'estrategia']
+keywords: ['IA aplicada', 'consultoria IA', 'documentar publicamente', 'agentes em empresas']
 ---
 
 Há uma diferença grande entre montar um agente de IA num laboratório e colocar um time inteiro deles para trabalhar dentro de uma empresa real. A maior parte do que você lê sobre IA na internet ignora essa diferença. Eu não posso me dar ao luxo de ignorar — **minhas duas pizzerias estão pagando a conta**.
 
-A Dáme Pizza e a Lov Pizza não são casos hipotéticos. Tem fornecedor para pagar, equipe para gerenciar, cardápio para revisar, anúncio para rodar, atendimento para responder. Tudo isso, todo dia, sem ferver. Nos últimos meses comecei a **substituir partes do meu cérebro por agentes** — financeiro, marketing, operações, atendimento, dados — e o resultado é estranho de explicar para quem ainda não viu funcionando.
+A Dáme Pizza e a Lov Pizza não são casos hipotéticos. Tem fornecedor para pagar, equipe para gerenciar, cardápio para revisar, anúncio para rodar, atendimento para responder. Tudo isso, todo dia, sem ferver. Nos últimos meses comecei a **substituir partes do meu cérebro por agentes** — financeiro, marketing, operações, atendimento, dados — e o resultado é estranho de explicar para quem ainda não viu funcionando. O primeiro deles que entrou em produção foi um [agente que cuida do meu WhatsApp](/labs/bot-whatsapp-inteligencia-pessoal/), conectado ao [Cortex Digital](/labs/segundo-cerebro-ia/) que serve de memória pra todos os outros.
 
 ## Por que público, não privado
 

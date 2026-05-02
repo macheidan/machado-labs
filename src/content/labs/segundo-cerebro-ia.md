@@ -2,6 +2,8 @@
 title: 'Como estou construindo o Meu Cortex Digital'
 description: 'Um sistema em markdown puro, versionado no git, sincronizado pelo Google Drive e lido por qualquer modelo. Contexto persistente para trabalhar com múltiplos projetos e agentes ao mesmo tempo.'
 pubDate: 'Apr 26 2026'
+tags: ['cortex', 'agentes']
+keywords: ['segundo cérebro', 'Cortex Digital', 'memória de IA', 'agentes de IA', 'markdown', 'Obsidian']
 ---
 
 O problema: São muitos projetos simultâneos, decisões tomadas em contextos diferentes, e cada agente de IA começa do zero sem saber nada sobre mim.
@@ -69,7 +71,7 @@ O bot roda em background, sem Chrome, sem janela aberta. Toda semana recebo no m
 
 O mais interessante: todo domingo o bot lê meus arquivos `perfil-fabio.md`, `persona-decisao.md` e `familia.md` e adiciona apenas o que for genuinamente novo, sem sobrescrever, sem inventar, só o que conseguiu observar nas mensagens da semana.
 
-Detalhes desse bot e de como ele se conecta com o Cortex estão em [Criei um agente de IA que cuida do meu WhatsApp](https://fabiomachado.com.br/labs/bot-whatsapp-inteligencia-pessoal/).
+Detalhes desse bot e de como ele se conecta com o Cortex estão em [Criei um agente de IA que cuida do meu WhatsApp](/labs/bot-whatsapp-inteligencia-pessoal/).
 
 ## O que aprendi até agora
 

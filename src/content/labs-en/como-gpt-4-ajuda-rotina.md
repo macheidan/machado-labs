@@ -3,6 +3,8 @@ title: 'How GPT-4 is helping my daily routine'
 description: 'Three owner tasks I stopped doing by hand once GPT-4 got file uploads: spreadsheet formulas, sales projections, and cash reconciliation.'
 pubDate: 'Apr 15 2023'
 updatedDate: 'Apr 26 2026'
+tags: ['gpt-4', 'planilhas', 'rotina']
+keywords: ['GPT-4 spreadsheets', 'AI analysis', 'sales projection', 'cash reconciliation', 'AI for SMB']
 ---
 
 The owner has 3 to 5 spreadsheets that eat his nights. Sales comparison, daily cash close, product list nobody updates. Each one stalls a decision.
@@ -46,3 +48,5 @@ GPT-4 reads data, cross-references information, and returns hypotheses. Whoever 
 What really changed with file upload is the zero-friction part: I don't need to clean the data before asking. I drop the file as-is and start. Spreadsheet from three different systems, bank statement straight from the bank, card results per operator. It all goes in.
 
 And the lesson that matters most: the ROI of these three uses together isn't time savings. It's **mental space**. That effect doesn't fit in a metric, but it's what lets the owner sleep.
+
+Three years later, the same principle became the foundation of the [Digital Cortex](/en/labs/segundo-cerebro-ia/): instead of uploading the same files every week, keep the context persistent, readable by any model. And [an agent wired to my WhatsApp](/en/labs/bot-whatsapp-inteligencia-pessoal/) started generating most of the hypotheses on its own, without me having to open anything.

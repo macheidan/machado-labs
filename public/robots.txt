@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
+Disallow: /v2/
+Disallow: /v3/
+Disallow: /v4/
 
 Sitemap: https://fabiomachado.com.br/sitemap-index.xml

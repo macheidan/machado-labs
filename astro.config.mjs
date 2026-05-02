@@ -28,12 +28,34 @@ function postLastmod(url) {
 	return Number.isNaN(date.valueOf()) ? null : date.toISOString();
 }
 
+function rehypeImageDefaults() {
+	return (tree) => {
+		const walk = (node) => {
+			if (node.type === 'element' && node.tagName === 'img') {
+				node.properties = node.properties || {};
+				if (node.properties.loading == null) node.properties.loading = 'lazy';
+				if (node.properties.decoding == null) node.properties.decoding = 'async';
+			}
+			if (node.children) node.children.forEach(walk);
+		};
+		walk(tree);
+	};
+}
+
 // https://astro.build/config
 export default defineConfig({
 	site: 'https://fabiomachado.com.br',
+	prefetch: {
+		prefetchAll: true,
+		defaultStrategy: 'viewport',
+	},
+	markdown: {
+		rehypePlugins: [rehypeImageDefaults],
+	},
 	integrations: [
 		mdx(),
 		sitemap({
+			filter: (page) => !/\/v[2-4]\//.test(page),
 			serialize(item) {
 				return { ...item, lastmod: postLastmod(item.url) || BUILD_TIME };
 			},

@@ -2,11 +2,13 @@
 title: 'Why I''m documenting this publicly'
 description: 'Start here. The decision to expose the process of building a team of AI agents inside the pizzerias is strategic, not aesthetic.'
 pubDate: 'Apr 25 2026'
+tags: ['manifesto', 'estrategia']
+keywords: ['applied AI', 'AI consulting', 'documenting publicly', 'agents in business']
 ---
 
 There's a big difference between building one AI agent in a lab and putting an entire team of them to work inside a real company. Most of what you read about AI online ignores this difference. I can't afford to ignore it — **my two pizzerias are paying the bill**.
 
-Dáme Pizza and Lov Pizza aren't hypotheticals. There are suppliers to pay, teams to manage, menus to review, ads to run, customers to answer. All of it, every day, without overheating. Over the last few months I've started **replacing parts of my brain with agents** — finance, marketing, operations, customer service, data — and the result is strange to explain to anyone who hasn't seen it working.
+Dáme Pizza and Lov Pizza aren't hypotheticals. There are suppliers to pay, teams to manage, menus to review, ads to run, customers to answer. All of it, every day, without overheating. Over the last few months I've started **replacing parts of my brain with agents** — finance, marketing, operations, customer service, data — and the result is strange to explain to anyone who hasn't seen it working. The first one that went into production is an [agent that watches my WhatsApp](/en/labs/bot-whatsapp-inteligencia-pessoal/), wired to the [Digital Cortex](/en/labs/segundo-cerebro-ia/) that serves as shared memory for everything else.
 
 ## Why public, not private
 

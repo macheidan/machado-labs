@@ -9,6 +9,10 @@ const schema = ({ image }: { image: () => any }) =>
 		pubDate: z.coerce.date(),
 		updatedDate: z.coerce.date().optional(),
 		heroImage: z.optional(image()),
+		heroAlt: z.string().optional(),
+		author: z.string().default('Fábio Machado'),
+		tags: z.array(z.string()).default([]),
+		keywords: z.array(z.string()).optional(),
 	});
 
 const labs = defineCollection({

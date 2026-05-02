@@ -135,14 +135,31 @@ export function articleGraph(opts: {
 	updatedDate?: Date;
 	slug: string;
 	imageUrl: string;
+	keywords?: string[];
 }) {
-	const { lang, title, description, pubDate, updatedDate, slug, imageUrl } = opts;
+	const { lang, title, description, pubDate, updatedDate, slug, imageUrl, keywords } = opts;
 	const isEn = lang === 'en';
 	const personId = isEn ? PERSON_EN_ID : PERSON_PT_ID;
 	const websiteId = isEn ? WEBSITE_EN_ID : WEBSITE_PT_ID;
 	const pageUrl = isEn ? `${SITE_URL}/en/labs/${slug}/` : `${SITE_URL}/labs/${slug}/`;
-	const labsLabel = isEn ? 'Labs' : 'Labs';
-	const homeLabel = isEn ? 'Home' : 'Home';
+	const labsUrl = isEn ? `${SITE_URL}/en/` : `${SITE_URL}/`;
+	const labsLabel = 'Labs';
+	const homeLabel = 'Home';
+
+	const article: Record<string, any> = {
+		'@type': 'Article',
+		headline: title,
+		description,
+		image: [imageUrl],
+		datePublished: pubDate.toISOString(),
+		dateModified: (updatedDate ?? pubDate).toISOString(),
+		inLanguage: isEn ? 'en' : 'pt-BR',
+		author: { '@id': personId },
+		publisher: { '@id': ORG_ID },
+		isPartOf: { '@id': websiteId },
+		mainEntityOfPage: { '@type': 'WebPage', '@id': pageUrl },
+	};
+	if (keywords && keywords.length > 0) article.keywords = keywords.join(', ');
 
 	return {
 		'@context': 'https://schema.org',
@@ -153,23 +170,49 @@ export function articleGraph(opts: {
 			{
 				'@type': 'BreadcrumbList',
 				itemListElement: [
-					{ '@type': 'ListItem', position: 1, name: homeLabel, item: isEn ? `${SITE_URL}/en/` : `${SITE_URL}/` },
-					{ '@type': 'ListItem', position: 2, name: labsLabel },
+					{ '@type': 'ListItem', position: 1, name: homeLabel, item: labsUrl },
+					{ '@type': 'ListItem', position: 2, name: labsLabel, item: labsUrl },
 					{ '@type': 'ListItem', position: 3, name: title, item: pageUrl },
 				],
 			},
+			article,
+		],
+	};
+}
+
+export function tagGraph(opts: {
+	lang: 'pt' | 'en';
+	tag: string;
+	tagLabel: string;
+	description: string;
+}) {
+	const { lang, tag, tagLabel, description } = opts;
+	const isEn = lang === 'en';
+	const websiteId = isEn ? WEBSITE_EN_ID : WEBSITE_PT_ID;
+	const pageUrl = isEn ? `${SITE_URL}/en/labs/tags/${tag}/` : `${SITE_URL}/labs/tags/${tag}/`;
+	const labsUrl = isEn ? `${SITE_URL}/en/` : `${SITE_URL}/`;
+
+	return {
+		'@context': 'https://schema.org',
+		'@graph': [
+			organization(),
+			website(lang, description),
+			isEn ? personEn() : personPt(),
 			{
-				'@type': 'Article',
-				headline: title,
+				'@type': 'BreadcrumbList',
+				itemListElement: [
+					{ '@type': 'ListItem', position: 1, name: 'Home', item: labsUrl },
+					{ '@type': 'ListItem', position: 2, name: 'Labs', item: labsUrl },
+					{ '@type': 'ListItem', position: 3, name: tagLabel, item: pageUrl },
+				],
+			},
+			{
+				'@type': 'CollectionPage',
+				name: tagLabel,
 				description,
-				image: [imageUrl],
-				datePublished: pubDate.toISOString(),
-				dateModified: (updatedDate ?? pubDate).toISOString(),
+				url: pageUrl,
 				inLanguage: isEn ? 'en' : 'pt-BR',
-				author: { '@id': personId },
-				publisher: { '@id': ORG_ID },
 				isPartOf: { '@id': websiteId },
-				mainEntityOfPage: { '@type': 'WebPage', '@id': pageUrl },
 			},
 		],
 	};
