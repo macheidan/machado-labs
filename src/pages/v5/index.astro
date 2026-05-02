@@ -215,36 +215,23 @@ const rest = posts.slice(1);
       }
       .arrow { color: rgba(44,31,21,0.5); font-size: 18px; transition: transform 250ms, color 250ms; }
 
-      /* breathing room before mountains release */
-      .dawn-tail { height: 18vh; }
+      /* room below the last post so it can scroll above the mountain line */
+      .dawn-tail { height: 50vh; }
 
-      /* MOUNTAINS — sticky at viewport bottom while inside .dawn */
-      .mountains-sticky {
-        position: sticky;
-        bottom: -1px;
+      /* MOUNTAINS — fixed at viewport bottom, always */
+      .mountains-fixed {
+        position: fixed;
+        left: 0; right: 0; bottom: 0;
         width: 100%;
         z-index: 4;
         pointer-events: none;
         line-height: 0;
-        margin-top: -32vh;
       }
-      .mountains-sticky img {
+      .mountains-fixed img {
         width: 100%;
         height: auto;
         display: block;
       }
-
-      /* FOOTER outside dawn */
-      footer.site {
-        background: var(--bg);
-        padding: 32px 40px;
-        border-top: 1px solid var(--line);
-        display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px;
-        font-size: 13px; color: var(--muted);
-        max-width: 1240px; margin: 0 auto;
-      }
-      footer .left { grid-column: 1 / 7; }
-      footer .right { grid-column: 7 / 13; text-align: right; }
 
       @media (max-width: 800px) {
         .dawn-nav { grid-template-columns: 1fr; gap: 8px; padding: 20px 24px; text-align: center; }
@@ -261,9 +248,6 @@ const rest = posts.slice(1);
         .post-row { grid-template-columns: 90px 1fr auto; gap: 10px; }
         .post-num { display: none; }
         .post-title { font-size: 17px; }
-        .mountains-sticky { margin-top: -20vh; }
-        footer.site { padding: 24px; }
-        footer .left, footer .right { grid-column: 1 / 13; text-align: left; }
       }
     </style>
   </head>
@@ -348,15 +332,10 @@ const rest = posts.slice(1);
       </div>
 
       <div class="dawn-tail"></div>
-
-      <div class="mountains-sticky">
-        <Image src={mountains} alt="" width={2752} height={898} loading="eager" />
-      </div>
     </section>
 
-    <footer class="site">
-      <span class="left">© Fábio Machado · Porto Alegre</span>
-      <span class="right">Skin v5 · Dawn Ridge</span>
-    </footer>
+    <div class="mountains-fixed">
+      <Image src={mountains} alt="" width={2752} height={898} loading="eager" />
+    </div>
   </body>
 </html>
