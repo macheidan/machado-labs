@@ -64,17 +64,16 @@ const rest = posts.slice(1);
         font-size: 22px; letter-spacing: 0.18em; text-transform: uppercase;
         text-align: center;
       }
-      .dawn-nav .right { display: flex; gap: 14px; justify-content: flex-end; align-items: center; font-size: 13px; }
-      .dawn-nav .right a { opacity: 0.75; transition: opacity 150ms; }
-      .dawn-nav .right a:hover, .dawn-nav .right a.active { opacity: 1; }
-      .skin-switch { display: flex; gap: 4px; }
-      .skin-switch a {
-        padding: 4px 9px; font-size: 11px;
-        border: 1px solid rgba(44,31,21,0.25); border-radius: 999px;
-        font-weight: 500; opacity: 0.7;
-      }
-      .skin-switch a.active { background: #2c1f15; color: #f4ecdc; border-color: #2c1f15; opacity: 1; }
-      .skin-switch a:hover { opacity: 1; border-color: rgba(44,31,21,0.6); }
+      .dawn-nav .right { display: flex; gap: 18px; justify-content: flex-end; align-items: center; font-size: 13px; }
+      .dawn-nav .right > a { opacity: 0.75; transition: opacity 150ms; }
+      .dawn-nav .right > a:hover, .dawn-nav .right > a.active { opacity: 1; }
+      .lang { display: inline-flex; align-items: center; gap: 6px; }
+      .lang a { opacity: 0.75; transition: opacity 150ms; }
+      .lang a.active, .lang a:hover { opacity: 1; }
+      .lang .sep { opacity: 0.4; }
+      .x-icon { display: inline-flex; align-items: center; opacity: 0.75; transition: opacity 150ms; }
+      .x-icon:hover { opacity: 1; }
+      .x-icon svg { width: 14px; height: 14px; fill: currentColor; display: block; }
 
       /* HERO INTRO — links to the latest post */
       .dawn-hero {
@@ -234,7 +233,7 @@ const rest = posts.slice(1);
       /* room below the last post so it can scroll above the mountain line */
       .dawn-tail { height: 50vh; }
 
-      /* BOTTOM BRAND — pixel-perfect mirror of the top brand position */
+      /* BOTTOM BRAND — pixel-perfect mirror, 50% size of the nav brand */
       .brand-bottom {
         position: fixed;
         left: 0; right: 0; top: 0;
@@ -244,7 +243,7 @@ const rest = posts.slice(1);
         user-select: none;
         font-family: 'Fraunces', serif;
         font-weight: 500;
-        font-size: 22px;
+        font-size: 11px;
         letter-spacing: 0.18em;
         text-transform: uppercase;
         color: #ffffff;
@@ -292,9 +291,14 @@ const rest = posts.slice(1);
         <a href="/v5" class="brand">Fábio Machado</a>
         <span class="right">
           <a href="/v5/about">sobre</a>
-          <a href="/en">en</a>
-          <a href="/v5" class="active">ptbr</a>
-          <a href="https://x.com/machadofabio" target="_blank" rel="noopener">x</a>
+          <span class="lang">
+            <a href="/en">en</a>
+            <span class="sep">|</span>
+            <a href="/v5" class="active">ptbr</a>
+          </span>
+          <a class="x-icon" href="https://x.com/machadofabio" target="_blank" rel="noopener" aria-label="X (Twitter)">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
         </span>
       </nav>
 
@@ -378,13 +382,13 @@ const rest = posts.slice(1);
         const topBrand = document.querySelector('.dawn-nav .brand');
         const bot = document.querySelector('.brand-bottom');
         if (!topBrand || !bot) return;
-        const REST = 15; /* px between bottom brand bottom and viewport bottom once fully in */
+        const REST = 10; /* px between bottom brand bottom and viewport bottom once fully in */
         let raf = null;
         function update() {
           const r = topBrand.getBoundingClientRect();
           const vh = window.innerHeight;
           const mirror = r.top + vh;
-          const restCap = vh - r.height - REST;
+          const restCap = vh - bot.getBoundingClientRect().height - REST;
           const offset = Math.max(mirror, restCap);
           bot.style.transform = 'translateY(' + offset + 'px)';
           raf = null;
