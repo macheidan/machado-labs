@@ -75,14 +75,19 @@ const rest = posts.slice(1);
       .x-icon:hover { opacity: 1; }
       .x-icon svg { width: 14px; height: 14px; fill: currentColor; display: block; }
 
-      /* HERO INTRO — first version, hardcoded copy */
+      /* HERO INTRO — links to the latest post; heroTitle drives the diagram */
       .dawn-hero {
         position: relative; z-index: 1;
+        display: block;
         text-align: center;
         padding: 16vh 24px 22vh;
         max-width: 1280px;
         margin: 0 auto;
+        color: inherit;
+        text-decoration: none;
+        transition: opacity 200ms;
       }
+      .dawn-hero:hover { opacity: 0.82; }
       .dawn-hero h1 {
         font-family: 'Fraunces', serif;
         font-weight: 300; font-style: italic;
@@ -297,10 +302,14 @@ const rest = posts.slice(1);
         </span>
       </nav>
 
-      <div class="dawn-hero">
-        <h1>um <em>cortex</em> digital<br/>que roda <span class="accent">negócio</span></h1>
-        <p class="sub">Documentando ao vivo · Lov · Dáme · Consultoria</p>
-      </div>
+      {featured && (
+        <a class="dawn-hero" href={`/v5/labs/${featured.id}`}>
+          {featured.data.heroTitle
+            ? <h1 set:html={featured.data.heroTitle} />
+            : <h1>{featured.data.title}</h1>}
+          <p class="sub">Mais recente</p>
+        </a>
+      )}
 
       <div class="dawn-posts">
         <section class="section-intro">
