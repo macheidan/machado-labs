@@ -9,37 +9,6 @@ const posts = (await getCollection('labs'))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 const featured = posts[0];
 const rest = posts.slice(1);
-
-const stopwords = new Set([
-  'de','do','da','dos','das','e','o','a','os','as','um','uma','uns','umas',
-  'em','no','na','nos','nas','com','por','para','pra','que','se','sem',
-  'meu','minha','meus','minhas','seu','sua','seus','suas','nosso','nossa',
-  'mais','menos','já','ainda','muito','pouco','bem','mal'
-]);
-
-type StyledPart = { token: string; kind: 'plain' | 'em' | 'accent' };
-function styleTitle(text: string): StyledPart[] {
-  const tokens = text.split(/(\s+)/);
-  const real = tokens
-    .map((t, i) => ({
-      token: t,
-      i,
-      norm: t.toLowerCase().replace(/[^\p{L}]/gu, ''),
-    }))
-    .filter(p => /\S/.test(p.token));
-
-  const lastSig = [...real].reverse().find(p => p.norm.length >= 3 && !stopwords.has(p.norm));
-  const longest = real
-    .filter(p => p.norm.length >= 4 && !stopwords.has(p.norm) && p.i !== lastSig?.i)
-    .reduce<typeof real[number] | null>((a, b) => (a && a.norm.length >= b.norm.length ? a : b), null);
-
-  return tokens.map((token, i) => {
-    if (lastSig && i === lastSig.i) return { token, kind: 'accent' };
-    if (longest && i === longest.i) return { token, kind: 'em' };
-    return { token, kind: 'plain' };
-  });
-}
-const titleParts = featured ? styleTitle(featured.data.title) : [];
 ---
 
 <!doctype html>
@@ -106,45 +75,28 @@ const titleParts = featured ? styleTitle(featured.data.title) : [];
       .x-icon:hover { opacity: 1; }
       .x-icon svg { width: 14px; height: 14px; fill: currentColor; display: block; }
 
-      /* HERO INTRO — vertically centered in the space above the mountains */
+      /* HERO INTRO — first version, hardcoded copy */
       .dawn-hero {
         position: relative; z-index: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
         text-align: center;
-        min-height: max(360px, calc(100vh - 32.6vw - 80px));
-        padding: 16px 24px 24px;
-        color: inherit;
-        text-decoration: none;
-        transition: opacity 200ms;
+        padding: 16vh 24px 22vh;
+        max-width: 1280px;
+        margin: 0 auto;
       }
-      .dawn-hero:hover { opacity: 0.82; }
       .dawn-hero h1 {
-        max-width: 880px;
         font-family: 'Fraunces', serif;
         font-weight: 300; font-style: italic;
-        font-size: clamp(36px, 5vw, 76px);
-        line-height: 1.02; letter-spacing: -0.02em;
+        font-size: clamp(64px, 12vw, 184px);
+        line-height: 0.95; letter-spacing: -0.02em;
         color: #2a1a0e;
         text-wrap: balance;
       }
-      .dawn-hero h1 em {
-        font-style: italic;
-        font-weight: 500;
-        color: #6b3d20;
-      }
-      .dawn-hero h1 .accent {
-        font-style: normal;
-        font-weight: 600;
-        color: #c2683a;
-        letter-spacing: -0.025em;
-      }
+      .dawn-hero h1 em { font-style: italic; font-weight: 400; color: #6b3d20; }
+      .dawn-hero h1 .accent { font-style: normal; font-weight: 500; color: #6b3d20; }
       .dawn-hero p.sub {
-        margin-top: 28px; font-size: 11px;
-        letter-spacing: 0.24em; text-transform: uppercase; font-weight: 600;
-        color: #2c1f15; opacity: 0.65;
+        margin-top: 28px; font-size: 13px;
+        letter-spacing: 0.18em; text-transform: uppercase;
+        color: #2c1f15; opacity: 0.8;
       }
 
       /* POSTS BLOCK */
@@ -301,11 +253,8 @@ const titleParts = featured ? styleTitle(featured.data.title) : [];
       @media (max-width: 800px) {
         .dawn-nav { grid-template-columns: 1fr; gap: 8px; padding: 20px 24px; text-align: center; }
         .dawn-nav .left, .dawn-nav .right { justify-content: center; display: flex; }
-        .dawn-hero {
-          min-height: max(320px, calc(100vh - 32.6vw - 130px));
-          padding: 12px 16px 16px;
-        }
-        .dawn-hero h1 { font-size: clamp(28px, 8vw, 52px); max-width: 100%; }
+        .dawn-hero { padding: 12vh 16px 16vh; }
+        .dawn-hero h1 { font-size: 16vw; }
         .dawn-posts { padding: 0 20px; }
         .section-intro { padding: 56px 0 24px; }
         .section-intro h2, .section-intro p { grid-column: 1 / 13; }
@@ -337,16 +286,10 @@ const titleParts = featured ? styleTitle(featured.data.title) : [];
         </span>
       </nav>
 
-      {featured && (
-        <a class="dawn-hero" href={`/v5/labs/${featured.id}`}>
-          <h1>{titleParts.map(p =>
-            p.kind === 'accent' ? <span class="accent">{p.token}</span> :
-            p.kind === 'em' ? <em>{p.token}</em> :
-            p.token
-          )}</h1>
-          <p class="sub">Mais recente</p>
-        </a>
-      )}
+      <div class="dawn-hero">
+        <h1>um <em>cortex</em> digital<br/>que roda <span class="accent">negócio</span></h1>
+        <p class="sub">Documentando ao vivo · Lov · Dáme · Consultoria</p>
+      </div>
 
       <div class="dawn-posts">
         <section class="section-intro">
