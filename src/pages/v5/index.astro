@@ -104,11 +104,6 @@ const rest = posts.slice(1);
         line-height: 0.95; letter-spacing: -0.02em;
         color: #2a1a0e;
         text-wrap: balance;
-        display: -webkit-box;
-        -webkit-line-clamp: 3;
-        line-clamp: 3;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
       }
       .dawn-hero h1 :global(em) {
         font-style: italic;
@@ -127,6 +122,33 @@ const rest = posts.slice(1);
         margin: 0; font-size: 13px;
         letter-spacing: 0.18em; text-transform: uppercase;
         color: #2c1f15; opacity: 0.8;
+      }
+      .scroll-cue {
+        position: relative;
+        width: 1px;
+        height: 48px;
+        background: rgba(44, 31, 21, 0.18);
+        margin-top: 4px;
+      }
+      .scroll-cue::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -2px;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: #2c1f15;
+        animation: scrollDot 2.2s cubic-bezier(.45, 0, .55, 1) infinite;
+      }
+      @keyframes scrollDot {
+        0% { transform: translateY(-10px); opacity: 0; }
+        18% { transform: translateY(0); opacity: 1; }
+        82% { transform: translateY(43px); opacity: 1; }
+        100% { transform: translateY(56px); opacity: 0; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .scroll-cue::after { animation: none; opacity: 0.6; }
       }
 
       /* POSTS BLOCK */
@@ -285,13 +307,7 @@ const rest = posts.slice(1);
         .dawn-nav .left, .dawn-nav .right { justify-content: center; display: flex; }
         .dawn-hero { min-height: calc(100vh - 130px); }
         .dawn-hero .copy { padding: 0 16px; gap: 20px; transform: translateY(calc(-30px - 5%)); }
-        .dawn-hero h1 {
-          font-size: 12vw;
-          display: block;
-          -webkit-line-clamp: unset;
-          line-clamp: unset;
-          overflow: visible;
-        }
+        .dawn-hero h1 { font-size: 12vw; }
         .dawn-posts { padding: 0 20px; }
         .section-intro { padding: 56px 0 24px; }
         .section-intro h2, .section-intro p { grid-column: 1 / 13; }
@@ -327,7 +343,8 @@ const rest = posts.slice(1);
             {featured.data.heroTitle
               ? <h1 set:html={featured.data.heroTitle} />
               : <h1>{featured.data.title}</h1>}
-            <p class="sub">Mais recente</p>
+            <p class="sub">Post recente</p>
+            <div class="scroll-cue" aria-hidden="true"></div>
           </div>
         </a>
       )}
