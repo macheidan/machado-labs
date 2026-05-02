@@ -81,11 +81,7 @@ const rest = posts.slice(1);
         min-height: calc(100vh - 80px);
         max-width: 1280px;
         margin: 0 auto;
-        color: inherit;
-        text-decoration: none;
       }
-      .dawn-hero .copy { transition: opacity 200ms; }
-      .dawn-hero:hover .copy { opacity: 0.82; }
       .dawn-hero .copy {
         grid-row: 2;
         display: flex;
@@ -98,7 +94,11 @@ const rest = posts.slice(1);
         --scrollPara: 0px;
         transform: translate3d(0, calc(-10% + var(--scrollPara)), 0);
         will-change: transform;
+        color: inherit;
+        text-decoration: none;
+        transition: opacity 200ms;
       }
+      .dawn-hero .copy:hover { opacity: 0.82; }
       .dawn-hero h1 {
         font-family: 'Fraunces', serif;
         font-weight: 300; font-style: italic;
@@ -337,15 +337,15 @@ const rest = posts.slice(1);
       </nav>
 
       {featured && (
-        <a class="dawn-hero" href={`/v5/labs/${featured.id}`}>
-          <div class="copy">
+        <section class="dawn-hero">
+          <a class="copy" href={`/v5/labs/${featured.id}`}>
             {featured.data.heroTitle
               ? <h1 set:html={featured.data.heroTitle} />
               : <h1>{featured.data.title}</h1>}
             <p class="sub">Ler</p>
             <div class="scroll-cue" aria-hidden="true"></div>
-          </div>
-        </a>
+          </a>
+        </section>
       )}
 
       <div class="dawn-posts">
