@@ -9,41 +9,94 @@ tags: ['cortex', 'agentes', 'whatsapp']
 keywords: ['agente de IA WhatsApp', 'Cortex Digital', 'automação WhatsApp', 'Baileys', 'Gemini', 'agentes pessoais']
 ---
 
-Tava gastando tempo demais no WhatsApp. Lendo grupo de fornecedor, repassando coisa pro gerente, respondendo cotação, lendo o grupo da família que eu já tinha deixado de ler dois dias antes. Toda noite a sensação de que tinha passado coisa importante e eu não sabia o quê. Algumas vezes era só sensação. Algumas vezes não era, descobria na segunda quando o fornecedor cobrava resposta que nunca chegou.
+Tava gastando **tempo demais no WhatsApp**. Lendo grupo de fornecedor, repassando coisa pro gerente, respondendo cotação, lendo o grupo da família que eu já tinha deixado de ler dois dias antes.
 
-Eu já tava montando o [Meu Cortex Digital](/labs/segundo-cerebro-ia/) faz um tempo. Memória pronta, persona pronta, faltava a parte que eu chamei lá de "agência", o agente parar de só responder e começar a agir no meu mundo. Numa dessas noites caiu a ficha de que o WhatsApp era o lugar mais óbvio pra começar. É lá que minha atenção vaza primeiro.
+Toda noite a mesma sensação: passou coisa importante e eu não sei o quê.
 
-Em vez de bot que fala com cliente, bot que me lê. Lê os grupos por mim, lê as conversas por mim, e me manda no fim do dia o que precisa de resposta urgente, e no fim da semana um resumo de cada contato relevante e de cada grupo importante. Tudo o que ele observa também volta pro Cortex, então toda outra ferramenta de IA que eu uso depois já sabe quem andou falando comigo, do que andou falando, e o que ficou pendente.
+Algumas vezes era só sensação. Outras não. Descobria na segunda quando o fornecedor cobrava uma resposta que **nunca chegou**.
 
-Montei numa noite. Tá rodando no PC que já fica ligado em casa. Plugado no meu próprio número. Ele fica olhando junto comigo, vê tudo que eu vejo, e não fala com ninguém.
+## Em vez de bot que fala, bot que lê
 
-Primeira semana já valeu. Domingo de noite chegou o resumo no meu celular e tinham dois assuntos que eu não tinha visto. Um fornecedor cobrando cotação que eu jurava ter respondido. Um lembrete da escola do meu filho que eu ia perder o prazo. Nenhum dos dois ia me quebrar. Os dois iam me dar dor de cabeça.
+Eu já tava montando o [Meu Cortex Digital](/labs/segundo-cerebro-ia/) faz um tempo. Memória pronta, persona pronta, faltava a parte que eu chamei lá de *"agência"*: o agente parar de só responder e começar a **agir no meu mundo**.
+
+Numa dessas noites caiu a ficha. O WhatsApp era o lugar mais óbvio pra começar. É lá que minha atenção vaza primeiro.
+
+> Em vez de bot que fala com cliente, bot que me lê.
+
+Lê os grupos por mim. Lê as conversas por mim. Me manda no fim do dia o que precisa de resposta urgente, e no fim da semana um resumo de cada contato relevante e de cada grupo importante.
+
+Tudo o que ele observa volta pro Cortex. Toda outra ferramenta de IA que eu uso depois já sabe quem andou falando comigo, do que andou falando, e o que ficou pendente.
+
+## Montei numa noite
+
+Tá rodando no PC que já fica ligado em casa. Plugado no meu próprio número. **Ele fica olhando junto comigo, vê tudo que eu vejo, e não fala com ninguém.**
+
+Primeira semana já valeu.
+
+Domingo de noite chegou o resumo no meu celular e tinham **dois assuntos que eu não tinha visto**:
+
+1. Um fornecedor cobrando cotação que eu jurava ter respondido.
+2. Um lembrete da escola do meu filho — eu ia perder o prazo.
+
+Nenhum dos dois ia me quebrar. Os dois iam me dar dor de cabeça.
 
 > O problema não era WhatsApp. Era atenção.
 
 WhatsApp só era o lugar onde ela vazava primeiro.
 
-A parte que mais me interessou não foi nem o resumo dos grupos, foi o resumo dos contatos individuais. O bot olha as últimas semanas com cada pessoa relevante, escreve em duas linhas o que tá rolando no relacionamento, marca quando alguém sumiu. Eu lembrava de pessoas no automático, no susto, quando algo me cobrava. Agora tem alguém me empurrando isso pra cima toda semana antes de virar problema.
+## O resumo dos contatos
 
-Outra coisa que ele faz é ler as **minhas próprias mensagens**. Domingo de noite ele compara o que eu falei na semana com o que ele já sabia sobre mim e atualiza meu perfil dentro do Cortex. Sem inventar, só o que dá pra observar do que eu mesmo escrevi.
+A parte que mais me interessou não foi nem o resumo dos grupos. **Foi o resumo dos contatos individuais.**
 
-Aqui tem uma pegadinha que demorei pra entender. Esse é justamente o ponto onde um modelo solto inventa o universo. A primeira versão me devolveu romance. Traçou perfil psicológico de gente com quem troquei três mensagens. Deduziu intenção que ninguém disse. Pareceu profundo. Era invenção.
+O bot olha as últimas semanas com cada pessoa relevante, escreve em duas linhas o que tá rolando no relacionamento, marca quando alguém sumiu.
 
-Reescrevi o prompt obrigando formato fixo e proibindo invenção. Se não tem o que dizer, não diz. A regra que ficou foi essa: prefiro nada do que errado. Esse bot escreve no Cortex. Se ele inventar, eu vou tomar decisão na próxima semana baseado em invenção dele. O custo de uma alucinação aqui não compensa a graça de um relatório mais "rico".
+Eu lembrava de pessoas no automático. No susto. Quando algo já me cobrava.
 
-Pra não depender de um único modelo de IA, montei um plano B, C e D. Se o primeiro cair ou estourar quota, ele tenta o segundo. Se o segundo cair, vai pro terceiro. Não é luxo. Modelo é depreciado de uma semana pra outra, quota acaba, API cai num domingo de noite. O bot precisa rodar.
+Agora tem alguém me empurrando isso pra cima toda semana, **antes de virar problema**.
 
-Custo até hoje: zero. Tudo cabe nos planos gratuitos pra escala de uma pessoa.
+Outra coisa que ele faz é ler as **minhas próprias mensagens**. Domingo de noite ele compara o que eu falei na semana com o que ele já sabia sobre mim e atualiza meu perfil dentro do Cortex. Sem inventar. Só o que dá pra observar do que eu mesmo escrevi.
 
-Tem uma coisa que ainda tô amassando, que é a **fase 2**. A fase 1 é leitura. A fase 2 é deixar ele responder coisa pequena por mim, dentro de regra clara. "Tô a caminho", "recebi sim", "que horas a gente combinou", confirmação de pagamento que o financeiro já tinha me passado. Nada de cliente final, nada de decisão. Só o agradecimento e a confirmação que comem o meu dia sem agregar nada.
+## A pegadinha da invenção
 
-Pra isso funcionar sem virar pesadelo, preciso de três coisas no lugar.
+Aqui tem uma pegadinha que demorei pra entender.
 
-1. Saber quem é cada contato. A fase 1 já tá construindo isso no Cortex.
-2. Regra clara do que ele responde sozinho, do que ele rascunha pra eu aprovar com um clique, e do que ele nunca toca.
-3. Aprender o jeito que eu escrevo, pra resposta dele parecer comigo.
+Esse é justamente o ponto onde um modelo solto **inventa o universo**. A primeira versão me devolveu romance. Traçou perfil psicológico de gente com quem troquei três mensagens. Deduziu intenção que ninguém disse.
+
+Pareceu profundo. Era invenção.
+
+Reescrevi o prompt obrigando formato fixo e proibindo invenção. Se não tem o que dizer, não diz.
+
+> Prefiro nada do que errado.
+
+Esse bot escreve no Cortex. Se ele inventar, eu vou tomar decisão na próxima semana baseado em invenção dele. O custo de uma alucinação aqui **não compensa** a graça de um relatório mais "rico".
+
+## Plano B, C, D
+
+Pra não depender de um único modelo de IA, montei redundância: se o primeiro cair ou estourar quota, ele tenta o segundo. Se o segundo cair, vai pro terceiro.
+
+Não é luxo. **Modelo é depreciado de uma semana pra outra**, quota acaba, API cai num domingo de noite.
+
+O bot precisa rodar.
+
+Custo até hoje: **zero**. Tudo cabe nos planos gratuitos pra escala de uma pessoa.
+
+## Fase 2: deixar ele responder
+
+Tem uma coisa que ainda tô amassando.
+
+A fase 1 é leitura. **A fase 2 é deixar ele responder coisa pequena por mim**, dentro de regra clara. *"Tô a caminho"*, *"recebi sim"*, *"que horas a gente combinou"*, confirmação de pagamento que o financeiro já tinha me passado.
+
+Nada de cliente final. Nada de decisão. Só o agradecimento e a confirmação que comem o meu dia sem agregar nada.
+
+Pra isso funcionar sem virar pesadelo, preciso de três coisas no lugar:
+
+1. **Saber quem é cada contato.** A fase 1 já tá construindo isso no Cortex.
+2. **Regra clara** do que ele responde sozinho, do que ele rascunha pra eu aprovar com um clique, e do que ele nunca toca.
+3. **Aprender o jeito que eu escrevo**, pra resposta dele parecer comigo.
 
 Os três caminhos saem da mesma fonte: o agente lendo o que eu mesmo escrevo.
+
+---
 
 Por enquanto ele só lê. E só de ler já mudou a forma como eu chego em segunda de manhã.
 
