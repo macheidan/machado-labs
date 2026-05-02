@@ -218,32 +218,22 @@ const rest = posts.slice(1);
       /* room below the last post so it can scroll above the mountain line */
       .dawn-tail { height: 50vh; }
 
-      /* WATERMARK — white "Fábio Machado" peeks from behind the mountains */
-      .brand-watermark {
+      /* BOTTOM BRAND — same as top, white, fixed 15px above the bottom edge */
+      .brand-bottom {
         position: fixed;
-        left: 0; right: 0; bottom: 0;
-        z-index: 3;
-        height: 32vw;
-        display: flex;
-        align-items: flex-end;
-        justify-content: center;
-        padding-bottom: 6vw;
+        left: 0; right: 0; bottom: 15px;
+        z-index: 5;
+        text-align: center;
         pointer-events: none;
         user-select: none;
-        overflow: hidden;
         opacity: 0;
         will-change: opacity;
-      }
-      .brand-watermark span {
         font-family: 'Fraunces', serif;
-        font-weight: 300;
-        font-style: italic;
-        font-size: clamp(110px, 20vw, 320px);
-        line-height: 0.9;
-        letter-spacing: -0.025em;
+        font-weight: 500;
+        font-size: 22px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
         color: #ffffff;
-        white-space: nowrap;
-        display: inline-block;
       }
 
       /* MOUNTAINS — fixed at viewport bottom, in front of watermark */
@@ -362,14 +352,14 @@ const rest = posts.slice(1);
       <div class="dawn-tail"></div>
     </section>
 
-    <div class="brand-watermark"><span>Fábio Machado</span></div>
     <div class="mountains-fixed">
       <Image src={mountains} alt="" width={2752} height={898} loading="eager" />
     </div>
+    <div class="brand-bottom">Fábio Machado</div>
 
     <script is:inline>
       (function () {
-        const wm = document.querySelector('.brand-watermark');
+        const wm = document.querySelector('.brand-bottom');
         const topBrand = document.querySelector('.dawn-nav .brand');
         if (!wm || !topBrand) return;
         const start = 40;
