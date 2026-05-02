@@ -20,73 +20,53 @@ const rest = posts.slice(1);
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <style>
       :root {
-        --bg: #F4ECDC;
-        --fg: #1A1410;
-        --muted: #5C4F42;
-        --faint: #8B7B6A;
-        --line: #D9CCB8;
-        --accent: #C2683A;
-        --warm: #ECB05A;
+        --bg: #F4ECDC; --fg: #1A1410; --muted: #5C4F42;
+        --faint: #8B7B6A; --line: #D9CCB8; --accent: #C2683A; --warm: #ECB05A;
       }
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-      html { scroll-behavior: smooth; }
+      html, body { background: var(--bg); }
       body {
-        background: var(--bg); color: var(--fg);
+        color: var(--fg);
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        font-size: 17px; line-height: 1.55; min-height: 100vh;
+        font-size: 17px; line-height: 1.55;
         -webkit-font-smoothing: antialiased;
       }
       ::selection { background: var(--accent); color: #fff; }
       a { color: inherit; text-decoration: none; }
 
-      /* HERO */
-      .hero {
+      /* DAWN — sky gradient over the whole section, mountains sticky at bottom */
+      .dawn {
         position: relative;
-        height: 100vh;
-        min-height: 720px;
-        overflow: hidden;
         background: linear-gradient(
           180deg,
           #6e5e7f 0%,
-          #a88a87 14%,
-          #c9b18d 32%,
-          #d7b88b 46%,
-          #e1ba81 58%,
-          #e7b874 68%,
-          #ecb05a 78%,
-          #c28242 88%,
+          #a88a87 7%,
+          #c9b18d 16%,
+          #d7b88b 26%,
+          #e1ba81 36%,
+          #e7b874 46%,
+          #ecb05a 58%,
+          #c28242 72%,
           #6b4628 100%
         );
       }
-      .hero::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background:
-          radial-gradient(ellipse 70% 35% at 50% 78%, rgba(255,210,140,0.55), transparent 70%),
-          radial-gradient(ellipse 30% 12% at 50% 80%, rgba(255,235,180,0.6), transparent 70%);
-        pointer-events: none;
-        z-index: 1;
-      }
 
-      .hero-nav {
-        position: absolute;
-        top: 0; left: 0; right: 0;
-        z-index: 5;
+      .dawn-nav {
+        position: relative; z-index: 5;
         display: grid; grid-template-columns: 1fr auto 1fr;
         align-items: center;
         padding: 28px 40px;
         color: #2c1f15;
       }
-      .hero-nav .left { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.75; }
-      .hero-nav .brand {
+      .dawn-nav .left { font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.75; }
+      .dawn-nav .brand {
         font-family: 'Fraunces', serif; font-weight: 500;
         font-size: 22px; letter-spacing: 0.18em; text-transform: uppercase;
         text-align: center;
       }
-      .hero-nav .right { display: flex; gap: 14px; justify-content: flex-end; align-items: center; font-size: 13px; }
-      .hero-nav .right a { opacity: 0.75; transition: opacity 150ms; }
-      .hero-nav .right a:hover, .hero-nav .right a.active { opacity: 1; }
+      .dawn-nav .right { display: flex; gap: 14px; justify-content: flex-end; align-items: center; font-size: 13px; }
+      .dawn-nav .right a { opacity: 0.75; transition: opacity 150ms; }
+      .dawn-nav .right a:hover, .dawn-nav .right a.active { opacity: 1; }
       .skin-switch { display: flex; gap: 4px; }
       .skin-switch a {
         padding: 4px 9px; font-size: 11px;
@@ -96,214 +76,200 @@ const rest = posts.slice(1);
       .skin-switch a.active { background: #2c1f15; color: #f4ecdc; border-color: #2c1f15; opacity: 1; }
       .skin-switch a:hover { opacity: 1; border-color: rgba(44,31,21,0.6); }
 
-      .hero-title-wrap {
-        position: absolute;
-        left: 0; right: 0;
-        bottom: 32%;
-        z-index: 2;
+      /* HERO INTRO */
+      .dawn-hero {
+        position: relative; z-index: 1;
         text-align: center;
-        padding: 0 24px;
+        padding: 16vh 24px 22vh;
+        max-width: 1280px;
+        margin: 0 auto;
       }
-      .hero-title {
+      .dawn-hero h1 {
         font-family: 'Fraunces', serif;
-        font-weight: 300;
-        font-style: italic;
-        font-size: clamp(70px, 16vw, 240px);
-        line-height: 0.92;
-        letter-spacing: -0.02em;
+        font-weight: 300; font-style: italic;
+        font-size: clamp(64px, 12vw, 184px);
+        line-height: 0.95; letter-spacing: -0.02em;
         color: #2a1a0e;
         text-wrap: balance;
       }
-      .hero-title .accent { font-style: normal; font-weight: 500; color: #6b3d20; }
-
-      .hero-mountains {
-        position: absolute;
-        left: 0; right: 0; bottom: 0;
-        width: 100%;
-        z-index: 3;
-        pointer-events: none;
-        line-height: 0;
-      }
-      .hero-mountains img {
-        width: 100%;
-        height: auto;
-        display: block;
-        filter: drop-shadow(0 -2px 0 rgba(0,0,0,0.04));
+      .dawn-hero h1 em { font-style: italic; font-weight: 400; color: #6b3d20; }
+      .dawn-hero h1 .accent { font-style: normal; font-weight: 500; color: #6b3d20; }
+      .dawn-hero p.sub {
+        margin-top: 28px; font-size: 13px;
+        letter-spacing: 0.18em; text-transform: uppercase;
+        color: #2c1f15; opacity: 0.8;
       }
 
-      .hero-sub {
-        position: absolute;
-        left: 50%; transform: translateX(-50%);
-        bottom: 36px;
-        z-index: 4;
-        font-family: 'Inter', sans-serif;
-        font-size: 13px; letter-spacing: 0.18em; text-transform: uppercase;
-        color: #f4ecdc;
-        text-align: center;
-        text-shadow: 0 1px 8px rgba(0,0,0,0.35);
+      /* POSTS BLOCK */
+      .dawn-posts {
+        position: relative; z-index: 1;
+        max-width: 1180px; margin: 0 auto;
+        padding: 0 32px;
       }
-      .hero-sub .dot { display: inline-block; margin: 0 10px; opacity: 0.6; }
-      .scroll-cue {
-        position: absolute;
-        left: 50%; transform: translateX(-50%);
-        bottom: 12px;
-        z-index: 4;
-        font-size: 18px; color: #f4ecdc;
-        opacity: 0.7;
-        animation: bob 2.6s ease-in-out infinite;
-      }
-      @keyframes bob { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, 6px); } }
-
-      /* CONTENT */
-      .container { max-width: 1180px; margin: 0 auto; padding: 0 32px; }
 
       .section-intro {
-        padding: 96px 0 48px;
+        padding: 80px 0 32px;
         display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px;
-        border-bottom: 1px solid var(--line);
       }
       .section-intro .pill {
         grid-column: 1 / 13;
         display: inline-flex; align-items: center; gap: 10px;
         font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
-        color: var(--muted);
+        color: #2c1f15; opacity: 0.85;
       }
-      .section-intro .pill::before { content: ''; width: 28px; height: 1px; background: var(--accent); }
+      .section-intro .pill::before { content: ''; width: 28px; height: 1px; background: #2c1f15; opacity: 0.6; }
       .section-intro h2 {
         grid-column: 1 / 9;
         font-family: 'Fraunces', serif; font-weight: 400;
-        font-size: clamp(34px, 5vw, 60px); line-height: 1.05;
+        font-size: clamp(32px, 4.5vw, 56px); line-height: 1.1;
         letter-spacing: -0.015em;
+        color: #1a1410;
         margin-top: 18px;
       }
-      .section-intro h2 em { font-style: italic; color: var(--accent); }
+      .section-intro h2 em { font-style: italic; color: #6b3d20; }
       .section-intro p {
         grid-column: 9 / 13;
         align-self: end;
-        font-size: 15px; line-height: 1.6; color: var(--muted);
+        font-size: 14px; line-height: 1.6; color: #2c1f15; opacity: 0.78;
       }
 
-      /* FEATURED */
       .featured {
-        padding: 56px 0;
-        display: grid; grid-template-columns: repeat(12, 1fr); gap: 32px;
-        align-items: stretch;
+        padding: 32px 0 56px;
+        display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px;
       }
       .featured a.card {
         grid-column: 1 / 8;
         display: block;
-        background: #fff;
-        border: 1px solid var(--line);
+        background: rgba(244,236,220,0.92);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(217, 204, 184, 0.6);
         border-radius: 24px;
-        padding: 40px;
+        padding: 36px;
         transition: transform 250ms ease, border-color 200ms;
-        position: relative;
-        overflow: hidden;
-      }
-      .featured a.card::before {
-        content: '';
-        position: absolute; top: -50%; right: -30%;
-        width: 320px; height: 320px;
-        background: radial-gradient(circle, var(--warm), transparent 70%);
-        opacity: 0.45;
-        filter: blur(40px);
       }
       .featured a.card:hover { transform: translateY(-3px); border-color: var(--accent); }
       .featured .label { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
       .featured h3 {
         font-family: 'Fraunces', serif; font-weight: 400;
-        font-size: clamp(28px, 3.5vw, 44px); line-height: 1.05;
+        font-size: clamp(26px, 3.2vw, 40px); line-height: 1.1;
         letter-spacing: -0.01em;
-        margin: 14px 0 16px;
-        position: relative;
+        margin: 12px 0 14px;
+        color: var(--fg);
       }
-      .featured p { font-size: 16px; color: var(--muted); line-height: 1.6; position: relative; }
-      .featured .meta { font-size: 12px; color: var(--faint); margin-top: 24px; font-variant-numeric: tabular-nums; position: relative; }
+      .featured p { font-size: 16px; color: var(--muted); line-height: 1.6; }
+      .featured .meta { font-size: 12px; color: var(--faint); margin-top: 22px; font-variant-numeric: tabular-nums; }
 
-      .stats { grid-column: 8 / 13; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      .stats { grid-column: 8 / 13; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
       .stat {
-        background: #fff;
-        border: 1px solid var(--line);
+        background: rgba(244,236,220,0.92);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(217, 204, 184, 0.6);
         border-radius: 18px;
-        padding: 24px;
+        padding: 22px;
         display: flex; flex-direction: column; justify-content: space-between;
-        min-height: 140px;
+        min-height: 130px;
       }
       .stat .k { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint); font-weight: 600; }
-      .stat .v { font-family: 'Fraunces', serif; font-size: 44px; line-height: 1; font-weight: 400; }
+      .stat .v { font-family: 'Fraunces', serif; font-size: 40px; line-height: 1; font-weight: 400; color: var(--fg); }
       .stat .d { font-size: 13px; color: var(--muted); margin-top: 4px; }
-      .stat.dark { background: var(--fg); color: var(--bg); border-color: var(--fg); }
-      .stat.dark .k { color: rgba(244, 236, 220, 0.55); }
-      .stat.dark .d { color: rgba(244, 236, 220, 0.65); }
-      .stat.warm { background: var(--accent); color: #fff; border-color: var(--accent); }
+      .stat.dark { background: rgba(26,20,16,0.92); color: var(--bg); border-color: rgba(26,20,16,0.92); }
+      .stat.dark .k { color: rgba(244,236,220,0.55); }
+      .stat.dark .d { color: rgba(244,236,220,0.65); }
+      .stat.dark .v { color: var(--bg); }
+      .stat.warm { background: rgba(194,104,58,0.95); color: #fff; border-color: rgba(194,104,58,0.95); }
       .stat.warm .k { color: rgba(255,255,255,0.7); }
       .stat.warm .d { color: rgba(255,255,255,0.85); }
+      .stat.warm .v { color: #fff; }
 
-      /* ARCHIVE */
       .archive-head {
-        padding: 56px 0 16px;
-        border-top: 1px solid var(--line);
+        padding: 32px 0 12px;
+        border-top: 1px solid rgba(44,31,21,0.18);
         display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px;
         align-items: baseline;
       }
       .archive-head h3 {
         grid-column: 1 / 7;
         font-family: 'Fraunces', serif; font-weight: 400; font-style: italic;
-        font-size: 32px; letter-spacing: -0.01em;
+        font-size: 30px; letter-spacing: -0.01em; color: #1a1410;
       }
-      .archive-head .count { grid-column: 7 / 13; text-align: right; font-size: 13px; color: var(--faint); font-variant-numeric: tabular-nums; }
+      .archive-head .count { grid-column: 7 / 13; text-align: right; font-size: 13px; color: rgba(44,31,21,0.6); font-variant-numeric: tabular-nums; }
 
-      .posts { padding: 8px 0 64px; }
       .post-row {
         display: grid; grid-template-columns: 60px 110px 1fr auto;
-        gap: 24px; padding: 22px 0; align-items: baseline;
-        border-bottom: 1px solid var(--line);
+        gap: 20px; padding: 18px 0; align-items: baseline;
+        border-bottom: 1px solid rgba(44,31,21,0.15);
         transition: padding-left 250ms;
+        color: var(--fg);
       }
-      .post-row:hover { padding-left: 14px; }
-      .post-row:hover .arrow { transform: translateX(8px); color: var(--accent); }
+      .post-row:hover { padding-left: 12px; }
       .post-row:hover .post-title { color: var(--accent); }
-      .post-num { font-size: 12px; color: var(--faint); font-variant-numeric: tabular-nums; }
-      .post-date { font-size: 12px; color: var(--faint); font-variant-numeric: tabular-nums; }
+      .post-row:hover .arrow { transform: translateX(8px); color: var(--accent); }
+      .post-num { font-size: 12px; color: rgba(44,31,21,0.55); font-variant-numeric: tabular-nums; }
+      .post-date { font-size: 12px; color: rgba(44,31,21,0.55); font-variant-numeric: tabular-nums; }
       .post-title {
         font-family: 'Fraunces', serif; font-weight: 400;
-        font-size: 22px; line-height: 1.2; letter-spacing: -0.01em;
+        font-size: 21px; line-height: 1.2; letter-spacing: -0.01em;
         transition: color 200ms;
       }
-      .arrow { color: var(--muted); font-size: 18px; transition: transform 250ms, color 250ms; }
+      .arrow { color: rgba(44,31,21,0.5); font-size: 18px; transition: transform 250ms, color 250ms; }
 
+      /* breathing room before mountains release */
+      .dawn-tail { height: 18vh; }
+
+      /* MOUNTAINS — sticky at viewport bottom while inside .dawn */
+      .mountains-sticky {
+        position: sticky;
+        bottom: -1px;
+        width: 100%;
+        z-index: 4;
+        pointer-events: none;
+        line-height: 0;
+        margin-top: -32vh;
+      }
+      .mountains-sticky img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      /* FOOTER outside dawn */
       footer.site {
-        padding: 32px 0;
+        background: var(--bg);
+        padding: 32px 40px;
         border-top: 1px solid var(--line);
         display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px;
         font-size: 13px; color: var(--muted);
+        max-width: 1240px; margin: 0 auto;
       }
       footer .left { grid-column: 1 / 7; }
       footer .right { grid-column: 7 / 13; text-align: right; }
 
       @media (max-width: 800px) {
-        .hero { min-height: 560px; }
-        .hero-nav { grid-template-columns: 1fr; gap: 8px; padding: 20px 24px; text-align: center; }
-        .hero-nav .left, .hero-nav .right { justify-content: center; display: flex; }
-        .hero-title-wrap { bottom: 28%; }
-        .hero-title { font-size: 18vw; }
-        .hero-sub { font-size: 11px; bottom: 28px; }
-        .section-intro { padding: 64px 0 32px; }
+        .dawn-nav { grid-template-columns: 1fr; gap: 8px; padding: 20px 24px; text-align: center; }
+        .dawn-nav .left, .dawn-nav .right { justify-content: center; display: flex; }
+        .dawn-hero { padding: 12vh 16px 16vh; }
+        .dawn-hero h1 { font-size: 16vw; }
+        .dawn-posts { padding: 0 20px; }
+        .section-intro { padding: 56px 0 24px; }
         .section-intro h2, .section-intro p { grid-column: 1 / 13; }
         .featured a.card, .stats { grid-column: 1 / 13; }
-        .featured a.card { padding: 28px; }
+        .featured a.card { padding: 24px; }
         .archive-head h3 { grid-column: 1 / 8; }
         .archive-head .count { grid-column: 8 / 13; }
-        .post-row { grid-template-columns: 90px 1fr auto; gap: 12px; }
+        .post-row { grid-template-columns: 90px 1fr auto; gap: 10px; }
         .post-num { display: none; }
         .post-title { font-size: 17px; }
+        .mountains-sticky { margin-top: -20vh; }
+        footer.site { padding: 24px; }
         footer .left, footer .right { grid-column: 1 / 13; text-align: left; }
       }
     </style>
   </head>
   <body>
-    <section class="hero">
-      <nav class="hero-nav">
+    <section class="dawn">
+      <nav class="dawn-nav">
         <span class="left">Macheidan Labs · 2026</span>
         <a href="/v5" class="brand">Fábio Machado</a>
         <span class="right">
@@ -318,93 +284,79 @@ const rest = posts.slice(1);
         </span>
       </nav>
 
-      <div class="hero-title-wrap">
-        <h1 class="hero-title">um <em>cortex</em> digital<br/>que roda <span class="accent">negócio</span></h1>
+      <div class="dawn-hero">
+        <h1>um <em>cortex</em> digital<br/>que roda <span class="accent">negócio</span></h1>
+        <p class="sub">Documentando ao vivo · Lov · Dáme · Consultoria</p>
       </div>
 
-      <div class="hero-mountains">
+      <div class="dawn-posts">
+        <section class="section-intro">
+          <span class="pill">Macheidan Labs</span>
+          <h2>Decisões, métricas e <em>erros</em> de quem usa IA como infraestrutura.</h2>
+          <p>Cada post documenta uma escolha real dentro das pizzarias ou da consultoria. Sem teoria, sem pitch.</p>
+        </section>
+
+        <section class="featured">
+          {featured && (
+            <a class="card" href={`/v5/labs/${featured.id}`}>
+              <span class="label">Último post</span>
+              <h3>{featured.data.title}</h3>
+              <p>{featured.data.description}</p>
+              <div class="meta">
+                {new Date(featured.data.pubDate).toLocaleDateString('pt-BR', { year: 'numeric', month: 'long', day: 'numeric' })}
+              </div>
+            </a>
+          )}
+          <div class="stats">
+            <div class="stat warm">
+              <span class="k">Posts</span>
+              <div><div class="v">{posts.length}</div><div class="d">no arquivo</div></div>
+            </div>
+            <div class="stat">
+              <span class="k">Empresas</span>
+              <div><div class="v">2</div><div class="d">Lov · Dáme</div></div>
+            </div>
+            <div class="stat">
+              <span class="k">Anos</span>
+              <div><div class="v">25+</div><div class="d">tech · gestão</div></div>
+            </div>
+            <div class="stat dark">
+              <span class="k">Stack</span>
+              <div><div class="v" style="font-size: 22px;">AI agents</div><div class="d">como infra</div></div>
+            </div>
+          </div>
+        </section>
+
+        <div class="archive-head">
+          <h3>Arquivo completo</h3>
+          <span class="count">{posts.length} posts</span>
+        </div>
+        <div class="posts">
+          {rest.map((post, i) => {
+            const d = new Date(post.data.pubDate);
+            const ddmm = `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+            return (
+              <a class="post-row" href={`/v5/labs/${post.id}`}>
+                <span class="post-num">№ {String(rest.length - i).padStart(2, '0')}</span>
+                <span class="post-date">{ddmm}</span>
+                <span class="post-title">{post.data.title}</span>
+                <span class="arrow">→</span>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+
+      <div class="dawn-tail"></div>
+
+      <div class="mountains-sticky">
         <Image src={mountains} alt="" width={2752} height={898} loading="eager" />
       </div>
-
-      <div class="hero-sub">
-        Documentando ao vivo <span class="dot">·</span> Lov · Dáme <span class="dot">·</span> Consultoria
-      </div>
-      <a href="#posts" class="scroll-cue" aria-label="Rolar para os posts">↓</a>
     </section>
 
-    <main class="container">
-      <section class="section-intro" id="posts">
-        <span class="pill">Macheidan Labs</span>
-        <h2>Decisões, métricas e <em>erros</em> de quem usa IA como infraestrutura.</h2>
-        <p>Cada post documenta uma escolha real dentro das pizzarias ou da consultoria. Sem teoria, sem pitch, com o erro registrado junto.</p>
-      </section>
-
-      <section class="featured">
-        {featured && (
-          <a class="card" href={`/v5/labs/${featured.id}`}>
-            <span class="label">Último post</span>
-            <h3>{featured.data.title}</h3>
-            <p>{featured.data.description}</p>
-            <div class="meta">
-              {new Date(featured.data.pubDate).toLocaleDateString('pt-BR', { year: 'numeric', month: 'long', day: 'numeric' })}
-            </div>
-          </a>
-        )}
-        <div class="stats">
-          <div class="stat warm">
-            <span class="k">Posts</span>
-            <div>
-              <div class="v">{posts.length}</div>
-              <div class="d">no arquivo</div>
-            </div>
-          </div>
-          <div class="stat">
-            <span class="k">Empresas</span>
-            <div>
-              <div class="v">2</div>
-              <div class="d">Lov · Dáme</div>
-            </div>
-          </div>
-          <div class="stat">
-            <span class="k">Anos</span>
-            <div>
-              <div class="v">25+</div>
-              <div class="d">tech · gestão</div>
-            </div>
-          </div>
-          <div class="stat dark">
-            <span class="k">Stack</span>
-            <div>
-              <div class="v" style="font-size: 24px;">AI agents</div>
-              <div class="d">como infra</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <div class="archive-head">
-        <h3>Arquivo completo</h3>
-        <span class="count">{posts.length} posts</span>
-      </div>
-      <div class="posts">
-        {rest.map((post, i) => {
-          const d = new Date(post.data.pubDate);
-          const ddmm = `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
-          return (
-            <a class="post-row" href={`/v5/labs/${post.id}`}>
-              <span class="post-num">№ {String(rest.length - i).padStart(2, '0')}</span>
-              <span class="post-date">{ddmm}</span>
-              <span class="post-title">{post.data.title}</span>
-              <span class="arrow">→</span>
-            </a>
-          );
-        })}
-      </div>
-
-      <footer class="site">
-        <span class="left">© Fábio Machado · Porto Alegre</span>
-        <span class="right">Skin v5 · Dawn Ridge</span>
-      </footer>
-    </main>
+    <footer class="site">
+      <span class="left">© Fábio Machado · Porto Alegre</span>
+      <span class="right">Skin v5 · Dawn Ridge</span>
+    </footer>
   </body>
 </html>
