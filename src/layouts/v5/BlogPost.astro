@@ -51,16 +51,14 @@ const dn = (() => {
       }
       .hero-nav .left { font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.75; }
       .hero-nav .brand { font-family: 'Fraunces', serif; font-weight: 500; font-size: 22px; letter-spacing: 0.18em; text-transform: uppercase; text-align: center; }
-      .hero-nav .right { display: flex; gap: 18px; justify-content: flex-end; align-items: center; font-size: 13px; }
+      .hero-nav .right { display: flex; gap: 12px; justify-content: flex-end; align-items: center; font-size: 13px; }
       .hero-nav .right > a { opacity: 0.75; transition: opacity 150ms; }
       .hero-nav .right > a:hover, .hero-nav .right > a.active { opacity: 1; }
-      .lang { display: inline-flex; align-items: center; gap: 6px; }
-      .lang a { opacity: 0.75; transition: opacity 150ms; }
-      .lang a.active, .lang a:hover { opacity: 1; }
-      .lang .sep { opacity: 0.4; }
+      .hero-nav .right .sep { opacity: 0.35; user-select: none; }
       .x-icon { display: inline-flex; align-items: center; opacity: 0.75; transition: opacity 150ms; }
       .x-icon:hover { opacity: 1; }
       .x-icon svg { width: 14px; height: 14px; fill: currentColor; display: block; }
+      .hero-nav .brand { will-change: transform; }
 
       .hero-title-wrap { position: absolute; left: 0; right: 0; bottom: 38%; z-index: 2; text-align: center; padding: 0 32px; }
       .hero-title {
@@ -153,11 +151,9 @@ const dn = (() => {
         <a href="/v5" class="brand">Fábio Machado</a>
         <span class="right">
           <a href="/v5/about">sobre</a>
-          <span class="lang">
-            <a href="/en">en</a>
-            <span class="sep">|</span>
-            <a href="/v5" class="active">ptbr</a>
-          </span>
+          <span class="sep">|</span>
+          <a href={Astro.url.pathname.replace('/v5/', '/en/')}>english</a>
+          <span class="sep">|</span>
           <a class="x-icon" href="https://x.com/machadofabio" target="_blank" rel="noopener" aria-label="X (Twitter)">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
           </a>
@@ -186,5 +182,19 @@ const dn = (() => {
         <span class="right">Skin v5 · Dawn Ridge</span>
       </footer>
     </article>
+
+    <script is:inline>
+      (function () {
+        const topBrand = document.querySelector('.hero-nav .brand');
+        if (!topBrand) return;
+        let raf = null;
+        function update() {
+          topBrand.style.transform = 'translateY(' + (window.scrollY * 2 / 3) + 'px)';
+          raf = null;
+        }
+        window.addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(update); }, { passive: true });
+        update();
+      })();
+    </script>
   </body>
 </html>

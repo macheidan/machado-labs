@@ -64,16 +64,14 @@ const rest = posts.slice(1);
         font-size: 22px; letter-spacing: 0.18em; text-transform: uppercase;
         text-align: center;
       }
-      .dawn-nav .right { display: flex; gap: 18px; justify-content: flex-end; align-items: center; font-size: 13px; }
+      .dawn-nav .right { display: flex; gap: 12px; justify-content: flex-end; align-items: center; font-size: 13px; }
       .dawn-nav .right > a { opacity: 0.75; transition: opacity 150ms; }
       .dawn-nav .right > a:hover, .dawn-nav .right > a.active { opacity: 1; }
-      .lang { display: inline-flex; align-items: center; gap: 6px; }
-      .lang a { opacity: 0.75; transition: opacity 150ms; }
-      .lang a.active, .lang a:hover { opacity: 1; }
-      .lang .sep { opacity: 0.4; }
+      .dawn-nav .right .sep { opacity: 0.35; user-select: none; }
       .x-icon { display: inline-flex; align-items: center; opacity: 0.75; transition: opacity 150ms; }
       .x-icon:hover { opacity: 1; }
       .x-icon svg { width: 14px; height: 14px; fill: currentColor; display: block; }
+      .dawn-nav .brand { will-change: transform; }
 
       /* HERO INTRO — 3 rows: 15% top / text / 30% bottom */
       .dawn-hero {
@@ -314,11 +312,9 @@ const rest = posts.slice(1);
         <a href="/v5" class="brand">Fábio Machado</a>
         <span class="right">
           <a href="/v5/about">sobre</a>
-          <span class="lang">
-            <a href="/en">en</a>
-            <span class="sep">|</span>
-            <a href="/v5" class="active">ptbr</a>
-          </span>
+          <span class="sep">|</span>
+          <a href="/en">english</a>
+          <span class="sep">|</span>
           <a class="x-icon" href="https://x.com/machadofabio" target="_blank" rel="noopener" aria-label="X (Twitter)">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
           </a>
@@ -410,6 +406,10 @@ const rest = posts.slice(1);
         const REST = 10; /* px between bottom brand bottom and viewport bottom once fully in */
         let raf = null;
         function update() {
+          /* Parallax: brand visually moves at 1/3 of scroll speed.
+             Push it down by 2/3 of scrollY so the net visual motion is scrollY/3. */
+          topBrand.style.transform = 'translateY(' + (window.scrollY * 2 / 3) + 'px)';
+
           const r = topBrand.getBoundingClientRect();
           const vh = window.innerHeight;
           const mirror = r.top + vh;
