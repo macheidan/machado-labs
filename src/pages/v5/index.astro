@@ -218,7 +218,35 @@ const rest = posts.slice(1);
       /* room below the last post so it can scroll above the mountain line */
       .dawn-tail { height: 50vh; }
 
-      /* MOUNTAINS — fixed at viewport bottom, always */
+      /* WATERMARK — white "Fábio Machado" peeks from behind the mountains */
+      .brand-watermark {
+        position: fixed;
+        left: 0; right: 0; bottom: 0;
+        z-index: 3;
+        height: 32vw;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        padding-bottom: 6vw;
+        pointer-events: none;
+        user-select: none;
+        overflow: hidden;
+        opacity: 0;
+        will-change: opacity;
+      }
+      .brand-watermark span {
+        font-family: 'Fraunces', serif;
+        font-weight: 300;
+        font-style: italic;
+        font-size: clamp(110px, 20vw, 320px);
+        line-height: 0.9;
+        letter-spacing: -0.025em;
+        color: #ffffff;
+        white-space: nowrap;
+        display: inline-block;
+      }
+
+      /* MOUNTAINS — fixed at viewport bottom, in front of watermark */
       .mountains-fixed {
         position: fixed;
         left: 0; right: 0; bottom: 0;
@@ -334,8 +362,29 @@ const rest = posts.slice(1);
       <div class="dawn-tail"></div>
     </section>
 
+    <div class="brand-watermark"><span>Fábio Machado</span></div>
     <div class="mountains-fixed">
       <Image src={mountains} alt="" width={2752} height={898} loading="eager" />
     </div>
+
+    <script is:inline>
+      (function () {
+        const wm = document.querySelector('.brand-watermark');
+        const topBrand = document.querySelector('.dawn-nav .brand');
+        if (!wm || !topBrand) return;
+        const start = 40;
+        const end = 220;
+        let raf = null;
+        function update() {
+          const y = window.scrollY;
+          const t = Math.max(0, Math.min(1, (y - start) / (end - start)));
+          wm.style.opacity = t;
+          topBrand.style.opacity = String(1 - t);
+          raf = null;
+        }
+        window.addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(update); }, { passive: true });
+        update();
+      })();
+    </script>
   </body>
 </html>
