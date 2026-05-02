@@ -218,10 +218,10 @@ const rest = posts.slice(1);
       /* room below the last post so it can scroll above the mountain line */
       .dawn-tail { height: 50vh; }
 
-      /* BOTTOM BRAND — same brand wrapping in from the bottom edge */
+      /* BOTTOM BRAND — pixel-perfect mirror of the top brand position */
       .brand-bottom {
         position: fixed;
-        left: 0; right: 0; bottom: 0;
+        left: 0; right: 0; top: 0;
         z-index: 5;
         text-align: center;
         pointer-events: none;
@@ -232,7 +232,7 @@ const rest = posts.slice(1);
         letter-spacing: 0.18em;
         text-transform: uppercase;
         color: #ffffff;
-        transform: translateY(120px);
+        transform: translateY(150vh);
         will-change: transform;
       }
 
@@ -362,11 +362,15 @@ const rest = posts.slice(1);
         const topBrand = document.querySelector('.dawn-nav .brand');
         const bot = document.querySelector('.brand-bottom');
         if (!topBrand || !bot) return;
-        const REST = 15; /* final px above the bottom edge */
+        const REST = 15; /* px between bottom brand bottom and viewport bottom once fully in */
         let raf = null;
         function update() {
-          const ty = Math.max(topBrand.getBoundingClientRect().top, -REST);
-          bot.style.transform = 'translateY(' + ty + 'px)';
+          const r = topBrand.getBoundingClientRect();
+          const vh = window.innerHeight;
+          const mirror = r.top + vh;
+          const restCap = vh - r.height - REST;
+          const offset = Math.max(mirror, restCap);
+          bot.style.transform = 'translateY(' + offset + 'px)';
           raf = null;
         }
         window.addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(update); }, { passive: true });
