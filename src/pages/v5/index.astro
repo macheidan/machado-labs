@@ -437,10 +437,10 @@ const rest = posts.slice(1);
           const offset = Math.max(mirror, restCap);
           bot.style.transform = 'translateY(' + offset + 'px)';
 
-          /* Hero copy parallax (title + sub + scroll cue): 50% slower than the page.
-             Push down by 0.5 * scrollY so net upward motion is 0.5 * scrollY. */
+          /* Hero copy parallax (title + sub + scroll cue): 40% slower than the page.
+             Push down by 0.4 * scrollY so net upward motion is 0.6 * scrollY. */
           if (copy) {
-            copy.style.setProperty('--scrollPara', (window.scrollY * 0.5) + 'px');
+            copy.style.setProperty('--scrollPara', (window.scrollY * 0.4) + 'px');
           }
           raf = null;
         }
