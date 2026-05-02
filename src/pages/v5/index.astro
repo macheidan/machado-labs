@@ -104,6 +104,7 @@ const rest = posts.slice(1);
         line-height: 0.95; letter-spacing: -0.02em;
         color: #2a1a0e;
         text-wrap: balance;
+        will-change: transform;
       }
       .dawn-hero h1 :global(em) {
         font-style: italic;
@@ -419,6 +420,7 @@ const rest = posts.slice(1);
       (function () {
         const topBrand = document.querySelector('.dawn-nav .brand');
         const bot = document.querySelector('.brand-bottom');
+        const title = document.querySelector('.dawn-hero h1');
         if (!topBrand || !bot) return;
         const REST = 10; /* px between bottom brand bottom and viewport bottom once fully in */
         let raf = null;
@@ -433,6 +435,12 @@ const rest = posts.slice(1);
           const restCap = vh - bot.getBoundingClientRect().height - REST;
           const offset = Math.max(mirror, restCap);
           bot.style.transform = 'translateY(' + offset + 'px)';
+
+          /* Title parallax: 30% slower than the page.
+             Push it down by 0.3 * scrollY so net upward motion is 0.7 * scrollY. */
+          if (title) {
+            title.style.transform = 'translateY(' + (window.scrollY * 0.3) + 'px)';
+          }
           raf = null;
         }
         window.addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(update); }, { passive: true });
