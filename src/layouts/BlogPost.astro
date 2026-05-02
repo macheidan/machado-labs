@@ -109,6 +109,12 @@ const jsonLd = articleGraph({
 
     <div class="prose"><slot /></div>
 
+    <div class="to-top-row">
+      <button class="to-top" type="button" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+        ↑ {isEn ? 'Top' : 'Subir'}
+      </button>
+    </div>
+
     {tags.length > 0 && (
       <ul class="tags" aria-label="tags">
         {tags.map((tag) => (
@@ -241,15 +247,31 @@ const jsonLd = articleGraph({
     font-family: ui-monospace, Menlo, monospace;
     font-size: 12px; color: var(--muted);
     background: rgba(0,0,0,0.04);
-    border: 1px solid var(--line);
+    border: 1px solid currentColor;
     border-radius: 999px; padding: 4px 10px; line-height: 1;
     transition: color 150ms, border-color 150ms;
   }
-  .tags a:hover { color: var(--accent); border-color: var(--accent); }
+  .tags a:hover { color: var(--accent); }
+
+  .to-top-row {
+    display: flex; justify-content: center;
+    margin: 24px 0 8px;
+  }
+  .to-top {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid currentColor;
+    border-radius: 999px; padding: 8px 18px;
+    cursor: pointer;
+    transition: color 150ms, transform 150ms;
+  }
+  .to-top:hover { color: var(--accent); transform: translateY(-2px); }
 
   .post-footer {
-    margin-top: 32px; padding-top: 24px;
-    border-top: 1px solid var(--line);
+    margin-top: 16px;
     display: flex; justify-content: space-between; align-items: center;
     font-size: 13px; color: var(--muted);
     flex-wrap: wrap; gap: 16px;
