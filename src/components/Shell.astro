@@ -210,7 +210,7 @@ const navPersist = `nav-${isEn ? 'en' : 'pt'}`;
           const offset = Math.max(mirror, restCap);
           bot.style.transform = 'translateY(' + offset + 'px)';
 
-          const copy = document.querySelector('.dawn-hero .copy');
+          const copy = document.querySelector('.dawn-hero .copy, .post-hero .copy');
           if (copy) {
             copy.style.setProperty('--scrollPara', (window.scrollY * 0.4) + 'px');
           }
