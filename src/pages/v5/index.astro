@@ -75,12 +75,12 @@ const rest = posts.slice(1);
       .x-icon:hover { opacity: 1; }
       .x-icon svg { width: 14px; height: 14px; fill: currentColor; display: block; }
 
-      /* HERO INTRO — links to the latest post; heroTitle drives the diagram */
+      /* HERO INTRO — 3 rows: 15% top / text / 30% bottom */
       .dawn-hero {
         position: relative; z-index: 1;
-        display: block;
-        text-align: center;
-        padding: 16vh 24px 22vh;
+        display: grid;
+        grid-template-rows: 15fr 55fr 30fr;
+        min-height: calc(100vh - 80px);
         max-width: 1280px;
         margin: 0 auto;
         color: inherit;
@@ -88,6 +88,16 @@ const rest = posts.slice(1);
         transition: opacity 200ms;
       }
       .dawn-hero:hover { opacity: 0.82; }
+      .dawn-hero .copy {
+        grid-row: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        gap: 28px;
+        padding: 0 24px;
+      }
       .dawn-hero h1 {
         font-family: 'Fraunces', serif;
         font-weight: 300; font-style: italic;
@@ -110,7 +120,7 @@ const rest = posts.slice(1);
         letter-spacing: -0.025em;
       }
       .dawn-hero p.sub {
-        margin-top: 28px; font-size: 13px;
+        margin: 0; font-size: 13px;
         letter-spacing: 0.18em; text-transform: uppercase;
         color: #2c1f15; opacity: 0.8;
       }
@@ -269,8 +279,9 @@ const rest = posts.slice(1);
       @media (max-width: 800px) {
         .dawn-nav { grid-template-columns: 1fr; gap: 8px; padding: 20px 24px; text-align: center; }
         .dawn-nav .left, .dawn-nav .right { justify-content: center; display: flex; }
-        .dawn-hero { padding: 12vh 16px 16vh; }
-        .dawn-hero h1 { font-size: 16vw; }
+        .dawn-hero { min-height: calc(100vh - 130px); }
+        .dawn-hero .copy { padding: 0 16px; gap: 20px; }
+        .dawn-hero h1 { font-size: 12vw; }
         .dawn-posts { padding: 0 20px; }
         .section-intro { padding: 56px 0 24px; }
         .section-intro h2, .section-intro p { grid-column: 1 / 13; }
@@ -304,10 +315,12 @@ const rest = posts.slice(1);
 
       {featured && (
         <a class="dawn-hero" href={`/v5/labs/${featured.id}`}>
-          {featured.data.heroTitle
-            ? <h1 set:html={featured.data.heroTitle} />
-            : <h1>{featured.data.title}</h1>}
-          <p class="sub">Mais recente</p>
+          <div class="copy">
+            {featured.data.heroTitle
+              ? <h1 set:html={featured.data.heroTitle} />
+              : <h1>{featured.data.title}</h1>}
+            <p class="sub">Mais recente</p>
+          </div>
         </a>
       )}
 
