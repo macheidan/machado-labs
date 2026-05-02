@@ -4,6 +4,8 @@ description: 'I was missing important stuff in the groups every week. So I put a
 pubDate: 'May 01 2026'
 ---
 
+![AI agent reading my WhatsApp messages in the background](../imgs/260501.jpeg)
+
 I was spending too much time on WhatsApp. Reading the supplier groups, forwarding stuff to the manager, replying to quotes, reading the family group I had already given up on two days earlier. Every night, the feeling that something important had slipped through and I had no idea what. Sometimes it was just a feeling. Sometimes it wasn't, and I'd find out on Monday when a supplier was chasing a reply that never came.
 
 I had already been building [My Digital Cortex](https://fabiomachado.com.br/labs/segundo-cerebro-ia/) for a while. Memory ready, persona ready, and what was missing was the part I called "agency", the agent stops just answering and starts acting in my world. One of those nights it hit me that WhatsApp was the most obvious place to start. That's where my attention leaks first.

@@ -4,6 +4,8 @@ description: 'Tava perdendo coisa importante nos grupos toda semana. Coloquei um
 pubDate: 'May 01 2026'
 ---
 
+![Agente de IA lendo as mensagens do meu WhatsApp em segundo plano](../imgs/260501.jpeg)
+
 Tava gastando tempo demais no WhatsApp. Lendo grupo de fornecedor, repassando coisa pro gerente, respondendo cotação, lendo o grupo da família que eu já tinha deixado de ler dois dias antes. Toda noite a sensação de que tinha passado coisa importante e eu não sabia o quê. Algumas vezes era só sensação. Algumas vezes não era, descobria na segunda quando o fornecedor cobrava resposta que nunca chegou.
 
 Eu já tava montando o [Meu Cortex Digital](https://fabiomachado.com.br/labs/segundo-cerebro-ia/) faz um tempo. Memória pronta, persona pronta, faltava a parte que eu chamei lá de "agência", o agente parar de só responder e começar a agir no meu mundo. Numa dessas noites caiu a ficha de que o WhatsApp era o lugar mais óbvio pra começar. É lá que minha atenção vaza primeiro.
