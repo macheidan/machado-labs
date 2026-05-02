@@ -1,208 +1,127 @@
 ---
-import BaseHead from '../components/BaseHead.astro';
+import Shell from '../components/Shell.astro';
 import { SITE_TITLE } from '../consts';
 import { getCollection } from 'astro:content';
 
 const posts = (await getCollection('labs'))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
   .slice(0, 5);
-
-const grouped = new Map<string, typeof posts>();
-for (const post of posts) {
-  const year = String(new Date(post.data.pubDate).getFullYear());
-  if (!grouped.has(year)) grouped.set(year, []);
-  grouped.get(year)!.push(post);
-}
-const years = [...grouped.keys()].sort((a, b) => Number(b) - Number(a));
 ---
 
-<!doctype html>
-<html lang="pt-BR">
-  <head>
-    <BaseHead
-      title={`Página não encontrada — ${SITE_TITLE}`}
-      description="Essa página não existe ou foi movida. Volte para a home ou veja os posts mais recentes."
-      lang="pt-BR"
-      noindex
-    />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
-    <style>
-      :root {
-        --bg: #1c1c1c;
-        --fg: #ededed;
-        --fg-muted: #a1a1a1;
-        --fg-faint: #6e6e6e;
-        --max-width: 640px;
-      }
-
-      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-      html {
-        -webkit-text-size-adjust: 100%;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-        text-rendering: optimizeLegibility;
-      }
-
-      body {
-        background: var(--bg);
-        color: var(--fg);
-        font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        font-feature-settings: 'ss01', 'cv11';
-        font-size: 16px;
-        line-height: 1.5;
-        min-height: 100vh;
-        letter-spacing: -0.01em;
-      }
-
-      a { color: inherit; text-decoration: none; }
-
-      .container {
-        max-width: var(--max-width);
-        margin: 0 auto;
-        padding: 32px 24px 64px;
-      }
-
-      header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 16px;
-        padding-top: 16px;
-        padding-bottom: 80px;
-      }
-
-      .site-name {
-        font-size: 17px;
-        font-weight: 700;
-        color: var(--fg);
-        letter-spacing: -0.02em;
-        line-height: 1;
-      }
-
-      nav {
-        display: flex;
-        align-items: center;
-        gap: 28px;
-        font-size: 15px;
-      }
-      nav a { color: var(--fg); line-height: 1; transition: opacity 0.15s ease; }
-      nav a:hover { opacity: 0.65; }
-
-      .lang { display: inline-flex; align-items: center; gap: 6px; font-size: 15px; line-height: 1; }
-      .lang a { color: var(--fg-muted); }
-      .lang a.active { color: var(--fg); }
-      .lang .pipe { color: var(--fg-faint); }
-
-      .code {
-        font-family: 'Geist Mono', monospace;
-        font-size: 12px;
-        color: var(--fg-faint);
-        margin-bottom: 12px;
-      }
-      .h1 {
-        font-size: 28px;
-        font-weight: 700;
-        line-height: 1.25;
-        margin-bottom: 16px;
-      }
-      .lede {
-        color: var(--fg-muted);
-        margin-bottom: 32px;
-      }
-      .lede a { color: var(--fg); border-bottom: 1px solid var(--fg-faint); }
-      .lede a:hover { border-color: var(--fg); }
-
-      .section-label {
-        font-family: 'Geist Mono', monospace;
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: var(--fg-faint);
-        margin-bottom: 12px;
-      }
-
-      .posts { display: flex; flex-direction: column; }
-      .year-group + .year-group { margin-top: 24px; }
-      .year-header {
-        font-family: 'Geist Mono', monospace;
-        font-size: 12px;
-        font-variant-numeric: tabular-nums;
-        color: var(--fg-muted);
-        text-align: right;
-        width: 44px;
-        margin-bottom: 4px;
-      }
-      .post {
-        display: grid;
-        grid-template-columns: 44px 1fr;
-        column-gap: 14px;
-        padding: 6px 0;
-        align-items: baseline;
-        transition: opacity 0.15s ease;
-      }
-      .post:hover { opacity: 0.6; }
-      .post-month {
-        text-align: right;
-        font-family: 'Geist Mono', monospace;
-        font-size: 12px;
-        font-variant-numeric: tabular-nums;
-        color: #737373;
-        line-height: 1.6;
-      }
-      .post-title {
-        color: var(--fg);
-        font-size: 14px;
-        font-weight: 400;
-        line-height: 1.6;
-      }
-
-      @media (max-width: 480px) {
-        header { padding-bottom: 56px; }
-        .h1 { font-size: 22px; }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <header>
-        <a href="/" class="site-name">Fábio Machado</a>
-        <nav>
-          <a href="/about">sobre</a>
-          <span class="lang">
-            <a href="/en">en</a>
-            <span class="pipe">|</span>
-            <a href="/" class="active">ptbr</a>
-          </span>
-        </nav>
-      </header>
-
-      <p class="code">404 · página não encontrada</p>
-      <h1 class="h1">Esse caminho não leva a lugar nenhum.</h1>
-      <p class="lede">
-        A página pode ter sido movida ou nunca ter existido. Volta pra <a href="/">home</a>,
-        lê <a href="/about">sobre</a>, ou pega um dos posts abaixo.
-      </p>
-
-      <p class="section-label">posts recentes</p>
-      <div class="posts">
-        {years.map((year) => (
-          <div class="year-group">
-            <div class="year-header">{year}</div>
-            {grouped.get(year)!.map((post) => {
-              const month = String(new Date(post.data.pubDate).getMonth() + 1).padStart(2, '0');
-              return (
-                <a class="post" href={`/labs/${post.id}`}>
-                  <span class="post-month">{month}</span>
-                  <span class="post-title">{post.data.title}</span>
-                </a>
-              );
-            })}
-          </div>
-        ))}
-      </div>
+<Shell
+  title={`Página não encontrada — ${SITE_TITLE}`}
+  description="Essa página não existe ou foi movida. Volte para a home ou veja os posts mais recentes."
+  lang="pt-BR"
+  noindex
+>
+  <section class="nf-hero">
+    <div class="copy">
+      <span class="kicker">404</span>
+      <h1>esse caminho não <em>existe</em>.</h1>
+      <p class="sub">A página foi movida ou nunca esteve aqui. <a href="/">volta pra home</a> ou pega um dos posts abaixo.</p>
     </div>
-  </body>
-</html>
+  </section>
+
+  <div class="nf-posts">
+    <div class="archive-head">
+      <h3>Posts recentes</h3>
+    </div>
+    <div class="posts">
+      {posts.map((post) => {
+        const d = new Date(post.data.pubDate);
+        const ddmm = `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+        return (
+          <a class="post-row" href={`/labs/${post.id}`}>
+            <span class="post-date">{ddmm}</span>
+            <span class="post-title">{post.data.title}</span>
+            <span class="arrow">→</span>
+          </a>
+        );
+      })}
+    </div>
+  </div>
+
+  <div class="nf-tail"></div>
+</Shell>
+
+<style>
+  .nf-hero {
+    position: relative; z-index: 1;
+    display: grid; grid-template-rows: 15fr 55fr 30fr;
+    min-height: calc(100vh - 80px);
+    max-width: 1280px; margin: 0 auto;
+  }
+  .nf-hero .copy {
+    grid-row: 2;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; gap: 18px; padding: 0 24px;
+    transform: translate3d(0, -10%, 0);
+  }
+  .nf-hero .kicker {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 14px; letter-spacing: 0.2em;
+    color: var(--accent);
+  }
+  .nf-hero h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 300; font-style: italic;
+    font-size: clamp(48px, 8vw, 110px);
+    line-height: 0.98; letter-spacing: -0.02em;
+    color: #2a1a0e; text-wrap: balance;
+  }
+  .nf-hero h1 em {
+    font-style: italic; font-weight: 500;
+    color: #6b3d20; font-size: 1.05em;
+  }
+  .nf-hero .sub {
+    font-size: 15px; color: #2c1f15; opacity: 0.8;
+    max-width: 560px;
+  }
+  .nf-hero .sub a {
+    color: var(--accent); border-bottom: 1px solid currentColor;
+  }
+
+  .nf-posts {
+    position: relative; z-index: 1;
+    max-width: 1180px; margin: 0 auto;
+    padding: 0 32px;
+  }
+  .archive-head {
+    padding: 32px 0 12px;
+    border-top: 1px solid rgba(44,31,21,0.18);
+  }
+  .archive-head h3 {
+    font-family: 'Fraunces', serif; font-weight: 400; font-style: italic;
+    font-size: 24px; letter-spacing: -0.01em; color: #1a1410;
+  }
+  .post-row {
+    display: grid; grid-template-columns: 110px 1fr auto;
+    gap: 20px; padding: 18px 0; align-items: baseline;
+    border-bottom: 1px solid rgba(44,31,21,0.15);
+    transition: padding-left 250ms;
+    color: var(--fg);
+  }
+  .post-row:hover { padding-left: 12px; }
+  .post-row:hover .post-title { color: var(--accent); }
+  .post-row:hover .arrow { transform: translateX(8px); color: var(--accent); }
+  .post-date { font-size: 12px; color: rgba(44,31,21,0.55); font-variant-numeric: tabular-nums; }
+  .post-title {
+    font-family: 'Fraunces', serif; font-weight: 400;
+    font-size: 19px; line-height: 1.2; letter-spacing: -0.01em;
+    transition: color 200ms;
+  }
+  .arrow { color: rgba(44,31,21,0.5); font-size: 18px; transition: transform 250ms, color 250ms; }
+
+  .nf-tail { height: 30vw; }
+
+  @media (max-width: 800px) {
+    .nf-hero { min-height: calc(100vh - 130px); }
+    .nf-hero .copy { padding: 0 16px; transform: translate3d(0, calc(-30px - 5%), 0); }
+    .nf-hero h1 { font-size: 11vw; }
+    .nf-posts { padding: 0 20px; }
+    .post-row { grid-template-columns: 90px 1fr auto; gap: 10px; }
+    .post-title { font-size: 16px; }
+  }
+</style>
