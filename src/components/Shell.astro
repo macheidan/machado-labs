@@ -291,13 +291,20 @@ const navPersist = `nav-${isEn ? 'en' : 'pt'}`;
         } else {
           attach();
         }
-        function resetThenUpdate() {
+        function resetBrand() {
           const topBrand = document.querySelector('.dawn-nav .brand');
           if (topBrand) topBrand.style.transform = 'translateY(0)';
+          const copy = document.querySelector('.dawn-hero .copy, .post-hero .copy');
+          if (copy) copy.style.setProperty('--scrollPara', '0px');
+        }
+        function resetThenUpdate() {
+          resetBrand();
           requestAnimationFrame(() => requestAnimationFrame(update));
         }
-        document.addEventListener('astro:page-load', resetThenUpdate);
+        document.addEventListener('astro:before-preparation', resetBrand);
+        document.addEventListener('astro:before-swap', resetBrand);
         document.addEventListener('astro:after-swap', resetThenUpdate);
+        document.addEventListener('astro:page-load', resetThenUpdate);
       })();
 
       (function () {
