@@ -264,7 +264,7 @@ const navPersist = `nav-${isEn ? 'en' : 'pt'}`;
         const SIGNS = { tl: [+1,-1], tr: [+1,+1], bl: [-1,-1], br: [-1,+1] };
         function applyTilt(el, opts) {
           const [sx, sy] = SIGNS[opts.corner] || SIGNS.br;
-          const deg = Math.min(35, opts.depth / 8) * (opts.tilt || 1);
+          const deg = Math.min(35, opts.depth / 8) * (opts.tilt != null ? opts.tilt : 1);
           el.style.setProperty('--rx', (sx * deg) + 'deg');
           el.style.setProperty('--ry', (sy * deg) + 'deg');
           el.style.setProperty('--persp', opts.persp + 'px');
