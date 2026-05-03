@@ -147,16 +147,17 @@ const navPersist = `nav-${isEn ? 'en' : 'pt'}`;
       main.shell-content { position: relative; z-index: 1; }
 
       ::view-transition-old(content) {
-        animation: 280ms cubic-bezier(0.4, 0, 1, 1) both shell-out;
+        animation: 360ms cubic-bezier(0.16, 1, 0.3, 1) both shell-out;
       }
       ::view-transition-new(content) {
-        animation: 420ms cubic-bezier(0, 0, 0.2, 1) both shell-in;
+        animation: 460ms cubic-bezier(0.7, 0, 0.84, 0) both shell-in;
+        animation-delay: 80ms;
       }
       @keyframes shell-out {
-        to { transform: translateY(-120px); opacity: 0; }
+        to { transform: translateY(200px); opacity: 0; }
       }
       @keyframes shell-in {
-        from { transform: translateY(40px); opacity: 0; }
+        from { transform: translateY(-200px); opacity: 0; }
       }
       @media (prefers-reduced-motion: reduce) {
         ::view-transition-old(content),
