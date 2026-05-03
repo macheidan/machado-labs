@@ -146,8 +146,8 @@ const navPersist = `nav-${isEn ? 'en' : 'pt'}`;
 
       main.shell-content { position: relative; z-index: 1; }
 
-      .posts, .featured, .stats { perspective: 800px; perspective-origin: 50% 30%; }
-      .post-row, .featured .card, .featured .stat {
+      .featured, .stats { perspective: 800px; perspective-origin: 50% 30%; }
+      .featured .card, .featured .stat {
         transform-origin: 50% 50%;
         transform-style: preserve-3d;
         transform:
@@ -160,7 +160,7 @@ const navPersist = `nav-${isEn ? 'en' : 'pt'}`;
       }
       .featured .card { --corner-amp: 8; }
       @media (prefers-reduced-motion: reduce) {
-        .post-row, .featured .card, .featured .stat { transform: none !important; }
+        .featured .card, .featured .stat { transform: none !important; }
       }
 
       ::view-transition-old(content) {
@@ -257,7 +257,7 @@ const navPersist = `nav-${isEn ? 'en' : 'pt'}`;
         let kick = 0, kickV = 0;
         const stiffness = 0.09, damping = 0.74, scrollGain = 0.45;
         function init() {
-          rows = Array.from(document.querySelectorAll('.post-row, .featured .card, .featured .stat'));
+          rows = Array.from(document.querySelectorAll('.featured .card, .featured .stat'));
           rows.forEach((r) => {
             r.style.setProperty('--phase', Math.random().toFixed(3));
             r.style.setProperty('--phase2', Math.random().toFixed(3));
