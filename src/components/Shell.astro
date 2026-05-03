@@ -291,8 +291,13 @@ const navPersist = `nav-${isEn ? 'en' : 'pt'}`;
         } else {
           attach();
         }
-        document.addEventListener('astro:page-load', update);
-        document.addEventListener('astro:after-swap', update);
+        function resetThenUpdate() {
+          const topBrand = document.querySelector('.dawn-nav .brand');
+          if (topBrand) topBrand.style.transform = 'translateY(0)';
+          requestAnimationFrame(() => requestAnimationFrame(update));
+        }
+        document.addEventListener('astro:page-load', resetThenUpdate);
+        document.addEventListener('astro:after-swap', resetThenUpdate);
       })();
 
       (function () {
