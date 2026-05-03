@@ -3,7 +3,7 @@ backend:
   repo: macheidan/machado-labs
   branch: master
   auth_type: pkce
-  app_id: Iv23liGITHUB_OAUTH_APP_ID
+  app_id: Ov23lif7SRo3ShvnWNkH
 
 site_url: https://fabiomachado.com.br
 display_url: https://fabiomachado.com.br
