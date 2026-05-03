@@ -146,21 +146,32 @@ const navPersist = `nav-${isEn ? 'en' : 'pt'}`;
 
       main.shell-content { position: relative; z-index: 1; }
 
-      .featured, .stats { perspective: 800px; perspective-origin: 50% 30%; }
+      .featured, .stats { perspective: 1400px; perspective-origin: 50% 35%; }
       .featured .card, .featured .stat {
         transform-origin: 50% 50%;
         transform-style: preserve-3d;
-        transform:
-          translate3d(0, calc(var(--float, 0) * 6px + var(--kick, 0) * 0.9px), 0)
-          rotateX(calc(var(--rx-base, 0) * 1deg + var(--kick, 0) * 0.5deg))
-          rotateY(calc(var(--ry-base, 0) * 1deg + var(--float, 0) * 1.6deg))
-          rotateZ(calc(var(--rz-base, 0) * 1deg + var(--float, 0) * 0.3deg))
-          rotate3d(1, -1, 0, calc(var(--corner-base, 0) * 1deg + var(--float, 0) * var(--corner-amp, 4) * 1deg));
         will-change: transform;
+        animation: quadro-floatTilt var(--float-speed, 6s) ease-in-out infinite;
+        animation-delay: var(--float-delay, 0s);
       }
-      .featured .card { --corner-amp: 8; }
+      @keyframes quadro-floatTilt {
+        0%, 100% {
+          transform:
+            perspective(var(--persp, 900px))
+            translateY(calc(var(--float-amp, 14px) * -1))
+            rotateX(var(--rx, 0deg))
+            rotateY(var(--ry, 0deg));
+        }
+        50% {
+          transform:
+            perspective(var(--persp, 900px))
+            translateY(var(--float-amp, 14px))
+            rotateX(var(--rx, 0deg))
+            rotateY(var(--ry, 0deg));
+        }
+      }
       @media (prefers-reduced-motion: reduce) {
-        .featured .card, .featured .stat { transform: none !important; }
+        .featured .card, .featured .stat { animation: none !important; }
       }
 
       ::view-transition-old(content) {
@@ -250,56 +261,30 @@ const navPersist = `nav-${isEn ? 'en' : 'pt'}`;
       })();
 
       (function () {
-        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        if (reduce) return;
-        let rows = [];
-        let lastScroll = window.scrollY;
-        let kick = 0, kickV = 0;
-        const stiffness = 0.09, damping = 0.74, scrollGain = 0.45;
+        const SIGNS = { tl: [+1,-1], tr: [+1,+1], bl: [-1,-1], br: [-1,+1] };
+        function applyTilt(el, opts) {
+          const [sx, sy] = SIGNS[opts.corner] || SIGNS.br;
+          const deg = Math.min(35, opts.depth / 8) * (opts.tilt || 1);
+          el.style.setProperty('--rx', (sx * deg) + 'deg');
+          el.style.setProperty('--ry', (sy * deg) + 'deg');
+          el.style.setProperty('--persp', opts.persp + 'px');
+          el.style.setProperty('--float-amp', opts.floatAmp + 'px');
+          el.style.setProperty('--float-speed', opts.floatSpeed + 's');
+          el.style.setProperty('--float-delay', (opts.floatDelay || 0) + 's');
+        }
         function init() {
-          rows = Array.from(document.querySelectorAll('.featured .card, .featured .stat'));
-          rows.forEach((r) => {
-            r.style.setProperty('--phase', Math.random().toFixed(3));
-            r.style.setProperty('--phase2', Math.random().toFixed(3));
-            r.style.setProperty('--rx-base', (Math.random() * 4 - 2).toFixed(2));
-            r.style.setProperty('--ry-base', (Math.random() * 9 - 4.5).toFixed(2));
-            r.style.setProperty('--rz-base', (Math.random() * 2 - 1).toFixed(2));
-            r.style.setProperty('--amp', (1.2 + Math.random() * 1.2).toFixed(2));
-            r.style.setProperty('--corner-base', (Math.random() * 4 - 2).toFixed(2));
-            r.style.setProperty('--speed', (0.45 + Math.random() * 0.35).toFixed(3));
-          });
-          lastScroll = window.scrollY;
+          const big = document.querySelector('.featured .card:not(.stat)');
+          if (big) applyTilt(big, { corner: 'br', depth: 140, tilt: 1, persp: 900, floatAmp: 14, floatSpeed: 6, floatDelay: 0 });
+          const stats = document.querySelectorAll('.featured .stat');
+          stats.forEach((el, i) => applyTilt(el, { corner: 'br', depth: 100, tilt: 1, persp: 900, floatAmp: 11, floatSpeed: 7, floatDelay: 0.4 * (i + 1) }));
         }
-        function tick() {
-          const now = window.scrollY;
-          const dv = now - lastScroll;
-          lastScroll = now;
-          const force = (dv * scrollGain - kick) * stiffness;
-          kickV = (kickV + force) * damping;
-          kick += kickV;
-          if (Math.abs(kick) < 0.01 && Math.abs(kickV) < 0.01) kick = 0;
-          const t = performance.now() / 1000;
-          for (let i = 0; i < rows.length; i++) {
-            const r = rows[i];
-            const phase = parseFloat(r.style.getPropertyValue('--phase')) || 0;
-            const phase2 = parseFloat(r.style.getPropertyValue('--phase2')) || 0;
-            const amp = parseFloat(r.style.getPropertyValue('--amp')) || 1;
-            const speed = parseFloat(r.style.getPropertyValue('--speed')) || 0.6;
-            const float = (Math.sin(t * speed + phase * 6.283) * 0.7 + Math.sin(t * speed * 1.7 + phase2 * 6.283) * 0.3) * amp;
-            r.style.setProperty('--float', float.toFixed(3));
-            r.style.setProperty('--kick', (kick * (0.7 + amp * 0.3)).toFixed(2));
-          }
-          requestAnimationFrame(tick);
-        }
-        function start() { init(); }
         if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', start);
+          document.addEventListener('DOMContentLoaded', init);
         } else {
-          start();
+          init();
         }
         document.addEventListener('astro:page-load', init);
         document.addEventListener('astro:after-swap', init);
-        requestAnimationFrame(tick);
       })();
     </script>
   </body>

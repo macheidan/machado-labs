@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Quadros 3D — exemplo standalone</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #000000; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+    #__bundler_loading { position: fixed; bottom: 20px; right: 20px; font: 13px/1.4 -apple-system, BlinkMacSystemFont, sans-serif; color: #666; background: #fff; padding: 8px 14px; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.12); z-index: 10000; }
+    #__bundler_thumbnail { position: fixed; inset: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #000000; z-index: 9999; }
+    #__bundler_thumbnail svg { width: 100%; height: 100%; object-fit: contain; }
+    #__bundler_placeholder { color: #999; font-size: 14px; }
+  </style>
+  <noscript>
+    <style>#__bundler_loading { display: none; }</style>
+    <div style="position:fixed;bottom:12px;left:12px;font:13px/1.4 -apple-system,BlinkMacSystemFont,sans-serif;color:#999;background:rgba(255,255,255,0.9);padding:6px 12px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,0.08);z-index:10000;">
+      This page requires JavaScript to display.
+    </div>
+  </noscript>
+</head>
+<body>
+  <div id="__bundler_thumbnail">
+    <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+      <g transform="translate(220 220)">
+        <rect x="0" y="0" width="440" height="360" rx="6" fill="#efe7d3" transform="rotate(-6 220 180)"></rect>
+        <g transform="translate(520 0)">
+          <rect x="0" y="0" width="220" height="170" rx="6" fill="#1a1816" stroke="#2a2823" stroke-width="2" transform="rotate(-4 110 85)"></rect>
+          <rect x="240" y="0" width="220" height="170" rx="6" fill="#1a1816" stroke="#2a2823" stroke-width="2" transform="rotate(-2 350 85)"></rect>
+          <rect x="0" y="190" width="220" height="170" rx="6" fill="#1a1816" stroke="#2a2823" stroke-width="2" transform="rotate(2 110 275)"></rect>
+          <rect x="240" y="190" width="220" height="170" rx="6" fill="#1a1816" stroke="#2a2823" stroke-width="2" transform="rotate(4 350 275)"></rect>
+        </g>
+      </g>
+    </svg>
+  </div>
+  <div id="__bundler_loading">Unpacking...</div>
+
+  <script>
+    
+document.addEventListener('DOMContentLoaded', async function() {
+  const loading = document.getElementById('__bundler_loading');
+  function setStatus(msg) { if (loading) loading.textContent = msg; }
+
+  // Error sink persists across replaceWith since it's on window, not the DOM.
+  window.addEventListener('error', function(e) {
+    var p = document.body || document.documentElement;
+    var d = document.getElementById('__bundler_err') || p.appendChild(document.createElement('div'));
+    d.id = '__bundler_err';
+    d.style.cssText = 'position:fixed;bottom:12px;left:12px;right:12px;font:12px/1.4 ui-monospace,monospace;background:#2a1215;color:#ff8a80;padding:10px 14px;border-radius:8px;border:1px solid #5c2b2e;z-index:99999;white-space:pre-wrap;max-height:40vh;overflow:auto';
+    d.textContent = (d.textContent ? d.textContent + String.fromCharCode(10) : '') +
+      '[bundle] ' + (e.message || e.type) +
+      (e.filename ? ' (' + e.filename.slice(0, 60) + ':' + e.lineno + ')' : '');
+  }, true);
+
+  try {
+    const manifestEl = document.querySelector('script[type="__bundler/manifest"]');
+    const templateEl = document.querySelector('script[type="__bundler/template"]');
+    if (!manifestEl || !templateEl) {
+      setStatus('Error: missing bundle data');
+      console.error('[bundler] Missing script tags — manifestEl:', !!manifestEl, 'templateEl:', !!templateEl);
+      return;
+    }
+
+    const manifest = JSON.parse(manifestEl.textContent);
+    let template = JSON.parse(templateEl.textContent);
+
+    const uuids = Object.keys(manifest);
+    setStatus('Unpacking ' + uuids.length + ' assets...');
+
+    const blobUrls = {};
+    await Promise.all(uuids.map(async (uuid) => {
+      const entry = manifest[uuid];
+      try {
+        const binaryStr = atob(entry.data);
+        const bytes = new Uint8Array(binaryStr.length);
+        for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
+
+        let finalBytes = bytes;
+        if (entry.compressed) {
+          if (typeof DecompressionStream !== 'undefined') {
+            const ds = new DecompressionStream('gzip');
+            const writer = ds.writable.getWriter();
+            const reader = ds.readable.getReader();
+            writer.write(bytes);
+            writer.close();
+            const chunks = [];
+            let totalLen = 0;
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              chunks.push(value);
+              totalLen += value.length;
+            }
+            finalBytes = new Uint8Array(totalLen);
+            let offset = 0;
+            for (const chunk of chunks) { finalBytes.set(chunk, offset); offset += chunk.length; }
+          } else {
+            console.warn('DecompressionStream not available, asset ' + uuid + ' may not render');
+          }
+        }
+
+        blobUrls[uuid] = URL.createObjectURL(new Blob([finalBytes], { type: entry.mime }));
+      } catch (err) {
+        console.error('Failed to decode asset ' + uuid + ':', err);
+        blobUrls[uuid] = URL.createObjectURL(new Blob([], { type: entry.mime }));
+      }
+    }));
+
+    const extResEl = document.querySelector('script[type="__bundler/ext_resources"]');
+    const extResources = extResEl ? JSON.parse(extResEl.textContent) : [];
+    const resourceMap = {};
+    for (const entry of extResources) {
+      if (blobUrls[entry.uuid]) resourceMap[entry.id] = blobUrls[entry.uuid];
+    }
+
+    setStatus('Rendering...');
+    for (const uuid of uuids) template = template.split(uuid).join(blobUrls[uuid]);
+
+    // Strip integrity + crossorigin — blob URLs from a file:// document inherit
+    // a null origin, so crossorigin forces a CORS fetch that SRI then rejects.
+    // The manifest bytes are ours; SRI protects against CDN compromise, not this.
+    template = template.replace(/\s+integrity="[^"]*"/gi, '').replace(/\s+crossorigin="[^"]*"/gi, '');
+
+    const resourceScript = '<script>window.__resources = ' +
+      JSON.stringify(resourceMap).split('</' + 'script>').join('<\\/' + 'script>') +
+      ';</' + 'script>';
+    // Inject after <head> so the DOCTYPE stays first; prepending the script
+    // would push the parser into quirks mode. DOMParser always emits a <head>
+    // (synthesizing one if the source HTML omitted it) but may carry
+    // attributes through, so match the full opening tag. slice() rather than
+    // replace() keeps us clear of $-pattern substitution in resourceScript.
+    const headOpen = template.match(/<head[^>]*>/i);
+    if (headOpen) {
+      const i = headOpen.index + headOpen[0].length;
+      template = template.slice(0, i) + resourceScript + template.slice(i);
+    }
+
+    // Parse the template and swap the root element. Scripts inserted via
+    // DOMParser/replaceWith are inert per spec — re-create each with
+    // createElement so they execute, awaiting onload for src scripts to
+    // preserve ordering (React before ReactDOM before Babel before text/babel).
+    const doc = new DOMParser().parseFromString(template, 'text/html');
+    document.documentElement.replaceWith(doc.documentElement);
+    const dead = Array.from(document.scripts);
+    for (const old of dead) {
+      const s = document.createElement('script');
+      for (const a of old.attributes) s.setAttribute(a.name, a.value);
+      s.textContent = old.textContent;
+      // text/babel scripts with a src: fetch and inline. transformScriptTags
+      // does XHR against the src, but blob:null/ from a file:// origin is
+      // silently dropped. Inlining makes it a plain inline babel script,
+      // which transformScriptTags handles unconditionally.
+      if ((s.type === 'text/babel' || s.type === 'text/jsx') && s.src) {
+        const r = await fetch(s.src);
+        s.textContent = await r.text();
+        s.removeAttribute('src');
+      }
+      const p = s.src ? new Promise(function(r) { s.onload = s.onerror = r; }) : null;
+      old.replaceWith(s);
+      if (p) await p;
+    }
+    // Babel standalone auto-transforms type=text/babel on DOMContentLoaded,
+    // which fired before we swapped the document. Trigger manually if present.
+    if (window.Babel && typeof window.Babel.transformScriptTags === 'function') {
+      window.Babel.transformScriptTags();
+    }
+  } catch (err) {
+    setStatus('Error unpacking: ' + err.message);
+    console.error('Bundle unpack error:', err);
+  }
+});
+
+  </script>
+
+  <script type="__bundler/manifest">
+{"1ca6e64c-f99d-4a9c-8d67-8c5d5599130d":{"mime":"application/javascript","compressed":true,"data":"H4sIAAAAAAAACq1WzW7bRhC++ykmRAGRjkTStRM0sulCtZ3WRRw5lnNJEMAr7sjeYrnLLJeKBEdFcukDtH2ANj0U7anPUL1JnqTY5Y9I2UlzCC+2Zub7yJn9ZnaCTYg+17MBAE+eDg7PhiPYPoT3b36FK+QpKvh+ZHy9z/YYtkHKWUxAZpAStXyXoFYyA4qgGddwFyZcEg2YwMuc8Jc5KkCOCQot/Q2DfzoawjfLt6PjgyG4352fPPJu/UZj3KNsCjEnWRY5sRSaMIGqt02dfeNt+1/mhCppnECJJr3idxFnH2uNpRKoImesyjCKqb6KnK2dsDSYLCJny1lHpqiyNHIehFWgzbNHktSgW7YsRaSRc/8GR+GmyMk8ckJn3/f9vYCyqU2n8V8WK5ZqyFRc5ZX1tqn/Q+bs7wWFc7+u5enZ8Nuzwcny7fnxwfC2UhobS1KpNFwDSVM+f2I5tw9hARMlE+j4Qes1nV2DaYW6yLtwXSRUFLEPnbHqdFcpBgF0NO/Aa+hoZf+Mi19j1bGiNIKAmAgtYUoYpIqAVsvfs4LVnsSzPmzthA1SS5sqOckFZZRQNMpKZ+CG79/8shOGsPwL8oTAhLAZgbEkXsFmjnGQyFzoPmz5K8YggCTnmlkRU6mAEmBCo8gKdsv7ZUlizxxjzabYhwdhzWI+qXaR6ou2Q4vdCcMSbo97kKQmp247I5KknOmcIlC56ph01gCOjIr6cL9dYZorsvxz+Yc0HZcnELOYy64BZ3iZCyqzBsWhUVofwjUKYwUmWMwIv4lEQcbcvFmrHNvICeEZQgQKEzlFkIATZNo22cLbtYo8Pjkdnp0PHp8f9Y2/7Hw4HRxDqjBmGQGNCi5apd3aCcN0dgGuzCFjCeNE2RIKCQejkRUKJaotA4WEw/I3iFEQ3wR/tnEKm8HGhjvJRayZFOBecjkm3LPqDwIYMUGYHXhK6vIsUqKMDNJcKaJAliLHLJb8ilFpMzg/W74dgfsMBF4SzabS8wvCUwN2CggTE1RMqh5lypQWiO0QB97/9DNomUqYGp0oAhOFQiO4arYXeoAFFWZm4FJyM2q+H9r3xVJkGg6GZ4+PzkYQlS2teR+uQc36cHerC2reh94WLLqFT6377ta+cY3r3cCN1bqvwi2sVOoC35wzMtWZ+baFV34fm4B7B7kHCnWuhB1PZSrlTCqHEkRgZnu3NBYzBSI7VErbajIYu1/bG4qEyHZ76aja2NK0jLZFIYL7LavtOoigJig7CqKipax1AZFNs+gaQO7be+wRy7RPKHUb95m326hBQeXVabeARV+6DsvsNYY1FlqFW2w06hdDVMnheVHDF/D6dWXyx6rABAEcSDFFpbHdh8/MBFm+E5c5l33gLGEa4cfte//+0zUNQDiBVKpG1f3GyyleQgQnRF/5CRPu9r1udWQBfOXBZgO2KlSm5xz9DPWpkikqPXedXk/NnC5cfHEd+2oGm4Z4QfHyosz/g6h5jZp/OsoqpQA2RLNIZ/8HrFeGAlwJ65ORdrFoYK3+Ftmnge3Yb4CtTFvgNQWuqciqJghgkGvZY4LpPvDl38ViQ7RWbJxrzIwanjcWsBetTs+1PBZMu5V+qYxzc0H4ZmzNR8gx1lINOHedFonj+ROpjkh85bpmDET7dQN8cEtpLCrIfcOWofYLU7cOqbaOlKgMH5q6uI1o6/VW0c2t4naEiWgAWtfc7Qgb0oCstobb4yv/OqTcFz4CshHrsHJH+AjMRnhmKIQrbL0lNKKrOXcnisCxu0I9iBelyhYrKZl5Vp+/QkLnI000mnscHC4JZeLSuSEUQunRFIU2MkWBynUOhycH0mxw+pEk1PZHpbPiZYBmayl4Vgqsv6O43v32Yhy1dbW7sfBcPU9RTuAVE1S+KpLMBcUJE0gd+Lpy9EvG8yuWebsb/wFxUDvL6Q0AAA=="}}
+  </script>
+
+  <script type="__bundler/ext_resources">
+[]
+  </script>
+
+  <script type="__bundler/template">
+"<!DOCTYPE html>\n<html lang=\"pt-br\"><head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <title>Quadros 3D — exemplo standalone<\u002Ftitle>\n  \n  <style>/* =========================================================================\n   QUADROS 3D — Tilt + Float\n   --------------------------------------------------------------------------\n   Para cada quadro que você quer animar:\n     1. Adicione a classe .quadro-3d (estilo base)\n     2. Adicione a classe .is-tilted (ativa a animação)\n     3. Defina as CSS variables abaixo no inline style ou via JS\n\n   Variáveis (todas opcionais — têm fallback):\n     --rx           rotação X (graus, com sinal)   ex: -17.5deg\n     --ry           rotação Y (graus, com sinal)   ex:  17.5deg\n     --persp        perspectiva (px)               ex: 900px\n     --float-amp    amplitude do float (px)        ex: 14px\n     --float-speed  duração de um ciclo (s)        ex: 6s\n     --float-delay  atraso inicial (s)             ex: 0.4s\n\n   IMPORTANTE: o ELEMENTO PAI dos quadros precisa ter\n     perspective: 1400px;          (ou similar)\n     transform-style: preserve-3d; (opcional, mas recomendado)\n   para o efeito 3D ter profundidade real.\n   ========================================================================= */\n\n.quadro-3d {\n  transform-style: preserve-3d;\n  will-change: transform;\n}\n\n.quadro-3d.is-tilted {\n  animation: quadro-floatTilt var(--float-speed, 6s) ease-in-out infinite;\n  animation-delay: var(--float-delay, 0s);\n  transform-origin: 50% 50%;\n}\n\n@keyframes quadro-floatTilt {\n  0%, 100% {\n    transform:\n      perspective(var(--persp, 1400px))\n      translateY(calc(var(--float-amp, 14px) * -1))\n      rotateX(var(--rx, 0deg))\n      rotateY(var(--ry, 0deg));\n  }\n  50% {\n    transform:\n      perspective(var(--persp, 1400px))\n      translateY(var(--float-amp, 14px))\n      rotateX(var(--rx, 0deg))\n      rotateY(var(--ry, 0deg));\n  }\n}\n\n/* (opcional) suaviza no mobile / quando o usuário pediu reduce-motion */\n@media (prefers-reduced-motion: reduce) {\n  .quadro-3d.is-tilted { animation: none; }\n}\n<\u002Fstyle>\n  <style>\n    body {\n      margin: 0;\n      min-height: 100vh;\n      background: #000;\n      color: #ece6d8;\n      font-family: Georgia, serif;\n      display: grid;\n      place-items: center;\n      padding: 80px 24px;\n    }\n    /* O CONTAINER PAI define a perspectiva 3D */\n    .container-3d {\n      perspective: 1400px;\n      perspective-origin: 50% 35%;\n      display: grid;\n      grid-template-columns: 1.4fr 1fr;\n      gap: 28px;\n      max-width: 1100px;\n      width: 100%;\n    }\n    .stats {\n      display: grid;\n      grid-template-columns: 1fr 1fr;\n      gap: 18px;\n    }\n    .card {\n      border-radius: 3px;\n      padding: 32px;\n      box-shadow: 0 30px 60px -25px rgba(0,0,0,0.7);\n    }\n    .card.featured {\n      background: #efe7d3;\n      color: #1a1815;\n      min-height: 420px;\n    }\n    .card.stat {\n      background: #0d0d0c;\n      min-height: 180px;\n      box-shadow:\n        inset 0 0 0 1px rgba(255,255,255,0.05),\n        0 30px 60px -25px rgba(0,0,0,0.7);\n    }\n    h2 { margin: 0; font-size: 36px; line-height: 1.1; font-weight: 400; }\n    .num { font-size: 56px; line-height: 1; }\n    .lbl { text-transform: uppercase; letter-spacing: 0.18em; font-size: 11px; opacity: 0.6; }\n  <\u002Fstyle>\n<\u002Fhead>\n<body>\n  <div class=\"container-3d\">\n    <!-- Quadro maior -->\n    <div class=\"card featured\" data-quadro=\"\" data-corner=\"br\" data-depth=\"140\" data-tilt=\"1\" data-persp=\"900\" data-float-amp=\"14\" data-float-speed=\"6\" data-float-delay=\"0\">\n      <div class=\"lbl\">Último post<\u002Fdiv>\n      <h2 style=\"margin-top:24px\">Criei um <em>agente<\u002Fem> de IA que cuida do meu WhatsApp<\u002Fh2>\n    <\u002Fdiv>\n\n    <!-- 4 menores -->\n    <div class=\"stats\">\n      <div class=\"card stat\" data-quadro=\"\" data-corner=\"br\" data-depth=\"100\" data-tilt=\"1\" data-persp=\"900\" data-float-amp=\"11\" data-float-speed=\"7\" data-float-delay=\"0.4\">\n        <div class=\"lbl\">Negócios<\u002Fdiv>\n        <div class=\"num\">8<\u002Fdiv>\n      <\u002Fdiv>\n      <div class=\"card stat\" data-quadro=\"\" data-corner=\"br\" data-depth=\"100\" data-tilt=\"1\" data-persp=\"900\" data-float-amp=\"11\" data-float-speed=\"7\" data-float-delay=\"0.8\">\n        <div class=\"lbl\">Anos<\u002Fdiv>\n        <div class=\"num\">25+<\u002Fdiv>\n      <\u002Fdiv>\n      <div class=\"card stat\" data-quadro=\"\" data-corner=\"br\" data-depth=\"100\" data-tilt=\"1\" data-persp=\"900\" data-float-amp=\"11\" data-float-speed=\"7\" data-float-delay=\"1.2\">\n        <div class=\"lbl\">Projetos de IA<\u002Fdiv>\n        <div class=\"num\">18<\u002Fdiv>\n      <\u002Fdiv>\n      <div class=\"card stat\" data-quadro=\"\" data-corner=\"br\" data-depth=\"100\" data-tilt=\"1\" data-persp=\"900\" data-float-amp=\"11\" data-float-speed=\"7\" data-float-delay=\"1.6\">\n        <div class=\"lbl\">Posts<\u002Fdiv>\n        <div class=\"num\">4<\u002Fdiv>\n      <\u002Fdiv>\n    <\u002Fdiv>\n  <\u002Fdiv>\n\n  <script src=\"1ca6e64c-f99d-4a9c-8d67-8c5d5599130d\"><\u002Fscript>\n\n\n<\u002Fbody><\u002Fhtml>"
+  </script>
+</body>
+</html>
