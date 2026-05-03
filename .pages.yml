@@ -1,0 +1,119 @@
+media:
+  - name: imgs
+    input: src/content/imgs
+    output: ../imgs
+
+content:
+  - name: posts-pt
+    label: Posts (PT)
+    type: collection
+    path: src/content/labs
+    filename: '{primary}.md'
+    view:
+      fields: [title, pubDate, tags]
+      sort: [pubDate]
+      default:
+        sort: pubDate
+        order: desc
+    fields:
+      - name: title
+        label: Título
+        type: string
+        required: true
+        description: 'Texto puro. Máximo 3 linhas quando renderizado.'
+      - name: heroTitle
+        label: Hero Title (estilizado)
+        type: string
+        description: 'Versão estilizada do título. Use <em>palavra</em> e <span class="accent">palavra</span>, com <br/> manual. Máx 3 linhas.'
+      - name: description
+        label: Descrição (SEO + subtítulo)
+        type: text
+        required: true
+      - name: pubDate
+        label: Data de publicação
+        type: date
+        required: true
+        options:
+          format: 'MMM dd yyyy'
+      - name: updatedDate
+        label: Data de atualização
+        type: date
+        options:
+          format: 'MMM dd yyyy'
+      - name: heroImage
+        label: Imagem do hero
+        type: image
+        options:
+          input: src/content/imgs
+          output: ../imgs
+      - name: heroAlt
+        label: Alt da imagem
+        type: string
+      - name: tags
+        label: Tags
+        type: string
+        list: true
+      - name: keywords
+        label: Keywords (SEO)
+        type: string
+        list: true
+      - name: body
+        label: Corpo
+        type: text
+        description: 'Markdown. Use ## subheads, **negrito**, *itálico*, > blockquotes pra ritmo. Termine com --- antes da reflexão final. Bloco ## Stack no fim quando técnico.'
+
+  - name: posts-en
+    label: Posts (EN)
+    type: collection
+    path: src/content/labs-en
+    filename: '{primary}.md'
+    view:
+      fields: [title, pubDate, tags]
+      sort: [pubDate]
+      default:
+        sort: pubDate
+        order: desc
+    fields:
+      - name: title
+        label: Title
+        type: string
+        required: true
+      - name: heroTitle
+        label: Hero Title (styled)
+        type: string
+        description: 'Styled version. Use <em>word</em> and <span class="accent">word</span> with manual <br/>. Max 3 lines.'
+      - name: description
+        label: Description
+        type: text
+        required: true
+      - name: pubDate
+        label: Publish date
+        type: date
+        required: true
+        options:
+          format: 'MMM dd yyyy'
+      - name: updatedDate
+        label: Updated date
+        type: date
+        options:
+          format: 'MMM dd yyyy'
+      - name: heroImage
+        label: Hero image
+        type: image
+        options:
+          input: src/content/imgs
+          output: ../imgs
+      - name: heroAlt
+        label: Image alt
+        type: string
+      - name: tags
+        label: Tags
+        type: string
+        list: true
+      - name: keywords
+        label: Keywords (SEO)
+        type: string
+        list: true
+      - name: body
+        label: Body
+        type: text
