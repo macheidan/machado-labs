@@ -146,15 +146,15 @@ const navPersist = `nav-${isEn ? 'en' : 'pt'}`;
 
       main.shell-content { position: relative; z-index: 1; }
 
-      .posts, .featured, .stats { perspective: 1600px; perspective-origin: 50% 30%; }
+      .posts, .featured, .stats { perspective: 800px; perspective-origin: 50% 30%; }
       .post-row, .featured .card, .featured .stat {
         transform-origin: 50% 50%;
         transform-style: preserve-3d;
         transform:
-          translate3d(0, calc(var(--float, 0) * 2.6px + var(--kick, 0) * 0.4px), 0)
-          rotateX(calc(var(--rx-base, 0) * 1deg + var(--kick, 0) * 0.2deg))
-          rotateY(calc(var(--ry-base, 0) * 1deg + var(--float, 0) * 0.6deg))
-          rotateZ(calc(var(--rz-base, 0) * 1deg));
+          translate3d(0, calc(var(--float, 0) * 6px + var(--kick, 0) * 0.9px), 0)
+          rotateX(calc(var(--rx-base, 0) * 1deg + var(--kick, 0) * 0.5deg))
+          rotateY(calc(var(--ry-base, 0) * 1deg + var(--float, 0) * 1.6deg))
+          rotateZ(calc(var(--rz-base, 0) * 1deg + var(--float, 0) * 0.3deg));
         will-change: transform;
       }
       @media (prefers-reduced-motion: reduce) {
@@ -259,10 +259,10 @@ const navPersist = `nav-${isEn ? 'en' : 'pt'}`;
           rows.forEach((r) => {
             r.style.setProperty('--phase', Math.random().toFixed(3));
             r.style.setProperty('--phase2', Math.random().toFixed(3));
-            r.style.setProperty('--rx-base', (Math.random() * 1.6 - 0.8).toFixed(2));
-            r.style.setProperty('--ry-base', (Math.random() * 4 - 2).toFixed(2));
-            r.style.setProperty('--rz-base', (Math.random() * 0.8 - 0.4).toFixed(2));
-            r.style.setProperty('--amp', (0.6 + Math.random() * 0.8).toFixed(2));
+            r.style.setProperty('--rx-base', (Math.random() * 4 - 2).toFixed(2));
+            r.style.setProperty('--ry-base', (Math.random() * 9 - 4.5).toFixed(2));
+            r.style.setProperty('--rz-base', (Math.random() * 2 - 1).toFixed(2));
+            r.style.setProperty('--amp', (1.2 + Math.random() * 1.2).toFixed(2));
             r.style.setProperty('--speed', (0.45 + Math.random() * 0.35).toFixed(3));
           });
           lastScroll = window.scrollY;
