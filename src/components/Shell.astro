@@ -146,19 +146,19 @@ const navPersist = `nav-${isEn ? 'en' : 'pt'}`;
 
       main.shell-content { position: relative; z-index: 1; }
 
-      .posts { perspective: 1600px; perspective-origin: 50% 30%; }
-      .post-row {
+      .posts, .featured, .stats { perspective: 1600px; perspective-origin: 50% 30%; }
+      .post-row, .featured .card, .featured .stat {
         transform-origin: 50% 50%;
         transform-style: preserve-3d;
         transform:
-          translate3d(0, calc(var(--float, 0) * 2.2px + var(--kick, 0) * 0.35px), 0)
-          rotateX(calc(var(--rx-base, 0) * 1deg + var(--kick, 0) * 0.18deg))
-          rotateY(calc(var(--ry-base, 0) * 1deg + var(--float, 0) * 0.55deg))
+          translate3d(0, calc(var(--float, 0) * 2.6px + var(--kick, 0) * 0.4px), 0)
+          rotateX(calc(var(--rx-base, 0) * 1deg + var(--kick, 0) * 0.2deg))
+          rotateY(calc(var(--ry-base, 0) * 1deg + var(--float, 0) * 0.6deg))
           rotateZ(calc(var(--rz-base, 0) * 1deg));
         will-change: transform;
       }
       @media (prefers-reduced-motion: reduce) {
-        .post-row { transform: none !important; }
+        .post-row, .featured .card, .featured .stat { transform: none !important; }
       }
 
       ::view-transition-old(content) {
@@ -255,7 +255,7 @@ const navPersist = `nav-${isEn ? 'en' : 'pt'}`;
         let kick = 0, kickV = 0;
         const stiffness = 0.09, damping = 0.74, scrollGain = 0.45;
         function init() {
-          rows = Array.from(document.querySelectorAll('.post-row'));
+          rows = Array.from(document.querySelectorAll('.post-row, .featured .card, .featured .stat'));
           rows.forEach((r) => {
             r.style.setProperty('--phase', Math.random().toFixed(3));
             r.style.setProperty('--phase2', Math.random().toFixed(3));
