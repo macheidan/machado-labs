@@ -1,0 +1,58 @@
+backend:
+  name: github
+  repo: macheidan/machado-labs
+  branch: master
+  auth_type: pkce
+  app_id: Iv23liGITHUB_OAUTH_APP_ID
+
+site_url: https://fabiomachado.com.br
+display_url: https://fabiomachado.com.br
+logo_url: /favicon.png
+
+media_folder: src/content/imgs
+public_folder: ../imgs
+
+collections:
+  - name: posts-pt
+    label: Posts (PT)
+    folder: src/content/labs
+    extension: md
+    format: yaml-frontmatter
+    create: true
+    slug: '{{slug}}'
+    sortable_fields: [pubDate, title]
+    view_filters:
+      - label: Com hero image
+        field: heroImage
+        pattern: '.+'
+    fields:
+      - { name: title, label: 'Título', widget: string, hint: 'Texto puro. Máximo 3 linhas quando renderizado.' }
+      - { name: heroTitle, label: 'Hero Title (estilizado)', widget: string, required: false, hint: 'Use <em>palavra</em> e <span class="accent">palavra</span> com <br/> manual. Máx 3 linhas.' }
+      - { name: description, label: 'Descrição (SEO + sub)', widget: text }
+      - { name: pubDate, label: 'Data de publicação', widget: datetime, date_format: 'MMM dd yyyy', time_format: false, format: 'MMM dd yyyy' }
+      - { name: updatedDate, label: 'Data de atualização', widget: datetime, required: false, date_format: 'MMM dd yyyy', time_format: false, format: 'MMM dd yyyy' }
+      - { name: heroImage, label: 'Imagem do hero', widget: image, required: false, choose_url: false, media_library: { config: { multiple: false } } }
+      - { name: heroAlt, label: 'Alt da imagem', widget: string, required: false }
+      - { name: tags, label: 'Tags', widget: list, required: false, default: [] }
+      - { name: keywords, label: 'Keywords (SEO)', widget: list, required: false }
+      - { name: body, label: 'Corpo', widget: markdown, hint: 'Use ## subheads, **negrito**, *itálico*, > blockquotes. Termine com --- antes da reflexão final. Bloco ## Stack no fim quando técnico.' }
+
+  - name: posts-en
+    label: Posts (EN)
+    folder: src/content/labs-en
+    extension: md
+    format: yaml-frontmatter
+    create: true
+    slug: '{{slug}}'
+    sortable_fields: [pubDate, title]
+    fields:
+      - { name: title, label: 'Title', widget: string, hint: 'Plain text. Max 3 lines when rendered.' }
+      - { name: heroTitle, label: 'Hero Title (styled)', widget: string, required: false, hint: 'Use <em>word</em> and <span class="accent">word</span> with manual <br/>. Max 3 lines.' }
+      - { name: description, label: 'Description', widget: text }
+      - { name: pubDate, label: 'Publish date', widget: datetime, date_format: 'MMM dd yyyy', time_format: false, format: 'MMM dd yyyy' }
+      - { name: updatedDate, label: 'Updated date', widget: datetime, required: false, date_format: 'MMM dd yyyy', time_format: false, format: 'MMM dd yyyy' }
+      - { name: heroImage, label: 'Hero image', widget: image, required: false }
+      - { name: heroAlt, label: 'Image alt', widget: string, required: false }
+      - { name: tags, label: 'Tags', widget: list, required: false, default: [] }
+      - { name: keywords, label: 'Keywords (SEO)', widget: list, required: false }
+      - { name: body, label: 'Body', widget: markdown }
