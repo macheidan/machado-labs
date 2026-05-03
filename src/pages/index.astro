@@ -20,23 +20,16 @@ const jsonLd = homeGraph('pt', SITE_DESCRIPTION);
   jsonLd={jsonLd}
   active="home"
 >
-  {featured && (
-    <section class="dawn-hero">
-      <div class="copy">
-        {featured.data.heroTitle
-          ? <h1><a href={`/labs/${featured.id}`} set:html={featured.data.heroTitle} /></h1>
-          : <h1><a href={`/labs/${featured.id}`}>{featured.data.title}</a></h1>}
-        <p class="sub"><a href={`/labs/${featured.id}`}>Ler</a></p>
-        <div class="scroll-cue" aria-hidden="true"></div>
-      </div>
-    </section>
-  )}
+  <section class="dawn-hero">
+    <div class="copy">
+      <h1>Como estou aplicando <em>IA</em> nos meus <span class="accent">negócios</span>.</h1>
+      <h2 class="hero-sub">Projetos que já <em>estão rodando</em> e implementando.</h2>
+      {featured && <p class="sub"><a href={`/labs/${featured.id}`}>Ler último post</a></p>}
+      <div class="scroll-cue" aria-hidden="true"></div>
+    </div>
+  </section>
 
   <div class="dawn-posts">
-    <section class="section-intro">
-      <h2>Como estou aplicando <em>IA</em> nos meus <span class="accent">negócios</span>. <span class="sub">Projetos que já <em>estão rodando</em> e implementando.</span></h2>
-    </section>
-
     <section class="featured">
       {featured && (
         <a class="card" href={`/labs/${featured.id}`}>
@@ -138,6 +131,27 @@ const jsonLd = homeGraph('pt', SITE_DESCRIPTION);
     font-size: 1.05em;
     letter-spacing: -0.025em;
   }
+  .dawn-hero .hero-sub {
+    font-family: 'Fraunces', serif;
+    font-weight: 300; font-style: italic;
+    font-size: clamp(28px, 4.5vw, 56px);
+    line-height: 1.05; letter-spacing: -0.015em;
+    color: #2a1a0e;
+    text-wrap: balance;
+    margin: 0;
+    opacity: 0.92;
+  }
+  .dawn-hero .hero-sub :global(em) {
+    font-style: italic;
+    font-weight: 500;
+    color: #6b3d20;
+  }
+  .dawn-hero .hero-sub :global(.accent) {
+    font-style: normal;
+    font-weight: 600;
+    color: #c2683a;
+    letter-spacing: -0.02em;
+  }
   .dawn-hero p.sub {
     margin: 0; font-size: 13px;
     letter-spacing: 0.18em; text-transform: uppercase;
@@ -176,30 +190,6 @@ const jsonLd = homeGraph('pt', SITE_DESCRIPTION);
     max-width: 1180px; margin: 0 auto;
     padding: 0 32px;
   }
-
-  .section-intro {
-    padding: 28px 0 32px;
-    display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px;
-  }
-  .section-intro .pill {
-    grid-column: 1 / 13;
-    display: inline-flex; align-items: center; gap: 10px;
-    font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
-    color: #2c1f15; opacity: 0.85;
-  }
-  .section-intro .pill::before { content: ''; width: 28px; height: 1px; background: #2c1f15; opacity: 0.6; }
-  .section-intro h2 {
-    grid-column: 1 / 13;
-    font-family: 'Fraunces', serif; font-weight: 400;
-    font-size: clamp(32px, 4.5vw, 56px); line-height: 1.1;
-    letter-spacing: -0.015em;
-    color: #1a1410;
-    margin-top: 18px;
-    text-align: center;
-  }
-  .section-intro h2 em { font-style: italic; font-weight: 500; color: #6b3d20; }
-  .section-intro h2 .accent { font-style: normal; font-weight: 600; color: #c2683a; letter-spacing: -0.02em; }
-  .section-intro h2 .sub { font-size: 0.72em; color: #2c1f15; opacity: 0.82; display: inline-block; margin-top: 6px; }
 
   .featured {
     padding: 32px 0 56px;
@@ -291,8 +281,6 @@ const jsonLd = homeGraph('pt', SITE_DESCRIPTION);
     .dawn-hero .copy { padding: 0 16px; gap: 20px; transform: translate3d(0, calc(-30px - 5% + var(--scrollPara)), 0); }
     .dawn-hero h1 { font-size: 12vw; }
     .dawn-posts { padding: 0 20px; }
-    .section-intro { padding: 20px 0 24px; }
-    .section-intro h2 { grid-column: 1 / 13; }
     .featured a.card, .stats { grid-column: 1 / 13; }
     .featured a.card { padding: 24px; }
     .archive-head h3 { grid-column: 1 / 9; font-size: 22px; }
