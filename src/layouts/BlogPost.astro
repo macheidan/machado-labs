@@ -37,6 +37,7 @@ const dn = (() => {
 })();
 
 const homeUrl = isEn ? '/en' : '/';
+const postsUrl = isEn ? '/en/posts' : '/posts';
 const backLabel = isEn ? '← All posts' : '← Todos os posts';
 
 const slug = Astro.url.pathname.replace(/^\/(en\/)?labs\//, '').replace(/\/$/, '');
@@ -116,7 +117,7 @@ const jsonLd = articleGraph({
     </div>
 
     <footer class="post-footer">
-      <a href={homeUrl} class="back">{backLabel}</a>
+      <a href={postsUrl} class="back">{backLabel}</a>
       <span class="footer-meta">© Fábio Machado · {dn}</span>
     </footer>
   </article>
