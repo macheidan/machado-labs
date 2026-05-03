@@ -146,6 +146,21 @@ const navPersist = `nav-${isEn ? 'en' : 'pt'}`;
 
       main.shell-content { position: relative; z-index: 1; }
 
+      .posts { perspective: 1600px; perspective-origin: 50% 30%; }
+      .post-row {
+        transform-origin: 50% 50%;
+        transform-style: preserve-3d;
+        transform:
+          translate3d(0, calc(var(--float, 0) * 2.2px + var(--kick, 0) * 0.35px), 0)
+          rotateX(calc(var(--rx-base, 0) * 1deg + var(--kick, 0) * 0.18deg))
+          rotateY(calc(var(--ry-base, 0) * 1deg + var(--float, 0) * 0.55deg))
+          rotateZ(calc(var(--rz-base, 0) * 1deg));
+        will-change: transform;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .post-row { transform: none !important; }
+      }
+
       ::view-transition-old(content) {
         animation: 700ms cubic-bezier(0.22, 1, 0.36, 1) both shell-out;
       }
@@ -230,6 +245,58 @@ const navPersist = `nav-${isEn ? 'en' : 'pt'}`;
         }
         document.addEventListener('astro:page-load', update);
         document.addEventListener('astro:after-swap', update);
+      })();
+
+      (function () {
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reduce) return;
+        let rows = [];
+        let lastScroll = window.scrollY;
+        let kick = 0, kickV = 0;
+        const stiffness = 0.09, damping = 0.74, scrollGain = 0.45;
+        function init() {
+          rows = Array.from(document.querySelectorAll('.post-row'));
+          rows.forEach((r) => {
+            r.style.setProperty('--phase', Math.random().toFixed(3));
+            r.style.setProperty('--phase2', Math.random().toFixed(3));
+            r.style.setProperty('--rx-base', (Math.random() * 1.6 - 0.8).toFixed(2));
+            r.style.setProperty('--ry-base', (Math.random() * 4 - 2).toFixed(2));
+            r.style.setProperty('--rz-base', (Math.random() * 0.8 - 0.4).toFixed(2));
+            r.style.setProperty('--amp', (0.6 + Math.random() * 0.8).toFixed(2));
+            r.style.setProperty('--speed', (0.45 + Math.random() * 0.35).toFixed(3));
+          });
+          lastScroll = window.scrollY;
+        }
+        function tick() {
+          const now = window.scrollY;
+          const dv = now - lastScroll;
+          lastScroll = now;
+          const force = (dv * scrollGain - kick) * stiffness;
+          kickV = (kickV + force) * damping;
+          kick += kickV;
+          if (Math.abs(kick) < 0.01 && Math.abs(kickV) < 0.01) kick = 0;
+          const t = performance.now() / 1000;
+          for (let i = 0; i < rows.length; i++) {
+            const r = rows[i];
+            const phase = parseFloat(r.style.getPropertyValue('--phase')) || 0;
+            const phase2 = parseFloat(r.style.getPropertyValue('--phase2')) || 0;
+            const amp = parseFloat(r.style.getPropertyValue('--amp')) || 1;
+            const speed = parseFloat(r.style.getPropertyValue('--speed')) || 0.6;
+            const float = (Math.sin(t * speed + phase * 6.283) * 0.7 + Math.sin(t * speed * 1.7 + phase2 * 6.283) * 0.3) * amp;
+            r.style.setProperty('--float', float.toFixed(3));
+            r.style.setProperty('--kick', (kick * (0.7 + amp * 0.3)).toFixed(2));
+          }
+          requestAnimationFrame(tick);
+        }
+        function start() { init(); }
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', start);
+        } else {
+          start();
+        }
+        document.addEventListener('astro:page-load', init);
+        document.addEventListener('astro:after-swap', init);
+        requestAnimationFrame(tick);
       })();
     </script>
   </body>
