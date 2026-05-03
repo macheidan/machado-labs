@@ -2,7 +2,7 @@ backend:
   name: github
   repo: macheidan/machado-labs
   branch: master
-  base_url: https://sveltia-cms-auth.machado.workers.dev
+  base_url: https://sveltia-auth.machadofabio.workers.dev
 
 site_url: https://fabiomachado.com.br
 display_url: https://fabiomachado.com.br
