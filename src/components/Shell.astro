@@ -154,9 +154,11 @@ const navPersist = `nav-${isEn ? 'en' : 'pt'}`;
           translate3d(0, calc(var(--float, 0) * 6px + var(--kick, 0) * 0.9px), 0)
           rotateX(calc(var(--rx-base, 0) * 1deg + var(--kick, 0) * 0.5deg))
           rotateY(calc(var(--ry-base, 0) * 1deg + var(--float, 0) * 1.6deg))
-          rotateZ(calc(var(--rz-base, 0) * 1deg + var(--float, 0) * 0.3deg));
+          rotateZ(calc(var(--rz-base, 0) * 1deg + var(--float, 0) * 0.3deg))
+          rotate3d(1, -1, 0, calc(var(--corner-base, 0) * 1deg + var(--float, 0) * var(--corner-amp, 4) * 1deg));
         will-change: transform;
       }
+      .featured .card { --corner-amp: 8; }
       @media (prefers-reduced-motion: reduce) {
         .post-row, .featured .card, .featured .stat { transform: none !important; }
       }
@@ -263,6 +265,7 @@ const navPersist = `nav-${isEn ? 'en' : 'pt'}`;
             r.style.setProperty('--ry-base', (Math.random() * 9 - 4.5).toFixed(2));
             r.style.setProperty('--rz-base', (Math.random() * 2 - 1).toFixed(2));
             r.style.setProperty('--amp', (1.2 + Math.random() * 1.2).toFixed(2));
+            r.style.setProperty('--corner-base', (Math.random() * 4 - 2).toFixed(2));
             r.style.setProperty('--speed', (0.45 + Math.random() * 0.35).toFixed(3));
           });
           lastScroll = window.scrollY;
