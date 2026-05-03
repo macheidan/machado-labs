@@ -80,6 +80,7 @@ const jsonLd = articleGraph({
       {heroTitle
         ? <h1 class="post-hero-title" set:html={heroTitle} />
         : <h1 class="post-hero-title">{title}</h1>}
+      <div class="scroll-cue" aria-hidden="true"></div>
     </div>
   </section>
 
@@ -125,11 +126,39 @@ const jsonLd = articleGraph({
   }
   .post-hero .copy {
     grid-row: 2;
-    display: flex; align-items: center; justify-content: center;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 24px;
     padding: 0 24px;
     --scrollPara: 0px;
     transform: translate3d(0, calc(-10% - 45px + var(--scrollPara)), 0);
     will-change: transform;
+  }
+  .post-hero .scroll-cue {
+    position: relative;
+    width: 1px;
+    height: 48px;
+    background: rgba(44, 31, 21, 0.18);
+    margin-top: 4px;
+  }
+  .post-hero .scroll-cue::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -2px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #2c1f15;
+    animation: scrollDot 2.2s cubic-bezier(.45, 0, .55, 1) infinite;
+  }
+  @keyframes scrollDot {
+    0%   { transform: translateY(-10px); opacity: 0; }
+    18%  { transform: translateY(0); opacity: 1; }
+    82%  { transform: translateY(43px); opacity: 1; }
+    100% { transform: translateY(56px); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .post-hero .scroll-cue::after { animation: none; opacity: 0.6; }
   }
   .post-hero-title {
     font-family: 'Fraunces', serif;
