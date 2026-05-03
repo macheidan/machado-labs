@@ -109,9 +109,8 @@ const navPersist = `nav-${isEn ? 'en' : 'pt'}`;
       .dawn-nav .right > a { opacity: 0.75; transition: opacity 150ms; }
       .dawn-nav .right > a:hover, .dawn-nav .right > a.active { opacity: 1; }
       .dawn-nav .right .sep { opacity: 0.35; user-select: none; }
-      .x-icon { display: inline-flex; align-items: center; opacity: 0.75; transition: opacity 150ms; }
-      .x-icon:hover { opacity: 1; }
-      .x-icon svg { width: 14px; height: 14px; fill: currentColor; display: block; }
+      .ig-handle { display: inline-flex; align-items: center; opacity: 0.75; transition: opacity 150ms; font-family: inherit; font-size: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; }
+      .ig-handle:hover { opacity: 1; }
 
       .mountains-fixed {
         position: fixed;
@@ -151,9 +150,8 @@ const navPersist = `nav-${isEn ? 'en' : 'pt'}`;
       }
       .brand-bottom .bb-left,
       .brand-bottom .bb-right { pointer-events: auto; }
-      .brand-bottom .bb-left { justify-self: start; display: inline-flex; align-items: center; opacity: 0.85; transition: opacity 150ms; }
+      .brand-bottom .bb-left { justify-self: start; display: inline-flex; align-items: center; opacity: 0.85; transition: opacity 150ms; font-family: inherit; font-size: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; }
       .brand-bottom .bb-left:hover { opacity: 1; }
-      .brand-bottom .bb-left svg { width: 14px; height: 14px; fill: currentColor; display: block; }
       .brand-bottom .bb-center { justify-self: center; opacity: 0.85; transition: opacity 150ms; color: inherit; text-decoration: none; }
       .brand-bottom .bb-center:hover { opacity: 1; }
       .brand-bottom .bb-right { justify-self: end; opacity: 0.85; transition: opacity 150ms; font-family: inherit; font-size: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; }
@@ -235,9 +233,7 @@ const navPersist = `nav-${isEn ? 'en' : 'pt'}`;
         <span class="sep">|</span>
         <a href={switchUrl}>{switchLabel}</a>
         <span class="sep">|</span>
-        <a class="x-icon" href="https://x.com/machadofabio" target="_blank" rel="noopener" aria-label="X (Twitter)">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-        </a>
+        <a class="ig-handle" href="https://www.instagram.com/machadofabio" target="_blank" rel="noopener" aria-label="Instagram @machadofabio">@</a>
       </span>
     </nav>
 
@@ -249,9 +245,7 @@ const navPersist = `nav-${isEn ? 'en' : 'pt'}`;
       <Image src={mountains} alt="" width={2752} height={898} loading="eager" />
     </div>
     <div class="brand-bottom" transition:persist={`brand-bottom-${isEn ? 'en' : 'pt'}`}>
-      <a class="bb-left" href="https://x.com/machadofabio" target="_blank" rel="noopener" aria-label="X (Twitter)">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-      </a>
+      <a class="bb-left" href="https://www.instagram.com/machadofabio" target="_blank" rel="noopener" aria-label="Instagram @machadofabio">@</a>
       <a class="bb-center" href={homeUrl}>Fábio Machado</a>
       <a class="bb-right" href={isEn ? '/en/posts' : '/posts'}>{isEn ? 'posts' : 'posts'}</a>
     </div>
