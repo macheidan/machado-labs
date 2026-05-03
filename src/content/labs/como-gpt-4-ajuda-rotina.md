@@ -4,8 +4,8 @@ heroTitle: 'Como o <em>GPT-4</em><br/>está ajudando<br/>minha <span class="acce
 description: 'Três tarefas de dono que parei de fazer na unha desde que o GPT-4 ganhou upload de arquivos: fórmulas de planilha, projeção de vendas e conferência de caixa.'
 pubDate: 'Apr 15 2023'
 updatedDate: 'Apr 26 2026'
-tags: ['gpt-4', 'planilhas', 'rotina']
-keywords: ['GPT-4 planilhas', 'análise com IA', 'projeção de vendas', 'fechamento de caixa', 'IA para empresas']
+tags: ['chatgpt', 'planilhas', 'rotina']
+keywords: ['ChatGPT planilhas', 'análise com IA', 'projeção de vendas', 'fechamento de caixa', 'IA para empresas', 'IA para dono de empresa', 'IA para PME']
 ---
 
 Todo dono tem 3 a 5 planilhas que **tomam a noite**. Comparativo de venda, fechamento de caixa, planilha de produto que ninguém atualiza.

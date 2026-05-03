@@ -3,8 +3,8 @@ title: 'Por que estou documentando isso publicamente'
 heroTitle: 'Por que estou <em>documentando</em><br/>isso <span class="accent">publicamente</span>'
 description: 'Começa aqui. A decisão de expor o processo de construir um time de agentes de IA dentro das pizzerias é estratégica, não estética.'
 pubDate: 'Apr 25 2026'
-tags: ['manifesto', 'estrategia']
-keywords: ['IA aplicada', 'consultoria IA', 'documentar publicamente', 'agentes em empresas']
+tags: ['bastidores', 'estrategia']
+keywords: ['IA aplicada', 'consultoria IA', 'agentes em empresas', 'IA em PME', 'IA aplicada em pequenas empresas', 'time de agentes IA']
 ---
 
 Tem uma diferença grande entre **montar um agente de IA num laboratório** e colocar um time inteiro deles pra trabalhar dentro de uma empresa real.

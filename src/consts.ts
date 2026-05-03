@@ -6,8 +6,8 @@ export const SITE_DESCRIPTION =
 export const SITE_DESCRIPTION_EN =
 	'Documenting how a team of AI agents is built inside real businesses. Decisions, metrics, mistakes, and cases — no theory.';
 
-export const HOME_TITLE = 'Fábio Machado — Macheidan Labs';
-export const HOME_TITLE_EN = 'Fábio Machado — Macheidan Labs';
+export const HOME_TITLE = 'Fábio Machado — IA aplicada em empresas reais';
+export const HOME_TITLE_EN = 'Fábio Machado — Applied AI in real businesses';
 
 export const AUTHOR_NAME = 'Fábio Machado';
 export const AUTHOR_X = 'https://x.com/machadofabio';

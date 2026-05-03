@@ -3,8 +3,8 @@ title: 'Why I''m documenting this publicly'
 heroTitle: 'Why I''m <em>documenting</em><br/>this <span class="accent">publicly</span>'
 description: 'Start here. The decision to expose the process of building a team of AI agents inside the pizzerias is strategic, not aesthetic.'
 pubDate: 'Apr 25 2026'
-tags: ['manifesto', 'estrategia']
-keywords: ['applied AI', 'AI consulting', 'documenting publicly', 'agents in business']
+tags: ['bastidores', 'estrategia']
+keywords: ['applied AI', 'AI consulting', 'agents in business', 'AI for SMB', 'applied AI in small business', 'AI agent team']
 ---
 
 There's a big difference between **building one AI agent in a lab** and putting an entire team of them to work inside a real company.

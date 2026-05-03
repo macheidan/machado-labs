@@ -6,7 +6,7 @@ pubDate: 'May 01 2026'
 heroImage: '../imgs/260501.jpeg'
 heroAlt: 'Agente de IA lendo as mensagens do meu WhatsApp em segundo plano'
 tags: ['cortex', 'agentes', 'whatsapp']
-keywords: ['agente de IA WhatsApp', 'Cortex Digital', 'automação WhatsApp', 'Baileys', 'Gemini', 'agentes pessoais']
+keywords: ['agente de IA WhatsApp', 'automação WhatsApp empresa', 'IA para WhatsApp', 'resumo de grupos WhatsApp', 'ganhar tempo no WhatsApp', 'IA para dono de empresa']
 ---
 
 Tava gastando **tempo demais no WhatsApp**. Lendo grupo de fornecedor, repassando coisa pro gerente, respondendo cotação, lendo o grupo da família que eu já tinha deixado de ler dois dias antes.

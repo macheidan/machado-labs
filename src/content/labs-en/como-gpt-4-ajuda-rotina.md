@@ -4,8 +4,8 @@ heroTitle: 'How <em>GPT-4</em><br/>is helping my<br/>daily <span class="accent">
 description: 'Three owner tasks I stopped doing by hand once GPT-4 got file uploads: spreadsheet formulas, sales projections, and cash reconciliation.'
 pubDate: 'Apr 15 2023'
 updatedDate: 'Apr 26 2026'
-tags: ['gpt-4', 'planilhas', 'rotina']
-keywords: ['GPT-4 spreadsheets', 'AI analysis', 'sales projection', 'cash reconciliation', 'AI for SMB']
+tags: ['chatgpt', 'planilhas', 'rotina']
+keywords: ['ChatGPT spreadsheets', 'AI analysis', 'sales projection', 'cash reconciliation', 'AI for SMB', 'AI for business owners']
 ---
 
 Every owner has 3 to 5 spreadsheets that **eat the night**. Sales comparison, daily cash close, product list nobody updates.

@@ -4,7 +4,7 @@ heroTitle: 'Como estou<br/>construindo o <em>Meu</em><br/><span class="accent">C
 description: 'Um sistema em markdown puro, versionado no git, sincronizado pelo Google Drive e lido por qualquer modelo. Contexto persistente para trabalhar com múltiplos projetos e agentes ao mesmo tempo.'
 pubDate: 'Apr 26 2026'
 tags: ['cortex', 'agentes']
-keywords: ['segundo cérebro', 'Cortex Digital', 'memória de IA', 'agentes de IA', 'markdown', 'Obsidian']
+keywords: ['segundo cérebro', 'memória de IA', 'agentes de IA', 'contexto para IA', 'IA com memória da empresa', 'dar contexto pro ChatGPT']
 ---
 
 São muitos projetos simultâneos, decisões tomadas em contextos diferentes, e cada agente de IA começa do zero **sem saber nada sobre mim**.

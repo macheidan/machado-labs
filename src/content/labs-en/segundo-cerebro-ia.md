@@ -4,7 +4,7 @@ heroTitle: 'How I''m<br/>building <em>My</em><br/><span class="accent">Digital C
 description: 'A pure markdown system, version-controlled in git, synced through Google Drive, and readable by any model. Persistent context for working across multiple projects and agents at once.'
 pubDate: 'Apr 26 2026'
 tags: ['cortex', 'agentes']
-keywords: ['second brain', 'Digital Cortex', 'AI memory', 'AI agents', 'markdown', 'Obsidian']
+keywords: ['second brain', 'AI memory', 'AI agents', 'context for AI', 'AI with company memory', 'give context to ChatGPT']
 ---
 
 Many simultaneous projects, decisions made in different contexts, and every AI agent starts from scratch **knowing nothing about me**.

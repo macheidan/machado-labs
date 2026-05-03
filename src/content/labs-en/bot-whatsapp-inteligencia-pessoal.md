@@ -6,7 +6,7 @@ pubDate: 'May 01 2026'
 heroImage: '../imgs/260501.jpeg'
 heroAlt: 'AI agent reading my WhatsApp messages in the background'
 tags: ['cortex', 'agentes', 'whatsapp']
-keywords: ['WhatsApp AI agent', 'Digital Cortex', 'WhatsApp automation', 'Baileys', 'Gemini', 'personal agents']
+keywords: ['WhatsApp AI agent', 'WhatsApp automation for business', 'AI for WhatsApp', 'WhatsApp group summaries', 'save time on WhatsApp', 'AI for business owners']
 ---
 
 I was spending **too much time on WhatsApp**. Reading the supplier groups, forwarding stuff to the manager, replying to quotes, reading the family group I had already given up on two days earlier.
