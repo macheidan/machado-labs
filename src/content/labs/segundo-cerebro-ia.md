@@ -1,6 +1,6 @@
 ---
 title: 'Como estou construindo o Meu Cortex Digital'
-heroTitle: 'Como estou construindo<br/>o <em>Meu</em> <span class="accent">Cortex Digital</span>'
+heroTitle: 'Como estou<br/>construindo o <em>Meu</em><br/><span class="accent">Cortex Digital</span>'
 description: 'Um sistema em markdown puro, versionado no git, sincronizado pelo Google Drive e lido por qualquer modelo. Contexto persistente para trabalhar com múltiplos projetos e agentes ao mesmo tempo.'
 pubDate: 'Apr 26 2026'
 tags: ['cortex', 'agentes']

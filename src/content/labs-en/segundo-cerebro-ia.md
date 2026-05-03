@@ -1,6 +1,6 @@
 ---
 title: 'How I''m building My Digital Cortex'
-heroTitle: 'How I''m building<br/><em>My</em> <span class="accent">Digital Cortex</span>'
+heroTitle: 'How I''m<br/>building <em>My</em><br/><span class="accent">Digital Cortex</span>'
 description: 'A pure markdown system, version-controlled in git, synced through Google Drive, and readable by any model. Persistent context for working across multiple projects and agents at once.'
 pubDate: 'Apr 26 2026'
 tags: ['cortex', 'agentes']
