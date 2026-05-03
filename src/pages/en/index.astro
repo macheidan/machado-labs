@@ -212,9 +212,9 @@ const jsonLd = homeGraph('en', SITE_DESCRIPTION_EN);
     border: 1px solid rgba(217, 204, 184, 0.6);
     border-radius: 24px;
     padding: 36px;
-    transition: transform 250ms ease, border-color 200ms;
+    transition: border-color 200ms, box-shadow 250ms ease;
   }
-  .featured a.card:hover { transform: translateY(-3px); border-color: var(--accent); }
+  .featured a.card:hover { border-color: var(--accent); box-shadow: 0 12px 32px rgba(44,31,21,0.18); }
   .featured .label { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
   .featured h3 {
     font-family: 'Fraunces', serif; font-weight: 400;
