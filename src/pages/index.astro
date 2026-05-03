@@ -176,12 +176,13 @@ const jsonLd = homeGraph('pt', SITE_DESCRIPTION);
   .section-intro {
     padding: 28px 0 32px;
     display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px;
+    container-type: inline-size;
   }
   .section-intro h2 {
     grid-column: 1 / 13;
     font-family: 'Fraunces', serif;
     font-weight: 300; font-style: italic;
-    font-size: clamp(23px, 4.28vw, 52px);
+    font-size: min(52px, 3.6cqi);
     line-height: 1.05; letter-spacing: -0.02em;
     color: #2a1a0e;
     white-space: nowrap;
@@ -288,7 +289,6 @@ const jsonLd = homeGraph('pt', SITE_DESCRIPTION);
     .dawn-hero h1 { font-size: 12vw; }
     .dawn-posts { padding: 0 20px; }
     .section-intro { padding: 20px 0 24px; }
-    .section-intro h2 { font-size: 5.23vw; }
     .featured a.card, .stats { grid-column: 1 / 13; }
     .featured a.card { padding: 24px; }
     .archive-head h3 { grid-column: 1 / 9; font-size: 22px; }
