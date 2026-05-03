@@ -274,7 +274,7 @@ const navPersist = `nav-${isEn ? 'en' : 'pt'}`;
         }
         function init() {
           const big = document.querySelector('.featured .card:not(.stat)');
-          if (big) applyTilt(big, { corner: 'br', depth: 60, tilt: 0, persp: 800, floatAmp: 14, floatSpeed: 6, floatDelay: 0 });
+          if (big) applyTilt(big, { corner: 'br', depth: 140, tilt: 0, persp: 800, floatAmp: 14, floatSpeed: 6, floatDelay: 0 });
           const stats = document.querySelectorAll('.featured .stat');
           stats.forEach((el, i) => applyTilt(el, { corner: 'br', depth: 100, tilt: 1, persp: 900, floatAmp: 11, floatSpeed: 7, floatDelay: 0.4 * (i + 1) }));
         }
