@@ -44,7 +44,7 @@ const jsonLd = profileGraph('pt', description);
     </section>
 
     <footer class="site">
-      <span class="left">© Fábio Machado · Porto Alegre</span>
+      <span class="left">© <a href="/" class="footer-home">Fábio Machado</a> · Porto Alegre</span>
       <span class="right">Skin · Dawn Ridge</span>
     </footer>
   </main>
@@ -113,6 +113,8 @@ const jsonLd = profileGraph('pt', description);
   }
   footer .left { grid-column: 1 / 7; }
   footer .right { grid-column: 7 / 13; text-align: right; }
+  footer .footer-home { color: inherit; text-decoration: none; transition: color 200ms; }
+  footer .footer-home:hover { color: var(--accent); }
 
   @media (max-width: 800px) {
     .hero-title { font-size: 16vw; }

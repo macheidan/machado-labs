@@ -155,7 +155,8 @@ const navPersist = `nav-${isEn ? 'en' : 'pt'}`;
       .brand-bottom .bb-left { justify-self: start; display: inline-flex; align-items: center; opacity: 0.85; transition: opacity 150ms; }
       .brand-bottom .bb-left:hover { opacity: 1; }
       .brand-bottom .bb-left svg { width: 14px; height: 14px; fill: currentColor; display: block; }
-      .brand-bottom .bb-center { justify-self: center; }
+      .brand-bottom .bb-center { justify-self: center; opacity: 0.85; transition: opacity 150ms; color: inherit; text-decoration: none; }
+      .brand-bottom .bb-center:hover { opacity: 1; }
       .brand-bottom .bb-right { justify-self: end; opacity: 0.85; transition: opacity 150ms; font-family: inherit; font-size: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; }
       .brand-bottom .bb-right:hover, .brand-bottom .bb-right.active { opacity: 1; }
       @media (max-width: 800px) {
@@ -252,7 +253,7 @@ const navPersist = `nav-${isEn ? 'en' : 'pt'}`;
       <a class="bb-left" href="https://x.com/machadofabio" target="_blank" rel="noopener" aria-label="X (Twitter)">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
       </a>
-      <span class="bb-center">Fábio Machado</span>
+      <a class="bb-center" href={homeUrl}>Fábio Machado</a>
       <a class="bb-right" href={isEn ? '/en/posts' : '/posts'}>{isEn ? 'posts' : 'posts'}</a>
     </div>
 

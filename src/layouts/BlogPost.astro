@@ -110,7 +110,7 @@ const jsonLd = articleGraph({
 
     <footer class="post-footer">
       <a href={postsUrl} class="back">{backLabel}</a>
-      <span class="footer-meta">© Fábio Machado · {dn}</span>
+      <span class="footer-meta">© <a href={homeUrl} class="footer-home">Fábio Machado</a> · {dn}</span>
     </footer>
   </article>
 </Shell>
@@ -294,6 +294,8 @@ const jsonLd = articleGraph({
   }
   .post-footer .back:hover { color: var(--accent); }
   .footer-meta { font-variant-numeric: tabular-nums; }
+  .footer-meta .footer-home { color: inherit; text-decoration: none; transition: color 200ms; }
+  .footer-meta .footer-home:hover { color: var(--accent); }
 
   @media (max-width: 800px) {
     .post-hero { min-height: calc(100vh - 130px); }
