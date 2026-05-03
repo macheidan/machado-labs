@@ -115,14 +115,6 @@ const jsonLd = articleGraph({
       </button>
     </div>
 
-    {tags.length > 0 && (
-      <ul class="tags" aria-label="tags">
-        {tags.map((tag) => (
-          <li><a href={tagPathFor(tag, lang)}>#{tagLabel(tag, lang)}</a></li>
-        ))}
-      </ul>
-    )}
-
     <footer class="post-footer">
       <a href={homeUrl} class="back">{backLabel}</a>
       <span class="footer-meta">© Fábio Machado · {dn}</span>
