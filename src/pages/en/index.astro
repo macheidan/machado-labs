@@ -73,13 +73,12 @@ const jsonLd = homeGraph('en', SITE_DESCRIPTION_EN);
       <span class="count">{posts.length} posts</span>
     </div>
     <div class="posts">
-      {rest.map((post, i) => {
+      {rest.map((post) => {
         const d = new Date(post.data.pubDate);
-        const ddmm = `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+        const mmyy = `${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getFullYear()).slice(-2)}`;
         return (
           <a class="post-row" href={`/en/labs/${post.id}`}>
-            <span class="post-num">№ {String(rest.length - i).padStart(2, '0')}</span>
-            <span class="post-date">{ddmm}</span>
+            <span class="post-date">{mmyy}</span>
             <span class="post-title">{post.data.title}</span>
             <span class="arrow">→</span>
           </a>
@@ -265,7 +264,7 @@ const jsonLd = homeGraph('en', SITE_DESCRIPTION_EN);
   .archive-head .count { grid-column: 7 / 13; text-align: right; font-size: 13px; color: rgba(44,31,21,0.6); font-variant-numeric: tabular-nums; }
 
   .post-row {
-    display: grid; grid-template-columns: 60px 110px 1fr auto;
+    display: grid; grid-template-columns: 70px 1fr auto;
     gap: 20px; padding: 18px 0; align-items: baseline;
     border-bottom: 1px solid rgba(44,31,21,0.15);
     transition: padding-left 250ms;
@@ -274,7 +273,6 @@ const jsonLd = homeGraph('en', SITE_DESCRIPTION_EN);
   .post-row:hover { padding-left: 12px; }
   .post-row:hover .post-title { color: #fff; }
   .post-row:hover .arrow { transform: translateX(8px); color: #fff; }
-  .post-num { font-size: 12px; color: rgba(44,31,21,0.55); font-variant-numeric: tabular-nums; }
   .post-date { font-size: 12px; color: rgba(44,31,21,0.55); font-variant-numeric: tabular-nums; }
   .post-title {
     font-family: 'Fraunces', serif; font-weight: 400;
@@ -296,8 +294,7 @@ const jsonLd = homeGraph('en', SITE_DESCRIPTION_EN);
     .featured a.card { padding: 24px; }
     .archive-head h3 { grid-column: 1 / 9; font-size: 22px; }
     .archive-head .count { grid-column: 9 / 13; }
-    .post-row { grid-template-columns: 90px 1fr auto; gap: 10px; }
-    .post-num { display: none; }
+    .post-row { grid-template-columns: 60px 1fr auto; gap: 10px; }
     .post-title { font-size: 17px; }
   }
 </style>

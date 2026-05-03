@@ -131,7 +131,11 @@ const navPersist = `nav-${isEn ? 'en' : 'pt'}`;
         position: fixed;
         left: 0; right: 0; top: 0;
         z-index: 5;
-        text-align: center;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        gap: 12px;
+        padding: 0 40px;
         pointer-events: none;
         user-select: none;
         font-family: 'Fraunces', serif;
@@ -142,6 +146,17 @@ const navPersist = `nav-${isEn ? 'en' : 'pt'}`;
         color: #ffffff;
         transform: translateY(150vh);
         will-change: transform;
+      }
+      .brand-bottom .bb-left,
+      .brand-bottom .bb-right { pointer-events: auto; }
+      .brand-bottom .bb-left { justify-self: start; display: inline-flex; align-items: center; opacity: 0.85; transition: opacity 150ms; }
+      .brand-bottom .bb-left:hover { opacity: 1; }
+      .brand-bottom .bb-left svg { width: 14px; height: 14px; fill: currentColor; display: block; }
+      .brand-bottom .bb-center { justify-self: center; }
+      .brand-bottom .bb-right { justify-self: end; opacity: 0.85; transition: opacity 150ms; font-family: inherit; font-size: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; }
+      .brand-bottom .bb-right:hover, .brand-bottom .bb-right.active { opacity: 1; }
+      @media (max-width: 800px) {
+        .brand-bottom { padding: 0 20px; }
       }
 
       main.shell-content { position: relative; z-index: 1; }
@@ -220,7 +235,13 @@ const navPersist = `nav-${isEn ? 'en' : 'pt'}`;
     <div class="mountains-fixed" transition:persist="mountains">
       <Image src={mountains} alt="" width={2752} height={898} loading="eager" />
     </div>
-    <div class="brand-bottom" transition:persist="brand-bottom">Fábio Machado</div>
+    <div class="brand-bottom" transition:persist="brand-bottom">
+      <a class="bb-left" href="https://x.com/machadofabio" target="_blank" rel="noopener" aria-label="X (Twitter)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      </a>
+      <span class="bb-center">Fábio Machado</span>
+      <a class="bb-right" href={isEn ? '/en/posts' : '/posts'}>{isEn ? 'posts' : 'posts'}</a>
+    </div>
 
     <script is:inline>
       (function () {

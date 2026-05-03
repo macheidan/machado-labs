@@ -1,0 +1,89 @@
+---
+import Shell from '../components/Shell.astro';
+import { SITE_DESCRIPTION } from '../consts';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('labs'))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+
+<Shell
+  title="Posts — Fábio Machado"
+  description={SITE_DESCRIPTION}
+  lang="pt-BR"
+  alternateUrl="/en/posts"
+>
+  <div class="posts-page">
+    <div class="archive-head">
+      <h3>Arquivo <strong>completo</strong></h3>
+      <span class="count">{posts.length} posts</span>
+    </div>
+    <div class="posts">
+      {posts.map((post) => {
+        const d = new Date(post.data.pubDate);
+        const mmyy = `${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getFullYear()).slice(-2)}`;
+        return (
+          <a class="post-row" href={`/labs/${post.id}`}>
+            <span class="post-date">{mmyy}</span>
+            <span class="post-title">{post.data.title}</span>
+            <span class="arrow">→</span>
+          </a>
+        );
+      })}
+    </div>
+  </div>
+
+  <div class="posts-tail"></div>
+</Shell>
+
+<style>
+  .posts-page {
+    position: relative; z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 60px 40px 40px;
+  }
+  .archive-head {
+    display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px;
+    align-items: baseline;
+    padding-bottom: 18px;
+    border-bottom: 1px solid rgba(44,31,21,0.25);
+    margin-bottom: 8px;
+  }
+  .archive-head h3 {
+    grid-column: 1 / 7;
+    font-family: 'Fraunces', serif; font-weight: 400; font-style: italic;
+    font-size: 30px; letter-spacing: -0.01em; color: #1a1410;
+    white-space: nowrap;
+  }
+  .archive-head h3 strong { font-weight: 700; font-style: italic; }
+  .archive-head .count { grid-column: 7 / 13; text-align: right; font-size: 13px; color: rgba(44,31,21,0.6); font-variant-numeric: tabular-nums; }
+
+  .post-row {
+    display: grid; grid-template-columns: 70px 1fr auto;
+    gap: 20px; padding: 18px 0; align-items: baseline;
+    border-bottom: 1px solid rgba(44,31,21,0.15);
+    transition: padding-left 250ms;
+    color: var(--fg);
+  }
+  .post-row:hover { padding-left: 12px; }
+  .post-row:hover .post-title { color: #fff; }
+  .post-row:hover .arrow { transform: translateX(8px); color: #fff; }
+  .post-date { font-size: 12px; color: rgba(44,31,21,0.55); font-variant-numeric: tabular-nums; }
+  .post-title {
+    font-family: 'Fraunces', serif; font-weight: 400;
+    font-size: 21px; line-height: 1.2; letter-spacing: -0.01em;
+    transition: color 200ms;
+  }
+  .arrow { color: rgba(44,31,21,0.5); font-size: 18px; transition: transform 250ms, color 250ms; }
+
+  .posts-tail { height: 30vw; }
+
+  @media (max-width: 800px) {
+    .posts-page { padding: 30px 20px 20px; }
+    .archive-head h3 { grid-column: 1 / 9; font-size: 22px; }
+    .archive-head .count { grid-column: 9 / 13; }
+    .post-row { grid-template-columns: 60px 1fr auto; gap: 10px; }
+    .post-title { font-size: 17px; }
+  }
+</style>
