@@ -201,18 +201,14 @@ const navPersist = `nav-${isEn ? 'en' : 'pt'}`;
       ::view-transition-old(brand-bottom-layer),
       ::view-transition-new(brand-bottom-layer) { animation: none; }
       ::view-transition-old(content) {
-        animation: 240ms cubic-bezier(0.4, 0, 0.2, 1) both shell-out;
+        animation: 220ms ease both shell-out;
       }
       ::view-transition-new(content) {
-        animation: 320ms cubic-bezier(0.16, 1, 0.3, 1) both shell-in;
-        animation-delay: 80ms;
+        animation: 280ms ease both shell-in;
+        animation-delay: 60ms;
       }
-      @keyframes shell-out {
-        to { transform: translateY(-6px); opacity: 0; }
-      }
-      @keyframes shell-in {
-        from { transform: translateY(12px); opacity: 0; }
-      }
+      @keyframes shell-out { to { opacity: 0; } }
+      @keyframes shell-in  { from { opacity: 0; } }
       @media (prefers-reduced-motion: reduce) {
         ::view-transition-old(content),
         ::view-transition-new(content) { animation: none !important; }
