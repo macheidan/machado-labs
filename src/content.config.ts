@@ -2,14 +2,16 @@ import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
 
+const emptyStringToUndefined = (v: unknown) => (v === '' ? undefined : v);
+
 const schema = ({ image }: { image: () => any }) =>
 	z.object({
 		title: z.string(),
 		heroTitle: z.string().optional(),
 		description: z.string(),
 		pubDate: z.coerce.date(),
-		updatedDate: z.coerce.date().optional(),
-		heroImage: z.optional(image()),
+		updatedDate: z.preprocess(emptyStringToUndefined, z.coerce.date().optional()),
+		heroImage: z.preprocess(emptyStringToUndefined, z.optional(image())),
 		heroAlt: z.string().optional(),
 		author: z.string().default('Fábio Machado'),
 		tags: z.array(z.string()).default([]),
