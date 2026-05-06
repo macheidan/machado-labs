@@ -1,12 +1,22 @@
 ---
-title: 'Criei um agente de IA que cuida do meu WhatsApp'
-heroTitle: 'Criei um <em>agente</em> de IA<br/>que cuida do meu <span class="accent">WhatsApp</span>'
-description: 'Tava perdendo coisa importante nos grupos toda semana. Coloquei um agente pra ler meu WhatsApp por mim, mandar o que precisa de resposta urgente no fim do dia, e um resumo de cada contato e cada grupo no domingo. Roda no PC de casa, custo zero, plugado no meu próprio número.'
-pubDate: 'May 01 2026'
-heroImage: '../imgs/260501.jpeg'
-heroAlt: 'Agente de IA lendo as mensagens do meu WhatsApp em segundo plano'
-tags: ['cortex', 'agentes', 'whatsapp']
-keywords: ['agente de IA WhatsApp', 'automação WhatsApp empresa', 'IA para WhatsApp', 'resumo de grupos WhatsApp', 'ganhar tempo no WhatsApp', 'IA para dono de empresa']
+title: Criei um agente de IA que cuida do meu WhatsApp
+heroTitle: Criei um <em>agente</em> de IA<br/>que cuida do meu <span class="accent">WhatsApp</span>
+description: Tava perdendo coisa importante nos grupos toda semana. Coloquei um agente pra ler meu WhatsApp por mim, mandar o que precisa de resposta urgente no fim do dia, e um resumo de cada contato e cada grupo no domingo. Roda no PC de casa, custo zero, plugado no meu próprio número.
+pubDate: May 01 2026
+updatedDate: ''
+heroImage: ''
+heroAlt: Agente de IA lendo as mensagens do meu WhatsApp em segundo plano
+tags:
+  - agentes
+  - ia
+  - whatsapp
+keywords:
+  - agente de IA WhatsApp
+  - automação WhatsApp empresa
+  - IA para WhatsApp
+  - resumo de grupos WhatsApp
+  - ganhar tempo no WhatsApp
+  - IA para dono de empresa
 ---
 
 Tava gastando **tempo demais no WhatsApp**. Lendo grupo de fornecedor, repassando coisa pro gerente, respondendo cotação, lendo o grupo da família que eu já tinha deixado de ler dois dias antes.
@@ -17,7 +27,7 @@ Algumas vezes era só sensação. Outras não. Descobria na segunda quando o for
 
 ## Em vez de bot que fala, bot que lê
 
-Eu já tava montando o [Meu Cortex Digital](/labs/segundo-cerebro-ia/) faz um tempo. Memória pronta, persona pronta, faltava a parte que eu chamei lá de *"agência"*: o agente parar de só responder e começar a **agir no meu mundo**.
+Eu já tava montando o [Meu Cortex Digital](/labs/segundo-cerebro-ia/) faz um tempo. Memória pronta, persona pronta, faltava a parte que eu chamei lá de _"agência"_: o agente parar de só responder e começar a **agir no meu mundo**.
 
 Numa dessas noites caiu a ficha. O WhatsApp era o lugar mais óbvio pra começar. É lá que minha atenção vaza primeiro.
 
@@ -84,7 +94,7 @@ Custo até hoje: **zero**. Tudo cabe nos planos gratuitos pra escala de uma pess
 
 Tem uma coisa que ainda tô amassando.
 
-A fase 1 é leitura. **A fase 2 é deixar ele responder coisa pequena por mim**, dentro de regra clara. *"Tô a caminho"*, *"recebi sim"*, *"que horas a gente combinou"*, confirmação de pagamento que o financeiro já tinha me passado.
+A fase 1 é leitura. **A fase 2 é deixar ele responder coisa pequena por mim**, dentro de regra clara. _"Tô a caminho"_, _"recebi sim"_, _"que horas a gente combinou"_, confirmação de pagamento que o financeiro já tinha me passado.
 
 Nada de cliente final. Nada de decisão. Só o agradecimento e a confirmação que comem o meu dia sem agregar nada.
 
@@ -96,7 +106,7 @@ Pra isso funcionar sem virar pesadelo, preciso de três coisas no lugar:
 
 Os três caminhos saem da mesma fonte: o agente lendo o que eu mesmo escrevo.
 
----
+***
 
 Por enquanto ele só lê. E só de ler já mudou a forma como eu chego em segunda de manhã.
 
