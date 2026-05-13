@@ -10,7 +10,7 @@
 <meta property="og:title" content="Criei um agente de IA que cuida do meu WhatsApp" />
 <meta property="og:description" content="Agente que lê WhatsApp, resume contatos e grupos. Roda 24/7, custo zero." />
 <meta property="og:image" content="https://fabiomachado.com.br/og-default.png" />
-<meta name="theme-color" content="#0a0a0a" />
+<meta name="theme-color" content="#050010" />
 <link rel="icon" href="/favicon.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -20,17 +20,22 @@
 </script>
 <style>
   :root {
-    --bg: #0a0a0a;
-    --bg-alt: #111;
-    --bg-card: #161616;
-    --line: rgba(255,255,255,0.10);
-    --line-strong: rgba(255,255,255,0.22);
+    --bg: #050010;
+    --bg-alt: #0a0418;
+    --bg-card: #110a20;
+    --line: rgba(253,0,255,0.10);
+    --line-strong: rgba(253,0,255,0.22);
     --fg: #fafafa;
-    --fg-muted: #999;
-    --fg-faint: #555;
-    --neon: #00ff88;
-    --neon-glow: rgba(0,255,136,0.25);
+    --fg-muted: #9b94aa;
+    --fg-faint: #5a5470;
+    --neon: #FD00FF;
+    --neon-2: #00B3FF;
+    --neon-3: #A500FF;
+    --neon-4: #0016FD;
+    --neon-glow: rgba(253,0,255,0.45);
+    --neon-glow-cyan: rgba(0,179,255,0.40);
     --warn: #ffcc00;
+    --grad: linear-gradient(135deg, #A500FF 0%, #FD00FF 45%, #00B3FF 100%);
   }
   *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
   html,body { background: var(--bg); color: var(--fg); }
@@ -40,8 +45,10 @@
     -webkit-font-smoothing: antialiased;
     min-height: 100vh;
     background:
-      radial-gradient(circle at 80% -10%, rgba(0,255,136,0.06), transparent 50%),
-      #0a0a0a;
+      radial-gradient(circle at 85% -10%, rgba(253,0,255,0.10), transparent 50%),
+      radial-gradient(circle at 10% 110%, rgba(0,179,255,0.10), transparent 55%),
+      radial-gradient(circle at 50% 70%, rgba(0,22,253,0.08), transparent 60%),
+      #050010;
   }
   a { color: inherit; text-decoration: none; }
   ::selection { background: var(--neon); color: #000; }
@@ -71,7 +78,7 @@
   }
   .v-switch a:last-child { border-right: none; }
   .v-switch a:hover { color: var(--fg); background: rgba(255,255,255,0.04); }
-  .v-switch a.on { color: var(--neon); background: rgba(0,255,136,0.08); }
+  .v-switch a.on { color: var(--neon); background: rgba(253,0,255,0.12); text-shadow: 0 0 12px var(--neon-glow); }
 
   .statusbar {
     position: relative; z-index: 2;
@@ -100,7 +107,15 @@
     align-items: center; padding: 18px 24px;
   }
   .nav .brand { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 14px; display: inline-flex; gap: 8px; }
-  .nav .brand::before { content: '◆'; color: var(--neon); font-size: 12px; }
+  .nav .brand::before {
+    content: '◆';
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 12px;
+    filter: drop-shadow(0 0 8px var(--neon-glow));
+  }
   .nav .center { text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--fg-faint); }
   .nav .right { display: flex; gap: 22px; justify-content: flex-end; font-family: 'JetBrains Mono', monospace; font-size: 13px; }
   .nav .right a { color: var(--fg-muted); transition: color 120ms; }
@@ -136,8 +151,9 @@
     border: 1px solid var(--neon);
     padding: 5px 11px;
     border-radius: 999px;
-    background: rgba(0,255,136,0.04);
+    background: rgba(253,0,255,0.06);
     margin-bottom: 32px;
+    box-shadow: 0 0 24px rgba(253,0,255,0.18), inset 0 0 12px rgba(0,179,255,0.08);
   }
   .ah-tag::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--neon); box-shadow: 0 0 10px var(--neon); }
   .article-head h1 {
@@ -154,7 +170,11 @@
     font-style: normal;
     font-family: 'JetBrains Mono', monospace;
     font-weight: 500; letter-spacing: -0.02em;
-    color: var(--neon);
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 20px rgba(253,0,255,0.35));
   }
   .article-head .deck {
     font-family: 'Inter', sans-serif;
@@ -162,7 +182,8 @@
     line-height: 1.55;
     color: var(--fg-muted);
     max-width: 60ch;
-    border-left: 2px solid var(--neon);
+    border-left: 2px solid transparent;
+    border-image: var(--grad) 1;
     padding-left: 18px;
   }
   .byline {
@@ -196,10 +217,10 @@
   .prose em { font-style: italic; color: var(--fg); }
   .prose a {
     color: var(--neon);
-    border-bottom: 1px solid rgba(0,255,136,0.4);
-    transition: background 150ms;
+    border-bottom: 1px solid rgba(253,0,255,0.5);
+    transition: background 150ms, border-color 150ms, color 150ms;
   }
-  .prose a:hover { background: rgba(0,255,136,0.1); }
+  .prose a:hover { background: rgba(253,0,255,0.12); color: var(--neon-2); border-bottom-color: var(--neon-2); }
 
   .prose h2 {
     font-family: 'JetBrains Mono', monospace;
@@ -214,16 +235,21 @@
   }
   .prose h2::before {
     content: '##';
-    color: var(--neon);
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
     font-size: 0.7em;
-    opacity: 0.7;
+    opacity: 0.95;
   }
 
   .prose blockquote {
     margin: 2em 0;
     padding: 24px 28px;
-    background: var(--bg-card);
-    border-left: 3px solid var(--neon);
+    background: linear-gradient(135deg, rgba(165,0,255,0.10), rgba(0,179,255,0.06)), var(--bg-card);
+    border: 1px solid rgba(253,0,255,0.22);
+    border-left: 3px solid transparent;
+    border-image: var(--grad) 1;
     font-family: 'Inter', sans-serif;
     font-weight: 500;
     font-size: 22px;
@@ -231,14 +257,18 @@
     color: var(--fg);
     letter-spacing: -0.01em;
     position: relative;
+    box-shadow: 0 0 32px rgba(253,0,255,0.10);
   }
   .prose blockquote::before {
     content: '⏵';
-    color: var(--neon);
+    background: var(--grad);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
     font-size: 14px;
     margin-right: 10px;
     vertical-align: middle;
-    text-shadow: 0 0 8px var(--neon-glow);
+    filter: drop-shadow(0 0 8px var(--neon-glow));
   }
 
   .prose ul, .prose ol {
@@ -294,8 +324,9 @@
     margin: 4em -24px 0;
     padding: 36px 32px;
     background:
-      linear-gradient(135deg, rgba(0,255,136,0.06), transparent 60%),
-      #050505;
+      linear-gradient(135deg, rgba(165,0,255,0.10), transparent 50%),
+      linear-gradient(225deg, rgba(0,179,255,0.08), transparent 50%),
+      #03000a;
     border: 1px solid var(--line-strong);
     border-radius: 4px;
     position: relative;
@@ -306,13 +337,15 @@
     width: 30px; height: 30px;
     border-top: 2px solid var(--neon);
     border-left: 2px solid var(--neon);
+    filter: drop-shadow(0 0 8px var(--neon-glow));
   }
   .stack-block::after {
     content: '';
     position: absolute; bottom: -1px; right: -1px;
     width: 30px; height: 30px;
-    border-bottom: 2px solid var(--neon);
-    border-right: 2px solid var(--neon);
+    border-bottom: 2px solid var(--neon-2);
+    border-right: 2px solid var(--neon-2);
+    filter: drop-shadow(0 0 8px var(--neon-glow-cyan));
   }
   .stack-block h2 {
     margin-top: 0 !important;
@@ -350,11 +383,12 @@
   .prose code, .stack-block code {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.88em;
-    background: rgba(0,255,136,0.1);
+    background: rgba(253,0,255,0.10);
     color: var(--neon);
     padding: 2px 6px;
     border-radius: 3px;
-    border: 1px solid rgba(0,255,136,0.18);
+    border: 1px solid rgba(253,0,255,0.22);
+    text-shadow: 0 0 8px rgba(253,0,255,0.4);
   }
 
   .article-foot {
