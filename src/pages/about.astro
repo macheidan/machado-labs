@@ -15,113 +15,116 @@ const jsonLd = profileGraph('pt', description);
   jsonLd={jsonLd}
   active="about"
 >
-  <section class="about-hero">
-    <h1 class="hero-title">sou o <em>Fábio</em></h1>
+  <section class="about-page">
+    <header class="about-head">
+      <span class="pill">Empresário · Consultor</span>
+      <h1>Sou o <em>Fábio</em>.</h1>
+      <p class="lede">Empresário e consultor. Passo a maior parte do tempo construindo sistemas de IA dentro de empresas reais.</p>
+    </header>
+
+    <article class="about-body">
+      <div class="bio">
+        <p>Comecei em 1999 aos 15 anos montando computadores e criando sites. Em 2003 abri minha primeira empresa de webdesign. Vinte e poucos anos depois, passei pela gestão de marcas como Latam, Petrobras, Gerdau, XP e Vivo via Pcom Marketing Estratégico, onde aprendi o que funciona quando o cliente é grande e a margem pra erro é pequena.</p>
+        <p>Em 2012 abri a <strong>Lov Pizza</strong>. Em 2015 comprei a M&amp;E Pizza, hoje <strong>Dáme Pizza</strong>. Cheguei a operar 6 marcas simultâneas &mdash; o melhor stress test que eu poderia ter pedido: operação real, margem apertada, time reduzido, decisão todo dia.</p>
+        <p>Foi com elas que entendi o problema: o dono de PME não consegue contratar todos os papéis que a operação exige. Em 2022 comecei a construir a resposta com IA. Hoje minhas empresas rodam com um time de agentes cobrindo essas funções &mdash; como infraestrutura, não como experimento.</p>
+        <p>Este site documenta o processo. <a href="https://www.instagram.com/machadofabio" target="_blank" rel="noopener">@machadofabio</a></p>
+      </div>
+
+      <aside class="facts">
+        <div class="fact"><span class="k">Role</span><span class="v">Founder · Consultor</span></div>
+        <div class="fact"><span class="k">Stack</span><span class="v">AI agents</span></div>
+        <div class="fact"><span class="k">Local</span><span class="v">Porto Alegre, BR</span></div>
+        <div class="fact"><span class="k">Negócios</span><span class="v">8 fundados</span></div>
+        <div class="fact"><span class="k">Anos</span><span class="v">25+ tech · gestão</span></div>
+        <div class="fact"><span class="k">Projetos IA</span><span class="v">18 aplicados</span></div>
+      </aside>
+    </article>
   </section>
-
-  <main class="container">
-    <section class="layout">
-      <div class="photo-col">
-        <img src="/fabio.jpg" alt="Fábio Machado" class="photo" width="400" height="400" />
-        <div class="photo-meta">
-          <div><span class="key">Role</span><span>Founder · Consultor</span></div>
-          <div><span class="key">Stack</span><span>AI agents</span></div>
-          <div><span class="key">Local</span><span>Porto Alegre, BR</span></div>
-          <div><span class="key">Instagram</span><span>@machadofabio</span></div>
-        </div>
-      </div>
-      <div class="text-col">
-        <span class="pill">Empresário · Consultor</span>
-        <h2 class="title">Construindo um <em>cortex digital</em>.</h2>
-        <div class="prose">
-          <p>Sou Fábio Machado. Empresário e consultor. Passo a maior parte do tempo construindo sistemas de IA. Não é ironia — é o ponto.</p>
-          <p>Comecei em 1999 aos 15 anos montando computadores e criando sites. Em 2003 abri minha primeira empresa de webdesign. Vinte e poucos anos depois, passei pela gestão de marcas como Latam, Petrobras, Gerdau, XP e Vivo via Pcom Marketing Estratégico, onde aprendi o que funciona quando o cliente é grande e a margem pra erro é pequena.</p>
-          <p>Em 2012 abri a <strong>Lov Pizza</strong>. Em 2015 comprei a M&amp;E Pizza, hoje <strong>Dáme Pizza</strong>. Cheguei a operar 6 marcas simultâneas — o melhor stress test que eu poderia ter pedido: operação real, margem apertada, time reduzido, decisão todo dia.</p>
-          <p>Foi com elas que entendi o problema: o dono de PME não consegue contratar todos os papéis que a operação exige. Em 2022 comecei a construir a resposta com IA. Hoje minhas empresas rodam com um time de agentes cobrindo essas funções — como infraestrutura, não como experimento.</p>
-          <p>Este site documenta o processo. <a href="https://www.instagram.com/machadofabio" target="_blank" rel="noopener">@machadofabio</a></p>
-        </div>
-      </div>
-    </section>
-
-    <footer class="site">
-      <span class="left">© <a href="/" class="footer-home">Fábio Machado</a> · Porto Alegre</span>
-      <span class="right">Skin · Dawn Ridge</span>
-    </footer>
-  </main>
 </Shell>
 
 <style>
-  .about-hero {
-    position: relative;
-    min-height: 60vh;
-    display: flex; align-items: center; justify-content: center;
-    padding: 0 24px;
+  .about-page {
+    padding-top: calc(var(--header-h) + 80px);
+    padding-bottom: 80px;
+    max-width: 980px; margin: 0 auto;
+    padding-left: 28px; padding-right: 28px;
   }
-  .hero-title {
-    font-family: 'Fraunces', serif; font-weight: 300; font-style: italic;
-    font-size: clamp(60px, 13vw, 180px); line-height: 0.92;
-    letter-spacing: -0.02em; color: #2a1a0e;
-    text-align: center;
+  .about-head {
+    margin-bottom: 48px;
+    max-width: 720px;
   }
-  .hero-title em { font-style: italic; font-weight: 500; color: #6b3d20; }
-
-  .container { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index: 6; }
-  .layout {
-    display: grid; grid-template-columns: repeat(12, 1fr); gap: 32px;
-    padding: 80px 0;
-    background: rgba(244,236,220,0.92);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 24px;
-    border: 1px solid rgba(217, 204, 184, 0.6);
-    padding: 56px;
-  }
-  .photo-col { grid-column: 1 / 5; }
-  .photo {
-    width: 100%; aspect-ratio: 1; object-fit: cover;
-    border-radius: 24px;
-    border: 1px solid var(--line);
-  }
-  .photo-meta { margin-top: 20px; font-size: 13px; color: var(--muted); line-height: 1.7; }
-  .photo-meta div { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--line); }
-  .photo-meta .key { color: var(--faint); text-transform: uppercase; font-size: 11px; letter-spacing: 0.1em; }
-
-  .text-col { grid-column: 6 / 13; }
   .pill {
-    display: inline-flex; align-items: center; gap: 10px;
+    display: inline-flex; align-items: center; gap: 8px;
     font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
-    color: var(--muted); font-weight: 600; margin-bottom: 18px;
+    color: var(--accent); font-weight: 600;
+    padding: 6px 12px;
+    background: var(--accent-soft);
+    border-radius: 999px;
+    margin-bottom: 22px;
   }
-  .pill::before { content: ''; width: 28px; height: 1px; background: var(--accent); }
-  h2.title {
-    font-family: 'Fraunces', serif; font-weight: 400;
-    font-size: clamp(40px, 5.5vw, 72px); line-height: 1; letter-spacing: -0.015em;
-    margin-bottom: 28px;
+  .about-head h1 {
+    font-size: clamp(40px, 6vw, 72px);
+    font-weight: 700; letter-spacing: -0.035em; line-height: 1;
+    color: var(--fg);
+    margin-bottom: 18px;
   }
-  h2.title em { font-style: italic; color: var(--accent); }
+  .about-head h1 em {
+    font-style: italic; font-weight: 600;
+    background: linear-gradient(120deg, #ffb088 0%, var(--accent) 60%, var(--pink) 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .about-head .lede {
+    font-size: clamp(16px, 1.6vw, 19px);
+    color: var(--fg-soft);
+    line-height: 1.55;
+    max-width: 60ch;
+  }
 
-  .prose p { font-size: 18px; line-height: 1.75; margin-bottom: 1.4em; color: var(--fg); }
-  .prose strong { font-weight: 600; }
-  .prose a { color: var(--accent); border-bottom: 1px solid currentColor; transition: opacity 150ms; }
-  .prose a:hover { opacity: 0.7; }
-
-  footer.site {
-    padding: 32px 0; margin-top: 32px;
-    display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px;
-    font-size: 13px; color: rgba(44,31,21,0.7);
-    position: relative; z-index: 6;
+  .about-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 48px;
+    align-items: start;
   }
-  footer .left { grid-column: 1 / 7; }
-  footer .right { grid-column: 7 / 13; text-align: right; }
-  footer .footer-home { color: inherit; text-decoration: none; transition: color 200ms; }
-  footer .footer-home:hover { color: var(--accent); }
+  .bio {
+    font-size: 17px; line-height: 1.75;
+    color: var(--fg-soft);
+  }
+  .bio p { margin: 0 0 1.4em; }
+  .bio strong { color: var(--fg); font-weight: 600; }
+  .bio a {
+    color: var(--accent);
+    border-bottom: 1px solid rgba(255,92,43,0.4);
+    transition: border-color 160ms, opacity 160ms;
+  }
+  .bio a:hover { border-color: var(--accent); opacity: 0.85; }
+
+  .facts {
+    display: flex; flex-direction: column;
+    padding: 22px;
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+  .fact {
+    display: flex; justify-content: space-between; gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+  }
+  .fact:last-child { border-bottom: none; }
+  .fact .k {
+    color: var(--fg-muted);
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    font-weight: 600;
+  }
+  .fact .v { color: var(--fg); text-align: right; }
 
   @media (max-width: 800px) {
-    .hero-title { font-size: 16vw; }
-    .layout { padding: 32px; gap: 24px; }
-    .photo-col, .text-col { grid-column: 1 / 13; }
-    .photo-col { max-width: 280px; }
-    h2.title { font-size: 44px; }
-    footer .left, footer .right { grid-column: 1 / 13; text-align: left; }
+    .about-page { padding-left: 16px; padding-right: 16px; padding-top: calc(var(--header-h) + 40px); }
+    .about-body { grid-template-columns: 1fr; gap: 32px; }
+    .about-head h1 { font-size: 44px; }
   }
 </style>

@@ -1,9 +1,9 @@
 ---
 import { getCollection } from 'astro:content';
-import Shell from '../../../components/Shell.astro';
-import { SITE_TITLE } from '../../../consts';
-import { tagDescription, tagLabel, type Lang } from '../../../lib/tags';
-import { tagGraph } from '../../../lib/seo';
+import Shell from '../../../../components/ShellDawn.astro';
+import { SITE_TITLE } from '../../../../consts';
+import { tagDescription, tagLabel, type Lang } from '../../../../lib/tags';
+import { tagGraph } from '../../../../lib/seo';
 
 export async function getStaticPaths() {
   const posts = await getCollection('labs');
@@ -31,6 +31,8 @@ const label = tagLabel(tag, lang);
 const description = tagDescription(tag, lang, posts.length);
 const pageTitle = `#${label} — ${SITE_TITLE}`;
 const altUrl = `/en/labs/tags/${tag}`;
+const postLink = (id: string) => `/v5/labs/${id}`;
+const backUrl = '/v5/';
 const jsonLd = tagGraph({ lang, tag, tagLabel: label, description });
 ---
 
@@ -59,7 +61,7 @@ const jsonLd = tagGraph({ lang, tag, tagLabel: label, description });
         const d = new Date(post.data.pubDate);
         const ddmm = `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
         return (
-          <a class="post-row" href={`/labs/${post.id}`}>
+          <a class="post-row" href={postLink(post.id)}>
             <span class="post-num">№ {String(posts.length - i).padStart(2, '0')}</span>
             <span class="post-date">{ddmm}</span>
             <span class="post-title">{post.data.title}</span>
@@ -68,7 +70,7 @@ const jsonLd = tagGraph({ lang, tag, tagLabel: label, description });
         );
       })}
     </div>
-    <a href="/" class="back-all">← Todos os posts</a>
+    <a href={backUrl} class="back-all">← Todos os posts</a>
   </div>
 
   <div class="tag-tail"></div>

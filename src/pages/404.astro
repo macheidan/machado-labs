@@ -14,114 +14,81 @@ const posts = (await getCollection('labs'))
   lang="pt-BR"
   noindex
 >
-  <section class="nf-hero">
-    <div class="copy">
+  <section class="nf-page">
+    <div class="nf-hero">
       <span class="kicker">404</span>
       <h1>esse caminho não <em>existe</em>.</h1>
       <p class="sub">A página foi movida ou nunca esteve aqui. <a href="/">volta pra home</a> ou pega um dos posts abaixo.</p>
     </div>
-  </section>
 
-  <div class="nf-posts">
-    <div class="archive-head">
-      <h3>Posts recentes</h3>
-    </div>
     <div class="posts">
       {posts.map((post) => {
         const d = new Date(post.data.pubDate);
-        const ddmm = `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+        const mmyy = `${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
         return (
-          <a class="post-row" href={`/labs/${post.id}`}>
-            <span class="post-date">{ddmm}</span>
-            <span class="post-title">{post.data.title}</span>
+          <a class="row" href={`/labs/${post.id}`}>
+            <span class="date">{mmyy}</span>
+            <span class="title">{post.data.title}</span>
             <span class="arrow">→</span>
           </a>
         );
       })}
     </div>
-  </div>
-
-  <div class="nf-tail"></div>
+  </section>
 </Shell>
 
 <style>
-  .nf-hero {
-    position: relative; z-index: 1;
-    display: grid; grid-template-rows: 15fr 55fr 30fr;
-    min-height: calc(100vh - 80px);
-    max-width: 1280px; margin: 0 auto;
+  .nf-page {
+    padding-top: calc(var(--header-h) + 80px);
+    padding-bottom: 80px;
+    max-width: 880px; margin: 0 auto;
+    padding-left: 28px; padding-right: 28px;
   }
-  .nf-hero .copy {
-    grid-row: 2;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    text-align: center; gap: 18px; padding: 0 24px;
-    transform: translate3d(0, -10%, 0);
-  }
-  .nf-hero .kicker {
-    font-family: 'Fraunces', serif;
-    font-weight: 500;
-    font-size: 14px; letter-spacing: 0.2em;
+  .nf-hero { margin-bottom: 48px; }
+  .kicker {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px; letter-spacing: 0.2em;
     color: var(--accent);
+    display: inline-block; margin-bottom: 16px;
   }
   .nf-hero h1 {
-    font-family: 'Fraunces', serif;
-    font-weight: 300; font-style: italic;
-    font-size: clamp(48px, 8vw, 110px);
-    line-height: 0.98; letter-spacing: -0.02em;
-    color: #2a1a0e; text-wrap: balance;
+    font-size: clamp(40px, 6vw, 72px);
+    font-weight: 700; letter-spacing: -0.035em; line-height: 1;
+    color: var(--fg);
+    margin-bottom: 18px;
   }
   .nf-hero h1 em {
-    font-style: italic; font-weight: 500;
-    color: #6b3d20; font-size: 1.05em;
+    font-style: italic; font-weight: 600;
+    background: linear-gradient(120deg, var(--accent), var(--pink));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
   }
   .nf-hero .sub {
-    font-size: 15px; color: #2c1f15; opacity: 0.8;
-    max-width: 560px;
+    font-size: 17px; color: var(--fg-soft);
+    max-width: 60ch;
   }
   .nf-hero .sub a {
-    color: var(--accent); border-bottom: 1px solid currentColor;
+    color: var(--accent);
+    border-bottom: 1px solid rgba(255,92,43,0.4);
   }
 
-  .nf-posts {
-    position: relative; z-index: 1;
-    max-width: 1180px; margin: 0 auto;
-    padding: 0 32px;
+  .posts { display: flex; flex-direction: column; }
+  .row {
+    display: grid; grid-template-columns: 80px 1fr auto;
+    gap: 18px; padding: 18px 4px; align-items: baseline;
+    border-bottom: 1px solid var(--line);
+    color: var(--fg-soft);
+    transition: padding-left 200ms, color 200ms;
   }
-  .archive-head {
-    padding: 32px 0 12px;
-    border-top: 1px solid rgba(44,31,21,0.18);
-  }
-  .archive-head h3 {
-    font-family: 'Fraunces', serif; font-weight: 400; font-style: italic;
-    font-size: 24px; letter-spacing: -0.01em; color: #1a1410;
-  }
-  .post-row {
-    display: grid; grid-template-columns: 110px 1fr auto;
-    gap: 20px; padding: 18px 0; align-items: baseline;
-    border-bottom: 1px solid rgba(44,31,21,0.15);
-    transition: padding-left 250ms;
-    color: var(--fg);
-  }
-  .post-row:hover { padding-left: 12px; }
-  .post-row:hover .post-title { color: var(--accent); }
-  .post-row:hover .arrow { transform: translateX(8px); color: var(--accent); }
-  .post-date { font-size: 12px; color: rgba(44,31,21,0.55); font-variant-numeric: tabular-nums; }
-  .post-title {
-    font-family: 'Fraunces', serif; font-weight: 400;
-    font-size: 19px; line-height: 1.2; letter-spacing: -0.01em;
-    transition: color 200ms;
-  }
-  .arrow { color: rgba(44,31,21,0.5); font-size: 18px; transition: transform 250ms, color 250ms; }
-
-  .nf-tail { height: 30vw; }
+  .row:hover { padding-left: 12px; color: var(--fg); }
+  .row .date { font-size: 11px; color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; font-variant-numeric: tabular-nums; }
+  .row .title { font-size: 17px; font-weight: 500; }
+  .row .arrow { color: var(--fg-muted); transition: transform 200ms, color 200ms; }
+  .row:hover .arrow { transform: translateX(6px); color: var(--accent); }
 
   @media (max-width: 800px) {
-    .nf-hero { min-height: calc(100vh - 130px); }
-    .nf-hero .copy { padding: 0 16px; transform: translate3d(0, calc(-30px - 5%), 0); }
-    .nf-hero h1 { font-size: 11vw; }
-    .nf-posts { padding: 0 20px; }
-    .post-row { grid-template-columns: 90px 1fr auto; gap: 10px; }
-    .post-title { font-size: 16px; }
+    .nf-page { padding-left: 16px; padding-right: 16px; padding-top: calc(var(--header-h) + 40px); }
+    .nf-hero h1 { font-size: 44px; }
+    .row { grid-template-columns: 60px 1fr auto; gap: 10px; }
+    .row .title { font-size: 15px; }
   }
 </style>

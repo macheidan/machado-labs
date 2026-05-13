@@ -1,6 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
-import Shell from '../../../../components/Shell.astro';
+import Shell from '../../../../components/ShellDawn.astro';
 import { SITE_TITLE } from '../../../../consts';
 import { tagDescription, tagLabel, type Lang } from '../../../../lib/tags';
 import { tagGraph } from '../../../../lib/seo';
@@ -30,7 +30,7 @@ const lang: Lang = 'en';
 const label = tagLabel(tag, lang);
 const description = tagDescription(tag, lang, posts.length);
 const pageTitle = `#${label} — ${SITE_TITLE}`;
-const altUrl = `/labs/tags/${tag}`;
+const altUrl = `/v5/labs/tags/${tag}`;
 const jsonLd = tagGraph({ lang, tag, tagLabel: label, description });
 ---
 

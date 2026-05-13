@@ -18,7 +18,7 @@ export function tagLabel(slug: string, lang: Lang): string {
 }
 
 export function tagPathFor(slug: string, lang: Lang): string {
-	return lang === 'en' ? `/en/labs/tags/${slug}` : `/labs/tags/${slug}`;
+	return lang === 'en' ? `/en/labs/tags/${slug}` : `/v5/labs/tags/${slug}`;
 }
 
 export function tagDescription(slug: string, lang: Lang, count: number): string {

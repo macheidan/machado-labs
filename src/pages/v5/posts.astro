@@ -10,12 +10,12 @@ const posts = (await getCollection('labs'))
 <Shell
   title="Posts — Fábio Machado"
   description={SITE_DESCRIPTION}
-  lang="en"
-  alternateUrl="/v5/posts"
+  lang="pt-BR"
+  alternateUrl="/en/posts"
 >
   <div class="posts-page">
     <div class="archive-head">
-      <h3>Full <strong>archive</strong></h3>
+      <h3>Arquivo <strong>completo</strong></h3>
       <span class="count">{posts.length} posts</span>
     </div>
     <div class="posts">
@@ -23,7 +23,7 @@ const posts = (await getCollection('labs'))
         const d = new Date(post.data.pubDate);
         const mmyy = `${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getFullYear()).slice(-2)}`;
         return (
-          <a class="post-row" href={`/en/labs/${post.id}`}>
+          <a class="post-row" href={`/v5/labs/${post.id}`}>
             <span class="post-date">{mmyy}</span>
             <span class="post-title">{post.data.title}</span>
             <span class="arrow">→</span>

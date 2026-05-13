@@ -3,20 +3,20 @@ import Shell from '../../components/ShellDawn.astro';
 import { SITE_TITLE } from '../../consts';
 import { profileGraph } from '../../lib/seo';
 
-const description = 'About Fábio Machado — entrepreneur, consultant, and builder of AI systems.';
-const jsonLd = profileGraph('en', description);
+const description = 'Sobre Fábio Machado — empresário, consultor e construtor de sistemas de IA.';
+const jsonLd = profileGraph('pt', description);
 ---
 
 <Shell
-  title={`About — ${SITE_TITLE}`}
+  title={`Sobre — ${SITE_TITLE}`}
   description={description}
-  lang="en"
-  alternateUrl="/v5/about"
+  lang="pt-BR"
+  alternateUrl="/en/about"
   jsonLd={jsonLd}
   active="about"
 >
   <section class="about-hero">
-    <h1 class="hero-title">I'm <em>Fábio</em></h1>
+    <h1 class="hero-title">sou o <em>Fábio</em></h1>
   </section>
 
   <main class="container">
@@ -24,27 +24,27 @@ const jsonLd = profileGraph('en', description);
       <div class="photo-col">
         <img src="/fabio.jpg" alt="Fábio Machado" class="photo" width="400" height="400" />
         <div class="photo-meta">
-          <div><span class="key">Role</span><span>Founder · Consultant</span></div>
+          <div><span class="key">Role</span><span>Founder · Consultor</span></div>
           <div><span class="key">Stack</span><span>AI agents</span></div>
-          <div><span class="key">Based</span><span>Porto Alegre, BR</span></div>
+          <div><span class="key">Local</span><span>Porto Alegre, BR</span></div>
           <div><span class="key">Instagram</span><span>@machadofabio</span></div>
         </div>
       </div>
       <div class="text-col">
-        <span class="pill">Entrepreneur · Consultant</span>
-        <h2 class="title">Building a <em>digital cortex</em>.</h2>
+        <span class="pill">Empresário · Consultor</span>
+        <h2 class="title">Construindo um <em>cortex digital</em>.</h2>
         <div class="prose">
-          <p>I'm Fábio Machado. Entrepreneur and consultant. I spend most of my time building AI systems. Not irony — that's the point.</p>
-          <p>Started in 1999 at 15, building PCs and websites. In 2003 I opened my first web design company. Twenty-plus years later, I had been around brands like Latam, Petrobras, Gerdau, XP and Vivo via Pcom Marketing Estratégico, where I learned what works when the client is big and the margin for error is small.</p>
-          <p>In 2012 I opened <strong>Lov Pizza</strong>. In 2015 I bought M&amp;E Pizza, today <strong>Dáme Pizza</strong>. I ran 6 brands at once — the best stress test I could have picked: real operations, tight margins, lean teams, decisions every day.</p>
-          <p>That's where I understood the problem: small business owners can't hire every role the operation demands. In 2022 I started building the answer with AI. Today my companies run with a team of agents covering those functions — as infrastructure, not as an experiment.</p>
-          <p>This site documents the process. <a href="https://www.instagram.com/machadofabio" target="_blank" rel="noopener">@machadofabio</a></p>
+          <p>Sou Fábio Machado. Empresário e consultor. Passo a maior parte do tempo construindo sistemas de IA. Não é ironia — é o ponto.</p>
+          <p>Comecei em 1999 aos 15 anos montando computadores e criando sites. Em 2003 abri minha primeira empresa de webdesign. Vinte e poucos anos depois, passei pela gestão de marcas como Latam, Petrobras, Gerdau, XP e Vivo via Pcom Marketing Estratégico, onde aprendi o que funciona quando o cliente é grande e a margem pra erro é pequena.</p>
+          <p>Em 2012 abri a <strong>Lov Pizza</strong>. Em 2015 comprei a M&amp;E Pizza, hoje <strong>Dáme Pizza</strong>. Cheguei a operar 6 marcas simultâneas — o melhor stress test que eu poderia ter pedido: operação real, margem apertada, time reduzido, decisão todo dia.</p>
+          <p>Foi com elas que entendi o problema: o dono de PME não consegue contratar todos os papéis que a operação exige. Em 2022 comecei a construir a resposta com IA. Hoje minhas empresas rodam com um time de agentes cobrindo essas funções — como infraestrutura, não como experimento.</p>
+          <p>Este site documenta o processo. <a href="https://www.instagram.com/machadofabio" target="_blank" rel="noopener">@machadofabio</a></p>
         </div>
       </div>
     </section>
 
     <footer class="site">
-      <span class="left">© <a href="/en" class="footer-home">Fábio Machado</a> · Porto Alegre</span>
+      <span class="left">© <a href="/v5/" class="footer-home">Fábio Machado</a> · Porto Alegre</span>
       <span class="right">Skin · Dawn Ridge</span>
     </footer>
   </main>
@@ -68,6 +68,7 @@ const jsonLd = profileGraph('en', description);
   .container { max-width: 1100px; margin: 0 auto; padding: 0 32px; position: relative; z-index: 6; }
   .layout {
     display: grid; grid-template-columns: repeat(12, 1fr); gap: 32px;
+    padding: 80px 0;
     background: rgba(244,236,220,0.92);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);

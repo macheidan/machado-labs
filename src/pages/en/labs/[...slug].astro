@@ -1,6 +1,6 @@
 ---
 import { type CollectionEntry, getCollection, render } from 'astro:content';
-import BlogPost from '../../../layouts/BlogPost.astro';
+import BlogPost from '../../../layouts/BlogPostDawn.astro';
 
 export async function getStaticPaths() {
 	const posts = await getCollection('labs-en');
@@ -14,7 +14,7 @@ type Props = { post: CollectionEntry<'labs-en'>; hasPt: boolean };
 
 const { post, hasPt } = Astro.props;
 const { Content } = await render(post);
-const altUrl = hasPt ? `/labs/${post.id}` : '/';
+const altUrl = hasPt ? `/v5/labs/${post.id}` : '/v5/';
 ---
 
 <BlogPost {...post.data} lang="en" altUrl={altUrl}>
