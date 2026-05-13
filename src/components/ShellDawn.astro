@@ -52,7 +52,7 @@ const postsUrl = isEn ? '/en/posts' : '/v5/posts';
       author={author}
       keywords={keywords}
       jsonLd={jsonLd}
-      noindex={noindex}
+      noindex={noindex ?? true}
     />
     <ClientRouter />
     <link rel="preconnect" href="https://fonts.googleapis.com" />

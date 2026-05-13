@@ -1,13 +1,7 @@
 ---
-import Shell from '../../components/ShellDawn.astro';
+import Shell from '../../components/Shell.astro';
 import { SITE_DESCRIPTION_EN, HOME_TITLE_EN } from '../../consts';
 import { homeGraph } from '../../lib/seo';
-import { getCollection } from 'astro:content';
-
-const posts = (await getCollection('labs-en'))
-  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
-const featured = posts[0];
-const rest = posts.slice(1);
 
 const jsonLd = homeGraph('en', SITE_DESCRIPTION_EN);
 ---
@@ -16,281 +10,73 @@ const jsonLd = homeGraph('en', SITE_DESCRIPTION_EN);
   title={HOME_TITLE_EN}
   description={SITE_DESCRIPTION_EN}
   lang="en"
-  alternateUrl="/v5/"
+  alternateUrl="/"
   jsonLd={jsonLd}
   active="home"
+  variant="home"
 >
-  <section class="dawn-hero">
-    <div class="copy">
-      <h1>How I automated my <em>businesses</em> with <span class="accent">AI agents.</span></h1>
-      <p class="sub"><a href="/en/posts">Read</a></p>
-      <div class="scroll-cue" aria-hidden="true"></div>
+  <section class="home-hero">
+    <h1>How I automated my <em>businesses</em> with <span class="accent">AI agents.</span></h1>
+    <p class="sub">Documenting how a team of AI agents is built inside real businesses. Decisions, metrics, mistakes, and cases &mdash; no theory.</p>
+    <div class="cta-row">
+      <a class="btn" href="/en/posts">Full Archive <span class="arrow">→</span></a>
+      <a class="btn-dark" href="/en/about">About the author</a>
     </div>
   </section>
-
-  <div class="dawn-posts">
-    <section class="section-intro">
-      <h2>How to use <em>AI</em> in companies <span class="accent">the right way</span> in 2026.</h2>
-    </section>
-
-    <section class="featured">
-      {featured && (
-        <a class="card" href={`/en/labs/${featured.id}`}>
-          <span class="label">Latest post</span>
-          <h3>{featured.data.title}</h3>
-          <p>{featured.data.description}</p>
-          <div class="meta">
-            {new Date(featured.data.pubDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-          </div>
-        </a>
-      )}
-      <div class="stats">
-        <div class="stat warm">
-          <span class="k">Businesses</span>
-          <div><div class="v">8</div><div class="d">founded · acquired</div></div>
-        </div>
-        <div class="stat">
-          <span class="k">Years</span>
-          <div><div class="v">25+</div><div class="d">tech · management</div></div>
-        </div>
-        <div class="stat">
-          <span class="k">AI projects</span>
-          <div><div class="v">18</div><div class="d">applied</div></div>
-        </div>
-        <div class="stat dark">
-          <span class="k">Posts</span>
-          <div><div class="v">{posts.length}</div><div class="d">documented</div></div>
-        </div>
-      </div>
-    </section>
-
-    <div class="archive-head">
-      <h3>Full <strong>archive</strong></h3>
-      <span class="count">{posts.length} posts</span>
-    </div>
-    <div class="posts">
-      {rest.map((post) => {
-        const d = new Date(post.data.pubDate);
-        const mmyy = `${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getFullYear()).slice(-2)}`;
-        return (
-          <a class="post-row" href={`/en/labs/${post.id}`}>
-            <span class="post-date">{mmyy}</span>
-            <span class="post-title">{post.data.title}</span>
-            <span class="arrow">→</span>
-          </a>
-        );
-      })}
-    </div>
-  </div>
-
-  <div class="dawn-tail"></div>
 </Shell>
 
 <style>
-  .dawn-hero {
-    position: relative; z-index: 1;
-    display: grid;
-    grid-template-rows: 15fr 55fr 30fr;
-    min-height: calc(100vh - 80px);
-    max-width: 1280px;
-    margin: 0 auto;
+  .home-hero {
+    flex: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 24px 28px;
+    min-height: 0;
   }
-  .dawn-hero .copy {
-    grid-row: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  .home-hero h1 {
+    font-size: clamp(40px, 7vw, 88px);
+    font-weight: 700;
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    max-width: 14ch;
+    margin-bottom: 22px;
+    background: linear-gradient(180deg, #ffffff 0%, #cfcfd6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .home-hero h1 :global(em) {
+    font-style: italic; font-weight: 600;
+    background: linear-gradient(120deg, #ffb088 0%, var(--accent) 60%, var(--pink) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .home-hero h1 :global(.accent) {
+    font-weight: 700;
+    background: linear-gradient(120deg, var(--accent) 0%, var(--pink) 50%, var(--violet) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .home-hero p.sub {
+    font-size: clamp(15px, 1.4vw, 19px);
+    color: var(--Text-Default);
+    max-width: 56ch;
+    line-height: 1.5;
+    margin-bottom: 32px;
+  }
+  .home-hero .cta-row {
+    display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
     justify-content: center;
-    text-align: center;
-    gap: 28px;
-    padding: 0 24px;
-    --scrollPara: 0px;
-    transform: translate3d(0, calc(-10% + var(--scrollPara)), 0);
-    will-change: transform;
   }
-  .dawn-hero h1 a, .dawn-hero p.sub a {
-    color: inherit; text-decoration: none;
-    transition: opacity 200ms;
-  }
-  .dawn-hero h1 a:hover, .dawn-hero p.sub a:hover { opacity: 0.82; }
-  .dawn-hero h1 {
-    font-family: 'Fraunces', serif;
-    font-weight: 300; font-style: italic;
-    font-size: clamp(64px, 12vw, 154px);
-    line-height: 0.95; letter-spacing: -0.02em;
-    color: #2a1a0e;
-    text-wrap: balance;
-  }
-  .dawn-hero h1 :global(em) {
-    font-style: italic;
-    font-weight: 500;
-    color: #6b3d20;
-    font-size: 1.1em;
-  }
-  .dawn-hero h1 :global(.accent) {
-    font-style: normal;
-    font-weight: 600;
-    color: #c2683a;
-    font-size: 1.05em;
-    letter-spacing: -0.025em;
-  }
-  .dawn-hero p.sub {
-    margin: 0; font-size: 13px;
-    letter-spacing: 0.18em; text-transform: uppercase;
-    color: #2c1f15; opacity: 0.8;
-  }
-  .scroll-cue {
-    position: relative;
-    width: 1px;
-    height: 48px;
-    background: rgba(44, 31, 21, 0.18);
-    margin-top: 4px;
-  }
-  .scroll-cue::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -2px;
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: #2c1f15;
-    animation: scrollDot 2.2s cubic-bezier(.45, 0, .55, 1) infinite;
-  }
-  @keyframes scrollDot {
-    0%   { transform: translateY(-10px); opacity: 0; }
-    18%  { transform: translateY(0); opacity: 1; }
-    82%  { transform: translateY(43px); opacity: 1; }
-    100% { transform: translateY(56px); opacity: 0; }
-  }
-
-  .dawn-posts {
-    position: relative; z-index: 1;
-    max-width: 1180px; margin: 0 auto;
-    padding: 0 32px;
-  }
-
-  .section-intro {
-    padding: 28px 0 32px;
-    display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px;
-    container-type: inline-size;
-  }
-  .section-intro h2 {
-    grid-column: 1 / 13;
-    font-family: 'Fraunces', serif;
-    font-weight: 300; font-style: italic;
-    font-size: clamp(24px, 3.6cqi, 56px);
-    line-height: 1.1; letter-spacing: -0.02em;
-    color: #2a1a0e;
-    text-wrap: balance;
-    text-align: center;
-    margin: 0;
-  }
-  .section-intro h2 em {
-    font-style: italic; font-weight: 500;
-    color: #6b3d20; font-size: 1.1em;
-  }
-  .section-intro h2 .accent {
-    font-style: normal; font-weight: 600;
-    color: #c2683a; font-size: 1.05em; letter-spacing: -0.025em;
-  }
-
-  .featured {
-    padding: 32px 0 56px;
-    display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px;
-  }
-  .featured a.card {
-    grid-column: 1 / 8;
-    display: block;
-    background: rgba(244,236,220,0.92);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(217, 204, 184, 0.6);
-    border-radius: 24px;
-    padding: 36px;
-    transition: border-color 200ms, box-shadow 250ms ease;
-  }
-  .featured a.card:hover { border-color: var(--accent); box-shadow: 0 12px 32px rgba(44,31,21,0.18); }
-  .featured .label { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
-  .featured h3 {
-    font-family: 'Noto Serif', Georgia, 'Times New Roman', serif; font-weight: 600;
-    font-size: clamp(26px, 3.2vw, 40px); line-height: 1.2;
-    letter-spacing: -0.01em;
-    margin: 12px 0 14px;
-    color: var(--fg);
-  }
-  .featured p { font-family: 'Noto Serif', Georgia, 'Times New Roman', serif; font-size: 16px; color: var(--muted); line-height: 1.6; }
-  .featured .meta { font-size: 12px; color: var(--faint); margin-top: 22px; font-variant-numeric: tabular-nums; }
-
-  .stats { grid-column: 8 / 13; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .stat {
-    background: rgba(244,236,220,0.92);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(217, 204, 184, 0.6);
-    border-radius: 18px;
-    padding: 22px;
-    display: flex; flex-direction: column; justify-content: space-between;
-    min-height: 130px;
-  }
-  .stat .k { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint); font-weight: 600; }
-  .stat .v { font-family: 'Fraunces', serif; font-size: 40px; line-height: 1; font-weight: 400; color: var(--fg); }
-  .stat .d { font-size: 13px; color: var(--muted); margin-top: 4px; }
-  .stat.dark { background: rgba(26,20,16,0.92); color: var(--bg); border-color: rgba(26,20,16,0.92); }
-  .stat.dark .k { color: rgba(244,236,220,0.55); }
-  .stat.dark .d { color: rgba(244,236,220,0.65); }
-  .stat.dark .v { color: var(--bg); }
-  .stat.warm { background: rgba(194,104,58,0.95); color: #fff; border-color: rgba(194,104,58,0.95); }
-  .stat.warm .k { color: rgba(255,255,255,0.7); }
-  .stat.warm .d { color: rgba(255,255,255,0.85); }
-  .stat.warm .v { color: #fff; }
-
-  .archive-head {
-    padding: 32px 0 12px;
-    border-top: 1px solid rgba(44,31,21,0.18);
-    display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px;
-    align-items: baseline;
-  }
-  .archive-head h3 {
-    grid-column: 1 / 7;
-    font-family: 'Fraunces', serif; font-weight: 400; font-style: italic;
-    font-size: 30px; letter-spacing: -0.01em; color: #1a1410;
-    white-space: nowrap;
-  }
-  .archive-head h3 strong { font-weight: 700; font-style: italic; }
-  .archive-head .count { grid-column: 7 / 13; text-align: right; font-size: 13px; color: rgba(44,31,21,0.6); font-variant-numeric: tabular-nums; }
-
-  .post-row {
-    display: grid; grid-template-columns: 70px 1fr auto;
-    gap: 20px; padding: 18px 0; align-items: baseline;
-    border-bottom: 1px solid rgba(44,31,21,0.15);
-    transition: padding-left 250ms;
-    color: var(--fg);
-  }
-  .post-row:hover { padding-left: 12px; }
-  .post-row:hover .post-title { color: #fff; }
-  .post-row:hover .arrow { transform: translateX(8px); color: #fff; }
-  .post-date { font-size: 12px; color: rgba(44,31,21,0.55); font-variant-numeric: tabular-nums; }
-  .post-title {
-    font-family: 'Fraunces', serif; font-weight: 400;
-    font-size: 21px; line-height: 1.2; letter-spacing: -0.01em;
-    transition: color 200ms;
-  }
-  .arrow { color: rgba(44,31,21,0.5); font-size: 18px; transition: transform 250ms, color 250ms; }
-
-  .dawn-tail { height: 30vw; }
-
   @media (max-width: 800px) {
-    .dawn-hero { min-height: calc(100vh - 130px); }
-    .dawn-hero .copy { padding: 0 16px; gap: 20px; transform: translate3d(0, calc(-30px - 5% + var(--scrollPara)), 0); }
-    .dawn-hero h1 { font-size: 12vw; }
-    .dawn-posts { padding: 0 20px; }
-    .section-intro { padding: 20px 0 24px; }
-    .featured a.card, .stats { grid-column: 1 / 13; }
-    .featured a.card { padding: 24px; }
-    .archive-head h3 { grid-column: 1 / 9; font-size: 22px; }
-    .archive-head .count { grid-column: 9 / 13; }
-    .post-row { grid-template-columns: 60px 1fr auto; gap: 10px; }
-    .post-title { font-size: 17px; }
+    .home-hero h1 { font-size: 12vw; }
+    .home-hero p.sub { font-size: 15px; margin-bottom: 24px; }
+  }
+  @media (max-height: 720px) {
+    .home-hero h1 { font-size: clamp(32px, 6vw, 56px); margin-bottom: 14px; }
+    .home-hero p.sub { font-size: 14px; margin-bottom: 22px; }
   }
 </style>

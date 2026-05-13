@@ -55,7 +55,7 @@ export default defineConfig({
 	integrations: [
 		mdx(),
 		sitemap({
-			filter: (page) => !/\/v[2-4]\//.test(page),
+			filter: (page) => !/\/v[2-5]\//.test(page),
 			serialize(item) {
 				return { ...item, lastmod: postLastmod(item.url) || BUILD_TIME };
 			},
