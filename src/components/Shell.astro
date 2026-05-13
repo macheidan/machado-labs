@@ -295,6 +295,92 @@ const bodyClass = variant === 'home' ? 'home-body' : '';
       .btn .arrow { transition: transform 0.2s; }
       .btn:hover .arrow { transform: translateX(3px); }
 
+      /* "Introducing Glaze" pill — Raycast HeroAnnouncement.
+         Outer: 1px conic-gradient border (animated highlight sweep).
+         Inner: near-black pill with text + muted accessory. */
+      .btn-glaze {
+        --r2: 0deg;
+        --x: 20px;
+        display: inline-block;
+        padding: 1px;
+        background:
+          conic-gradient(from calc(var(--r2) - 80deg) at var(--x) 15px,
+            transparent 0,
+            rgb(236, 165, 167) 20%,
+            transparent 25%),
+          #452324;
+        border-radius: 43px;
+        box-shadow: 0 0 20px 0 rgba(245, 48, 107, 0.1);
+        transition: all 0.2s ease;
+        transform: translateZ(0);
+        animation: glaze-x 3.84s linear infinite, glaze-rot 3.84s linear infinite;
+        animation-delay: -0.64s;
+      }
+      .btn-glaze:hover {
+        background:
+          conic-gradient(from calc(var(--r2) - 80deg) at var(--x) 15px,
+            transparent 0,
+            rgb(236, 165, 167) 20%,
+            transparent 25%),
+          rgb(131, 54, 55);
+        box-shadow: 0 0 20px 3px rgba(245, 49, 108, 0.25);
+      }
+      .btn-glaze .inner {
+        display: flex; flex-wrap: nowrap;
+        gap: 13px; align-items: center;
+        height: 30px;
+        padding: 4px 12px;
+        font-family: var(--font-inter);
+        font-size: 14px; font-weight: 500;
+        letter-spacing: 0.2px;
+        color: var(--Base-White);
+        background: rgb(19, 13, 14);
+        border-radius: 1000px;
+      }
+      .btn-glaze .inner > svg {
+        width: 16px; height: 16px;
+        flex-shrink: 0;
+      }
+      .btn-glaze .muted {
+        position: relative;
+        display: flex; flex-wrap: nowrap;
+        gap: var(--spacing-0-5);
+        align-items: center;
+        color: var(--grey-200);
+        white-space: nowrap;
+      }
+      .btn-glaze .muted::before {
+        position: absolute;
+        top: 50%; left: -9px;
+        color: var(--grey-400);
+        pointer-events: none;
+        content: "|";
+        transform: translateY(-50%);
+      }
+      .btn-glaze .muted > svg { width: 16px; height: 16px; }
+      @keyframes glaze-x {
+        0%    { --x: 20px; }
+        32.8% { --x: 206px; }
+        50%   { --x: 206px; }
+        82.8% { --x: 20px; }
+        100%  { --x: 20px; }
+      }
+      @keyframes glaze-rot {
+        0%    { --r2: 0deg; }
+        32.8% { --r2: 0deg; }
+        50%   { --r2: 180deg; }
+        82.8% { --r2: 180deg; }
+        100%  { --r2: 360deg; }
+      }
+      @supports not (background: conic-gradient(from 0deg at 0 0, red, red)) {
+        .btn-glaze { animation: none; }
+      }
+      @property --r2 { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+      @property --x  { syntax: '<length>'; inherits: false; initial-value: 20px; }
+      @media (prefers-reduced-motion: reduce) {
+        .btn-glaze { animation: none; }
+      }
+
       .btn-dark {
         display: inline-flex; align-items: center; gap: var(--spacing-1);
         min-height: 36px;
