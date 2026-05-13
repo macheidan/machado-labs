@@ -109,12 +109,9 @@
   .nav .brand { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 14px; display: inline-flex; gap: 8px; }
   .nav .brand::before {
     content: '◆';
-    background: var(--grad);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--neon);
     font-size: 12px;
-    filter: drop-shadow(0 0 8px var(--neon-glow));
+    text-shadow: 0 0 10px var(--neon-glow);
   }
   .nav .center { text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--fg-faint); }
   .nav .right { display: flex; gap: 22px; justify-content: flex-end; font-family: 'JetBrains Mono', monospace; font-size: 13px; }
@@ -170,11 +167,8 @@
     font-style: normal;
     font-family: 'JetBrains Mono', monospace;
     font-weight: 500; letter-spacing: -0.02em;
-    background: var(--grad);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 0 20px rgba(253,0,255,0.35));
+    color: var(--neon);
+    text-shadow: 0 0 22px rgba(253,0,255,0.45);
   }
   .article-head .deck {
     font-family: 'Inter', sans-serif;
@@ -235,12 +229,10 @@
   }
   .prose h2::before {
     content: '##';
-    background: var(--grad);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--neon);
     font-size: 0.7em;
     opacity: 0.95;
+    text-shadow: 0 0 10px rgba(253,0,255,0.4);
   }
 
   .prose blockquote {
@@ -261,14 +253,11 @@
   }
   .prose blockquote::before {
     content: '⏵';
-    background: var(--grad);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--neon);
     font-size: 14px;
     margin-right: 10px;
     vertical-align: middle;
-    filter: drop-shadow(0 0 8px var(--neon-glow));
+    text-shadow: 0 0 10px var(--neon-glow);
   }
 
   .prose ul, .prose ol {

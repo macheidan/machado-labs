@@ -129,12 +129,9 @@
   }
   .nav .brand::before {
     content: '◆';
-    background: var(--grad);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--neon);
     font-size: 12px;
-    filter: drop-shadow(0 0 8px var(--neon-glow));
+    text-shadow: 0 0 10px var(--neon-glow);
   }
   .nav .center {
     text-align: center;
@@ -192,11 +189,8 @@
     font-family: 'JetBrains Mono', monospace;
     font-weight: 500;
     letter-spacing: -0.02em;
-    background: var(--grad);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 0 24px rgba(253,0,255,0.35));
+    color: var(--neon);
+    text-shadow: 0 0 24px rgba(253,0,255,0.45);
   }
   .hero h1 em::before, .hero h1 em::after { content: ''; }
   .hero-actions {
@@ -259,11 +253,9 @@
     color: var(--fg);
   }
   .intro h2 b {
-    background: var(--grad);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--neon);
     font-weight: 700;
+    text-shadow: 0 0 18px rgba(253,0,255,0.35);
   }
   .intro-aside {
     font-family: 'JetBrains Mono', monospace;
@@ -381,10 +373,8 @@
     box-shadow: 0 0 24px rgba(253,0,255,0.18) inset;
   }
   .stat.accent .v {
-    background: var(--grad);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--neon);
+    text-shadow: 0 0 18px rgba(253,0,255,0.35);
   }
 
   /* Archive */
@@ -409,10 +399,8 @@
   }
   .archive-head h3::before {
     content: '~/';
-    background: var(--grad);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--neon-2);
+    text-shadow: 0 0 10px var(--neon-glow-cyan);
   }
   .archive-head .count {
     font-family: 'JetBrains Mono', monospace;
