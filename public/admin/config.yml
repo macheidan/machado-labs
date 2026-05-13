@@ -11,6 +11,11 @@ logo_url: /favicon.png
 media_folder: /src/content/imgs
 public_folder: /src/content/imgs
 
+# Estilos aplicados na pré-visualização do markdown e no editor rich-text
+# (replica o .post-body do BlogPost.astro raycast)
+preview_styles:
+  - /admin/preview.css
+
 collections:
   - name: posts-pt
     label: Posts (PT)

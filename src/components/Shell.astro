@@ -156,6 +156,17 @@ const bodyClass = variant === 'home' ? 'home-body' : '';
       body.home-body .site-footer { flex-shrink: 0; }
       a { color: inherit; text-decoration: none; }
       button { font: inherit; }
+
+      /* Fix gradient-text clipping on the last italic/em letter:
+         italic glyphs extend past the box, so the background-image gets cut.
+         padding-inline-end + matching negative margin-inline-end keeps layout
+         while extending the gradient paint area. */
+      :where(h1, h2, h3) :where(em, .accent) {
+        padding-inline-end: 0.12em;
+        margin-inline-end: -0.04em;
+        box-decoration-break: clone;
+        -webkit-box-decoration-break: clone;
+      }
       img { display: block; max-width: 100%; height: auto; }
       ::selection { background: var(--Base-White); color: var(--grey-900); }
       ::-moz-selection { background: var(--Base-White); color: var(--grey-900); }

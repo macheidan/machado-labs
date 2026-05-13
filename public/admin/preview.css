@@ -1,0 +1,175 @@
+/* Preview do markdown no Sveltia CMS — replica o .post-body do BlogPost.astro
+   pra que o editor e a prévia mostrem o mesmo estilo do artigo publicado. */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap');
+
+:root {
+  --grey-50:  #e6e6e6;
+  --grey-100: #cdcece;
+  --grey-200: #9c9c9d;
+  --grey-300: #6a6b6c;
+  --grey-400: #434345;
+  --grey-500: #2f3031;
+  --grey-600: #1b1c1e;
+  --grey-700: #111214;
+  --grey-800: #0c0d0f;
+  --grey-900: #07080a;
+
+  --Base-White: #ffffff;
+  --Text-Loud: var(--Base-White);
+  --Text-Default: var(--grey-200);
+  --Text-Muted: var(--grey-300);
+
+  --Card-Border: rgba(255, 255, 255, 0.06);
+  --line: var(--Card-Border);
+
+  --accent: #ff5c2b;
+  --pink: #ff5fa8;
+  --violet: #8e6bff;
+
+  --bg: var(--grey-900);
+  --bg-elevated: var(--grey-700);
+
+  --font-inter: 'Inter', 'Inter Fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--Text-Default);
+  font-family: var(--font-inter);
+  font-size: 17px;
+  line-height: 1.75;
+  letter-spacing: 0.2px;
+  -webkit-font-smoothing: antialiased;
+  margin: 0;
+  padding: 32px 28px;
+  min-height: 100vh;
+}
+
+body {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* Tipografia idêntica ao .post-body */
+p { margin: 0 0 1.4em; }
+h1 {
+  font-size: clamp(34px, 5.4vw, 64px);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.04;
+  color: var(--Base-White);
+  margin: 0 0 0.5em;
+  text-wrap: balance;
+}
+h2 {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--Base-White);
+  margin: 2.4em 0 0.7em;
+}
+h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--Base-White);
+  margin: 2em 0 0.6em;
+}
+strong { color: var(--Base-White); font-weight: 600; }
+em { font-style: italic; color: var(--Base-White); }
+a {
+  color: var(--accent);
+  border-bottom: 1px solid rgba(255, 92, 43, 0.4);
+  text-decoration: none;
+  transition: border-color 160ms, opacity 160ms;
+}
+a:hover { border-color: var(--accent); opacity: 0.85; }
+blockquote {
+  margin: 1.8em 0;
+  padding: 18px 22px;
+  border-left: 3px solid var(--accent);
+  background: rgba(255, 92, 43, 0.06);
+  border-radius: 0 12px 12px 0;
+  color: var(--Base-White);
+  font-style: italic;
+  font-size: 18px;
+  line-height: 1.5;
+}
+blockquote p { margin: 0; }
+ul, ol { margin: 0 0 1.4em; padding-left: 1.4em; }
+li { margin-bottom: 0.5em; }
+hr {
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 2.6em 0;
+}
+code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  padding: 2px 7px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--Base-White);
+}
+pre {
+  margin: 1.8em -8px;
+  padding: 20px 22px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--Text-Default);
+}
+pre code {
+  padding: 0;
+  background: none;
+  border: none;
+  font-size: inherit;
+  color: inherit;
+}
+img {
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  margin: 2em 0;
+  display: block;
+}
+figure { margin: 2em 0; }
+figure img { margin: 0; }
+figcaption {
+  font-size: 12.5px;
+  color: var(--Text-Muted);
+  margin-top: 10px;
+  text-align: center;
+  font-style: italic;
+}
+iframe {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  margin: 2em 0;
+  display: block;
+  background: #000;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.8em 0;
+  font-size: 14px;
+}
+th, td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+th { color: var(--Base-White); font-weight: 600; }
+
+::selection { background: var(--Base-White); color: var(--grey-900); }
