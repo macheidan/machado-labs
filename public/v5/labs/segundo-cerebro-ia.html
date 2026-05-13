@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Como estou construindo o Meu Cortex Digital — Fábio Machado</title>
+<meta name="description" content="Um sistema em markdown puro, versionado no git, sincronizado pelo Google Drive e lido por qualquer modelo. Contexto persistente para trabalhar com múltiplos projetos e agentes ao mesmo tempo." />
+<link rel="canonical" href="https://fabiomachado.com.br/v5/labs/segundo-cerebro-ia.html" />
+<meta name="theme-color" content="#0a0a0c" />
+<link rel="icon" href="/favicon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/v5/style.css" />
+</head>
+<body>
+  <div class="aurora" aria-hidden="true">
+    <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="blob b4"></div>
+  </div>
+
+  <header class="site-header">
+    <a class="brand" href="/v5/">Fábio Machado</a>
+    <nav>
+      <span class="lang"><a class="current" href="#">PT</a><span class="sep">·</span><a href="#">EN</a></span>
+      <a href="/v5/sobre.html">Sobre</a>
+      <a class="active" href="/v5/posts.html">Ler</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="post-back"><a href="/v5/posts.html">← Arquivo completo</a></div>
+
+    <section class="post-hero">
+      <div class="post-meta-top">
+        <span class="pill">Arquitetura</span>
+        <span class="date">26 de abril de 2026</span>
+      </div>
+      <h1>Como estou<br/>construindo o <em>Meu</em><br/><span class="accent">Cortex Digital</span></h1>
+      <p class="lede">Um sistema em markdown puro, versionado no git, sincronizado pelo Google Drive e lido por qualquer modelo. Contexto persistente para trabalhar com múltiplos projetos e agentes ao mesmo tempo.</p>
+    </section>
+
+    <div class="post-cover">
+      <div class="frame">
+        <div class="mock" style="inset: 10%;">
+          <div class="bar">
+            <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+            <span class="title">~/Vault · tree -L 2</span>
+          </div>
+          <div class="body">
+            <div class="ln"><span class="c-key">Cortex/</span></div>
+            <div class="ln">├── <span class="c-key">00-meta/</span>           <span class="c-cmt"># instruções p/ agentes</span></div>
+            <div class="ln">├── <span class="c-key">01-pizzarias/</span>      <span class="c-cmt"># Dáme, Lov, mkt, ops</span></div>
+            <div class="ln">├── <span class="c-key">02-projetos-dev/</span>   <span class="c-cmt"># todos os repos</span></div>
+            <div class="ln">├── <span class="c-key">03-pessoal/</span>        <span class="c-cmt"># perfil, decisão</span></div>
+            <div class="ln">├── <span class="c-key">04-consultoria/</span>    <span class="c-cmt"># projetos e clientes</span></div>
+            <div class="ln">└── <span class="c-key">08-secretaria-log/</span> <span class="c-cmt"># logs do bot wapp</span></div>
+            <div class="ln">&nbsp;</div>
+            <div class="ln"><span class="c-cmt">182 arquivos · 41.2 KB médio · 100% markdown</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <article class="post-body">
+      <p>São muitos projetos simultâneos, decisões tomadas em contextos diferentes, e cada agente de IA começa do zero <strong>sem saber nada sobre mim</strong>.</p>
+
+      <p>A solução que encontrei foi construir um cérebro externo em markdown que serve como <em>fonte única de verdade pra qualquer agente</em>. Chamei de <strong>Meu Cortex Digital</strong>.</p>
+
+      <h2>A ideia central</h2>
+
+      <p>Não quero depender de uma ferramenta específica. Quero arquivos <code>.md</code> simples, versionados no git, sincronizados pelo Drive e lidos por qualquer modelo, seja Claude, ChatGPT, Gemini, Cursor, o que for.</p>
+
+      <blockquote>Ferramenta morre. Markdown sobrevive.</blockquote>
+
+      <p>O Cortex vive em <code>G:\Meu Drive\01 AI\Vault\</code> e já tá aberto no Obsidian. Qualquer agente que precisar de contexto sobre mim lê os arquivos de lá.</p>
+
+      <h2>Arquitetura em 4 camadas</h2>
+
+<pre><code>┌─────────────────────────────┐
+│ 4. GATILHOS (cron, webhook) │
+├─────────────────────────────┤
+│ 3. AGÊNCIA (Gmail, Cal, WA) │  ← estou aqui
+├─────────────────────────────┤
+│ 2. PERSONA (como eu decido) │  ← concluído
+├─────────────────────────────┤
+│ 1. MEMÓRIA (o que eu sei)   │  ← concluído
+└─────────────────────────────┘</code></pre>
+
+      <h2>Fase 1: Memória</h2>
+
+      <p>Varri todas as fontes: pastas do Drive, projetos de desenvolvimento, memórias do Claude Code, arquivos de contexto espalhados. Classifiquei tudo em categorias e copiei pra estrutura do Cortex. <strong>Nunca movi originais sem aprovação.</strong></p>
+
+      <p>A estrutura ficou assim:</p>
+
+<pre><code>Cortex/
+├── 00-meta/           # instruções para qualquer agente
+├── 01-pizzarias/      # Dáme e Lov, marketing, ops, financeiro
+├── 02-projetos-dev/   # todos os projetos de código
+├── 03-pessoal/        # família, saúde, finanças, perfil
+├── 04-consultoria/    # projetos e clientes
+├── 08-secretaria-log/ # logs operacionais (gitignored)</code></pre>
+
+      <p>Cada arquivo tem frontmatter YAML com <code>project</code>, <code>status</code>, <code>updated</code> e <code>tags</code>. Isso permite que qualquer agente entenda o contexto sem precisar ler o arquivo inteiro.</p>
+
+      <figure class="inline">
+        <div class="frame">
+          <div class="mock" style="inset: 6%;">
+            <div class="bar">
+              <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+              <span class="title">02-projetos-dev/whatsapp-bot/contexto.md</span>
+            </div>
+            <div class="body">
+              <div class="ln"><span class="c-cmt">---</span></div>
+              <div class="ln"><span class="c-key">project</span>: projeto-dev-whatsapp-bot</div>
+              <div class="ln"><span class="c-key">status</span>: <span class="c-str">active</span></div>
+              <div class="ln"><span class="c-key">updated</span>: <span class="c-num">2026-04-26</span></div>
+              <div class="ln"><span class="c-key">tags</span>: [dev, wapp, agentes, cortex]</div>
+              <div class="ln"><span class="c-cmt">---</span></div>
+              <div class="ln">&nbsp;</div>
+              <div class="ln"># whatsapp-bot</div>
+              <div class="ln">&nbsp;</div>
+              <div class="ln">Agente que lê meu WhatsApp e escreve no Cortex.</div>
+              <div class="ln">Roda no PC de casa, plugado no meu número.</div>
+            </div>
+          </div>
+        </div>
+        <figcaption>Frontmatter YAML em cada arquivo. Qualquer agente entende o contexto sem ler o documento inteiro.</figcaption>
+      </figure>
+
+      <h2>Fase 2: Persona</h2>
+
+      <p>Capturei como eu <em>realmente</em> tomo decisões, não como eu acho que tomo. Isso virou <code>persona-decisao.md</code>:</p>
+
+      <ul>
+        <li>Decido sozinho, raramente peço opinião antes</li>
+        <li>Prefiro dados e números, mas o impulso consegue contornar a análise</li>
+        <li>Dois modos: rápido/reativo e analítico (quando forço)</li>
+        <li>Tendência a superestimar familiaridade com um problema e subestimar o esforço real</li>
+      </ul>
+
+      <p>O arquivo não é aspiracional. <strong>É descritivo.</strong> O agente usa isso pra me dar alertas quando percebe que tô no modo errado pra uma decisão importante.</p>
+
+      <h2>Fase 3: Agência (em andamento)</h2>
+
+      <p>Aqui os agentes deixam de ser consultivos e passam a <em>agir</em>. Primeiro integrei o WhatsApp.</p>
+
+      <p>O bot roda em background, sem Chrome, sem janela aberta. Toda semana recebo no meu próprio WhatsApp:</p>
+
+      <ul>
+        <li>Perfis comportamentais dos contatos com quem mais conversei</li>
+        <li>Resumo dos debates dos grupos</li>
+        <li>Análise das minhas próprias mensagens, o que o bot observou sobre mim que pode enriquecer o Cortex</li>
+      </ul>
+
+      <p>O mais interessante: todo domingo o bot lê meus arquivos <code>perfil-fabio.md</code>, <code>persona-decisao.md</code> e <code>familia.md</code> e adiciona apenas o que for <strong>genuinamente novo</strong>. Sem sobrescrever, sem inventar, só o que conseguiu observar nas mensagens da semana.</p>
+
+      <p>Detalhes desse bot e de como ele se conecta com o Cortex estão em <a href="/v5/labs/bot-whatsapp-inteligencia-pessoal.html">Criei um agente de IA que cuida do meu WhatsApp</a>.</p>
+
+      <h2>O que aprendi até agora</h2>
+
+      <p>O Cortex só funciona se for fácil de manter. Arquivos complicados não são lidos, não são atualizados, <strong>morrem</strong>. Markdown puro, frontmatter simples, sem plugin proprietário.</p>
+
+      <p>A automação que alimenta o Cortex precisa ser conservadora.</p>
+
+      <blockquote>Melhor não escrever nada do que escrever errado.</blockquote>
+
+      <p>Por isso o bot usa um prompt que instrui o modelo a retornar "nada novo" se não houver observações claras baseadas nas mensagens.</p>
+
+      <hr/>
+
+      <p>Gmail e Calendar entram na Fase 3, com resumo de emails importantes, alertas de compromissos e integração com o Cortex. Depois vem a Fase 4: gatilhos automáticos que disparam ações sem eu precisar pedir.</p>
+
+      <p>O objetivo final é um sistema que <strong>conhece meu contexto melhor do que eu mesmo</strong> em qualquer dia de sobrecarga.</p>
+
+      <div class="post-end">
+        <a class="btn-ghost" href="/v5/posts.html">← Voltar ao arquivo completo</a>
+      </div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="newsletter">
+        <h4>Recebe as próximas notas no email</h4>
+        <p>Um email curto a cada post novo. Sem spam, dá pra sair com um clique.</p>
+        <form class="nl-form" autocomplete="off">
+          <input type="email" required placeholder="seu@email.com" aria-label="Email" />
+          <button type="submit">Assinar</button>
+        </form>
+      </div>
+      <div class="social">
+        <a href="https://instagram.com/machadofabio" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.4A4 4 0 1 1 12.6 8 4 4 0 0 1 16 11.4z"/><line x1="17.5" y1="6.5" x2="17.5" y2="6.5"/></svg>
+          @machadofabio
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/v5/script.js"></script>
+</body>
+</html>
