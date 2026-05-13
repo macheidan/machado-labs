@@ -44,7 +44,7 @@ const jsonLd = profileGraph('pt', description);
 
 <style>
   .about-page {
-    padding-top: calc(var(--header-h) + 80px);
+    padding-top: calc(var(--header-offset) + 80px);
     padding-bottom: 80px;
     max-width: 980px; margin: 0 auto;
     padding-left: 28px; padding-right: 28px;
@@ -123,7 +123,7 @@ const jsonLd = profileGraph('pt', description);
   .fact .v { color: var(--fg); text-align: right; }
 
   @media (max-width: 800px) {
-    .about-page { padding-left: 16px; padding-right: 16px; padding-top: calc(var(--header-h) + 40px); }
+    .about-page { padding-left: 16px; padding-right: 16px; padding-top: calc(var(--header-offset) + 40px); }
     .about-body { grid-template-columns: 1fr; gap: 32px; }
     .about-head h1 { font-size: 44px; }
   }

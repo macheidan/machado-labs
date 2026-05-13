@@ -38,7 +38,7 @@ const posts = (await getCollection('labs'))
 
 <style>
   .posts-page {
-    padding-top: calc(var(--header-h) + 80px);
+    padding-top: calc(var(--header-offset) + 80px);
     padding-bottom: 80px;
     max-width: 1180px; margin: 0 auto;
     padding-left: 28px; padding-right: 28px;
@@ -110,7 +110,7 @@ const posts = (await getCollection('labs'))
   .post-card:hover .arrow { gap: 10px; color: var(--accent); }
 
   @media (max-width: 800px) {
-    .posts-page { padding-left: 16px; padding-right: 16px; padding-top: calc(var(--header-h) + 40px); }
+    .posts-page { padding-left: 16px; padding-right: 16px; padding-top: calc(var(--header-offset) + 40px); }
     .posts-page h1 { font-size: 38px; }
     .posts-grid { grid-template-columns: 1fr; gap: 14px; }
     .post-card { padding: 22px; }

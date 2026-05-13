@@ -39,7 +39,7 @@ const posts = (await getCollection('labs'))
 
 <style>
   .nf-page {
-    padding-top: calc(var(--header-h) + 80px);
+    padding-top: calc(var(--header-offset) + 80px);
     padding-bottom: 80px;
     max-width: 880px; margin: 0 auto;
     padding-left: 28px; padding-right: 28px;
@@ -86,7 +86,7 @@ const posts = (await getCollection('labs'))
   .row:hover .arrow { transform: translateX(6px); color: var(--accent); }
 
   @media (max-width: 800px) {
-    .nf-page { padding-left: 16px; padding-right: 16px; padding-top: calc(var(--header-h) + 40px); }
+    .nf-page { padding-left: 16px; padding-right: 16px; padding-top: calc(var(--header-offset) + 40px); }
     .nf-hero h1 { font-size: 44px; }
     .row { grid-template-columns: 60px 1fr auto; gap: 10px; }
     .row .title { font-size: 15px; }
