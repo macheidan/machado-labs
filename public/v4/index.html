@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Fábio Machado — agentes de IA dentro de negócios reais</title>
+<meta name="description" content="Documentação pública de um time de agentes de IA dentro das pizzarias Dáme e Lov. Notas de um dono operando sob IA." />
+<link rel="canonical" href="https://fabiomachado.com.br/v4/" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Fábio Machado" />
+<meta property="og:description" content="Documentação pública de um time de agentes de IA em negócios reais." />
+<meta property="og:image" content="https://fabiomachado.com.br/og-default.png" />
+<meta name="theme-color" content="#f8f7fc" />
+<link rel="icon" href="/favicon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebSite","name":"Fábio Machado","url":"https://fabiomachado.com.br/","author":{"@type":"Person","name":"Fábio Machado"}}
+</script>
+<style>
+  :root {
+    --bg: #f8f7fc;
+    --bg-card: rgba(255,255,255,0.65);
+    --bg-card-solid: #ffffff;
+    --line: rgba(20,20,40,0.08);
+    --line-strong: rgba(20,20,40,0.14);
+    --fg: #0c0c1a;
+    --fg-soft: #4a4960;
+    --fg-muted: #7e7d96;
+    --fg-faint: #b6b5cb;
+    --accent: #6e3bff;
+    --accent-soft: #ede5ff;
+    --pink: #ff7ab6;
+    --cyan: #61dafb;
+    --lilac: #c4a8ff;
+  }
+  *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html,body { background: var(--bg); color: var(--fg); }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 16px; line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    background: var(--bg);
+    overflow-x: hidden;
+  }
+  a { color: inherit; text-decoration: none; }
+  ::selection { background: var(--accent); color: #fff; }
+
+  /* Aurora background */
+  .aurora {
+    position: fixed; inset: 0; z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .aurora::before, .aurora::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.55;
+  }
+  .aurora::before {
+    width: 60vw; height: 60vw;
+    top: -20vw; left: -10vw;
+    background: radial-gradient(circle, var(--pink) 0%, transparent 70%);
+    animation: drift1 22s ease-in-out infinite;
+  }
+  .aurora::after {
+    width: 55vw; height: 55vw;
+    top: -8vw; right: -12vw;
+    background: radial-gradient(circle, var(--lilac) 0%, transparent 70%);
+    animation: drift2 28s ease-in-out infinite;
+  }
+  .aurora .blob3 {
+    position: absolute;
+    width: 50vw; height: 50vw;
+    left: 30vw; top: 30vw;
+    background: radial-gradient(circle, var(--cyan) 0%, transparent 65%);
+    border-radius: 50%;
+    filter: blur(90px);
+    opacity: 0.35;
+    animation: drift3 32s ease-in-out infinite;
+  }
+  @keyframes drift1 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(40px,30px); } }
+  @keyframes drift2 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-50px,40px); } }
+  @keyframes drift3 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(30px,-40px); } }
+  @media (prefers-reduced-motion: reduce) {
+    .aurora::before, .aurora::after, .aurora .blob3 { animation: none; }
+  }
+
+  .v-switch {
+    position: fixed; top: 18px; right: 18px; z-index: 50;
+    display: flex; gap: 4px;
+    background: rgba(255,255,255,0.72);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 5px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    box-shadow: 0 8px 24px rgba(110,59,255,0.08);
+  }
+  .v-switch a {
+    color: var(--fg-muted);
+    padding: 7px 13px; border-radius: 999px;
+    transition: color 150ms, background 150ms;
+  }
+  .v-switch a:hover { color: var(--fg); }
+  .v-switch a.on {
+    background: var(--fg);
+    color: #fff;
+  }
+
+  /* Nav */
+  .nav {
+    position: relative; z-index: 5;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 28px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 24px;
+  }
+  .nav .brand {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-weight: 700; font-size: 16px;
+    letter-spacing: -0.015em;
+    color: var(--fg);
+  }
+  .nav .brand .dot {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, var(--pink), var(--lilac), var(--cyan), var(--pink));
+    box-shadow: 0 4px 12px rgba(110,59,255,0.2);
+  }
+  .nav .center {
+    text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--fg-muted);
+    padding: 6px 16px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: rgba(255,255,255,0.5);
+    backdrop-filter: blur(10px);
+  }
+  .nav .right { display: flex; gap: 24px; justify-content: flex-end; align-items: center; font-size: 14px; }
+  .nav .right a { color: var(--fg-soft); transition: color 150ms; }
+  .nav .right a:hover { color: var(--accent); }
+
+  /* Hero */
+  .hero {
+    position: relative; z-index: 2;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 70px 28px 100px;
+    text-align: center;
+  }
+  .hero-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 7px 14px 7px 7px;
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 13px;
+    color: var(--fg-soft);
+    margin-bottom: 36px;
+    box-shadow: 0 4px 16px rgba(110,59,255,0.05);
+  }
+  .hero-pill .tag {
+    padding: 3px 10px;
+    background: var(--fg);
+    color: #fff;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .hero h1 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    font-size: clamp(48px, 8vw, 124px);
+    line-height: 0.96;
+    letter-spacing: -0.045em;
+    color: var(--fg);
+    text-wrap: balance;
+    max-width: 18ch;
+    margin: 0 auto 28px;
+  }
+  .hero h1 em {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-weight: 400;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--pink) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 1.08em;
+  }
+  .hero .sub {
+    font-size: 19px;
+    color: var(--fg-soft);
+    max-width: 56ch;
+    margin: 0 auto 40px;
+    text-wrap: balance;
+  }
+  .hero-actions {
+    display: inline-flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 13px 22px;
+    border-radius: 999px;
+    font-size: 14px; font-weight: 500;
+    transition: all 200ms;
+  }
+  .btn.primary {
+    background: var(--fg);
+    color: #fff;
+    box-shadow: 0 6px 22px rgba(12,12,26,0.18);
+  }
+  .btn.primary:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(12,12,26,0.24); }
+  .btn.ghost {
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--line);
+    color: var(--fg);
+  }
+  .btn.ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Intro statement */
+  .intro {
+    position: relative; z-index: 2;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 28px 90px;
+    text-align: center;
+  }
+  .intro-pre {
+    display: inline-block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.18em; text-transform: uppercase;
+    padding: 5px 12px;
+    background: var(--accent-soft);
+    border-radius: 999px;
+    margin-bottom: 24px;
+  }
+  .intro h2 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: clamp(28px, 4vw, 56px);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: var(--fg);
+    text-wrap: balance;
+    max-width: 22ch;
+    margin: 0 auto;
+  }
+  .intro h2 b {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+  }
+
+  /* Feature + stats */
+  .feature {
+    position: relative; z-index: 2;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 28px 80px;
+    display: grid;
+    grid-template-columns: 7fr 5fr;
+    gap: 24px;
+  }
+  .feature-card {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--line);
+    border-radius: 28px;
+    padding: 40px;
+    box-shadow: 0 12px 40px rgba(110,59,255,0.06);
+    transition: transform 250ms, box-shadow 250ms;
+    position: relative;
+    overflow: hidden;
+  }
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--pink), var(--lilac), var(--cyan));
+  }
+  .feature-card:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgba(110,59,255,0.12); }
+  .fc-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11px; font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-soft);
+    padding: 5px 11px;
+    border-radius: 999px;
+    letter-spacing: 0.02em;
+    margin-bottom: 20px;
+  }
+  .fc-tag::before {
+    content: ''; width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  .fc-title {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: clamp(26px, 3vw, 38px);
+    line-height: 1.12;
+    letter-spacing: -0.025em;
+    color: var(--fg);
+    margin-bottom: 16px;
+  }
+  .fc-title a:hover { color: var(--accent); }
+  .fc-desc {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--fg-soft);
+    margin-bottom: 24px;
+  }
+  .fc-meta {
+    display: flex; gap: 16px; align-items: center;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--fg-muted);
+  }
+  .fc-meta .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--fg-faint); }
+  .fc-meta .arrow {
+    margin-left: auto;
+    display: inline-flex; align-items: center; gap: 6px;
+    color: var(--fg);
+    font-weight: 500;
+    font-size: 13px;
+  }
+  .fc-meta .arrow span { transition: transform 200ms; }
+  .feature-card:hover .arrow span { transform: translateX(4px); }
+
+  .stats-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  }
+  .stat {
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--line);
+    border-radius: 22px;
+    padding: 24px;
+    transition: transform 200ms, box-shadow 200ms;
+  }
+  .stat:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(110,59,255,0.1); }
+  .stat .k {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--fg-muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .stat .v {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 52px;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--fg);
+    margin-bottom: 8px;
+  }
+  .stat .v sup { font-size: 0.4em; color: var(--accent); vertical-align: super; }
+  .stat .d {
+    font-size: 13px;
+    color: var(--fg-muted);
+  }
+  .stat.grad {
+    background: linear-gradient(135deg, var(--pink) 0%, var(--lilac) 60%, var(--cyan) 100%);
+    border: none;
+    color: #fff;
+  }
+  .stat.grad .k { color: rgba(255,255,255,0.85); }
+  .stat.grad .v { color: #fff; }
+  .stat.grad .d { color: rgba(255,255,255,0.9); }
+  .stat.dark {
+    background: var(--fg);
+    border-color: var(--fg);
+    color: #fff;
+  }
+  .stat.dark .k { color: rgba(255,255,255,0.5); }
+  .stat.dark .v { color: #fff; }
+  .stat.dark .d { color: rgba(255,255,255,0.7); }
+
+  /* Archive */
+  .archive {
+    position: relative; z-index: 2;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 28px 100px;
+  }
+  .archive-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 18px 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 8px;
+  }
+  .archive-head h3 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: -0.015em;
+  }
+  .archive-head h3 b {
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-weight: 400;
+    color: var(--accent);
+    margin-left: 4px;
+  }
+  .archive-head .count {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--fg-muted);
+  }
+  .archive-list { list-style: none; padding: 0; margin: 0; }
+  .archive-list li { border-bottom: 1px solid var(--line); }
+  .archive-list a {
+    display: grid;
+    grid-template-columns: 70px 1fr auto;
+    gap: 24px;
+    padding: 22px 12px;
+    align-items: center;
+    border-radius: 14px;
+    transition: background 200ms, padding-left 200ms;
+  }
+  .archive-list a:hover {
+    background: rgba(255,255,255,0.6);
+    padding-left: 22px;
+  }
+  .archive-list a:hover .a-arrow { transform: translateX(6px); color: var(--accent); }
+  .archive-list a:hover .a-title { color: var(--accent); }
+  .a-date {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--fg-muted);
+  }
+  .a-title {
+    font-weight: 500;
+    font-size: 18px;
+    color: var(--fg);
+    letter-spacing: -0.015em;
+    transition: color 200ms;
+  }
+  .a-arrow {
+    color: var(--fg-faint);
+    transition: transform 200ms, color 200ms;
+    font-size: 18px;
+  }
+
+  /* Footer */
+  footer.foot {
+    position: relative; z-index: 2;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px 28px 50px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 24px;
+    font-size: 13px;
+    color: var(--fg-muted);
+  }
+  footer.foot a { color: var(--fg-soft); transition: color 150ms; }
+  footer.foot a:hover { color: var(--accent); }
+  footer.foot .center {
+    display: inline-flex; align-items: center; gap: 8px;
+    color: var(--fg);
+    font-weight: 600;
+  }
+  footer.foot .center .dot {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg, var(--pink), var(--lilac), var(--cyan), var(--pink));
+  }
+  footer.foot .right { text-align: right; font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
+
+  @media (max-width: 900px) {
+    .nav { grid-template-columns: 1fr; gap: 12px; text-align: center; padding: 18px 18px; }
+    .nav .right { justify-content: center; }
+    .hero { padding: 40px 18px 70px; }
+    .feature { grid-template-columns: 1fr; padding: 0 18px 60px; }
+    .archive { padding: 0 18px 70px; }
+    .archive-list a { grid-template-columns: 56px 1fr auto; gap: 14px; padding: 18px 8px; }
+    .a-title { font-size: 15px; }
+    footer.foot { grid-template-columns: 1fr; text-align: center; gap: 8px; }
+    footer.foot .right { text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="aurora"><div class="blob3"></div></div>
+
+<nav class="v-switch">
+  <a href="/v2/">v2</a>
+  <a href="/v3/">v3</a>
+  <a class="on" href="/v4/">v4</a>
+  <a href="/" style="color: var(--fg-faint)">/orig</a>
+</nav>
+
+<nav class="nav">
+  <a href="/v4/" class="brand"><span class="dot"></span> Fábio Machado</a>
+  <span class="center">→ documentando em público · 2026</span>
+  <div class="right">
+    <a href="/about">sobre</a>
+    <a href="/en">EN</a>
+    <a href="https://www.instagram.com/machadofabio" target="_blank" rel="noopener">@</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <span class="hero-pill"><span class="tag">NOVO</span>Edição 04 · agente de WhatsApp em produção</span>
+  <h1>Como automatizei meus negócios com <em>agentes de IA.</em></h1>
+  <p class="sub">Notas públicas de um dono operando duas pizzarias com um time de agentes. Stack, custo e o que quebrou no caminho.</p>
+  <div class="hero-actions">
+    <a href="#archive" class="btn primary">Ler os ensaios <span>→</span></a>
+    <a href="/about" class="btn ghost">Sobre o autor</a>
+  </div>
+</section>
+
+<section class="intro">
+  <span class="intro-pre">— editorial</span>
+  <h2>Como usar IA nas empresas, <b>do jeito certo,</b> em 2026.</h2>
+</section>
+
+<section class="feature">
+  <article class="feature-card">
+    <span class="fc-tag">Cover story · último ensaio</span>
+    <h2 class="fc-title"><a href="/v4/whatsapp.html">Criei um agente de IA que cuida do meu WhatsApp.</a></h2>
+    <p class="fc-desc">Tava perdendo coisa importante nos grupos toda semana. Coloquei um agente pra ler meu WhatsApp por mim, mandar o que precisa de resposta urgente no fim do dia, e um resumo de cada contato e cada grupo no domingo. Roda no PC de casa, custo zero, plugado no meu próprio número.</p>
+    <div class="fc-meta">
+      <span>01 mai 2026</span>
+      <span class="dot"></span>
+      <span>6 min</span>
+      <a class="arrow" href="/v4/whatsapp.html">Ler <span>→</span></a>
+    </div>
+  </article>
+  <div class="stats-grid">
+    <div class="stat grad">
+      <div class="k">Negócios</div>
+      <div class="v">8</div>
+      <div class="d">fundados · incorporados</div>
+    </div>
+    <div class="stat">
+      <div class="k">Anos</div>
+      <div class="v">25<sup>+</sup></div>
+      <div class="d">tech · gestão</div>
+    </div>
+    <div class="stat">
+      <div class="k">Projetos de IA</div>
+      <div class="v">18</div>
+      <div class="d">aplicadas</div>
+    </div>
+    <div class="stat dark">
+      <div class="k">Ensaios</div>
+      <div class="v">04</div>
+      <div class="d">documentados</div>
+    </div>
+  </div>
+</section>
+
+<section class="archive" id="archive">
+  <header class="archive-head">
+    <h3>Arquivo <b>completo</b></h3>
+    <span class="count">04 posts · 2026</span>
+  </header>
+  <ul class="archive-list">
+    <li><a href="/v4/whatsapp.html">
+      <span class="a-date">05.26</span>
+      <span class="a-title">Criei um agente de IA que cuida do meu WhatsApp</span>
+      <span class="a-arrow">→</span>
+    </a></li>
+    <li><a href="/labs/segundo-cerebro-ia/">
+      <span class="a-date">04.26</span>
+      <span class="a-title">Como estou construindo o Meu Cortex Digital</span>
+      <span class="a-arrow">→</span>
+    </a></li>
+    <li><a href="/labs/por-que-documentar-publicamente/">
+      <span class="a-date">04.26</span>
+      <span class="a-title">Por que estou documentando isso publicamente</span>
+      <span class="a-arrow">→</span>
+    </a></li>
+    <li><a href="/labs/como-gpt-4-ajuda-rotina/">
+      <span class="a-date">04.23</span>
+      <span class="a-title">Como o GPT-4 está ajudando minha rotina</span>
+      <span class="a-arrow">→</span>
+    </a></li>
+  </ul>
+</section>
+
+<footer class="foot">
+  <div><a href="https://www.instagram.com/machadofabio" target="_blank" rel="noopener">@machadofabio</a></div>
+  <a class="center" href="/v4/"><span class="dot"></span> Fábio Machado</a>
+  <div class="right">v4 · soft aurora</div>
+</footer>
+
+</body>
+</html>

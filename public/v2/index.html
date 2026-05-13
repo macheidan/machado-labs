@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Fábio Machado — Como automatizei meus negócios com agentes de IA</title>
+<meta name="description" content="Documentação pública de um time de agentes de IA dentro de duas pizzarias. Notas de um dono operando sob IA." />
+<link rel="canonical" href="https://fabiomachado.com.br/v2/" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Fábio Machado — Editorial Quarterly" />
+<meta property="og:description" content="Documentação pública de um time de agentes de IA dentro das pizzarias Dáme e Lov." />
+<meta property="og:image" content="https://fabiomachado.com.br/og-default.png" />
+<meta name="theme-color" content="#faf6ef" />
+<link rel="icon" href="/favicon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;0,800;0,900;1,400;1,700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebSite","name":"Fábio Machado","url":"https://fabiomachado.com.br/","author":{"@type":"Person","name":"Fábio Machado"}}
+</script>
+<style>
+  :root {
+    --paper: #faf6ef;
+    --paper-warm: #f3ebd9;
+    --ink: #14110d;
+    --ink-soft: #4a4036;
+    --ink-faint: #8a7d6d;
+    --line: #2a221a;
+    --brick: #a83232;
+    --brick-deep: #7b1f1f;
+    --gold: #c8932a;
+  }
+  *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html,body { background: var(--paper); color: var(--ink); }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 16px; line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(168,50,50,0.04), transparent 60%),
+      linear-gradient(180deg, #faf6ef 0%, #f3ebd9 100%);
+    min-height: 100vh;
+  }
+  a { color: inherit; text-decoration: none; }
+  ::selection { background: var(--brick); color: #fff; }
+
+  /* Version switcher */
+  .v-switch {
+    position: fixed; top: 16px; right: 16px; z-index: 50;
+    display: flex; gap: 6px;
+    background: rgba(20,17,13,0.85);
+    backdrop-filter: blur(8px);
+    border-radius: 999px;
+    padding: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+  }
+  .v-switch a {
+    color: rgba(250,246,239,0.55);
+    padding: 6px 12px; border-radius: 999px;
+    transition: color 150ms, background 150ms;
+  }
+  .v-switch a:hover { color: #fff; }
+  .v-switch a.on { background: var(--brick); color: #fff; }
+
+  /* Header masthead */
+  .masthead {
+    border-bottom: 2px solid var(--line);
+    padding: 24px 48px 18px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: end;
+    gap: 24px;
+  }
+  .mast-left {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .mast-left b { color: var(--brick); font-weight: 600; }
+  .mast-brand {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: clamp(28px, 4vw, 44px);
+    letter-spacing: -0.015em;
+    line-height: 1;
+    text-align: center;
+  }
+  .mast-brand .amp {
+    color: var(--brick); font-style: italic; font-weight: 700; font-size: 0.85em;
+    padding: 0 4px;
+  }
+  .mast-right {
+    display: flex; gap: 18px; justify-content: flex-end;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+  }
+  .mast-right a { color: var(--ink-soft); transition: color 150ms; padding-bottom: 2px; border-bottom: 1px solid transparent; }
+  .mast-right a:hover { color: var(--brick); border-bottom-color: var(--brick); }
+
+  /* Issue strip */
+  .issue-strip {
+    border-bottom: 1px solid var(--line);
+    padding: 10px 48px;
+    display: flex; justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .issue-strip span b { color: var(--ink); }
+
+  /* Hero */
+  .hero {
+    padding: 80px 48px 60px;
+    border-bottom: 1px solid var(--line);
+    display: grid; grid-template-columns: 12fr 5fr; gap: 56px;
+    align-items: end;
+  }
+  .hero-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--brick); font-weight: 600;
+    margin-bottom: 18px;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 500;
+    font-size: clamp(48px, 7.5vw, 124px);
+    line-height: 0.92;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+    text-wrap: balance;
+  }
+  .hero h1 em { font-style: italic; color: var(--brick); font-weight: 400; }
+  .hero h1 .smcp {
+    display: block;
+    font-family: 'Playfair Display', serif;
+    font-weight: 400; font-style: italic;
+    font-size: 0.42em;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+    margin-top: 18px;
+    text-transform: none;
+  }
+  .hero-meta {
+    border-left: 1px solid var(--line);
+    padding-left: 28px;
+    padding-bottom: 12px;
+  }
+  .hero-meta p {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 19px;
+    line-height: 1.45;
+    color: var(--ink-soft);
+    margin-bottom: 22px;
+  }
+  .hero-meta .cta {
+    display: inline-flex; align-items: baseline; gap: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--ink);
+    padding-bottom: 4px;
+    border-bottom: 2px solid var(--brick);
+    transition: color 200ms;
+  }
+  .hero-meta .cta:hover { color: var(--brick); }
+  .hero-meta .cta span { font-size: 16px; }
+
+  /* Intro statement */
+  .intro {
+    padding: 80px 48px;
+    border-bottom: 1px solid var(--line);
+    text-align: center;
+  }
+  .intro .pre {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 24px;
+  }
+  .intro h2 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 400;
+    font-style: italic;
+    font-size: clamp(28px, 4.2vw, 56px);
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+    max-width: 22ch;
+    margin: 0 auto;
+    text-wrap: balance;
+  }
+  .intro h2 b {
+    font-style: normal;
+    font-weight: 700;
+    color: var(--brick);
+  }
+
+  /* Featured + stats */
+  .feature {
+    padding: 64px 48px 80px;
+    border-bottom: 1px solid var(--line);
+    display: grid; grid-template-columns: 7fr 5fr; gap: 56px;
+  }
+  .feature-main {
+    border-top: 4px double var(--line);
+    padding-top: 24px;
+  }
+  .feature-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--brick);
+    margin-bottom: 16px;
+  }
+  .feature-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: clamp(32px, 4vw, 56px);
+    line-height: 1.05;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+    margin-bottom: 22px;
+    text-wrap: balance;
+  }
+  .feature-title a:hover { color: var(--brick); }
+  .feature-desc {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 19px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    max-width: 32em;
+    margin-bottom: 20px;
+  }
+  .feature-desc::first-letter {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-style: normal;
+    font-size: 4.2em;
+    float: left;
+    line-height: 0.85;
+    margin: 6px 12px 0 0;
+    color: var(--brick);
+  }
+  .feature-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-faint);
+    border-top: 1px solid var(--line);
+    padding-top: 14px;
+    margin-top: 12px;
+    display: flex; justify-content: space-between;
+  }
+
+  .stats {
+    display: grid; grid-template-columns: 1fr 1fr;
+    border-top: 4px double var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .stat {
+    padding: 28px 20px;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .stat:nth-child(2n) { border-right: none; }
+  .stat:nth-last-child(-n+2) { border-bottom: none; }
+  .stat .k {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 10px;
+  }
+  .stat .v {
+    font-family: 'Playfair Display', serif;
+    font-weight: 800;
+    font-size: 56px;
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+  }
+  .stat .d {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin-top: 8px;
+  }
+  .stat.brick { background: var(--brick); border-color: var(--brick-deep); }
+  .stat.brick .k { color: rgba(255,255,255,0.7); }
+  .stat.brick .v, .stat.brick .d { color: #faf6ef; }
+  .stat.ink { background: var(--ink); border-color: #000; }
+  .stat.ink .k { color: rgba(250,246,239,0.5); }
+  .stat.ink .v, .stat.ink .d { color: var(--paper); }
+
+  /* Archive */
+  .archive {
+    padding: 64px 48px 80px;
+  }
+  .archive-head {
+    border-top: 4px double var(--line);
+    border-bottom: 1px solid var(--line);
+    padding: 16px 0;
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 8px;
+  }
+  .archive-head h3 {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 32px;
+    letter-spacing: -0.01em;
+  }
+  .archive-head h3 b { font-weight: 800; font-style: normal; color: var(--brick); }
+  .archive-head .count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .archive-list { list-style: none; padding: 0; margin: 0; }
+  .archive-list li { border-bottom: 1px solid rgba(20,17,13,0.18); }
+  .archive-list a {
+    display: grid;
+    grid-template-columns: 90px 1fr auto;
+    gap: 28px;
+    padding: 22px 6px;
+    align-items: baseline;
+    transition: padding-left 200ms, background 200ms;
+  }
+  .archive-list a:hover {
+    padding-left: 18px;
+    background: rgba(168,50,50,0.04);
+  }
+  .archive-list a:hover .a-title { color: var(--brick); }
+  .archive-list a:hover .a-arrow { transform: translateX(8px); color: var(--brick); }
+  .a-date {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.16em;
+    color: var(--ink-faint);
+  }
+  .a-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 500;
+    font-size: 24px;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    transition: color 200ms;
+  }
+  .a-arrow { color: var(--ink-faint); font-size: 20px; transition: transform 200ms, color 200ms; }
+
+  /* Colophon footer */
+  .colophon {
+    border-top: 2px solid var(--line);
+    padding: 32px 48px;
+    background: var(--ink);
+    color: var(--paper);
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+  }
+  .colophon .c-left { color: rgba(250,246,239,0.5); }
+  .colophon .c-center {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700; font-style: italic;
+    font-size: 18px; letter-spacing: -0.01em;
+    text-transform: none; color: var(--paper);
+  }
+  .colophon .c-right { text-align: right; color: rgba(250,246,239,0.5); }
+  .colophon a { color: inherit; transition: color 150ms; }
+  .colophon a:hover { color: #fff; }
+
+  @media (max-width: 900px) {
+    .masthead, .issue-strip, .hero, .intro, .feature, .archive, .colophon { padding-left: 22px; padding-right: 22px; }
+    .masthead { grid-template-columns: 1fr; text-align: center; gap: 14px; }
+    .mast-left, .mast-right { justify-content: center; display: flex; gap: 14px; }
+    .hero { grid-template-columns: 1fr; gap: 32px; padding: 50px 22px 40px; }
+    .hero-meta { border-left: none; border-top: 1px solid var(--line); padding-left: 0; padding-top: 22px; }
+    .feature { grid-template-columns: 1fr; gap: 40px; padding: 40px 22px 60px; }
+    .archive-list a { grid-template-columns: 64px 1fr auto; gap: 14px; }
+    .a-title { font-size: 18px; }
+    .colophon { grid-template-columns: 1fr; text-align: center; gap: 10px; }
+    .colophon .c-right { text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="v-switch" aria-label="Versões do redesign">
+  <a class="on" href="/v2/">v2 editorial</a>
+  <a href="/v3/">v3 brutalist</a>
+  <a href="/v4/">v4 aurora</a>
+  <a href="/" style="color:rgba(250,246,239,0.35)">/ original</a>
+</nav>
+
+<header class="masthead">
+  <div class="mast-left">Vol. <b>I</b> · <b>2026</b> · Porto Alegre</div>
+  <a href="/v2/" class="mast-brand">Fábio<span class="amp">&amp;</span>Machado</a>
+  <div class="mast-right">
+    <a href="/about">sobre</a>
+    <a href="/en">english</a>
+    <a href="https://www.instagram.com/machadofabio" target="_blank" rel="noopener">@</a>
+  </div>
+</header>
+
+<div class="issue-strip">
+  <span>Edição <b>04</b></span>
+  <span>Documentação pública · Time de agentes</span>
+  <span>4 artigos · maio 2026</span>
+</div>
+
+<section class="hero">
+  <div class="hero-main">
+    <div class="hero-eyebrow">— Manifesto da edição</div>
+    <h1>
+      Como automatizei<br/>
+      meus <em>negócios</em><br/>
+      com agentes de IA.
+      <span class="smcp">notas de um dono operando sob inteligência artificial</span>
+    </h1>
+  </div>
+  <aside class="hero-meta">
+    <p>Quatro artigos. Dois restaurantes reais. Um time de agentes documentado em público enquanto roda na operação.</p>
+    <a class="cta" href="#archive"><span>↓</span> Ler a edição</a>
+  </aside>
+</section>
+
+<section class="intro">
+  <div class="pre">— Editorial</div>
+  <h2>Como usar IA nas empresas, <b>do jeito certo,</b> em 2026.</h2>
+</section>
+
+<section class="feature">
+  <article class="feature-main">
+    <div class="feature-eyebrow">Cover Story · Último ensaio</div>
+    <h2 class="feature-title"><a href="/v2/whatsapp.html">Criei um agente de IA que cuida do meu WhatsApp.</a></h2>
+    <p class="feature-desc">Tava perdendo coisa importante nos grupos toda semana. Coloquei um agente pra ler meu WhatsApp por mim, mandar o que precisa de resposta urgente no fim do dia, e um resumo de cada contato e cada grupo no domingo. Roda no PC de casa, custo zero, plugado no meu próprio número.</p>
+    <div class="feature-meta">
+      <span>01 de maio de 2026</span>
+      <span>Ensaio · 6 min de leitura</span>
+    </div>
+  </article>
+  <div class="stats">
+    <div class="stat brick">
+      <div class="k">Negócios</div>
+      <div class="v">8</div>
+      <div class="d">fundados · incorporados</div>
+    </div>
+    <div class="stat">
+      <div class="k">Anos</div>
+      <div class="v">25+</div>
+      <div class="d">tech · gestão</div>
+    </div>
+    <div class="stat">
+      <div class="k">Projetos de IA</div>
+      <div class="v">18</div>
+      <div class="d">aplicadas</div>
+    </div>
+    <div class="stat ink">
+      <div class="k">Ensaios</div>
+      <div class="v">4</div>
+      <div class="d">documentados</div>
+    </div>
+  </div>
+</section>
+
+<section class="archive" id="archive">
+  <header class="archive-head">
+    <h3>Arquivo <b>completo</b></h3>
+    <span class="count">04 · 2026</span>
+  </header>
+  <ul class="archive-list">
+    <li><a href="/v2/whatsapp.html">
+      <span class="a-date">05.26</span>
+      <span class="a-title">Criei um agente de IA que cuida do meu WhatsApp</span>
+      <span class="a-arrow">→</span>
+    </a></li>
+    <li><a href="/labs/segundo-cerebro-ia/">
+      <span class="a-date">04.26</span>
+      <span class="a-title">Como estou construindo o Meu Cortex Digital</span>
+      <span class="a-arrow">→</span>
+    </a></li>
+    <li><a href="/labs/por-que-documentar-publicamente/">
+      <span class="a-date">04.26</span>
+      <span class="a-title">Por que estou documentando isso publicamente</span>
+      <span class="a-arrow">→</span>
+    </a></li>
+    <li><a href="/labs/como-gpt-4-ajuda-rotina/">
+      <span class="a-date">04.23</span>
+      <span class="a-title">Como o GPT-4 está ajudando minha rotina</span>
+      <span class="a-arrow">→</span>
+    </a></li>
+  </ul>
+</section>
+
+<footer class="colophon">
+  <div class="c-left"><a href="https://www.instagram.com/machadofabio" target="_blank" rel="noopener">@machadofabio</a></div>
+  <a class="c-center" href="/v2/">Fábio Machado</a>
+  <div class="c-right">Editorial Quarterly · v2</div>
+</footer>
+
+</body>
+</html>

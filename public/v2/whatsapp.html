@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Criei um agente de IA que cuida do meu WhatsApp — Fábio Machado</title>
+<meta name="description" content="Tava perdendo coisa importante nos grupos toda semana. Coloquei um agente pra ler meu WhatsApp por mim, mandar o que precisa de resposta urgente no fim do dia, e um resumo de cada contato e cada grupo no domingo." />
+<link rel="canonical" href="https://fabiomachado.com.br/v2/whatsapp.html" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="Criei um agente de IA que cuida do meu WhatsApp" />
+<meta property="og:description" content="Documentação pública de um agente que lê WhatsApp por mim, resume contatos e grupos, e me empurra o urgente antes de virar problema." />
+<meta property="og:image" content="https://fabiomachado.com.br/og-default.png" />
+<meta name="theme-color" content="#faf6ef" />
+<link rel="icon" href="/favicon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;0,800;0,900;1,400;1,700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Article","headline":"Criei um agente de IA que cuida do meu WhatsApp","description":"Documentação pública de um agente que lê WhatsApp por mim, resume contatos e grupos.","author":{"@type":"Person","name":"Fábio Machado"},"datePublished":"2026-05-01","inLanguage":"pt-BR","mainEntityOfPage":"https://fabiomachado.com.br/v2/whatsapp.html","keywords":"agente de IA WhatsApp, automação WhatsApp empresa, IA para WhatsApp, resumo de grupos WhatsApp"}
+</script>
+<style>
+  :root {
+    --paper: #faf6ef;
+    --paper-warm: #f3ebd9;
+    --ink: #14110d;
+    --ink-soft: #4a4036;
+    --ink-faint: #8a7d6d;
+    --line: #2a221a;
+    --brick: #a83232;
+    --brick-deep: #7b1f1f;
+  }
+  *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html,body { background: var(--paper); color: var(--ink); }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 16px; line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(168,50,50,0.04), transparent 60%),
+      linear-gradient(180deg, #faf6ef 0%, #f3ebd9 100%);
+    min-height: 100vh;
+  }
+  a { color: inherit; text-decoration: none; }
+  ::selection { background: var(--brick); color: #fff; }
+
+  .v-switch {
+    position: fixed; top: 16px; right: 16px; z-index: 50;
+    display: flex; gap: 6px;
+    background: rgba(20,17,13,0.85);
+    backdrop-filter: blur(8px);
+    border-radius: 999px;
+    padding: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+  }
+  .v-switch a {
+    color: rgba(250,246,239,0.55);
+    padding: 6px 12px; border-radius: 999px;
+  }
+  .v-switch a:hover { color: #fff; }
+  .v-switch a.on { background: var(--brick); color: #fff; }
+
+  .masthead {
+    border-bottom: 2px solid var(--line);
+    padding: 24px 48px 18px;
+    display: grid; grid-template-columns: 1fr auto 1fr;
+    align-items: end; gap: 24px;
+  }
+  .mast-left { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-soft); }
+  .mast-left b { color: var(--brick); font-weight: 600; }
+  .mast-brand {
+    font-family: 'Playfair Display', serif; font-weight: 900;
+    font-size: clamp(28px, 4vw, 44px); letter-spacing: -0.015em;
+    line-height: 1; text-align: center;
+  }
+  .mast-brand .amp { color: var(--brick); font-style: italic; font-weight: 700; font-size: 0.85em; padding: 0 4px; }
+  .mast-right { display: flex; gap: 18px; justify-content: flex-end; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; }
+  .mast-right a { color: var(--ink-soft); transition: color 150ms; padding-bottom: 2px; border-bottom: 1px solid transparent; }
+  .mast-right a:hover { color: var(--brick); border-bottom-color: var(--brick); }
+
+  .breadcrumb {
+    border-bottom: 1px solid var(--line);
+    padding: 12px 48px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .breadcrumb a { color: var(--ink-soft); }
+  .breadcrumb a:hover { color: var(--brick); }
+  .breadcrumb .sep { padding: 0 8px; opacity: 0.4; }
+
+  /* Article head */
+  .article-head {
+    padding: 90px 48px 60px;
+    border-bottom: 1px solid var(--line);
+    display: grid; grid-template-columns: 8fr 4fr; gap: 48px; align-items: end;
+  }
+  .article-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--brick); font-weight: 600; margin-bottom: 18px;
+  }
+  .article-head h1 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 500;
+    font-size: clamp(42px, 6.5vw, 104px);
+    line-height: 0.95;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    text-wrap: balance;
+  }
+  .article-head h1 em { font-style: italic; color: var(--brick); font-weight: 400; }
+  .article-head .deck {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 20px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    border-left: 2px solid var(--brick);
+    padding-left: 20px;
+  }
+  .byline {
+    margin-top: 36px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-soft);
+    display: flex; justify-content: space-between;
+    grid-column: 1 / -1;
+  }
+  .byline b { color: var(--ink); font-weight: 600; }
+
+  /* Prose */
+  .article {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 64px 32px 0;
+  }
+  .prose {
+    font-family: 'Playfair Display', serif;
+    font-weight: 400;
+    font-size: 20px;
+    line-height: 1.65;
+    color: var(--ink);
+  }
+  .prose > p:first-of-type::first-letter {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: 5.2em;
+    float: left;
+    line-height: 0.85;
+    margin: 8px 14px -4px 0;
+    color: var(--brick);
+  }
+  .prose p { margin-bottom: 1.2em; }
+  .prose strong { font-weight: 700; color: var(--ink); }
+  .prose em { font-style: italic; }
+  .prose a { color: var(--brick); border-bottom: 1px solid currentColor; }
+  .prose a:hover { background: rgba(168,50,50,0.08); }
+
+  .prose h2 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 36px;
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+    margin: 2.4em 0 0.6em;
+    padding-top: 0.4em;
+    border-top: 1px solid rgba(20,17,13,0.18);
+  }
+  .prose h2::before {
+    content: counter(h2c, decimal-leading-zero) ' /';
+    counter-increment: h2c;
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 400;
+    font-size: 13px;
+    color: var(--brick);
+    letter-spacing: 0.18em;
+    margin-right: 14px;
+    vertical-align: middle;
+  }
+  .prose { counter-reset: h2c; }
+
+  .prose blockquote {
+    margin: 2em -32px;
+    padding: 28px 32px;
+    background: var(--paper-warm);
+    border-left: 4px solid var(--brick);
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 26px;
+    line-height: 1.35;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .prose blockquote::before {
+    content: '“';
+    display: block;
+    font-size: 70px;
+    line-height: 0.6;
+    color: var(--brick);
+    margin-bottom: 6px;
+    font-weight: 900;
+  }
+
+  .prose ul, .prose ol {
+    padding-left: 0;
+    margin: 1.3em 0 1.6em;
+    list-style: none;
+  }
+  .prose ul li, .prose ol li {
+    position: relative;
+    padding: 12px 0 12px 56px;
+    border-top: 1px solid rgba(20,17,13,0.18);
+    font-size: 18px;
+  }
+  .prose ul li:last-child, .prose ol li:last-child { border-bottom: 1px solid rgba(20,17,13,0.18); }
+  .prose ul li::before {
+    content: '◆';
+    position: absolute;
+    left: 16px; top: 14px;
+    color: var(--brick);
+    font-size: 14px;
+  }
+  .prose ol { counter-reset: olc; }
+  .prose ol li { counter-increment: olc; }
+  .prose ol li::before {
+    content: counter(olc, decimal-leading-zero);
+    position: absolute;
+    left: 6px; top: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--brick);
+    letter-spacing: 0.1em;
+  }
+
+  .prose hr {
+    border: none;
+    text-align: center;
+    margin: 3em 0;
+  }
+  .prose hr::after {
+    content: '◆ ◆ ◆';
+    color: var(--brick);
+    letter-spacing: 1em;
+    font-size: 14px;
+  }
+
+  /* Stack block */
+  .stack-block {
+    margin-top: 4em;
+    padding: 40px 36px;
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: 2px;
+  }
+  .stack-block h2 {
+    color: var(--paper) !important;
+    border-top: none !important;
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    font-weight: 600;
+    font-size: 14px !important;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+  .stack-block h2::before { content: '— '; color: var(--brick); margin-right: 0 !important; }
+  .stack-block ul li {
+    color: rgba(250,246,239,0.85);
+    border-color: rgba(250,246,239,0.12) !important;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    padding-left: 36px !important;
+  }
+  .stack-block ul li:last-child { border-bottom-color: rgba(250,246,239,0.12) !important; }
+  .stack-block ul li::before { color: var(--brick); }
+  .stack-block ul li strong, .stack-block ul li code { color: #fff; font-weight: 600; }
+  .stack-block code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    background: rgba(250,246,239,0.08);
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+
+  /* Footer nav */
+  .article-foot {
+    max-width: 720px;
+    margin: 80px auto 0;
+    padding: 30px 32px;
+    border-top: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .article-foot a { color: var(--ink-soft); transition: color 150ms; }
+  .article-foot a:hover { color: var(--brick); }
+
+  .colophon {
+    margin-top: 80px;
+    border-top: 2px solid var(--line);
+    padding: 32px 48px;
+    background: var(--ink);
+    color: var(--paper);
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center; gap: 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+  }
+  .colophon .c-left { color: rgba(250,246,239,0.5); }
+  .colophon .c-center { font-family: 'Playfair Display', serif; font-weight: 700; font-style: italic; font-size: 18px; letter-spacing: -0.01em; text-transform: none; color: var(--paper); }
+  .colophon .c-right { text-align: right; color: rgba(250,246,239,0.5); }
+  .colophon a { transition: color 150ms; }
+  .colophon a:hover { color: #fff; }
+
+  @media (max-width: 900px) {
+    .masthead, .breadcrumb, .article-head, .colophon { padding-left: 22px; padding-right: 22px; }
+    .masthead { grid-template-columns: 1fr; text-align: center; gap: 14px; }
+    .mast-left, .mast-right { justify-content: center; display: flex; gap: 14px; }
+    .article-head { grid-template-columns: 1fr; gap: 28px; padding: 56px 22px 36px; }
+    .article-head .deck { border-left: none; padding-left: 0; padding-top: 18px; border-top: 1px solid var(--line); }
+    .article { padding: 40px 22px 0; }
+    .prose { font-size: 18px; }
+    .prose h2 { font-size: 28px; }
+    .prose blockquote { margin: 1.6em -22px; padding: 22px; font-size: 21px; }
+    .colophon { grid-template-columns: 1fr; text-align: center; gap: 10px; }
+    .colophon .c-right { text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="v-switch">
+  <a class="on" href="/v2/">v2 editorial</a>
+  <a href="/v3/">v3 brutalist</a>
+  <a href="/v4/">v4 aurora</a>
+  <a href="/" style="color:rgba(250,246,239,0.35)">/ original</a>
+</nav>
+
+<header class="masthead">
+  <div class="mast-left">Vol. <b>I</b> · <b>2026</b> · Porto Alegre</div>
+  <a href="/v2/" class="mast-brand">Fábio<span class="amp">&amp;</span>Machado</a>
+  <div class="mast-right">
+    <a href="/about">sobre</a>
+    <a href="/en">english</a>
+    <a href="https://www.instagram.com/machadofabio" target="_blank" rel="noopener">@</a>
+  </div>
+</header>
+
+<div class="breadcrumb">
+  <a href="/v2/">Arquivo</a><span class="sep">/</span><span>Ensaios</span><span class="sep">/</span>Agente WhatsApp
+</div>
+
+<header class="article-head">
+  <div>
+    <div class="article-eyebrow">— Cover story · Edição 04</div>
+    <h1>Criei um <em>agente</em> de IA que cuida do meu <em>WhatsApp.</em></h1>
+  </div>
+  <p class="deck">Tava perdendo coisa importante nos grupos toda semana. Coloquei um agente pra ler meu WhatsApp por mim, mandar o que precisa de resposta urgente no fim do dia, e um resumo de cada contato e cada grupo no domingo.</p>
+  <div class="byline">
+    <span>Por <b>Fábio Machado</b></span>
+    <span>01 de maio · <b>6 min</b></span>
+  </div>
+</header>
+
+<article class="article">
+<div class="prose">
+
+<p>Tava gastando <strong>tempo demais no WhatsApp</strong>. Grupo de fornecedor, repasse pro gerente, cotação, grupo da família que eu já tinha largado dois dias antes.</p>
+
+<p>Toda noite a mesma sensação: <strong>passou coisa importante e eu não sei o quê</strong>.</p>
+
+<p>Às vezes era paranoia. Às vezes não. Descobria na segunda, quando o fornecedor cobrava resposta que nunca chegou.</p>
+
+<h2>Em vez de bot que fala, bot que lê</h2>
+
+<p>Eu já tava montando o <a href="/labs/segundo-cerebro-ia/">Meu Cortex Digital</a>. Memória pronta, persona pronta. Faltava o que eu chamei de <em>"agência"</em>: o agente parar de só responder e começar a <strong>agir no meu mundo</strong>.</p>
+
+<p>WhatsApp era o lugar mais óbvio pra começar. <strong>É lá que minha atenção vaza primeiro.</strong></p>
+
+<blockquote>Em vez de bot que fala com cliente, bot que me lê.</blockquote>
+
+<p>O que ele faz, em três linhas:</p>
+
+<ul>
+  <li><strong>Diário, 20h.</strong> O que precisa de resposta urgente hoje.</li>
+  <li><strong>Domingo, 20h.</strong> Resumo de cada grupo importante e de cada contato relevante.</li>
+  <li><strong>Mensal, dia 1.</strong> Panorama do mês inteiro.</li>
+</ul>
+
+<p>Tudo o que ele observa volta pro Cortex. Toda outra IA que eu uso depois já sabe <strong>com quem andei falando, do que, e o que ficou pendente</strong>.</p>
+
+<h2>Montei numa noite</h2>
+
+<p>Roda no PC que já fica ligado em casa. Plugado no meu próprio número. <strong>Vê tudo que eu vejo, e não fala com ninguém.</strong></p>
+
+<p>Primeira semana já valeu. Domingo de noite chegou o resumo e tinham <strong>dois assuntos que eu não tinha visto</strong>:</p>
+
+<ol>
+  <li>Fornecedor cobrando cotação que eu jurava ter respondido.</li>
+  <li>Lembrete da escola do meu filho. Eu ia perder o prazo.</li>
+</ol>
+
+<p>Nenhum dos dois ia me quebrar. Os dois iam me dar dor de cabeça.</p>
+
+<blockquote>O problema não era WhatsApp. Era atenção.</blockquote>
+
+<h2>A parte que mais me interessou</h2>
+
+<p>Não foi o resumo dos grupos. <strong>Foi o resumo dos contatos individuais.</strong></p>
+
+<p>Pra cada pessoa relevante, ele:</p>
+
+<ul>
+  <li>Olha as últimas semanas de conversa.</li>
+  <li>Escreve em duas linhas o que tá rolando no relacionamento.</li>
+  <li>Marca quando alguém sumiu.</li>
+</ul>
+
+<p>Eu lembrava de pessoas no susto, quando algo já me cobrava. Agora tem alguém me empurrando isso pra cima toda semana, <strong>antes de virar problema</strong>.</p>
+
+<p>Bonus: domingo de noite ele lê <strong>as minhas próprias mensagens</strong> da semana e atualiza meu perfil dentro do Cortex. Sem inventar, só o que dá pra observar do que eu mesmo escrevi.</p>
+
+<h2>A pegadinha da invenção</h2>
+
+<p>Esse é o ponto onde um modelo solto <strong>inventa o universo</strong>.</p>
+
+<p>A primeira versão me devolveu romance. Traçou perfil psicológico de gente com quem troquei três mensagens. Deduziu intenção que ninguém disse. Pareceu profundo. Era invenção.</p>
+
+<p>Reescrevi o prompt obrigando formato fixo e proibindo invenção. <strong>Se não tem o que dizer, não diz.</strong></p>
+
+<blockquote>Prefiro nada do que errado.</blockquote>
+
+<p>Esse bot escreve no Cortex. Se ele inventar, eu tomo decisão na semana seguinte baseado em invenção dele. Não compensa.</p>
+
+<h2>Plano B, C, D</h2>
+
+<p>Pra não depender de um único modelo, montei redundância. Se o primeiro cair ou estourar quota, tenta o segundo. Cai o segundo, vai pro terceiro.</p>
+
+<p>Não é luxo:</p>
+
+<ul>
+  <li><strong>Modelo é depreciado</strong> de uma semana pra outra.</li>
+  <li><strong>Quota acaba.</strong></li>
+  <li><strong>API cai num domingo de noite.</strong></li>
+</ul>
+
+<p>O bot precisa rodar. Custo até hoje: <strong>zero</strong>. Cabe nos planos gratuitos pra escala de uma pessoa.</p>
+
+<h2>Fase 2: deixar ele responder</h2>
+
+<p>Fase 1 é leitura. <strong>Fase 2 é deixar ele responder coisa pequena por mim</strong>, dentro de regra clara. <em>"Tô a caminho"</em>, <em>"recebi sim"</em>, <em>"que horas a gente combinou"</em>, confirmação de pagamento que o financeiro já tinha me passado.</p>
+
+<p>Nada de cliente final. Nada de decisão. Só o agradecimento e a confirmação que comem o meu dia sem agregar nada.</p>
+
+<p>Pra isso funcionar sem virar pesadelo, preciso de três coisas:</p>
+
+<ol>
+  <li><strong>Saber quem é cada contato.</strong> A fase 1 já tá construindo isso no Cortex.</li>
+  <li><strong>Regra clara</strong> do que ele responde sozinho, do que ele rascunha pra eu aprovar com um clique, e do que ele nunca toca.</li>
+  <li><strong>Aprender o jeito que eu escrevo</strong>, pra resposta dele parecer comigo.</li>
+</ol>
+
+<p>Os três saem da mesma fonte: o agente lendo o que eu mesmo escrevo.</p>
+
+<hr/>
+
+<p>Por enquanto ele só lê. E só de ler já mudou a forma como eu chego em segunda de manhã.</p>
+
+</div>
+
+<aside class="stack-block">
+<h2>Stack</h2>
+<ul>
+  <li>Node 24/7 no PC de casa.</li>
+  <li><code>@whiskeysockets/baileys</code> pra conexão direta com o WhatsApp via QR code. Sem API oficial paga, sem número separado. O bot fica logado em paralelo ao celular.</li>
+  <li><code>@google/genai</code> (Gemini) pra análise, com fallback automático pra Groq, Cerebras e OpenRouter. Dentro do Gemini, fallback entre <code>gemini-2.5-flash</code>, <code>gemini-2.0-flash</code> e <code>gemini-2.0-flash-lite</code>.</li>
+  <li><code>node-cron</code> pra agendar: diário 20h, semanal domingo 20h, mensal dia 1.</li>
+  <li>Estado em JSON puro num arquivo único (<code>.state.json</code>). Sem banco, sem ORM, sem container, sem fila.</li>
+  <li>Retenção: 30 dias pras DMs e pras minhas próprias mensagens, 7 dias pros grupos. Acima disso, descarta no save. Estado nunca cresce sem limite.</li>
+  <li>Áudio, figurinha, documento e broadcast: ignorados. Só texto.</li>
+  <li>Comandos via mensagem que eu mando pra mim mesmo começando com <code>/</code> (<code>/resumo</code>, <code>/resumo grupos</code>, <code>/resumo mensal</code>). O painel é o próprio WhatsApp.</li>
+  <li>Relatórios salvos como markdown no Cortex (sincronizado pelo Drive) e mandados pra mim no WhatsApp.</li>
+  <li>Prompts conservadores onde o output vira insumo de decisão. Formato fixo, proibição explícita de inventar, instrução pra retornar "nada novo" quando não houver o que dizer.</li>
+  <li>Custo até hoje: zero. Tier gratuito do Gemini cobre a escala de um usuário só.</li>
+</ul>
+</aside>
+</article>
+
+<nav class="article-foot">
+  <a href="/v2/">← Arquivo completo</a>
+  <span>© Fábio Machado · 01.05.2026</span>
+</nav>
+
+<footer class="colophon">
+  <div class="c-left"><a href="https://www.instagram.com/machadofabio" target="_blank" rel="noopener">@machadofabio</a></div>
+  <a class="c-center" href="/v2/">Fábio Machado</a>
+  <div class="c-right">Editorial Quarterly · v2</div>
+</footer>
+
+</body>
+</html>
