@@ -399,14 +399,14 @@ const bodyClass = variant === 'home' ? 'home-body' : '';
       <div class="blob b4"></div>
     </div>
 
-    <div class="nav-container" id="navbar" transition:persist="navbar">
+    <div class="nav-container" id="navbar">
       <header class="navbar">
         <a class="nav-brand" href={homeUrl}>
           <span class="mark" aria-hidden="true"></span>
           Fábio Machado
         </a>
         <nav class="nav-right" aria-label="Primary">
-          <a class="nav-link" href={switchUrl}>{switchLabel}</a>
+          <a class="nav-link lang-toggle" href={switchUrl} data-lang={isEn ? 'en' : 'pt'}>{switchLabel}</a>
           <a class={`nav-link${active === 'about' ? ' active' : ''}`} href={aboutUrl}>{aboutLabel}</a>
         </nav>
       </header>
