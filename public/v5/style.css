@@ -166,7 +166,7 @@ main {
 }
 .newsletter p { font-size: 13px; color: var(--fg-muted); margin-bottom: 14px; }
 .newsletter form {
-  display: flex; gap: 8px; max-width: 460px;
+  display: flex; gap: 8px; max-width: 520px;
 }
 .newsletter input[type="email"] {
   flex: 1; min-width: 0;
