@@ -2,7 +2,10 @@
 import Shell from '../../components/Shell.astro';
 import { SITE_DESCRIPTION_EN, HOME_TITLE_EN } from '../../consts';
 import { homeGraph } from '../../lib/seo';
+import { getEntry } from 'astro:content';
 
+const home = await getEntry('site', 'home-en');
+const { heroTitle, sub, ctaPrimary, ctaSecondary } = home!.data;
 const jsonLd = homeGraph('en', SITE_DESCRIPTION_EN);
 ---
 
@@ -16,11 +19,11 @@ const jsonLd = homeGraph('en', SITE_DESCRIPTION_EN);
   variant="home"
 >
   <section class="home-hero">
-    <h1>How I automated my <em>businesses</em> with <span class="accent">AI agents.</span></h1>
-    <p class="sub">Documenting how a team of AI agents is built inside real businesses. Decisions, metrics, mistakes, and cases &mdash; no theory.</p>
+    <h1 set:html={heroTitle} />
+    <p class="sub">{sub}</p>
     <div class="cta-row">
-      <a class="btn" href="/en/posts">Full Archive <span class="arrow">→</span></a>
-      <a class="btn-dark" href="/en/about">About the author</a>
+      <a class="btn" href="/en/posts">{ctaPrimary} <span class="arrow">→</span></a>
+      {ctaSecondary && <a class="btn-dark" href="/en/about">{ctaSecondary}</a>}
     </div>
   </section>
 </Shell>

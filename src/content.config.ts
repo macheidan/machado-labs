@@ -28,4 +28,14 @@ const labsEn = defineCollection({
 	schema,
 });
 
-export const collections = { labs, 'labs-en': labsEn };
+const site = defineCollection({
+	loader: glob({ base: './src/content/site', pattern: '**/*.json' }),
+	schema: z.object({
+		heroTitle: z.string(),
+		sub: z.string(),
+		ctaPrimary: z.string(),
+		ctaSecondary: z.string().optional(),
+	}),
+});
+
+export const collections = { labs, 'labs-en': labsEn, site };

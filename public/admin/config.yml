@@ -17,6 +17,28 @@ preview_styles:
   - /admin/preview.css
 
 collections:
+  - name: pages
+    label: Páginas
+    files:
+      - name: home-pt
+        label: Home (PT)
+        file: src/content/site/home-pt.json
+        format: json
+        fields:
+          - { name: heroTitle, label: 'Título (HTML)', widget: string, hint: 'Use <em>palavra</em> pra italic gradient e <span class="accent">palavra</span> pra accent gradient.' }
+          - { name: sub, label: 'Subtítulo', widget: text }
+          - { name: ctaPrimary, label: 'Botão primário', widget: string, default: 'Arquivo Completo' }
+          - { name: ctaSecondary, label: 'Botão secundário', widget: string, required: false, default: 'Sobre o autor' }
+      - name: home-en
+        label: Home (EN)
+        file: src/content/site/home-en.json
+        format: json
+        fields:
+          - { name: heroTitle, label: 'Title (HTML)', widget: string, hint: 'Use <em>word</em> for italic gradient and <span class="accent">word</span> for accent gradient.' }
+          - { name: sub, label: 'Subtitle', widget: text }
+          - { name: ctaPrimary, label: 'Primary button', widget: string, default: 'Full Archive' }
+          - { name: ctaSecondary, label: 'Secondary button', widget: string, required: false, default: 'About the author' }
+
   - name: posts-pt
     label: Posts (PT)
     folder: src/content/labs
