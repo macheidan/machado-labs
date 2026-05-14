@@ -28,11 +28,10 @@ const shellLang = isEn ? 'en' : 'pt-BR';
 
 const dateFormatted = new Date(pubDate).toLocaleDateString(
   isEn ? 'en-US' : 'pt-BR',
-  { year: 'numeric', month: 'long', day: 'numeric' },
+  { year: 'numeric', month: 'long' },
 );
 
 const postsUrl = isEn ? '/en/posts' : '/posts';
-const backLabel = isEn ? '← Full archive' : '← Arquivo completo';
 const backBottomLabel = isEn ? '← Back to archive' : '← Voltar ao arquivo completo';
 
 const slug = Astro.url.pathname.replace(/^\/(en\/)?labs\//, '').replace(/\/$/, '');
@@ -68,10 +67,6 @@ const jsonLd = articleGraph({
   keywords={seoKeywords}
   jsonLd={jsonLd}
 >
-  <div class="post-back">
-    <a href={postsUrl}>{backLabel}</a>
-  </div>
-
   <section class="post-hero">
     <div class="post-meta-top">
       <span class="date">{dateFormatted}</span>
@@ -109,20 +104,9 @@ const jsonLd = articleGraph({
 </Shell>
 
 <style>
-  .post-back {
-    max-width: 760px; margin: 0 auto 28px;
-    padding: calc(var(--header-offset) + 48px) 28px 0;
-  }
-  .post-back a {
-    font-size: 13px; color: var(--fg-muted);
-    display: inline-flex; align-items: center; gap: 6px;
-    transition: color 160ms;
-  }
-  .post-back a:hover { color: var(--fg); }
-
   .post-hero {
-    max-width: 880px; margin: 0 auto;
-    padding: 0 28px 32px;
+    max-width: 760px; margin: 0 auto;
+    padding: calc(var(--header-offset) + 32px) 28px 32px;
     text-align: left;
   }
   .post-meta-top {
@@ -155,7 +139,7 @@ const jsonLd = articleGraph({
   }
 
   .post-cover {
-    max-width: 1080px; margin: 12px auto 48px;
+    max-width: 760px; margin: 12px auto 48px;
     padding: 0 28px;
   }
   .post-cover .frame {
@@ -168,7 +152,7 @@ const jsonLd = articleGraph({
   .post-cover :global(img) { width: 100%; height: auto; display: block; }
 
   .post-body {
-    max-width: 720px; margin: 0 auto;
+    max-width: 760px; margin: 0 auto;
     padding: 0 28px;
     font-size: 17px; line-height: 1.75;
     color: var(--fg-soft);
@@ -267,8 +251,7 @@ const jsonLd = articleGraph({
   }
 
   @media (max-width: 800px) {
-    .post-back { padding: calc(var(--header-offset) + 24px) 16px 0; }
-    .post-hero { padding: 0 16px 24px; }
+    .post-hero { padding: calc(var(--header-offset) + 16px) 16px 24px; }
     .post-cover { padding: 0 16px; }
     .post-body { padding: 0 16px; font-size: 16px; line-height: 1.7; }
     .post-body :global(h2) { font-size: 24px; }
