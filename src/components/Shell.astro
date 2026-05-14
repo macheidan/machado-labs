@@ -491,10 +491,18 @@ const bodyClass = variant === 'home' ? 'home-body' : '';
         .nav-right { gap: 0; }
         .nav-link { padding: var(--spacing-1) var(--spacing-1); font-size: 13px; }
         .site-footer { padding: var(--spacing-4) var(--spacing-2) var(--spacing-3); }
-        .site-footer .wrap { grid-template-columns: 1fr; justify-items: start; gap: var(--spacing-2); }
-        .site-footer .ig-link, .site-footer .more-link, .site-footer .newsletter { justify-self: stretch; }
-        .nl-form { width: 100%; flex-direction: column; }
-        .nl-form input[type="email"], .nl-form button { width: 100%; }
+        .site-footer .wrap {
+          grid-template-columns: 1fr 1fr;
+          grid-template-areas:
+            "form form"
+            "ig   more";
+          gap: var(--spacing-2);
+        }
+        .site-footer .newsletter { grid-area: form; justify-self: stretch; }
+        .site-footer .ig-link { grid-area: ig; justify-self: start; }
+        .site-footer .more-link { grid-area: more; justify-self: end; }
+        .nl-form { width: 100%; }
+        .nl-form input[type="email"] { flex: 1 1 auto; }
       }
     </style>
   </head>
