@@ -38,6 +38,22 @@ collections:
           - { name: sub, label: 'Subtitle', widget: text }
           - { name: ctaPrimary, label: 'Primary button', widget: string, default: 'Full Archive' }
           - { name: ctaSecondary, label: 'Secondary button', widget: string, required: false, default: 'About the author' }
+      - name: about-pt
+        label: Sobre (PT)
+        file: src/content/about/about-pt.md
+        format: yaml-frontmatter
+        fields:
+          - { name: heroTitle, label: 'Título (HTML)', widget: string, hint: 'Use <em>palavra</em> pra italic gradient.' }
+          - { name: lede, label: 'Subtítulo', widget: text }
+          - { name: body, label: 'Texto', widget: markdown }
+      - name: about-en
+        label: About (EN)
+        file: src/content/about/about-en.md
+        format: yaml-frontmatter
+        fields:
+          - { name: heroTitle, label: 'Title (HTML)', widget: string, hint: 'Use <em>word</em> for italic gradient.' }
+          - { name: lede, label: 'Subtitle', widget: text }
+          - { name: body, label: 'Body', widget: markdown }
 
   - name: posts-pt
     label: Posts (PT)

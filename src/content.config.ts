@@ -38,4 +38,12 @@ const site = defineCollection({
 	}),
 });
 
-export const collections = { labs, 'labs-en': labsEn, site };
+const about = defineCollection({
+	loader: glob({ base: './src/content/about', pattern: '**/*.md' }),
+	schema: z.object({
+		heroTitle: z.string(),
+		lede: z.string(),
+	}),
+});
+
+export const collections = { labs, 'labs-en': labsEn, site, about };

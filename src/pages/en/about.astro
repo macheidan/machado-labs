@@ -2,9 +2,14 @@
 import Shell from '../../components/Shell.astro';
 import { SITE_TITLE } from '../../consts';
 import { profileGraph } from '../../lib/seo';
+import { getEntry, render } from 'astro:content';
 
 const description = 'About Fábio Machado — entrepreneur, consultant, and builder of AI systems.';
 const jsonLd = profileGraph('en', description);
+
+const entry = await getEntry('about', 'about-en');
+const { heroTitle, lede } = entry!.data;
+const { Content } = await render(entry!);
 ---
 
 <Shell
@@ -16,15 +21,12 @@ const jsonLd = profileGraph('en', description);
   active="about"
 >
   <section class="post-hero">
-    <h1>I'm <em>Fábio</em>.</h1>
-    <p class="lede">Entrepreneur and consultant. I spend most of my time building AI systems inside real businesses.</p>
+    <h1 set:html={heroTitle} />
+    <p class="lede">{lede}</p>
   </section>
 
   <article class="post-body">
-    <p>I started in 1999 at 15, building computers and websites. Opened my first webdesign company in 2003. Twenty-plus years later I worked on brands like Latam, Petrobras, Gerdau, XP and Vivo via Pcom Marketing Estratégico, learning what works when the client is large and the margin for error is small.</p>
-    <p>In 2012 I opened <strong>Lov Pizza</strong>. In 2015 I acquired M&amp;E Pizza, today <strong>Dáme Pizza</strong>. Operated 6 brands simultaneously at peak — the best stress test I could have asked for: real operations, tight margins, small team, daily decisions.</p>
-    <p>That's how I understood the problem: a small business owner can't hire every role the operation demands. In 2022 I started building the answer with AI. Today my companies run with a team of agents covering those functions — as infrastructure, not as an experiment.</p>
-    <p>This site documents the process. <a href="https://www.instagram.com/machadofabio" target="_blank" rel="noopener">@machadofabio</a></p>
+    <Content />
   </article>
 </Shell>
 
