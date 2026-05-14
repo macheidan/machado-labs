@@ -1,5 +1,5 @@
 ---
-heroTitle: I'm <em>Fábio</em>.
+heroTitle: I'm <em>Fábio</em>
 lede: Entrepreneur and consultant. I spend most of my time building AI systems inside real businesses.
 heroImage: /fabio.jpg
 heroAlt: Fábio Machado
