@@ -30,11 +30,11 @@ const {
 const isEn = lang === 'en';
 const homeUrl = isEn ? '/en' : '/';
 const aboutUrl = isEn ? '/en/about' : '/about';
-const aboutLabel = isEn ? 'About' : 'Sobre';
-const switchLabel = isEn ? 'PT' : 'EN';
+const aboutLabel = isEn ? 'about' : 'sobre';
+const switchLabel = isEn ? 'pt' : 'en';
 const switchUrl = alternateUrl ?? (isEn ? '/' : '/en');
 const postsUrl = isEn ? '/en/posts' : '/posts';
-const moreLabel = isEn ? 'More articles' : 'Mais artigos';
+const moreLabel = isEn ? 'all projects' : 'todos projetos';
 const emailPlaceholder = isEn ? 'Enter your email' : 'diga seu email e receba novidades';
 const newsletterCopy = isEn ? 'Get product updates and posts. No spam.' : 'Receba os próximos posts no seu email. Sem spam.';
 const submitLabel = isEn ? 'Subscribe' : 'Assinar';
@@ -410,12 +410,28 @@ const bodyClass = variant === 'home' ? 'home-body' : '';
       }
       .site-footer .wrap {
         max-width: 1180px; margin: 0 auto;
-        display: flex;
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
         align-items: center;
-        gap: var(--spacing-5);
+        gap: var(--spacing-3);
       }
-      .site-footer .newsletter { flex: 0 1 auto; }
-      .site-footer .social { flex: 1; }
+      .site-footer .ig-link {
+        justify-self: start;
+        display: inline-flex; align-items: center; gap: var(--spacing-0-5);
+        font-size: 13px; letter-spacing: 0.2px;
+        color: var(--Text-Default);
+        transition: color 0.2s;
+      }
+      .site-footer .ig-link:hover { color: var(--Base-White); }
+      .site-footer .ig-link svg { width: 16px; height: 16px; }
+      .site-footer .newsletter { justify-self: center; }
+      .site-footer .more-link {
+        justify-self: end;
+        font-size: 13px; letter-spacing: 0.2px;
+        color: var(--Text-Default);
+        transition: color 0.2s;
+      }
+      .site-footer .more-link:hover { color: var(--Base-White); }
       .newsletter h4 {
         font-family: var(--font-inter);
         font-size: 14px; font-weight: 500; line-height: 18px;
@@ -430,11 +446,12 @@ const bodyClass = variant === 'home' ? 'home-body' : '';
         margin-bottom: var(--spacing-2);
       }
       .nl-form {
-        display: grid;
-        grid-template-columns: 2fr 1fr;
+        display: flex;
         gap: var(--spacing-1);
-        max-width: 460px;
+        width: clamp(360px, 38vw, 520px);
       }
+      .nl-form input[type="email"] { flex: 1 1 auto; min-width: 0; }
+      .nl-form button { flex: 0 0 auto; }
       .nl-form input[type="email"] {
         min-height: 36px;
         padding: var(--spacing-1) var(--spacing-1-5);
@@ -474,9 +491,10 @@ const bodyClass = variant === 'home' ? 'home-body' : '';
         .nav-right { gap: 0; }
         .nav-link { padding: var(--spacing-1) var(--spacing-1); font-size: 13px; }
         .site-footer { padding: var(--spacing-4) var(--spacing-2) var(--spacing-3); }
-        .site-footer .wrap { flex-direction: column; align-items: stretch; gap: var(--spacing-3); }
-        .site-footer .social { flex-direction: row; flex-wrap: wrap; }
-        .nl-form { grid-template-columns: 1fr; max-width: 100%; }
+        .site-footer .wrap { grid-template-columns: 1fr; justify-items: start; gap: var(--spacing-2); }
+        .site-footer .ig-link, .site-footer .more-link, .site-footer .newsletter { justify-self: stretch; }
+        .nl-form { width: 100%; flex-direction: column; }
+        .nl-form input[type="email"], .nl-form button { width: 100%; }
       }
     </style>
   </head>
@@ -507,6 +525,10 @@ const bodyClass = variant === 'home' ? 'home-body' : '';
 
     <footer class="site-footer">
       <div class="wrap">
+        <a class="ig-link" href="https://instagram.com/machadofabio" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.4A4 4 0 1 1 12.6 8 4 4 0 0 1 16 11.4z"/><line x1="17.5" y1="6.5" x2="17.5" y2="6.5"/></svg>
+          machadofabio
+        </a>
         <div class="newsletter">
           <form
             class="nl-form"
@@ -520,13 +542,7 @@ const bodyClass = variant === 'home' ? 'home-body' : '';
             <button type="submit" class="btn-dark">{submitLabel}</button>
           </form>
         </div>
-        <div class="social">
-          <a href="https://instagram.com/machadofabio" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.4A4 4 0 1 1 12.6 8 4 4 0 0 1 16 11.4z"/><line x1="17.5" y1="6.5" x2="17.5" y2="6.5"/></svg>
-            machadofabio
-          </a>
-          <a class="more" href={postsUrl}>{moreLabel}</a>
-        </div>
+        <a class="more-link" href={postsUrl}>{moreLabel}</a>
       </div>
     </footer>
 
