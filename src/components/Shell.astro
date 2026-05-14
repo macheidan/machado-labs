@@ -501,8 +501,8 @@ const bodyClass = variant === 'home' ? 'home-body' : '';
         .site-footer .newsletter { grid-area: form; justify-self: stretch; }
         .site-footer .ig-link { grid-area: ig; justify-self: start; }
         .site-footer .more-link { grid-area: more; justify-self: end; }
-        .nl-form { width: 100%; }
-        .nl-form input[type="email"] { flex: 1 1 auto; }
+        .nl-form { width: 100%; flex-direction: column; }
+        .nl-form input[type="email"], .nl-form button { width: 100%; }
       }
     </style>
   </head>
