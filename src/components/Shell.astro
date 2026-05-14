@@ -597,29 +597,24 @@ const bodyClass = variant === 'home' ? 'home-body' : '';
               if (!email) return;
               const original = form.dataset.default || button.textContent;
               const thanksText = form.dataset.thanks || 'Thanks';
-              const errorText = (form.dataset.lang === 'en') ? 'Try again' : 'Tente de novo';
               const endpoint = form.dataset.endpoint;
               button.disabled = true;
-              try {
-                if (endpoint) {
-                  const res = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      email,
-                      lang: form.dataset.lang || 'pt',
-                      source: location.pathname,
-                    }),
-                  });
-                  if (!res.ok) throw new Error('subscribe_failed');
-                }
-                button.textContent = thanksText;
-                input.value = '';
-              } catch (err) {
-                button.textContent = errorText;
-              } finally {
-                setTimeout(() => { button.textContent = original; button.disabled = false; }, 2800);
+              // Otimista: mostra "Obrigado" sempre. Se o worker estiver fora do ar
+              // ou ainda não deployado, o usuário não vê erro; apenas o dev log.
+              if (endpoint) {
+                fetch(endpoint, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    email,
+                    lang: form.dataset.lang || 'pt',
+                    source: location.pathname,
+                  }),
+                }).catch((err) => console.warn('[newsletter] worker indisponível:', err));
               }
+              button.textContent = thanksText;
+              input.value = '';
+              setTimeout(() => { button.textContent = original; button.disabled = false; }, 2800);
             });
           });
         }
