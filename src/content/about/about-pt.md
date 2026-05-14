@@ -1,5 +1,5 @@
 ---
-heroTitle: Sou o <em>Fábio</em>.
+heroTitle: Sou o <em>Fábio</em>
 lede: Empresário e consultor. Passo a maior parte do tempo construindo sistemas de IA dentro de empresas reais.
 heroImage: /fabio.jpg
 heroAlt: Fábio Machado
