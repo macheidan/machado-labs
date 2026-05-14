@@ -43,6 +43,8 @@ const about = defineCollection({
 	schema: z.object({
 		heroTitle: z.string(),
 		lede: z.string(),
+		heroImage: z.string().optional(),
+		heroAlt: z.string().optional(),
 	}),
 });
 

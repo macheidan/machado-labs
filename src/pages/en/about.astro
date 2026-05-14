@@ -8,7 +8,7 @@ const description = 'About Fábio Machado — entrepreneur, consultant, and buil
 const jsonLd = profileGraph('en', description);
 
 const entry = await getEntry('about', 'about-en');
-const { heroTitle, lede } = entry!.data;
+const { heroTitle, lede, heroImage, heroAlt } = entry!.data;
 const { Content } = await render(entry!);
 ---
 
@@ -26,6 +26,9 @@ const { Content } = await render(entry!);
   </section>
 
   <article class="post-body">
+    {heroImage && (
+      <img class="newspaper-photo" src={heroImage} alt={heroAlt ?? 'Fábio Machado'} width="320" height="320" loading="eager" />
+    )}
     <Content />
   </article>
 </Shell>
@@ -66,6 +69,25 @@ const { Content } = await render(entry!);
     max-width: 760px; margin: 0 auto;
     padding: 0 28px;
     color: rgba(255, 255, 255, 0.85);
+  }
+  .newspaper-photo {
+    float: right;
+    shape-outside: margin-box;
+    width: 42%;
+    max-width: 280px;
+    aspect-ratio: 1;
+    object-fit: cover;
+    margin: 6px 0 16px 28px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  @media (max-width: 600px) {
+    .newspaper-photo {
+      float: none;
+      width: 100%;
+      max-width: 100%;
+      margin: 0 0 24px;
+    }
   }
   .post-body :global(p) {
     margin-bottom: 32px;

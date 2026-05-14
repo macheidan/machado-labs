@@ -42,17 +42,25 @@ collections:
         label: Sobre (PT)
         file: src/content/about/about-pt.md
         format: yaml-frontmatter
+        media_folder: '/public'
+        public_folder: '/'
         fields:
           - { name: heroTitle, label: 'Título (HTML)', widget: string, hint: 'Use <em>palavra</em> pra italic gradient.' }
           - { name: lede, label: 'Subtítulo', widget: text }
+          - { name: heroImage, label: 'Foto (flutua à direita)', widget: image, required: false, hint: 'Caminho da foto. Padrão: /fabio.jpg' }
+          - { name: heroAlt, label: 'Alt da foto', widget: string, required: false }
           - { name: body, label: 'Texto', widget: markdown }
       - name: about-en
         label: About (EN)
         file: src/content/about/about-en.md
         format: yaml-frontmatter
+        media_folder: '/public'
+        public_folder: '/'
         fields:
           - { name: heroTitle, label: 'Title (HTML)', widget: string, hint: 'Use <em>word</em> for italic gradient.' }
           - { name: lede, label: 'Subtitle', widget: text }
+          - { name: heroImage, label: 'Photo (floats right)', widget: image, required: false, hint: 'Default: /fabio.jpg' }
+          - { name: heroAlt, label: 'Photo alt', widget: string, required: false }
           - { name: body, label: 'Body', widget: markdown }
 
   - name: posts-pt
