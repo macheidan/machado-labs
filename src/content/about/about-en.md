@@ -5,7 +5,7 @@ heroImage: /fabio.jpg
 heroAlt: Fábio Machado
 ---
 
-I started in 1999 at 15, building computers and websites. Opened my first webdesign company in 2003. Twenty-plus years later I worked on brands like Latam, Petrobras, Gerdau, XP and Vivo via Pcom Marketing Estratégico, learning what works when the client is large and the margin for error is small.
+I started in 1998 at 14, building computers and websites. Opened my first webdesign company in 2003. Twenty-plus years later I worked on brands like Latam, Petrobras, Gerdau, XP and Vivo via Pcom Marketing Estratégico, learning what works when the client is large and the margin for error is small.
 
 In 2012 I opened **Lov Pizza**. In 2015 I acquired M&E Pizza, today **Dáme Pizza**. Operated 6 brands simultaneously at peak — the best stress test I could have asked for: real operations, tight margins, small team, daily decisions.
 
