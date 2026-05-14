@@ -35,7 +35,6 @@ const dateFormatted = new Date(pubDate).toLocaleDateString(
 const heroTitleClean = heroTitle?.replace(/<br\s*\/?>/gi, ' ').replace(/\s+/g, ' ').trim();
 
 const postsUrl = isEn ? '/en/posts' : '/posts';
-const backBottomLabel = isEn ? '← Back to archive' : '← Voltar ao arquivo completo';
 
 const slug = Astro.url.pathname.replace(/^\/(en\/)?labs\//, '').replace(/\/$/, '');
 const ogImageUrl = heroImage
@@ -99,10 +98,6 @@ const jsonLd = articleGraph({
 
   <article class="post-body">
     <slot />
-
-    <div class="post-end">
-      <a class="btn-ghost" href={postsUrl}>{backBottomLabel}</a>
-    </div>
   </article>
 </Shell>
 
@@ -408,11 +403,6 @@ const jsonLd = articleGraph({
     background: #000;
     border: 0;
     border-radius: 6px;
-  }
-
-  .post-end {
-    margin: 56px 0 0;
-    display: flex; justify-content: center;
   }
 
   @media (max-width: 800px) {
