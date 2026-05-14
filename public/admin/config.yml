@@ -87,20 +87,13 @@ collections:
 
   - name: emails
     label: Emails
-    label_singular: Email
-    folder: data/subscribers
-    extension: json
-    format: json
-    create: false
-    delete: true
-    identifier_field: email
-    sortable_fields: [subscribedAt, email]
-    summary: '{{fields.email}} — {{fields.subscribedAt}}'
-    fields:
-      - { name: email, label: 'Email', widget: string }
-      - { name: subscribedAt, label: 'Inscrito em', widget: datetime, format: 'yyyy-MM-dd HH:mm', date_format: 'yyyy-MM-dd', time_format: 'HH:mm' }
-      - { name: source, label: 'Origem', widget: string, required: false }
-      - { name: lang, label: 'Idioma', widget: string, required: false }
+    files:
+      - name: list
+        label: Lista de inscritos
+        file: data/subscribers.md
+        format: yaml-frontmatter
+        fields:
+          - { name: body, label: 'Emails (um por linha)', widget: text, required: false, hint: 'Cada email em uma linha. O form do site adiciona novos automaticamente; você pode editar/remover aqui.' }
 
   - name: posts-en
     label: Posts (EN)

@@ -1,6 +1,6 @@
 # newsletter-subscribe (Cloudflare Worker)
 
-Recebe POST do form de newsletter do site e commita um JSON em `data/subscribers/` no repositório. A seção **Emails** do `/admin` lê esses arquivos automaticamente.
+Recebe POST do form de newsletter do site e faz append no arquivo único `data/subscribers.md` (um email por linha). A seção **Emails** do `/admin` mostra o conteúdo desse arquivo num textarea editável.
 
 ## Deploy
 
@@ -45,7 +45,7 @@ export const SUBSCRIBE_ENDPOINT = 'https://newsletter-subscribe.<sua-conta>.work
 
 - `GITHUB_REPO` — `macheidan/machado-labs`
 - `GITHUB_BRANCH` — `master`
-- `SUBSCRIBERS_PATH` — `data/subscribers`
+- `SUBSCRIBERS_FILE` — `data/subscribers.md`
 - `ALLOWED_ORIGINS` — `https://fabiomachado.com.br,https://www.fabiomachado.com.br`
 
 ## Secrets (via wrangler)
