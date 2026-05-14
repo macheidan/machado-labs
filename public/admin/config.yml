@@ -61,6 +61,23 @@ collections:
       - { name: keywords, label: 'Keywords (SEO)', widget: list, required: false }
       - { name: body, label: 'Corpo', widget: markdown, hint: 'Use ## subheads, **negrito**, *itálico*, > blockquotes. Termine com --- antes da reflexão final. Bloco ## Stack no fim quando técnico.' }
 
+  - name: emails
+    label: Emails
+    label_singular: Email
+    folder: data/subscribers
+    extension: json
+    format: json
+    create: false
+    delete: true
+    identifier_field: email
+    sortable_fields: [subscribedAt, email]
+    summary: '{{fields.email}} — {{fields.subscribedAt}}'
+    fields:
+      - { name: email, label: 'Email', widget: string }
+      - { name: subscribedAt, label: 'Inscrito em', widget: datetime, format: 'yyyy-MM-dd HH:mm', date_format: 'yyyy-MM-dd', time_format: 'HH:mm' }
+      - { name: source, label: 'Origem', widget: string, required: false }
+      - { name: lang, label: 'Idioma', widget: string, required: false }
+
   - name: posts-en
     label: Posts (EN)
     folder: src/content/labs-en

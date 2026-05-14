@@ -11,3 +11,7 @@ export const HOME_TITLE_EN = 'Fábio Machado — Applied AI in real businesses';
 
 export const AUTHOR_NAME = 'Fábio Machado';
 export const AUTHOR_X = 'https://x.com/machadofabio';
+
+// Cloudflare Worker que recebe inscrições da newsletter e commita em data/subscribers/.
+// Trocar pela URL real após `wrangler deploy` (ver cloudflare/subscribe-worker/README.md).
+export const SUBSCRIBE_ENDPOINT = 'https://newsletter-subscribe.machadofabio.workers.dev';

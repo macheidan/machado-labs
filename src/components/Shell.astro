@@ -2,6 +2,7 @@
 import { ClientRouter } from 'astro:transitions';
 import type { ImageMetadata } from 'astro';
 import BaseHead from './BaseHead.astro';
+import { SUBSCRIBE_ENDPOINT } from '../consts';
 
 interface Props {
   title: string;
@@ -507,8 +508,15 @@ const bodyClass = variant === 'home' ? 'home-body' : '';
     <footer class="site-footer">
       <div class="wrap">
         <div class="newsletter">
-          <form class="nl-form" autocomplete="off" data-thanks={submitThanks} data-default={submitLabel}>
-            <input type="email" required placeholder={emailPlaceholder} aria-label="Email" />
+          <form
+            class="nl-form"
+            autocomplete="off"
+            data-thanks={submitThanks}
+            data-default={submitLabel}
+            data-endpoint={SUBSCRIBE_ENDPOINT}
+            data-lang={isEn ? 'en' : 'pt'}
+          >
+            <input type="email" name="email" required placeholder={emailPlaceholder} aria-label="Email" />
             <button type="submit" class="btn-dark">{submitLabel}</button>
           </form>
         </div>
@@ -528,16 +536,37 @@ const bodyClass = variant === 'home' ? 'home-body' : '';
           document.querySelectorAll('form.nl-form').forEach((form) => {
             if (form.dataset.bound) return;
             form.dataset.bound = '1';
-            form.addEventListener('submit', (e) => {
+            form.addEventListener('submit', async (e) => {
               e.preventDefault();
               const input = form.querySelector('input[type="email"]');
               const button = form.querySelector('button');
-              if (!input.value) return;
+              const email = (input.value || '').trim();
+              if (!email) return;
               const original = form.dataset.default || button.textContent;
-              button.textContent = form.dataset.thanks || 'Thanks';
+              const thanksText = form.dataset.thanks || 'Thanks';
+              const errorText = (form.dataset.lang === 'en') ? 'Try again' : 'Tente de novo';
+              const endpoint = form.dataset.endpoint;
               button.disabled = true;
-              input.value = '';
-              setTimeout(() => { button.textContent = original; button.disabled = false; }, 2400);
+              try {
+                if (endpoint) {
+                  const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      email,
+                      lang: form.dataset.lang || 'pt',
+                      source: location.pathname,
+                    }),
+                  });
+                  if (!res.ok) throw new Error('subscribe_failed');
+                }
+                button.textContent = thanksText;
+                input.value = '';
+              } catch (err) {
+                button.textContent = errorText;
+              } finally {
+                setTimeout(() => { button.textContent = original; button.disabled = false; }, 2800);
+              }
             });
           });
         }

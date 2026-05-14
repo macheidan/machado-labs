@@ -1,0 +1,12 @@
+name = "newsletter-subscribe"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+[vars]
+GITHUB_REPO = "macheidan/machado-labs"
+GITHUB_BRANCH = "master"
+SUBSCRIBERS_PATH = "data/subscribers"
+ALLOWED_ORIGINS = "https://fabiomachado.com.br,https://www.fabiomachado.com.br"
+
+# Secrets (set via: wrangler secret put GITHUB_TOKEN):
+# GITHUB_TOKEN — PAT classic ou fine-grained com permissão Contents: Read & Write
