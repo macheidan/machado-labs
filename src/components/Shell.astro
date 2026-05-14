@@ -33,7 +33,7 @@ const aboutLabel = isEn ? 'About' : 'Sobre';
 const switchLabel = isEn ? 'PT' : 'EN';
 const switchUrl = alternateUrl ?? (isEn ? '/' : '/en');
 const postsUrl = isEn ? '/en/posts' : '/posts';
-const moreLabel = isEn ? 'More articles →' : 'Mais artigos →';
+const moreLabel = isEn ? 'More articles' : 'Mais artigos';
 const emailPlaceholder = isEn ? 'Enter your email' : 'diga seu email e receba novidades';
 const newsletterCopy = isEn ? 'Get product updates and posts. No spam.' : 'Receba os próximos posts no seu email. Sem spam.';
 const submitLabel = isEn ? 'Subscribe' : 'Assinar';
@@ -409,11 +409,12 @@ const bodyClass = variant === 'home' ? 'home-body' : '';
       }
       .site-footer .wrap {
         max-width: 1180px; margin: 0 auto;
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
+        display: flex;
+        align-items: center;
         gap: var(--spacing-5);
-        align-items: end;
       }
+      .site-footer .newsletter { flex: 0 1 auto; }
+      .site-footer .social { flex: 1; }
       .newsletter h4 {
         font-family: var(--font-inter);
         font-size: 14px; font-weight: 500; line-height: 18px;
@@ -463,7 +464,7 @@ const bodyClass = variant === 'home' ? 'home-body' : '';
         transition: color 0.2s;
       }
       .social a:hover { color: var(--Base-White); }
-      .social a.more { color: var(--Text-Default); }
+      .social a.more { color: var(--Text-Default); margin-left: auto; }
       .social a.more:hover { color: var(--accent); }
       .social svg { width: 16px; height: 16px; }
 
@@ -472,7 +473,8 @@ const bodyClass = variant === 'home' ? 'home-body' : '';
         .nav-right { gap: 0; }
         .nav-link { padding: var(--spacing-1) var(--spacing-1); font-size: 13px; }
         .site-footer { padding: var(--spacing-4) var(--spacing-2) var(--spacing-3); }
-        .site-footer .wrap { grid-template-columns: 1fr; gap: var(--spacing-3); }
+        .site-footer .wrap { flex-direction: column; align-items: stretch; gap: var(--spacing-3); }
+        .site-footer .social { flex-direction: row; flex-wrap: wrap; }
         .nl-form { grid-template-columns: 1fr; max-width: 100%; }
       }
     </style>
@@ -505,8 +507,6 @@ const bodyClass = variant === 'home' ? 'home-body' : '';
     <footer class="site-footer">
       <div class="wrap">
         <div class="newsletter">
-          <h4>{isEn ? 'Subscribe to the newsletter' : 'Assine a newsletter'}</h4>
-          <p>{newsletterCopy}</p>
           <form class="nl-form" autocomplete="off" data-thanks={submitThanks} data-default={submitLabel}>
             <input type="email" required placeholder={emailPlaceholder} aria-label="Email" />
             <button type="submit" class="btn-dark">{submitLabel}</button>
@@ -515,7 +515,7 @@ const bodyClass = variant === 'home' ? 'home-body' : '';
         <div class="social">
           <a href="https://instagram.com/machadofabio" target="_blank" rel="noopener">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.4A4 4 0 1 1 12.6 8 4 4 0 0 1 16 11.4z"/><line x1="17.5" y1="6.5" x2="17.5" y2="6.5"/></svg>
-            @machadofabio
+            machadofabio
           </a>
           <a class="more" href={postsUrl}>{moreLabel}</a>
         </div>
