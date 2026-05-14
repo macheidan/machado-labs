@@ -93,6 +93,7 @@ collections:
         file: data/subscribers.md
         format: yaml-frontmatter
         fields:
+          - { name: list, widget: hidden, default: subscribers }
           - { name: body, label: 'Emails (um por linha)', widget: text, required: false, hint: 'Cada email em uma linha. O form do site adiciona novos automaticamente; você pode editar/remover aqui.' }
 
   - name: posts-en

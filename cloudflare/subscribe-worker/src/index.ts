@@ -15,7 +15,7 @@ interface Env {
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const FRONTMATTER = '---\n---\n';
+const FRONTMATTER = '---\nlist: subscribers\n---\n';
 
 function corsHeaders(origin: string, allowed: string): Record<string, string> {
   const list = allowed.split(',').map((s) => s.trim()).filter(Boolean);
