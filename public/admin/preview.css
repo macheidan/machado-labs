@@ -74,13 +74,18 @@ p {
 strong { font-weight: 600; color: rgba(255, 255, 255, 0.9); }
 em { font-style: italic; }
 
-a {
-  color: #ff6363;
+a,
+.wysiwyg a,
+[contenteditable] a,
+[data-slate-node] a {
+  color: #ff6363 !important;
   text-decoration: none;
   text-underline-offset: 0;
   transition: text-underline-offset 0.1s ease-out;
 }
-a:hover, a:focus {
+a:hover, a:focus,
+.wysiwyg a:hover, .wysiwyg a:focus,
+[contenteditable] a:hover, [contenteditable] a:focus {
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-decoration-style: dashed;
