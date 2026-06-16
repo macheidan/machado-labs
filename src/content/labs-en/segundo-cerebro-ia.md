@@ -17,7 +17,7 @@ I don't want to depend on a specific tool. I want simple `.md` files, version-co
 
 > Tools die. Markdown survives.
 
-The Cortex lives at `G:\My Drive\01 AI\Vault\` and is already open in Obsidian. Any agent that needs context about me reads the files from there.
+The Cortex lives at `G:\My Drive\03 Pessoal\Vault\` and is already open in Obsidian. Any agent that needs context about me reads the files from there.
 
 ## Architecture in 4 layers
 

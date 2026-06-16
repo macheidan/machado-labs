@@ -17,7 +17,7 @@ Não quero depender de uma ferramenta específica. Quero arquivos `.md` simples,
 
 > Ferramenta morre. Markdown sobrevive.
 
-O Cortex vive em `G:\Meu Drive\01 AI\Vault\` e já tá aberto no Obsidian. Qualquer agente que precisar de contexto sobre mim lê os arquivos de lá.
+O Cortex vive em `G:\Meu Drive\03 Pessoal\Vault\` e já tá aberto no Obsidian. Qualquer agente que precisar de contexto sobre mim lê os arquivos de lá.
 
 ## Arquitetura em 4 camadas
 
