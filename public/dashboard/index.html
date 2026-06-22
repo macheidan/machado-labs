@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex,nofollow" />
+<title>Dashboard · Fábio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.1.0/dist/tabler-icons.min.css" />
+<style>
+  :root{
+    --bg-0:#05071a; --bg-1:#0b1031;
+    --card:linear-gradient(127deg, rgba(13,18,52,.92) 18%, rgba(9,12,33,.78) 80%);
+    --card-brd:rgba(255,255,255,.08);
+    --accent:linear-gradient(98deg,#0075ff 0%,#5c27fe 100%);
+    --accent-solid:#3b6cff;
+    --green:#01b574; --red:#e23b3b;
+    --txt:#fff; --muted:#a0aec0; --muted-2:#6b7494;
+    --r:20px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--txt);
+    background:
+      radial-gradient(1200px 700px at 80% -10%, rgba(92,39,254,.18), transparent 60%),
+      radial-gradient(1000px 600px at 0% 110%, rgba(0,117,255,.16), transparent 55%),
+      linear-gradient(160deg,var(--bg-1),var(--bg-0));
+    background-attachment:fixed;overflow:hidden;
+  }
+  .app{height:100vh;display:flex;flex-direction:column;gap:clamp(10px,.9vw,18px);padding:clamp(12px,1vw,22px)}
+  a{color:inherit;text-decoration:none}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex:0 0 auto}
+  .brand .day{font-size:clamp(16px,1.1vw,20px);font-weight:800;letter-spacing:.2px}
+  .brand .sub{font-size:12px;color:var(--muted)}
+  .chips{display:flex;gap:10px;align-items:center}
+  .chip{display:flex;align-items:center;gap:7px;padding:7px 13px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid var(--card-brd);font-size:13px}
+  .chip i{font-size:16px;color:var(--accent-solid)}
+  .chip b{font-weight:700}.chip .m{color:var(--muted);font-size:12px}
+  .delta{font-size:11px;font-weight:700;display:flex;align-items:center;gap:2px}
+  .delta i{font-size:13px}
+  .delta.up{color:var(--green)}.delta.down{color:var(--red)}
+  .tb-right{display:flex;align-items:center;gap:14px}
+  .updated{font-size:12px;color:var(--muted);text-align:right;line-height:1.35}
+  .updated b{color:#fff;font-weight:600}
+  .btn-refresh{display:flex;align-items:center;gap:9px;padding:11px 20px;border-radius:14px;background:var(--accent);color:#fff;font-weight:600;font-size:14px;border:0;cursor:pointer;box-shadow:0 8px 24px -8px rgba(59,108,255,.7)}
+  .btn-refresh:active{transform:scale(.97)}
+  .btn-refresh.spin i{animation:sp 1s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  .grid{flex:1 1 auto;min-height:0;display:grid;grid-template-columns:1fr 1.34fr 1fr 1fr;gap:clamp(10px,.85vw,18px)}
+  .col{min-height:0;display:flex;flex-direction:column;gap:clamp(10px,.85vw,18px)}
+  .card{background:var(--card);border:1px solid var(--card-brd);border-radius:var(--r);padding:clamp(13px,.9vw,19px);display:flex;flex-direction:column;min-height:0;backdrop-filter:blur(8px)}
+  .card.grow{flex:1 1 0;min-height:0}
+  .card-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;flex:0 0 auto;gap:10px}
+  .card-h .t{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:700;letter-spacing:.3px}
+  .card-h .t i{font-size:18px;color:var(--accent-solid)}
+  .card-h .t .sub{font-size:11px;font-weight:500;color:var(--muted);letter-spacing:0}
+  .live{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--green);font-weight:600}
+  .live .dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 1.6s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  .list{flex:1 1 auto;min-height:0;overflow:hidden}
+  .navmini{display:flex;align-items:center;gap:6px}
+  .icon-btn{width:26px;height:26px;display:grid;place-items:center;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid var(--card-brd);color:var(--muted);cursor:pointer;font-size:15px}
+  .icon-btn:hover{background:rgba(255,255,255,.1);color:#fff}
+  .icon-btn:disabled{opacity:.3;cursor:default}
+  .pg{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:auto;padding-top:9px}
+  .pgn{font-size:11px;color:var(--muted);font-weight:600;min-width:34px;text-align:center}
+
+  /* vendas */
+  .vt{width:100%;border-collapse:collapse;font-size:13.5px}
+  .vt th{text-align:right;font-size:10px;letter-spacing:.5px;color:var(--muted-2);text-transform:uppercase;font-weight:700;padding:0 0 9px}
+  .vt th:first-child{text-align:left}
+  .vt td{padding:10px 0;border-top:1px solid rgba(255,255,255,.05);text-align:right}
+  .vt td:first-child{text-align:left;font-weight:700}
+  .vt .dot{width:9px;height:9px;border-radius:50%;display:inline-block;margin-right:8px}
+  .vt .val{font-weight:800}
+  .vt tfoot td{font-weight:800;border-top:1px solid rgba(255,255,255,.14)}
+
+  /* news com imagem */
+  .item{display:flex;gap:11px;padding:8px 6px;align-items:center;border-radius:11px}
+  .item:hover{background:rgba(255,255,255,.04)}
+  .thumb{width:62px;height:46px;border-radius:10px;object-fit:cover;flex:0 0 auto;background:rgba(255,255,255,.06)}
+  .item .body{flex:1;min-width:0}
+  .item .ttl{font-size:13px;line-height:1.38;color:#eef0fb;font-weight:500;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .item .meta{display:flex;align-items:center;gap:8px;margin-top:4px}
+  .item .src{font-size:11px;color:var(--muted)}
+  .tag{font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:6px;letter-spacing:.4px;text-transform:uppercase}
+  .tag.claude{background:rgba(124,108,255,.16);color:#a9a0ff}
+  .tag.gpt{background:rgba(1,181,116,.15);color:#3ddca0}
+  .tag.gemini{background:rgba(55,138,221,.16);color:#7db4ef}
+  .tag.open{background:rgba(255,181,71,.15);color:#ffc875}
+  .tag.gen{background:rgba(160,174,192,.15);color:#c2cbdb}
+  .tag.pos{background:rgba(1,181,116,.14);color:#3ddca0}
+  .tag.biz{background:rgba(255,181,71,.14);color:#ffc875}
+
+  /* github */
+  .gh{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px solid rgba(255,255,255,.05)}
+  .gh:first-child{border-top:0}
+  .gh .repo{font-size:13px;font-weight:700}
+  .gh .ghd{font-size:11.5px;color:var(--muted);line-height:1.35;margin:2px 0 3px}
+  .gh .lang{font-size:10.5px;color:var(--muted-2)}
+  .gh .star{font-size:12px;color:var(--green);font-weight:700;display:flex;align-items:center;gap:3px;flex:0 0 auto}
+
+  /* projetos */
+  .proj{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid rgba(255,255,255,.05)}
+  .proj:first-child{border-top:0}
+  .proj .pn{font-size:13px;font-weight:600}
+  .proj .ps{font-size:11px;color:var(--muted)}
+  .pbadge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:7px;background:rgba(59,108,255,.16);color:#9db8ff;flex:0 0 auto}
+
+  /* agenda */
+  .ag{display:flex;gap:12px;padding:8px 0;border-top:1px solid rgba(255,255,255,.05)}
+  .ag:first-child{border-top:0}
+  .ag .hr{font-size:13px;font-weight:700;color:var(--accent-solid);min-width:42px}
+  .ag .desc{font-size:13px;color:#dfe3f2}
+
+  /* feeds */
+  .feed{display:flex;align-items:flex-start;gap:11px;padding:10px 0;border-top:1px solid rgba(255,255,255,.05)}
+  .feed:first-child{border-top:0}
+  .feed .fb{flex:1;min-width:0}
+  .feed .fhead{font-size:13px;font-weight:600;color:#eef0fb;line-height:1.38;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .feed .fmeta{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:11px;color:var(--muted)}
+  .feed .fmeta i{font-size:14px;color:var(--accent-solid)}
+  .feed .fdot{color:var(--muted-2)}
+  .fbadge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:7px;background:rgba(1,181,116,.16);color:#3ddca0;flex:0 0 auto}
+
+  @media (max-width:1500px){
+    body{overflow:auto}.app{height:auto;min-height:100vh}
+    .grid{grid-template-columns:1fr 1fr}
+  }
+  @media (max-width:760px){.grid{grid-template-columns:1fr}.topbar{flex-wrap:wrap}.chips{order:3;width:100%;flex-wrap:wrap}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="day">Segunda, 22 de junho</div>
+      <div class="sub">bom dia, Fábio</div>
+    </div>
+    <div class="chips">
+      <div class="chip"><i class="ti ti-cloud-rain"></i><b>18°</b><span class="m">POA</span></div>
+      <div class="chip"><i class="ti ti-currency-dollar"></i><span class="m">USD</span><b>5,42</b><span class="delta up"><i class="ti ti-trending-up"></i>0,8%</span></div>
+      <div class="chip"><i class="ti ti-currency-bitcoin"></i><span class="m">BTC</span><b>67,2k</b><span class="delta down"><i class="ti ti-trending-down"></i>1,2%</span></div>
+    </div>
+    <div class="tb-right">
+      <div class="updated">última atualização<br><b id="upd">hoje 03h12</b></div>
+      <button class="btn-refresh" id="refresh"><i class="ti ti-refresh"></i>Atualizar</button>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- COL 1 -->
+    <div class="col">
+      <div class="card">
+        <div class="card-h">
+          <div class="t"><i class="ti ti-cash-register"></i>Vendas <span class="sub" id="sales-day"></span></div>
+          <div class="navmini" id="sales-nav"></div>
+        </div>
+        <div id="sales-body"></div>
+      </div>
+      <div class="card grow">
+        <div class="card-h"><div class="t"><i class="ti ti-calendar-event"></i>Agenda do dia</div><div class="live"><span class="dot"></span>ao vivo</div></div>
+        <div class="list" id="agenda-list"></div>
+      </div>
+      <div class="card grow">
+        <div class="card-h"><div class="t"><i class="ti ti-layout-kanban"></i>Projetos em andamento</div></div>
+        <div class="list" id="proj-list"></div>
+        <div class="pg" id="proj-pg"></div>
+      </div>
+    </div>
+
+    <!-- COL 2 -->
+    <div class="col">
+      <div class="card grow">
+        <div class="card-h"><div class="t"><i class="ti ti-brain"></i>IA News</div></div>
+        <div class="list" id="ai-list"></div>
+        <div class="pg" id="ai-pg"></div>
+      </div>
+      <div class="card grow">
+        <div class="card-h"><div class="t"><i class="ti ti-brand-github"></i>GitHub Trending</div><div class="t sub" style="gap:4px">dia · semana · mês</div></div>
+        <div class="list" id="gh-list"></div>
+        <div class="pg" id="gh-pg"></div>
+      </div>
+    </div>
+
+    <!-- COL 3 -->
+    <div class="col">
+      <div class="card grow">
+        <div class="card-h"><div class="t"><i class="ti ti-world"></i>Global News</div></div>
+        <div class="list" id="gl-list"></div>
+        <div class="pg" id="gl-pg"></div>
+      </div>
+      <div class="card grow">
+        <div class="card-h"><div class="t"><i class="ti ti-briefcase"></i>Biz News</div></div>
+        <div class="list" id="bz-list"></div>
+        <div class="pg" id="bz-pg"></div>
+      </div>
+    </div>
+
+    <!-- COL 4 -->
+    <div class="col">
+      <div class="card grow">
+        <div class="card-h"><div class="t"><i class="ti ti-rss"></i>Fontes & feeds de IA</div></div>
+        <div class="list" id="feed-list"></div>
+        <div class="pg" id="feed-pg"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const img = s => `https://picsum.photos/seed/${s}/120/90`;
+
+const sales = [
+  {dow:'domingo, 21 jun',   dame:[7842,96,138],  lov:[14107,184,301]},
+  {dow:'sábado, 20 jun',    dame:[9310,121,167], lov:[16880,223,362]},
+  {dow:'sexta, 19 jun',     dame:[8120,102,149], lov:[15240,198,325]},
+  {dow:'quinta, 18 jun',    dame:[6540,82,118],  lov:[12430,162,268]},
+  {dow:'quarta, 17 jun',    dame:[5980,74,109],  lov:[11200,146,241]},
+  {dow:'terça, 16 jun',     dame:[5410,68,98],   lov:[10350,135,223]},
+  {dow:'segunda, 15 jun',   dame:[5120,63,92],   lov:[9870,128,210]},
+];
+
+const agenda = [
+  {h:'09:30',d:'Call fornecedor de queijo'},
+  {h:'11:00',d:'Gravação de reels Lov'},
+  {h:'14:00',d:'Análise DRE de maio'},
+  {h:'16:30',d:'Consultoria IA cliente'},
+  {h:'19:00',d:'Jantar família'},
+];
+
+const projects = [
+  {n:'Dashboard pessoal',      s:'hoje',     tag:'em construção'},
+  {n:'revelador',              s:'hoje',     tag:'ativo'},
+  {n:'precos-produtos',        s:'hoje',     tag:'ativo'},
+  {n:'2ndbrain',               s:'ontem',    tag:'ativo'},
+  {n:'whatsapp-bot',           s:'ontem',    tag:'ativo'},
+  {n:'sistema-pedidos-local',  s:'ontem',    tag:'ativo'},
+  {n:'molina (scraper TikTok)',s:'ontem',    tag:'ativo'},
+  {n:'gerador-story-flow',     s:'ontem',    tag:'ativo'},
+  {n:'analise-concorrentes',   s:'ontem',    tag:'ativo'},
+  {n:'investimentos',          s:'17 jun',   tag:'pausado'},
+];
+
+const ai = [
+  {t:'Anthropic ships a marketplace for Claude skills',c:'claude',cat:'Claude',src:'Anthropic',img:'ai1'},
+  {t:'Claude Code adds background agents and scheduled runs',c:'claude',cat:'Claude',src:'Hacker News',img:'ai2'},
+  {t:'OpenAI releases GPT-5.5 with a 2M token context window',c:'gpt',cat:'GPT',src:'OpenAI',img:'ai3'},
+  {t:'Google DeepMind unveils Gemini 3 Ultra',c:'gemini',cat:'Gemini',src:'DeepMind',img:'ai4'},
+  {t:'Mistral open-weights a new 70B reasoning model',c:'open',cat:'Open',src:'Mistral',img:'ai5'},
+  {t:'Figure 03 humanoid robot enters mass production',c:'gen',cat:'Robotics',src:'The Robot Report',img:'ai6'},
+  {t:'New telescope spots an Earth-like exoplanet 40ly away',c:'gen',cat:'Space',src:'NASA',img:'ai7'},
+  {t:'Meta releases Llama 4 with native multimodality',c:'open',cat:'Open',src:'Meta',img:'ai8'},
+  {t:'Perplexity launches an agentic browser',c:'gen',cat:'Tools',src:'TechCrunch',img:'ai9'},
+  {t:'NVIDIA unveils its next-gen inference chip',c:'gen',cat:'Hardware',src:'The Verge',img:'ai10'},
+];
+
+const global = [
+  {t:'Lab-grown kidney successfully transplanted in human trial',c:'pos',cat:'Science',src:'Nature',img:'g1'},
+  {t:'Solar becomes the cheapest electricity in history',c:'pos',cat:'Futurism',src:'IEA',img:'g2'},
+  {t:'Portugal runs six straight days on 100% renewables',c:'pos',cat:'Climate',src:'Reuters',img:'g3'},
+  {t:'New malaria vaccine reaches 90% efficacy in field study',c:'pos',cat:'Health',src:'WHO',img:'g4'},
+  {t:'Fusion startup sustains net energy gain for 20 minutes',c:'pos',cat:'Energy',src:'MIT',img:'g5'},
+  {t:'Ocean cleanup removes one million kg of plastic',c:'pos',cat:'Climate',src:'BBC',img:'g6'},
+  {t:'Japan unveils a maglev train hitting 600 km/h',c:'pos',cat:'Futurism',src:'NHK',img:'g7'},
+  {t:'Universal flu vaccine passes phase 3 trials',c:'pos',cat:'Health',src:'The Lancet',img:'g8'},
+];
+
+const biz = [
+  {t:'Reforma tributária muda o Simples Nacional a partir de 2027',c:'biz',cat:'Impostos',src:'Valor',img:'b1'},
+  {t:'iFood lança taxa fixa para pequenos restaurantes',c:'biz',cat:'Delivery',src:'NeoFeed',img:'b2'},
+  {t:'Delivery cresce 18% no primeiro semestre no Brasil',c:'biz',cat:'Mercado',src:'Mercado&Consumo',img:'b3'},
+  {t:'Nova lei do entregador é aprovada no Senado',c:'biz',cat:'Delivery',src:'Abrasel',img:'b4'},
+  {t:'Startup de gestão para restaurantes capta R$ 40M',c:'biz',cat:'Startups',src:'PEGN',img:'b5'},
+  {t:'Nubank lança conta PJ voltada para MEIs',c:'biz',cat:'Negócios',src:'Exame',img:'b6'},
+  {t:'Inflação de alimentos desacelera em junho',c:'biz',cat:'Mercado',src:'Valor',img:'b7'},
+  {t:'Rappi testa entrega por drone em São Paulo',c:'biz',cat:'Delivery',src:'Startups',img:'b8'},
+];
+
+const github = [
+  {r:'vercel/ai',d:'SDK para construir apps de IA com streaming e tool calling',lang:'TypeScript',s:'1.2k'},
+  {r:'microsoft/markitdown',d:'Converte PDF, Office e áudio em Markdown para LLMs',lang:'Python',s:'890'},
+  {r:'collinhover/agent-os',d:'Runtime de orquestração para agentes autônomos',lang:'Rust',s:'640'},
+  {r:'langchain-ai/langgraph',d:'Grafos de estado para agentes multi-etapa',lang:'Python',s:'520'},
+  {r:'ollama/ollama',d:'Roda modelos de linguagem locais com um comando',lang:'Go',s:'410'},
+  {r:'unclecode/crawl4ai',d:'Web crawler que entrega dados prontos para LLM',lang:'Python',s:'330'},
+];
+
+const feeds = [
+  {i:'ti-world',n:'AI News',s:'site',h:'OpenAI launches an enterprise tier with on-prem deployment',b:''},
+  {i:'ti-mail',n:'Evolving AI',s:'newsletter',h:'The 7 AI tools that replaced my entire stack',b:'2 novos'},
+  {i:'ti-mail',n:'The Rundown AI',s:'newsletter',h:"Google's new agent framework goes open source",b:'1 novo'},
+  {i:'ti-mail',n:'TLDR AI',s:'newsletter',h:'Anthropic publishes an interpretability breakthrough',b:''},
+  {i:'ti-brand-instagram',n:'@metav3rse',s:'Instagram',h:"Meta's new AR glasses prototype leaks online",b:''},
+  {i:'ti-brand-instagram',n:'@evolving.ai',s:'Instagram',h:'This humanoid robot folds laundry in real time',b:''},
+  {i:'ti-brand-x',n:'@rowancheung',s:'X',h:'5 major AI launches you missed this week',b:''},
+  {i:'ti-mail',n:"Ben's Bites",s:'newsletter',h:'Why every startup is shipping voice agents now',b:''},
+  {i:'ti-mail',n:'Import AI',s:'newsletter',h:'Jack Clark on hitting the compute scaling wall',b:''},
+  {i:'ti-brand-x',n:'@theaiedge',s:'X',h:'How transformers actually learn in-context',b:''},
+  {i:'ti-world',n:'MIT Tech Review',s:'site',h:'The race to build a genuinely useful quantum computer',b:''},
+  {i:'ti-world',n:'VentureBeat AI',s:'site',h:'Enterprises double their AI budgets for 2027',b:''},
+];
+
+const brl = n => 'R$ ' + n.toLocaleString('pt-BR');
+const newsRow = n => `<a class="item" href="#"><img class="thumb" src="${img(n.img)}" alt=""><div class="body"><div class="ttl">${n.t}</div><div class="meta"><span class="tag ${n.c}">${n.cat}</span><span class="src">${n.src}</span></div></div></a>`;
+const ghRow = g => `<div class="gh"><div><div class="repo">${g.r}</div><div class="ghd">${g.d}</div><div class="lang">${g.lang}</div></div><div class="star"><i class="ti ti-star"></i>${g.s}</div></div>`;
+const projRow = p => `<div class="proj"><div><div class="pn">${p.n}</div><div class="ps">última atividade · ${p.s}</div></div><span class="pbadge">${p.tag}</span></div>`;
+const feedRow = f => `<a class="feed" href="#"><div class="fb"><div class="fhead">${f.h}</div><div class="fmeta"><i class="ti ${f.i}"></i><span>${f.n}</span><span class="fdot">·</span><span>${f.s}</span></div></div>${f.b?`<span class="fbadge">${f.b}</span>`:''}</a>`;
+
+function pager(listId, pgId, items, per, row){
+  const list=document.getElementById(listId), pg=document.getElementById(pgId);
+  const pages=Math.ceil(items.length/per); let p=0;
+  function draw(){
+    list.innerHTML=items.slice(p*per,(p+1)*per).map(row).join('');
+    if(pages>1){
+      pg.innerHTML=`<button class="icon-btn" ${p===0?'disabled':''} data-d="-1"><i class="ti ti-chevron-left"></i></button><span class="pgn">${p+1} / ${pages}</span><button class="icon-btn" ${p===pages-1?'disabled':''} data-d="1"><i class="ti ti-chevron-right"></i></button>`;
+      pg.querySelectorAll('button').forEach(b=>b.onclick=()=>{p=Math.max(0,Math.min(pages-1,p+ +b.dataset.d));draw();});
+    }
+  }
+  draw();
+}
+
+// agenda (sem paginação, com scroll natural)
+document.getElementById('agenda-list').innerHTML = agenda.map(a=>`<div class="ag"><div class="hr">${a.h}</div><div class="desc">${a.d}</div></div>`).join('');
+
+pager('proj-list','proj-pg',projects,6,projRow);
+pager('ai-list','ai-pg',ai,5,newsRow);
+pager('gl-list','gl-pg',global,5,newsRow);
+pager('bz-list','bz-pg',biz,5,newsRow);
+pager('gh-list','gh-pg',github,4,ghRow);
+pager('feed-list','feed-pg',feeds,6,feedRow);
+
+// vendas com navegação por dia
+let si=0;
+const sb=document.getElementById('sales-body'), sd=document.getElementById('sales-day'), sn=document.getElementById('sales-nav');
+function drawSales(){
+  const d=sales[si];
+  sd.textContent='· '+d.dow;
+  const tot=[d.dame[0]+d.lov[0], d.dame[1]+d.lov[1], d.dame[2]+d.lov[2]];
+  sb.innerHTML=`<table class="vt"><thead><tr><th>Loja</th><th>Valor</th><th>Pizzas</th><th>Pedidos</th></tr></thead>
+  <tbody>
+    <tr><td><span class="dot" style="background:#ff6b9d"></span>Dáme</td><td class="val">${brl(d.dame[0])}</td><td>${d.dame[1]}</td><td>${d.dame[2]}</td></tr>
+    <tr><td><span class="dot" style="background:#5c27fe"></span>Lov</td><td class="val">${brl(d.lov[0])}</td><td>${d.lov[1]}</td><td>${d.lov[2]}</td></tr>
+  </tbody>
+  <tfoot><tr><td>Total</td><td class="val">${brl(tot[0])}</td><td>${tot[1]}</td><td>${tot[2]}</td></tr></tfoot></table>`;
+  sn.innerHTML=`<button class="icon-btn" ${si===sales.length-1?'disabled':''} data-d="1"><i class="ti ti-chevron-left"></i></button><button class="icon-btn" ${si===0?'disabled':''} data-d="-1"><i class="ti ti-chevron-right"></i></button>`;
+  sn.querySelectorAll('button').forEach(b=>b.onclick=()=>{si=Math.max(0,Math.min(sales.length-1,si+ +b.dataset.d));drawSales();});
+}
+drawSales();
+
+// refresh
+const btn=document.getElementById('refresh');
+btn.addEventListener('click',()=>{
+  const ic=btn.querySelector('i');
+  btn.classList.add('spin');ic.classList.replace('ti-refresh','ti-loader-2');
+  setTimeout(()=>{btn.classList.remove('spin');ic.classList.replace('ti-loader-2','ti-refresh');document.getElementById('upd').textContent='agora mesmo';},1600);
+});
+</script>
+</body>
+</html>
