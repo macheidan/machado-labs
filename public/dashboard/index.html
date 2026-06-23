@@ -124,12 +124,14 @@
   .agempty{font-size:12.5px;color:var(--muted-2);padding:10px 2px}
 
   /* feeds */
-  .feed{display:flex;align-items:flex-start;gap:11px;padding:10px 0;border-top:1px solid rgba(255,255,255,.05)}
+  .feed{display:flex;align-items:center;gap:11px;padding:9px 0;border-top:1px solid rgba(255,255,255,.05)}
   .feed:first-child{border-top:0}
+  .feed .fthumb{position:relative;width:54px;height:42px;border-radius:9px;flex:0 0 auto;overflow:hidden;display:grid;place-items:center;background:rgba(255,255,255,.06)}
+  .feed .fthumb i{font-size:19px;color:var(--accent-solid)}
+  .feed .fthumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
   .feed .fb{flex:1;min-width:0}
   .feed .fhead{font-size:13px;font-weight:600;color:#eef0fb;line-height:1.38;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .feed .fmeta{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:11px;color:var(--muted)}
-  .feed .fmeta i{font-size:14px;color:var(--accent-solid)}
   .feed .fdot{color:var(--muted-2)}
   .fbadge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:7px;background:rgba(1,181,116,.16);color:#3ddca0;flex:0 0 auto}
 
@@ -337,7 +339,7 @@ function ago(s){
 const newsRow = n => `<a class="item" href="${n.url||'#'}" target="_blank" rel="noopener"><img class="thumb" src="${thumb(n)}" alt="" onerror="this.removeAttribute('src')"><div class="body"><div class="ttl">${n.t}</div><div class="meta"><span class="tag ${n.c}">${n.cat}</span><span class="src">${n.src}</span>${n.data?`<span class="when">· ${ago(n.data)}</span>`:''}</div></div></a>`;
 const ghRow = g => `<div class="gh"><div><div class="repo">${g.r}</div><div class="ghd">${g.d}</div><div class="lang">${g.lang}</div></div><div class="star"><i class="ti ti-star"></i>${g.s}</div></div>`;
 const projRow = p => `<div class="proj"><div><div class="pn">${p.n}</div><div class="ps">última atividade</div></div><span class="pbadge">${p.quando||p.tag||''}</span></div>`;
-const feedRow = f => `<a class="feed" href="${f.url||'#'}" target="_blank" rel="noopener"><div class="fb"><div class="fhead">${f.h}</div><div class="fmeta"><i class="ti ${f.i||'ti-rss'}"></i><span>${f.n}</span>${f.s?`<span class="fdot">·</span><span>${f.s}</span>`:''}${f.data?`<span class="fdot">·</span><span>${ago(f.data)}</span>`:''}</div></div>${f.b?`<span class="fbadge">${f.b}</span>`:''}</a>`;
+const feedRow = f => `<a class="feed" href="${f.url||'#'}" target="_blank" rel="noopener"><span class="fthumb"><i class="ti ${f.i||'ti-rss'}"></i>${f.img?`<img src="${f.img}" alt="" loading="lazy" onerror="this.remove()">`:''}</span><div class="fb"><div class="fhead">${f.h}</div><div class="fmeta"><span>${f.n}</span>${f.s?`<span class="fdot">·</span><span>${f.s}</span>`:''}${f.data?`<span class="fdot">·</span><span>${ago(f.data)}</span>`:''}</div></div>${f.b?`<span class="fbadge">${f.b}</span>`:''}</a>`;
 
 function pager(listId, pgId, items, per, row){
   const list=document.getElementById(listId), pg=document.getElementById(pgId);
