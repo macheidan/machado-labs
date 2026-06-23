@@ -64,9 +64,11 @@
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
   .list{flex:1 1 auto;min-height:0;overflow:hidden}
   .navmini{display:flex;align-items:center;gap:6px}
+  .hd-r{display:flex;align-items:center;gap:6px}
   .icon-btn{width:26px;height:26px;display:grid;place-items:center;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid var(--card-brd);color:var(--muted);cursor:pointer;font-size:15px}
   .icon-btn:hover{background:rgba(255,255,255,.1);color:#fff}
   .icon-btn:disabled{opacity:.3;cursor:default}
+  .icon-btn.spin i{animation:sp 1s linear infinite}
   .pg{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:auto;padding-top:9px}
   .pgn{font-size:11px;color:var(--muted);font-weight:600;min-width:34px;text-align:center}
 
@@ -184,7 +186,6 @@
     </div>
     <div class="tb-right">
       <div class="updated">última atualização<br><b id="upd">hoje 03h12</b></div>
-      <button class="btn-refresh" id="refresh"><i class="ti ti-refresh"></i>Atualizar</button>
     </div>
   </div>
 
@@ -194,7 +195,10 @@
       <div class="card">
         <div class="card-h">
           <div class="t"><i class="ti ti-cash-register"></i>Vendas <span class="sub" id="sales-day"></span></div>
-          <div class="navmini" id="sales-nav"></div>
+          <div class="hd-r">
+            <div class="navmini" id="sales-nav"></div>
+            <button class="icon-btn" id="refresh" title="Atualizar vendas das lojas"><i class="ti ti-refresh"></i></button>
+          </div>
         </div>
         <div id="sales-body"></div>
       </div>
@@ -506,7 +510,9 @@ load();
 // recalcula todos os painéis com preenchimento de altura quando a janela muda
 let _rt; addEventListener('resize',()=>{clearTimeout(_rt);_rt=setTimeout(()=>Object.values(fillRedraws).forEach(fn=>fn&&fn()),200);});
 
-// refresh: rebusca o JSON publicado (cache-bust). Túnel p/ re-coleta vem depois.
+// atualizar VENDAS: na tabela de vendas, força recoleta das lojas caso a coleta
+// das 3h não tenha rodado. Hoje rebusca o JSON publicado (cache-bust); o túnel p/
+// re-coletar na hora vem depois. As notícias/feeds já atualizam num F5 normal.
 const btn=document.getElementById('refresh');
 btn.addEventListener('click',()=>{
   const ic=btn.querySelector('i');
@@ -520,7 +526,7 @@ document.querySelectorAll('.card').forEach((card,i)=>{
   if(i===0) card.classList.add('open');
   const h=card.querySelector('.card-h');
   if(h) h.addEventListener('click',e=>{
-    if(!isMobile() || e.target.closest('.navmini')) return; // ignora as setas de vendas
+    if(!isMobile() || e.target.closest('.navmini') || e.target.closest('.icon-btn')) return; // ignora setas e botão atualizar
     card.classList.toggle('open');
   });
 });
