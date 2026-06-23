@@ -59,10 +59,6 @@
   .card-h .t{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:700;letter-spacing:.3px}
   .card-h .t i{font-size:18px;color:var(--accent-solid)}
   .card-h .t .sub{font-size:11px;font-weight:500;color:var(--muted);letter-spacing:0}
-  .speak{width:27px;height:27px;display:grid;place-items:center;border-radius:8px;background:rgba(255,255,255,.05);border:1px solid var(--card-brd);color:var(--muted);cursor:pointer;font-size:15px;flex:0 0 auto;font-family:inherit}
-  .speak:hover{background:rgba(255,255,255,.1);color:#fff}
-  .speak.on{color:#fff;background:var(--accent);border-color:transparent}
-  .speak.on i{animation:pulse 1.1s infinite}
   .live{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--green);font-weight:600}
   .live .dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 1.6s infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
@@ -216,7 +212,7 @@
     <!-- COL 2 -->
     <div class="col">
       <div class="card grow">
-        <div class="card-h"><div class="t"><i class="ti ti-brain"></i>IA News</div><button class="speak" data-list="ai-list" title="Ouvir"><i class="ti ti-volume"></i></button></div>
+        <div class="card-h"><div class="t"><i class="ti ti-brain"></i>IA News</div></div>
         <div class="list" id="ai-list"></div>
         <div class="pg" id="ai-pg"></div>
       </div>
@@ -230,12 +226,12 @@
     <!-- COL 3 -->
     <div class="col">
       <div class="card grow">
-        <div class="card-h"><div class="t"><i class="ti ti-world"></i>Global News</div><button class="speak" data-list="gl-list" title="Ouvir"><i class="ti ti-volume"></i></button></div>
+        <div class="card-h"><div class="t"><i class="ti ti-world"></i>Global News</div></div>
         <div class="list" id="gl-list"></div>
         <div class="pg" id="gl-pg"></div>
       </div>
       <div class="card grow">
-        <div class="card-h"><div class="t"><i class="ti ti-briefcase"></i>Biz News</div><button class="speak" data-list="bz-list" title="Ouvir"><i class="ti ti-volume"></i></button></div>
+        <div class="card-h"><div class="t"><i class="ti ti-briefcase"></i>Biz News</div></div>
         <div class="list" id="bz-list"></div>
         <div class="pg" id="bz-pg"></div>
       </div>
@@ -244,7 +240,7 @@
     <!-- COL 4 -->
     <div class="col">
       <div class="card grow">
-        <div class="card-h"><div class="t"><i class="ti ti-rss"></i>Fontes & feeds de IA</div><button class="speak" data-list="feed-list" title="Ouvir"><i class="ti ti-volume"></i></button></div>
+        <div class="card-h"><div class="t"><i class="ti ti-rss"></i>Fontes & feeds de IA</div></div>
         <div class="list" id="feed-list"></div>
         <div class="pg" id="feed-pg"></div>
       </div>
@@ -376,10 +372,9 @@ function pager(listId, pgId, items, per, row){
 // `max` limita o total de itens (opcional).
 const MOBILE_PER = 5;
 const isMob = () => matchMedia('(max-width:760px)').matches;
-let fillRedraws={}, panelItems={};
+let fillRedraws={};
 function pagerFill(listId, pgId, items, row, max){
   items=(items||[]).slice(0, max||items.length);
-  panelItems[listId]=items;
   const list=document.getElementById(listId), pg=document.getElementById(pgId);
   let p=0, per=6, pages=1, detailOpen=false;
   function draw(){
@@ -407,7 +402,6 @@ function pagerFill(listId, pgId, items, row, max){
   }
   // clicar numa notícia/feed abre o resumo no próprio card (voltar + original)
   function showDetail(it){
-    stopSpeak();
     detailOpen=true;
     const title=it.t||it.h||'', src=it.src||it.n||'';
     const resumo=it.resumo || 'Resumo não disponível para esta notícia. Use o link abaixo para ler no original.';
@@ -511,55 +505,6 @@ load();
 
 // recalcula todos os painéis com preenchimento de altura quando a janela muda
 let _rt; addEventListener('resize',()=>{clearTimeout(_rt);_rt=setTimeout(()=>Object.values(fillRedraws).forEach(fn=>fn&&fn()),200);});
-
-// ── ouvir as notícias (Web Speech API, pt-BR) ────────────────────────────────
-const synth = window.speechSynthesis;
-let speakBtn = null;
-function ptVoice(){
-  const vs = synth ? synth.getVoices() : [];
-  const pt = vs.filter(v=>/pt[-_]?br/i.test(v.lang));
-  const pool = pt.length ? pt : vs.filter(v=>/^pt/i.test(v.lang));
-  // prioriza vozes neurais (Edge "Online Natural", Google) sobre SAPI legada
-  const neural = v => /(natural|online|neural|google|multilingual)/i.test(v.name) ? 0 : 1;
-  return pool.sort((a,b)=>neural(a)-neural(b))[0] || null;
-}
-function stopSpeak(){
-  if(synth) synth.cancel();
-  if(speakBtn){ speakBtn.classList.remove('on'); speakBtn.querySelector('i').className='ti ti-volume'; speakBtn=null; }
-}
-function speak(btn){
-  if(!synth){ return; }
-  if(speakBtn===btn){ stopSpeak(); return; }   // mesmo botão: para
-  stopSpeak();                                  // outro: cancela o anterior
-  const id=btn.dataset.list, list=document.getElementById(id);
-  const det=list && list.querySelector('.detail');
-  let frases;
-  if(det){                                      // resumo aberto: lê título + corpo
-    frases=[det.querySelector('.det-ttl')?.textContent, det.querySelector('.det-body')?.textContent];
-  }else{                                        // senão: lê todas as manchetes
-    frases=(panelItems[id]||[]).map(x=>x.t||x.h);
-  }
-  frases=(frases||[]).map(s=>(s||'').trim()).filter(Boolean);
-  if(!frases.length) return;
-  const v=ptVoice();
-  btn.classList.add('on'); btn.querySelector('i').className='ti ti-player-stop-filled'; speakBtn=btn;
-  frases.forEach((txt,k)=>{
-    const u=new SpeechSynthesisUtterance(txt);
-    u.lang='pt-BR'; if(v) u.voice=v; u.rate=1.03;
-    if(k===frases.length-1) u.onend=()=>{ if(speakBtn===btn) stopSpeak(); };
-    synth.speak(u);
-  });
-}
-if(synth){
-  synth.getVoices();                            // aquece a lista de vozes
-  if(synth.onvoiceschanged===null) synth.onvoiceschanged=()=>synth.getVoices();
-  document.querySelectorAll('.speak').forEach(b=>b.addEventListener('click',e=>{
-    e.preventDefault(); e.stopPropagation(); speak(b);
-  }));
-  addEventListener('beforeunload',stopSpeak);
-}else{
-  document.querySelectorAll('.speak').forEach(b=>b.style.display='none'); // navegador sem TTS
-}
 
 // refresh: rebusca o JSON publicado (cache-bust). Túnel p/ re-coleta vem depois.
 const btn=document.getElementById('refresh');
