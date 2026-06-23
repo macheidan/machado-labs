@@ -132,7 +132,22 @@
     body{overflow:auto}.app{height:auto;min-height:100vh}
     .grid{grid-template-columns:1fr 1fr}
   }
-  @media (max-width:760px){.grid{grid-template-columns:1fr}.topbar{flex-wrap:wrap}.chips{order:3;width:100%;flex-wrap:wrap}}
+  @media (max-width:760px){
+    .grid{grid-template-columns:1fr}
+    .topbar{flex-wrap:wrap}
+    .chips{order:3;width:100%;flex-wrap:wrap}
+    /* accordion: cada quadro abre/fecha ao tocar no título */
+    .card.grow{flex:0 0 auto}
+    .card-h{cursor:pointer}
+    .card-h::after{content:'';width:9px;height:9px;flex:0 0 auto;margin-left:10px;
+      border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);
+      transform:rotate(45deg);transition:transform .2s}
+    .card:not(.open) .card-h::after{transform:rotate(-45deg)}
+    .card:not(.open) .list,
+    .card:not(.open) #sales-body,
+    .card:not(.open) .pg,
+    .card:not(.open) .navmini{display:none}
+  }
 </style>
 </head>
 <body>
@@ -389,6 +404,17 @@ btn.addEventListener('click',()=>{
   const ic=btn.querySelector('i');
   btn.classList.add('spin');ic.classList.replace('ti-refresh','ti-loader-2');
   load().finally(()=>setTimeout(()=>{btn.classList.remove('spin');ic.classList.replace('ti-loader-2','ti-refresh');},700));
+});
+
+// accordion no mobile: toca no título pra abrir/fechar (primeiro quadro já aberto)
+const isMobile = () => matchMedia('(max-width:760px)').matches;
+document.querySelectorAll('.card').forEach((card,i)=>{
+  if(i===0) card.classList.add('open');
+  const h=card.querySelector('.card-h');
+  if(h) h.addEventListener('click',e=>{
+    if(!isMobile() || e.target.closest('.navmini')) return; // ignora as setas de vendas
+    card.classList.toggle('open');
+  });
 });
 </script>
 </body>
