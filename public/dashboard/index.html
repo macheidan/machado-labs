@@ -353,9 +353,12 @@ function pager(listId, pgId, items, per, row){
   draw();
 }
 
-// paginador que PREENCHE a altura disponível: calcula itens/página pela
-// altura do card e re-mede no resize. Teto de `max` itens no total.
-let feedRedraw=null;
+// paginador que PREENCHE a altura disponível: no desktop calcula itens/página
+// pela altura do card; no mobile usa teto fixo (MOBILE_PER). Re-mede no resize.
+// `max` limita o total de itens (opcional).
+const MOBILE_PER = 5;
+const isMob = () => matchMedia('(max-width:760px)').matches;
+let fillRedraws={};
 function pagerFill(listId, pgId, items, row, max){
   items=(items||[]).slice(0, max||items.length);
   const list=document.getElementById(listId), pg=document.getElementById(pgId);
@@ -369,15 +372,20 @@ function pagerFill(listId, pgId, items, row, max){
   }
   function calc(){
     if(!items.length){list.innerHTML='';pg.innerHTML='';return;}
-    list.innerHTML=row(items[0]);                       // 1 linha pra medir
-    const fc=list.firstElementChild;
-    const rowH=fc?fc.getBoundingClientRect().height:56;
-    const availH=list.clientHeight;
-    per = availH>40 ? Math.max(1, Math.floor((availH-36)/Math.max(1,rowH))) : 6;
+    const mobile=isMob();
+    if(mobile){
+      per=Math.min(MOBILE_PER, items.length);            // mobile: no máx. 5/página
+    }else{
+      list.innerHTML=row(items[0]);                      // 1 linha pra medir
+      const fc=list.firstElementChild;
+      const rowH=fc?fc.getBoundingClientRect().height:56;
+      const availH=list.clientHeight;
+      per = availH>40 ? Math.max(1, Math.floor((availH-36)/Math.max(1,rowH))) : 6;
+    }
     pages=Math.max(1, Math.ceil(items.length/per));
     if(p>=pages) p=pages-1;
     draw();
-    while(per>1 && list.scrollHeight>list.clientHeight+2){ // tira linhas até não cortar
+    while(!mobile && per>1 && list.scrollHeight>list.clientHeight+2){ // tira linhas até não cortar
       per--; pages=Math.max(1, Math.ceil(items.length/per));
       if(p>=pages) p=pages-1;
       draw();
@@ -386,7 +394,7 @@ function pagerFill(listId, pgId, items, row, max){
   calc();                                              // tentativa imediata
   requestAnimationFrame(()=>requestAnimationFrame(calc)); // após o layout/paint
   if(document.fonts&&document.fonts.ready) document.fonts.ready.then(calc); // após webfonts
-  feedRedraw=calc;
+  fillRedraws[listId]=calc;
 }
 
 // vendas com navegação por dia
@@ -447,11 +455,11 @@ function render(d){
   sales = pick(d.sales, sales); si=0; drawSales();
   AG = pick(d.agenda, agenda); agi=0; drawAgenda();
   pager('proj-list','proj-pg', pick(d.projects, projects), 6, projRow);
-  pager('ai-list','ai-pg',     pick(d.ai, ai),            5, newsRow);
-  pager('gl-list','gl-pg',     pick(d.global, global),    5, newsRow);
-  pager('bz-list','bz-pg',     pick(d.biz, biz),          5, newsRow);
-  pager('gh-list','gh-pg',     pick(d.github, github),    4, ghRow);
-  pagerFill('feed-list','feed-pg', pick(d.feeds, feeds), feedRow, 24);
+  pagerFill('ai-list','ai-pg',     pick(d.ai, ai),         newsRow);
+  pagerFill('gl-list','gl-pg',     pick(d.global, global), newsRow);
+  pagerFill('bz-list','bz-pg',     pick(d.biz, biz),       newsRow);
+  pagerFill('gh-list','gh-pg',     pick(d.github, github), ghRow);
+  pagerFill('feed-list','feed-pg', pick(d.feeds, feeds),   feedRow, 24);
   if(d.gerado_em){
     const dt=new Date(d.gerado_em);
     document.getElementById('upd').textContent =
@@ -466,8 +474,8 @@ function load(){
 }
 load();
 
-// recalcula o painel Fontes & feeds quando a janela muda de tamanho
-let _rt; addEventListener('resize',()=>{clearTimeout(_rt);_rt=setTimeout(()=>feedRedraw&&feedRedraw(),200);});
+// recalcula todos os painéis com preenchimento de altura quando a janela muda
+let _rt; addEventListener('resize',()=>{clearTimeout(_rt);_rt=setTimeout(()=>Object.values(fillRedraws).forEach(fn=>fn&&fn()),200);});
 
 // refresh: rebusca o JSON publicado (cache-bust). Túnel p/ re-coleta vem depois.
 const btn=document.getElementById('refresh');
