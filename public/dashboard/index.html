@@ -517,7 +517,11 @@ const synth = window.speechSynthesis;
 let speakBtn = null;
 function ptVoice(){
   const vs = synth ? synth.getVoices() : [];
-  return vs.find(v=>/pt[-_]?br/i.test(v.lang)) || vs.find(v=>/^pt/i.test(v.lang)) || null;
+  const pt = vs.filter(v=>/pt[-_]?br/i.test(v.lang));
+  const pool = pt.length ? pt : vs.filter(v=>/^pt/i.test(v.lang));
+  // prioriza vozes neurais (Edge "Online Natural", Google) sobre SAPI legada
+  const neural = v => /(natural|online|neural|google|multilingual)/i.test(v.name) ? 0 : 1;
+  return pool.sort((a,b)=>neural(a)-neural(b))[0] || null;
 }
 function stopSpeak(){
   if(synth) synth.cancel();
