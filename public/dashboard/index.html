@@ -370,26 +370,18 @@ function pagerFill(listId, pgId, items, row, max){
       : '';
     pg.querySelectorAll('button').forEach(b=>b.onclick=()=>{p=Math.max(0,Math.min(pages-1,p+ +b.dataset.d));draw();});
   }
+  const over = () => list.scrollHeight>list.clientHeight+2;
+  function setPer(v){ per=Math.max(1,v); pages=Math.max(1,Math.ceil(items.length/per)); if(p>=pages)p=pages-1; draw(); }
   function calc(){
     if(!items.length){list.innerHTML='';pg.innerHTML='';return;}
-    const mobile=isMob();
-    if(mobile){
-      per=Math.min(MOBILE_PER, items.length);            // mobile: no máx. 5/página
-    }else{
-      list.innerHTML=row(items[0]);                      // 1 linha pra medir
-      const fc=list.firstElementChild;
-      const rowH=fc?fc.getBoundingClientRect().height:56;
-      const availH=list.clientHeight;
-      per = availH>40 ? Math.max(1, Math.floor((availH-36)/Math.max(1,rowH))) : 6;
-    }
-    pages=Math.max(1, Math.ceil(items.length/per));
-    if(p>=pages) p=pages-1;
-    draw();
-    while(!mobile && per>1 && list.scrollHeight>list.clientHeight+2){ // tira linhas até não cortar
-      per--; pages=Math.max(1, Math.ceil(items.length/per));
-      if(p>=pages) p=pages-1;
-      draw();
-    }
+    if(isMob()){ setPer(Math.min(MOBILE_PER, items.length)); return; } // mobile: no máx. 5/página
+    list.innerHTML=row(items[0]);                        // 1 linha pra estimar
+    const fc=list.firstElementChild;
+    const rowH=fc?fc.getBoundingClientRect().height:56;
+    const availH=list.clientHeight;
+    setPer(availH>40 ? Math.max(1, Math.round((availH-32)/Math.max(1,rowH))) : 6);
+    while(per>1 && over()) setPer(per-1);                // corta se passou da altura
+    while(per<items.length){ setPer(per+1); if(over()){ setPer(per-1); break; } } // enche o que sobra
   }
   calc();                                              // tentativa imediata
   requestAnimationFrame(()=>requestAnimationFrame(calc)); // após o layout/paint
@@ -454,7 +446,7 @@ function render(d){
   fillTop(d.topbar);
   sales = pick(d.sales, sales); si=0; drawSales();
   AG = pick(d.agenda, agenda); agi=0; drawAgenda();
-  pager('proj-list','proj-pg', pick(d.projects, projects), 6, projRow);
+  pagerFill('proj-list','proj-pg', pick(d.projects, projects), projRow);
   pagerFill('ai-list','ai-pg',     pick(d.ai, ai),         newsRow);
   pagerFill('gl-list','gl-pg',     pick(d.global, global), newsRow);
   pagerFill('bz-list','bz-pg',     pick(d.biz, biz),       newsRow);
