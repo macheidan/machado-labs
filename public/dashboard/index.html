@@ -121,6 +121,7 @@
   .ag .agwhen b{font-size:12px;font-weight:700;color:var(--accent-solid)}
   .ag .agwhen span{font-size:11px;color:var(--muted)}
   .ag .desc{font-size:13px;color:#dfe3f2}
+  .agempty{font-size:12.5px;color:var(--muted-2);padding:10px 2px}
 
   /* feeds */
   .feed{display:flex;align-items:flex-start;gap:11px;padding:10px 0;border-top:1px solid rgba(255,255,255,.05)}
@@ -184,7 +185,7 @@
         <div id="sales-body"></div>
       </div>
       <div class="card grow">
-        <div class="card-h"><div class="t"><i class="ti ti-calendar-event"></i>Agenda <span class="sub">próximos dias</span></div><div class="live"><span class="dot"></span>ao vivo</div></div>
+        <div class="card-h"><div class="t"><i class="ti ti-calendar-event"></i>Agenda <span class="sub" id="ag-day"></span></div><div class="navmini" id="ag-nav"></div></div>
         <div class="list" id="agenda-list"></div>
       </div>
       <div class="card grow">
@@ -369,6 +370,26 @@ function drawSales(){
   sn.querySelectorAll('button').forEach(b=>b.onclick=()=>{si=Math.max(0,Math.min(sales.length-1,si+ +b.dataset.d));drawSales();});
 }
 
+// agenda navegável por dia (hoje .. d+7), igual ao card de vendas
+let AG = agenda, agi = 0;
+const agDay=document.getElementById('ag-day'), agNav=document.getElementById('ag-nav'), agList=document.getElementById('agenda-list');
+const ymd = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const DOWAG=['dom','seg','ter','qua','qui','sex','sáb'];
+function drawAgenda(){
+  const base=new Date(); base.setHours(0,0,0,0);
+  const day=new Date(base); day.setDate(base.getDate()+agi);
+  const label = agi===0?'hoje' : agi===1?'amanhã' :
+    `${DOWAG[day.getDay()]} ${String(day.getDate()).padStart(2,'0')}/${String(day.getMonth()+1).padStart(2,'0')}`;
+  const hasData=(AG||[]).some(a=>a.data);
+  const evs = hasData ? AG.filter(a=>a.data===ymd(day)) : (agi===0?AG:[]);
+  agDay.textContent='· '+label;
+  agList.innerHTML = evs.length
+    ? evs.map(a=>`<div class="ag"><div class="hr">${a.h}</div><div class="desc">${a.d}</div></div>`).join('')
+    : `<div class="agempty">sem compromissos</div>`;
+  agNav.innerHTML=`<button class="icon-btn" ${agi===0?'disabled':''} data-d="-1"><i class="ti ti-chevron-left"></i></button><button class="icon-btn" ${agi===7?'disabled':''} data-d="1"><i class="ti ti-chevron-right"></i></button>`;
+  agNav.querySelectorAll('button').forEach(b=>b.onclick=()=>{agi=Math.max(0,Math.min(7,agi+ +b.dataset.d));drawAgenda();});
+}
+
 // topbar (dia, clima, USD, BTC com variação)
 function fillTop(t){
   if(!t) return;
@@ -388,8 +409,7 @@ function render(d){
   d=d||{};
   fillTop(d.topbar);
   sales = pick(d.sales, sales); si=0; drawSales();
-  document.getElementById('agenda-list').innerHTML = pick(d.agenda, agenda)
-    .map(a=>`<div class="ag"><div class="agwhen"><b>${a.dia||''}</b><span>${a.h||''}</span></div><div class="desc">${a.d}</div></div>`).join('');
+  AG = pick(d.agenda, agenda); agi=0; drawAgenda();
   pager('proj-list','proj-pg', pick(d.projects, projects), 6, projRow);
   pager('ai-list','ai-pg',     pick(d.ai, ai),            5, newsRow);
   pager('gl-list','gl-pg',     pick(d.global, global),    5, newsRow);
