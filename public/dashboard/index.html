@@ -88,6 +88,7 @@
   .item .ttl{font-size:13px;line-height:1.38;color:#eef0fb;font-weight:500;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .item .meta{display:flex;align-items:center;gap:8px;margin-top:4px}
   .item .src{font-size:11px;color:var(--muted)}
+  .item .when{font-size:11px;color:var(--muted-2)}
   .tag{font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:6px;letter-spacing:.4px;text-transform:uppercase}
   .tag.claude{background:rgba(124,108,255,.16);color:#a9a0ff}
   .tag.gpt{background:rgba(1,181,116,.15);color:#3ddca0}
@@ -116,6 +117,9 @@
   .ag{display:flex;gap:12px;padding:8px 0;border-top:1px solid rgba(255,255,255,.05)}
   .ag:first-child{border-top:0}
   .ag .hr{font-size:13px;font-weight:700;color:var(--accent-solid);min-width:42px}
+  .ag .agwhen{min-width:62px;flex:0 0 auto;display:flex;flex-direction:column;line-height:1.25}
+  .ag .agwhen b{font-size:12px;font-weight:700;color:var(--accent-solid)}
+  .ag .agwhen span{font-size:11px;color:var(--muted)}
   .ag .desc{font-size:13px;color:#dfe3f2}
 
   /* feeds */
@@ -180,7 +184,7 @@
         <div id="sales-body"></div>
       </div>
       <div class="card grow">
-        <div class="card-h"><div class="t"><i class="ti ti-calendar-event"></i>Agenda do dia</div><div class="live"><span class="dot"></span>ao vivo</div></div>
+        <div class="card-h"><div class="t"><i class="ti ti-calendar-event"></i>Agenda <span class="sub">próximos dias</span></div><div class="live"><span class="dot"></span>ao vivo</div></div>
         <div class="list" id="agenda-list"></div>
       </div>
       <div class="card grow">
@@ -243,11 +247,9 @@ let sales = [
 ];
 
 const agenda = [
-  {h:'09:30',d:'Call fornecedor de queijo'},
-  {h:'11:00',d:'Gravação de reels Lov'},
-  {h:'14:00',d:'Análise DRE de maio'},
-  {h:'16:30',d:'Consultoria IA cliente'},
-  {h:'19:00',d:'Jantar família'},
+  {dia:'hoje',  h:'09:30',d:'Call fornecedor de queijo'},
+  {dia:'amanhã',h:'11:00',d:'Gravação de reels Lov'},
+  {dia:'qui 25/06',h:'14:00',d:'Análise DRE de maio'},
 ];
 
 let projects = [
@@ -321,7 +323,17 @@ const feeds = [
 const brl = n => 'R$ ' + Number(n||0).toLocaleString('pt-BR');
 const isUrl = s => /^https?:/.test(s||'');
 const thumb = n => isUrl(n.img) ? n.img : img(n.img||'x');
-const newsRow = n => `<a class="item" href="${n.url||'#'}" target="_blank" rel="noopener"><img class="thumb" src="${thumb(n)}" alt="" onerror="this.removeAttribute('src')"><div class="body"><div class="ttl">${n.t}</div><div class="meta"><span class="tag ${n.c}">${n.cat}</span><span class="src">${n.src}</span></div></div></a>`;
+function ago(s){
+  if(!s) return '';
+  const d=new Date(s); if(isNaN(d)) return '';
+  const m=Math.floor((Date.now()-d)/60000);
+  if(m<2) return 'agora';
+  if(m<60) return m+'min';
+  const h=Math.floor(m/60); if(h<24) return h+'h';
+  const dd=Math.floor(h/24); if(dd<7) return dd+'d';
+  return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});
+}
+const newsRow = n => `<a class="item" href="${n.url||'#'}" target="_blank" rel="noopener"><img class="thumb" src="${thumb(n)}" alt="" onerror="this.removeAttribute('src')"><div class="body"><div class="ttl">${n.t}</div><div class="meta"><span class="tag ${n.c}">${n.cat}</span><span class="src">${n.src}</span>${n.data?`<span class="when">· ${ago(n.data)}</span>`:''}</div></div></a>`;
 const ghRow = g => `<div class="gh"><div><div class="repo">${g.r}</div><div class="ghd">${g.d}</div><div class="lang">${g.lang}</div></div><div class="star"><i class="ti ti-star"></i>${g.s}</div></div>`;
 const projRow = p => `<div class="proj"><div><div class="pn">${p.n}</div><div class="ps">última atividade</div></div><span class="pbadge">${p.quando||p.tag||''}</span></div>`;
 const feedRow = f => `<a class="feed" href="${f.url||'#'}" target="_blank" rel="noopener"><div class="fb"><div class="fhead">${f.h}</div><div class="fmeta"><i class="ti ${f.i}"></i><span>${f.n}</span><span class="fdot">·</span><span>${f.s}</span></div></div>${f.b?`<span class="fbadge">${f.b}</span>`:''}</a>`;
@@ -377,7 +389,7 @@ function render(d){
   fillTop(d.topbar);
   sales = pick(d.sales, sales); si=0; drawSales();
   document.getElementById('agenda-list').innerHTML = pick(d.agenda, agenda)
-    .map(a=>`<div class="ag"><div class="hr">${a.h}</div><div class="desc">${a.d}</div></div>`).join('');
+    .map(a=>`<div class="ag"><div class="agwhen"><b>${a.dia||''}</b><span>${a.h||''}</span></div><div class="desc">${a.d}</div></div>`).join('');
   pager('proj-list','proj-pg', pick(d.projects, projects), 6, projRow);
   pager('ai-list','ai-pg',     pick(d.ai, ai),            5, newsRow);
   pager('gl-list','gl-pg',     pick(d.global, global),    5, newsRow);
