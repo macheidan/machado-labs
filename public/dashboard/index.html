@@ -135,6 +135,17 @@
   .feed .fdot{color:var(--muted-2)}
   .fbadge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:7px;background:rgba(1,181,116,.16);color:#3ddca0;flex:0 0 auto}
 
+  /* detalhe (resumo da notícia dentro do card) */
+  .detail{display:flex;flex-direction:column;gap:9px;height:100%;overflow:auto;padding:1px}
+  .det-back{align-self:flex-start;display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.05);border:1px solid var(--card-brd);color:var(--muted);font-size:12px;font-weight:600;padding:6px 11px;border-radius:9px;cursor:pointer;font-family:inherit}
+  .det-back:hover{color:#fff;background:rgba(255,255,255,.1)}
+  .det-ttl{font-size:15px;font-weight:700;line-height:1.35;color:#eef0fb}
+  .det-src{font-size:11px;color:var(--muted-2);display:flex;align-items:center;gap:6px}
+  .det-src .tag{font-size:9.5px}
+  .det-body{font-size:13px;line-height:1.6;color:#cdd3e6}
+  .det-link{align-self:flex-start;margin-top:auto;padding-top:4px;display:flex;align-items:center;gap:6px;color:var(--accent-solid);font-size:12.5px;font-weight:700}
+  .det-link:hover{text-decoration:underline}
+
   @media (max-width:1500px){
     body{overflow:auto}.app{height:auto;min-height:100vh}
     .grid{grid-template-columns:1fr 1fr}
@@ -364,9 +375,11 @@ let fillRedraws={};
 function pagerFill(listId, pgId, items, row, max){
   items=(items||[]).slice(0, max||items.length);
   const list=document.getElementById(listId), pg=document.getElementById(pgId);
-  let p=0, per=6, pages=1;
+  let p=0, per=6, pages=1, detailOpen=false;
   function draw(){
-    list.innerHTML=items.slice(p*per,(p+1)*per).map(row).join('');
+    const start=p*per;
+    list.innerHTML=items.slice(start,start+per).map(row).join('');
+    [...list.children].forEach((el,k)=>el.setAttribute('data-i', start+k));
     pg.innerHTML = pages>1
       ? `<button class="icon-btn" ${p===0?'disabled':''} data-d="-1"><i class="ti ti-chevron-left"></i></button><span class="pgn">${p+1} / ${pages}</span><button class="icon-btn" ${p===pages-1?'disabled':''} data-d="1"><i class="ti ti-chevron-right"></i></button>`
       : '';
@@ -375,6 +388,7 @@ function pagerFill(listId, pgId, items, row, max){
   const over = () => list.scrollHeight>list.clientHeight+2;
   function setPer(v){ per=Math.max(1,v); pages=Math.max(1,Math.ceil(items.length/per)); if(p>=pages)p=pages-1; draw(); }
   function calc(){
+    if(detailOpen) return;                              // não recalcula com resumo aberto
     if(!items.length){list.innerHTML='';pg.innerHTML='';return;}
     if(isMob()){ setPer(Math.min(MOBILE_PER, items.length)); return; } // mobile: no máx. 5/página
     list.innerHTML=row(items[0]);                        // 1 linha pra estimar
@@ -385,6 +399,26 @@ function pagerFill(listId, pgId, items, row, max){
     while(per>1 && over()) setPer(per-1);                // corta se passou da altura
     while(per<items.length){ setPer(per+1); if(over()){ setPer(per-1); break; } } // enche o que sobra
   }
+  // clicar numa notícia/feed abre o resumo no próprio card (voltar + original)
+  function showDetail(it){
+    detailOpen=true;
+    const title=it.t||it.h||'', src=it.src||it.n||'';
+    const resumo=it.resumo || 'Resumo não disponível para esta notícia. Use o link abaixo para ler no original.';
+    pg.innerHTML='';
+    list.innerHTML=`<div class="detail"><button class="det-back"><i class="ti ti-arrow-left"></i> voltar</button>`+
+      `<div class="det-ttl">${title}</div>`+
+      `<div class="det-src">${it.cat?`<span class="tag ${it.c||'gen'}">${it.cat}</span>`:''}<span>${src}</span>${it.data?`<span class="fdot">·</span><span>${ago(it.data)}</span>`:''}</div>`+
+      `<div class="det-body">${resumo}</div>`+
+      `<a class="det-link" href="${it.url||'#'}" target="_blank" rel="noopener">ler no original <i class="ti ti-external-link"></i></a></div>`;
+    list.querySelector('.det-back').onclick=()=>{ detailOpen=false; calc(); };
+  }
+  list.onclick=e=>{
+    if(!e.target.closest('.item,.feed')) return;          // só notícias/feeds
+    if(e.metaKey||e.ctrlKey||e.shiftKey) return;          // deixa abrir em nova aba
+    const el=e.target.closest('[data-i]'); if(!el) return;
+    const it=items[+el.getAttribute('data-i')]; if(!it) return;
+    e.preventDefault(); showDetail(it);
+  };
   calc();                                              // tentativa imediata
   requestAnimationFrame(()=>requestAnimationFrame(calc)); // após o layout/paint
   if(document.fonts&&document.fonts.ready) document.fonts.ready.then(calc); // após webfonts
