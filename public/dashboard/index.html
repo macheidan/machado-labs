@@ -230,14 +230,9 @@
     <!-- COL 3 -->
     <div class="col">
       <div class="card grow">
-        <div class="card-h"><div class="t"><i class="ti ti-world"></i>Global News</div></div>
-        <div class="list" id="gl-list"></div>
-        <div class="pg" id="gl-pg"></div>
-      </div>
-      <div class="card grow">
-        <div class="card-h"><div class="t"><i class="ti ti-briefcase"></i>Biz News</div></div>
-        <div class="list" id="bz-list"></div>
-        <div class="pg" id="bz-pg"></div>
+        <div class="card-h"><div class="t"><i class="ti ti-mail"></i>Newsletters de IA</div></div>
+        <div class="list" id="nl-list"></div>
+        <div class="pg" id="nl-pg"></div>
       </div>
     </div>
 
@@ -304,15 +299,11 @@ const global = [
   {t:'Universal flu vaccine passes phase 3 trials',c:'pos',cat:'Health',src:'The Lancet',img:'g8'},
 ];
 
-const biz = [
-  {t:'Reforma tributária muda o Simples Nacional a partir de 2027',c:'biz',cat:'Impostos',src:'Valor',img:'b1'},
-  {t:'iFood lança taxa fixa para pequenos restaurantes',c:'biz',cat:'Delivery',src:'NeoFeed',img:'b2'},
-  {t:'Delivery cresce 18% no primeiro semestre no Brasil',c:'biz',cat:'Mercado',src:'Mercado&Consumo',img:'b3'},
-  {t:'Nova lei do entregador é aprovada no Senado',c:'biz',cat:'Delivery',src:'Abrasel',img:'b4'},
-  {t:'Startup de gestão para restaurantes capta R$ 40M',c:'biz',cat:'Startups',src:'PEGN',img:'b5'},
-  {t:'Nubank lança conta PJ voltada para MEIs',c:'biz',cat:'Negócios',src:'Exame',img:'b6'},
-  {t:'Inflação de alimentos desacelera em junho',c:'biz',cat:'Mercado',src:'Valor',img:'b7'},
-  {t:'Rappi testa entrega por drone em São Paulo',c:'biz',cat:'Delivery',src:'Startups',img:'b8'},
+const newsletters = [
+  {i:'ti-mail',n:'Evolving AI Insights',s:'newsletter',h:'Fundo de US$ 7 trilhões te dá participação na OpenAI e Anthropic',resumo:'Edição cobre o novo fundo soberano de IA, o lançamento do Daybreak da OpenAI e a disputa com a Mythos.'},
+  {i:'ti-mail',n:'The Rundown AI',s:'newsletter',h:'Novo framework de agentes do Google vira código aberto',resumo:'Resumo das principais notícias do dia em IA, ferramentas e lançamentos.'},
+  {i:'ti-mail',n:'TLDR AI',s:'newsletter',h:'Anthropic publica avanço em interpretabilidade de modelos',resumo:'Notícias técnicas enxutas sobre pesquisa, ferramentas e releases de IA.'},
+  {i:'ti-mail',n:'The Neuron',s:'newsletter',h:'Os 7 usos de IA que mais economizam tempo no dia a dia',resumo:'Foco em aplicação prática de IA para quem toca operação.'},
 ];
 
 const github = [
@@ -489,8 +480,7 @@ function render(d){
   AG = pick(d.agenda, agenda); agi=0; drawAgenda();
   pagerFill('proj-list','proj-pg', pick(d.projects, projects), projRow);
   pagerFill('ai-list','ai-pg',     pick(d.ai, ai),         newsRow);
-  pagerFill('gl-list','gl-pg',     pick(d.global, global), newsRow);
-  pagerFill('bz-list','bz-pg',     pick(d.biz, biz),       newsRow);
+  pagerFill('nl-list','nl-pg',     pick(d.newsletters, newsletters), feedRow);
   pagerFill('gh-list','gh-pg',     pick(d.github, github), ghRow);
   pagerFill('feed-list','feed-pg', pick(d.feeds, feeds),   feedRow, 24);
   if(d.gerado_em){
