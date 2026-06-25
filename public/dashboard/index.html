@@ -107,6 +107,10 @@
   .gh .ghd{font-size:11.5px;color:var(--muted);line-height:1.35;margin:2px 0 3px}
   .gh .lang{font-size:10.5px;color:var(--muted-2)}
   .gh .star{font-size:12px;color:var(--green);font-weight:700;display:flex;align-items:center;gap:3px;flex:0 0 auto}
+  .ghtabs{display:flex;align-items:center;gap:2px}
+  .ghtab{font-size:11px;font-weight:600;color:var(--muted);background:none;border:0;padding:3px 7px;border-radius:7px;cursor:pointer;letter-spacing:.2px}
+  .ghtab:hover{color:#fff}
+  .ghtab.on{color:#fff;background:rgba(255,255,255,.08)}
 
   /* projetos */
   .proj{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid rgba(255,255,255,.05)}
@@ -167,6 +171,7 @@
     .card:not(.open) .list,
     .card:not(.open) #sales-body,
     .card:not(.open) .pg,
+    .card:not(.open) .ghtabs,
     .card:not(.open) .navmini{display:none}
   }
 </style>
@@ -221,7 +226,7 @@
         <div class="pg" id="ai-pg"></div>
       </div>
       <div class="card grow">
-        <div class="card-h"><div class="t"><i class="ti ti-brand-github"></i>GitHub Trending</div><div class="t sub" style="gap:4px">dia · semana · mês</div></div>
+        <div class="card-h"><div class="t"><i class="ti ti-brand-github"></i>GitHub Trending</div><div class="ghtabs" id="gh-tabs"><button class="ghtab on" data-p="day">dia</button><button class="ghtab" data-p="week">semana</button><button class="ghtab" data-p="month">mês</button></div></div>
         <div class="list" id="gh-list"></div>
         <div class="pg" id="gh-pg"></div>
       </div>
@@ -306,14 +311,30 @@ const newsletters = [
   {i:'ti-mail',n:'The Neuron',s:'newsletter',h:'Os 7 usos de IA que mais economizam tempo no dia a dia',resumo:'Foco em aplicação prática de IA para quem toca operação.'},
 ];
 
-const github = [
-  {r:'vercel/ai',d:'SDK para construir apps de IA com streaming e tool calling',lang:'TypeScript',s:'1.2k'},
-  {r:'microsoft/markitdown',d:'Converte PDF, Office e áudio em Markdown para LLMs',lang:'Python',s:'890'},
-  {r:'collinhover/agent-os',d:'Runtime de orquestração para agentes autônomos',lang:'Rust',s:'640'},
-  {r:'langchain-ai/langgraph',d:'Grafos de estado para agentes multi-etapa',lang:'Python',s:'520'},
-  {r:'ollama/ollama',d:'Roda modelos de linguagem locais com um comando',lang:'Go',s:'410'},
-  {r:'unclecode/crawl4ai',d:'Web crawler que entrega dados prontos para LLM',lang:'Python',s:'330'},
-];
+const github = {
+  day: [
+    {r:'vercel/ai',d:'SDK para construir apps de IA com streaming e tool calling',lang:'TypeScript',s:'1.2k'},
+    {r:'microsoft/markitdown',d:'Converte PDF, Office e áudio em Markdown para LLMs',lang:'Python',s:'890'},
+    {r:'collinhover/agent-os',d:'Runtime de orquestração para agentes autônomos',lang:'Rust',s:'640'},
+    {r:'langchain-ai/langgraph',d:'Grafos de estado para agentes multi-etapa',lang:'Python',s:'520'},
+    {r:'ollama/ollama',d:'Roda modelos de linguagem locais com um comando',lang:'Go',s:'410'},
+    {r:'unclecode/crawl4ai',d:'Web crawler que entrega dados prontos para LLM',lang:'Python',s:'330'},
+  ],
+  week: [
+    {r:'huggingface/transformers',d:'Modelos de ML prontos para texto, visão e áudio',lang:'Python',s:'8.4k'},
+    {r:'comfyanonymous/ComfyUI',d:'Interface por nós para pipelines de difusão',lang:'Python',s:'6.1k'},
+    {r:'ggerganov/llama.cpp',d:'Inferência de LLMs em C/C++ na CPU',lang:'C++',s:'5.3k'},
+    {r:'open-webui/open-webui',d:'Interface web auto-hospedada para LLMs locais',lang:'Svelte',s:'4.2k'},
+    {r:'pydantic/pydantic-ai',d:'Framework de agentes com tipagem forte',lang:'Python',s:'3.0k'},
+  ],
+  month: [
+    {r:'langgenius/dify',d:'Plataforma open source para apps de LLM',lang:'TypeScript',s:'22k'},
+    {r:'n8n-io/n8n',d:'Automação de fluxos com nós de IA',lang:'TypeScript',s:'18k'},
+    {r:'open-webui/open-webui',d:'Interface web auto-hospedada para LLMs locais',lang:'Svelte',s:'15k'},
+    {r:'ggerganov/llama.cpp',d:'Inferência de LLMs em C/C++ na CPU',lang:'C++',s:'12k'},
+    {r:'browser-use/browser-use',d:'Deixa agentes de IA controlarem o navegador',lang:'Python',s:'9.7k'},
+  ],
+};
 
 const feeds = [
   {i:'ti-world',n:'AI News',s:'site',h:'OpenAI launches an enterprise tier with on-prem deployment',b:''},
@@ -473,6 +494,25 @@ function fillTop(t){
 }
 
 const pick = (a,b) => (a&&a.length)?a:b;
+
+// GitHub Trending com abas dia/semana/mês (10 itens cada, paginado)
+let GH = github, ghTabsReady = false;
+function drawGh(per){ pagerFill('gh-list','gh-pg', (GH[per]||[]).slice(0,10), ghRow); }
+function renderGh(d){
+  GH = (d && (d.day||d.week||d.month)) ? d : github;       // usa real se vier algo
+  const tabs = document.getElementById('gh-tabs');
+  if(!ghTabsReady){
+    tabs.onclick = e => {
+      const b = e.target.closest('.ghtab'); if(!b) return;
+      tabs.querySelectorAll('.ghtab').forEach(x=>x.classList.toggle('on', x===b));
+      drawGh(b.dataset.p);
+    };
+    ghTabsReady = true;
+  }
+  const on = tabs.querySelector('.ghtab.on') || tabs.querySelector('.ghtab');
+  drawGh(on.dataset.p);
+}
+
 function render(d){
   d=d||{};
   fillTop(d.topbar);
@@ -481,7 +521,7 @@ function render(d){
   pagerFill('proj-list','proj-pg', pick(d.projects, projects), projRow);
   pagerFill('ai-list','ai-pg',     pick(d.ai, ai),         newsRow);
   pagerFill('nl-list','nl-pg',     pick(d.newsletters, newsletters), feedRow);
-  pagerFill('gh-list','gh-pg',     pick(d.github, github), ghRow);
+  renderGh(d.github);
   pagerFill('feed-list','feed-pg', pick(d.feeds, feeds),   feedRow, 24);
   if(d.gerado_em){
     const dt=new Date(d.gerado_em);
@@ -516,7 +556,7 @@ document.querySelectorAll('.card').forEach((card,i)=>{
   if(i===0) card.classList.add('open');
   const h=card.querySelector('.card-h');
   if(h) h.addEventListener('click',e=>{
-    if(!isMobile() || e.target.closest('.navmini') || e.target.closest('.icon-btn')) return; // ignora setas e botão atualizar
+    if(!isMobile() || e.target.closest('.navmini') || e.target.closest('.icon-btn') || e.target.closest('.ghtabs')) return; // ignora setas, botão atualizar e abas do github
     card.classList.toggle('open');
   });
 });
