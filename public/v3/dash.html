@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#f4f1e9" />
+<meta name="robots" content="noindex,nofollow" />
+<title>Fábio Machado · Edição da Manhã</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..700&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.1.0/dist/tabler-icons.min.css" />
+<style>
+  :root{
+    --paper:#f4f1e9; --paper-2:#efebdf; --card:#fbf9f3; --ink:#17130d; --ink-2:#6a6253;
+    --ink-3:#938974; --line:#ddd5c2; --line-2:#cabfa6; --line-soft:#e7e1d2;
+    --accent:#dd3b1a; --accent-2:#1c4b7a; --ok:#2f7d52; --bad:#c0392b;
+    --display:'Fraunces',Georgia,serif; --body:'Hanken Grotesk',system-ui,sans-serif;
+    --maxw:1280px;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:var(--body);color:var(--ink);background:var(--paper);
+    -webkit-font-smoothing:antialiased;line-height:1.5;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+  }
+  a{color:inherit;text-decoration:none}
+  button{font:inherit;cursor:pointer}
+  ::selection{background:var(--accent);color:#fff}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+
+  /* ===== masthead ===== */
+  .top-rule{height:5px;background:var(--ink)}
+  .masthead{padding:22px 0 14px;border-bottom:1px solid var(--line)}
+  .mh-top{display:flex;justify-content:space-between;align-items:baseline;gap:16px;
+    font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-2);font-weight:600}
+  .mh-top .r{display:flex;align-items:center;gap:14px}
+  .mh-name{font-family:var(--display);font-weight:600;font-size:clamp(38px,7vw,84px);
+    line-height:.92;letter-spacing:-.02em;text-align:center;margin:8px 0 6px}
+  .mh-name .i{font-style:italic;font-weight:500}
+  .mh-sub{display:flex;justify-content:center;align-items:center;gap:12px;
+    font-size:11.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-2);font-weight:600}
+  .mh-sub .dot{width:4px;height:4px;border-radius:50%;background:var(--accent)}
+  .refresh{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);
+    background:var(--card);padding:6px 11px;border-radius:2px;font-size:11px;font-weight:700;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);transition:.15s}
+  .refresh:hover{color:var(--ink);border-color:var(--ink-3)}
+  .refresh.spin i{animation:sp 1s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  .ticker{border-bottom:2px solid var(--ink);background:var(--paper-2)}
+  .ticker .row{display:flex;align-items:center;gap:26px;padding:9px 0;font-size:12.5px;
+    overflow-x:auto;scrollbar-width:none;white-space:nowrap}
+  .ticker .row::-webkit-scrollbar{display:none}
+  .tk{display:flex;align-items:center;gap:7px;color:var(--ink-2);font-weight:600;flex:0 0 auto}
+  .tk i{font-size:15px;color:var(--accent)}
+  .tk b{color:var(--ink);font-weight:800;font-variant-numeric:tabular-nums}
+  .tk .lab{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+  .up{color:var(--ok)!important}.down{color:var(--accent)!important}
+
+  /* ===== bento ===== */
+  .bento{display:grid;grid-template-columns:repeat(12,1fr);gap:20px;padding:26px 0 60px;align-items:start}
+  .sec{grid-column:span 4;background:var(--card);border:1px solid var(--line);
+    border-radius:3px;padding:18px;display:flex;flex-direction:column;min-width:0}
+  .kick{display:flex;align-items:center;gap:10px;padding-bottom:11px;margin-bottom:14px;border-bottom:2px solid var(--ink)}
+  .kick .no{font-family:var(--display);font-style:italic;font-size:13px;color:var(--accent);font-weight:600}
+  .kick .ti-lbl{font-family:var(--display);font-size:17px;font-weight:600;letter-spacing:.01em;flex:1}
+  .kick .meta{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+  .kick .navx{display:flex;gap:5px}
+  .nb{width:25px;height:25px;display:grid;place-items:center;border:1px solid var(--line);
+    background:var(--paper);border-radius:2px;color:var(--ink-2);font-size:14px}
+  .nb:hover{color:var(--ink);border-color:var(--ink-3)}
+  .nb:disabled{opacity:.3}
+
+  /* faturamento */
+  .fat-num{font-family:var(--display);font-size:clamp(40px,4.4vw,60px);font-weight:600;
+    letter-spacing:-.02em;line-height:.88;font-variant-numeric:tabular-nums}
+  .fat-num .c{font-size:.4em;color:var(--ink-3);vertical-align:.35em;margin-right:5px;font-weight:500}
+  .fat-row{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+  .fat-d{font-size:14px;font-weight:800;display:flex;align-items:center;gap:2px}
+  .fat-d .vs{color:var(--ink-3);font-weight:600;font-size:11px;margin-left:2px}
+  .fat-sub{font-size:12.5px;color:var(--ink-2);margin-top:8px;font-weight:500}
+  .fat-sub b{color:var(--ink);font-weight:800}
+  .fat-split{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-top:16px;border-top:1px solid var(--line-soft)}
+  .fat-st{padding:12px 0 2px;border-right:1px solid var(--line-soft)}
+  .fat-st:last-child{border-right:0;padding-left:14px}
+  .fat-st .n{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-2)}
+  .fat-st .n .d{width:8px;height:8px;border-radius:50%}
+  .fat-st .v{font-family:var(--display);font-size:21px;font-weight:600;margin:4px 0 1px;font-variant-numeric:tabular-nums}
+  .fat-st .s{font-size:11px;color:var(--ink-3);font-weight:500}
+  .fat-bars{display:flex;align-items:flex-end;gap:5px;height:40px;margin-top:18px}
+  .fat-bar{flex:1;background:var(--line);border-radius:1px;min-height:4px;position:relative;cursor:pointer}
+  .fat-bar.on{background:var(--accent)}
+  .fat-bar:hover{filter:brightness(.92)}
+  .fat-bar .bl{position:absolute;bottom:-15px;left:50%;transform:translateX(-50%);font-size:8.5px;color:var(--ink-3);font-weight:700}
+
+  /* instagram */
+  .ig-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:13px}
+  .ig-tab{border:1px solid var(--line);background:var(--paper);padding:6px 11px;border-radius:2px;font-size:12px;font-weight:700;color:var(--ink-2);transition:.15s}
+  .ig-tab:hover{color:var(--ink)}
+  .ig-tab.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .ig-frame{flex:1;min-height:0;border:1px solid var(--line);border-radius:3px;overflow:hidden;background:#fff}
+  .ig-frame iframe{width:100%;height:540px;border:0;display:block}
+  .ig-hint{font-size:11px;color:var(--ink-3);margin-top:9px;text-align:center;font-weight:500}
+
+  /* youtube */
+  .yt{display:flex;flex-direction:column;gap:13px;overflow-y:auto;max-height:560px;padding-right:3px}
+  .ytc{display:grid;grid-template-columns:148px 1fr;gap:12px;align-items:start;cursor:pointer}
+  .ytc .th{position:relative;aspect-ratio:16/9;border-radius:3px;overflow:hidden;background:var(--paper-2);border:1px solid var(--line)}
+  .ytc .th img{width:100%;height:100%;object-fit:cover;display:block}
+  .ytc .th .play{position:absolute;inset:0;display:grid;place-items:center;background:rgba(20,15,10,.12);opacity:0;transition:.15s}
+  .ytc:hover .th .play{opacity:1}
+  .ytc .th .play i{font-size:30px;color:#fff;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))}
+  .ytc .yb{min-width:0}
+  .ytc .yt-t{font-size:13.5px;font-weight:600;line-height:1.32;color:var(--ink);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .ytc .yt-m{font-size:11px;color:var(--ink-2);margin-top:5px;font-weight:600}
+  .ytc .yt-m .cat{color:var(--accent)}
+  .ytc .yt-m .when{color:var(--ink-3);font-weight:500}
+
+  /* listas */
+  .list{display:flex;flex-direction:column;overflow-y:auto;max-height:430px;margin:0 -4px;padding:0 4px}
+  .li{display:flex;gap:12px;padding:11px 4px;border-top:1px solid var(--line-soft);align-items:flex-start}
+  .li:first-child{border-top:0}
+  .li .lthumb{width:58px;height:44px;border-radius:2px;object-fit:cover;flex:0 0 auto;background:var(--paper-2);border:1px solid var(--line)}
+  .li .lb{flex:1;min-width:0}
+  .li .lt{font-size:13px;font-weight:600;line-height:1.34;color:var(--ink);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .li:hover .lt{color:var(--accent)}
+  .li .lm{font-size:10.5px;color:var(--ink-2);margin-top:4px;font-weight:600;display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+  .li .lm .cat{color:var(--accent);text-transform:uppercase;letter-spacing:.06em}
+  .li .lm .when{color:var(--ink-3);font-weight:500}
+  .gh-li{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+  .gh-li .star{font-size:11.5px;color:var(--ok);font-weight:800;flex:0 0 auto;font-variant-numeric:tabular-nums}
+  .toggle{display:flex;gap:4px}
+  .tg{border:1px solid var(--line);background:var(--paper);padding:4px 10px;border-radius:2px;font-size:11px;font-weight:700;color:var(--ink-2)}
+  .tg.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .empty{font-size:12.5px;color:var(--ink-3);padding:16px 2px;font-weight:500}
+
+  /* modal yt */
+  .modal{position:fixed;inset:0;z-index:100;background:rgba(20,15,10,.78);display:none;align-items:center;justify-content:center;padding:24px}
+  .modal.on{display:flex}
+  .modal .box{width:min(900px,100%);aspect-ratio:16/9;background:#000;border-radius:4px;overflow:hidden;position:relative;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+  .modal iframe{width:100%;height:100%;border:0}
+  .modal .x{position:absolute;top:-42px;right:0;color:#fff;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;gap:6px}
+
+  @media (max-width:1080px){ .sec{grid-column:span 6} }
+  @media (max-width:680px){
+    .wrap{padding:0 15px}
+    .bento{gap:15px;padding:18px 0 50px}
+    .sec{grid-column:span 12}
+    .mh-top .hidem{display:none}
+    .ytc{grid-template-columns:120px 1fr}
+  }
+</style>
+</head>
+<body>
+  <div class="top-rule"></div>
+  <header class="masthead"><div class="wrap">
+    <div class="mh-top">
+      <span id="edicao">Edição da manhã</span>
+      <span class="r"><span class="hidem" id="loc">Porto Alegre, RS</span>
+        <button class="refresh" id="refresh"><i class="ti ti-refresh"></i>atualizar</button></span>
+    </div>
+    <h1 class="mh-name">Fábio <span class="i">Machado</span></h1>
+    <div class="mh-sub"><span id="dia">sexta, 27 de junho</span><span class="dot"></span><span>radar diário</span></div>
+  </div></header>
+
+  <div class="ticker"><div class="wrap"><div class="row" id="ticker"></div></div></div>
+
+  <main class="wrap"><div class="bento">
+
+    <section class="sec">
+      <div class="kick"><span class="no">Nº 01</span><span class="ti-lbl">Faturamento</span>
+        <span class="meta" id="fat-day"></span><span class="navx" id="fat-nav"></span></div>
+      <div id="fat-body"></div>
+    </section>
+
+    <section class="sec">
+      <div class="kick"><span class="no">Nº 02</span><span class="ti-lbl">No YouTube</span><span class="meta">últimos vídeos</span></div>
+      <div class="yt" id="yt-list"></div>
+    </section>
+
+    <section class="sec">
+      <div class="kick"><span class="no">Nº 03</span><span class="ti-lbl">No Instagram</span></div>
+      <div class="ig-tabs" id="ig-tabs"></div>
+      <div class="ig-frame" id="ig-frame"></div>
+      <div class="ig-hint">posts ao vivo via Instagram · toque numa conta</div>
+    </section>
+
+    <section class="sec">
+      <div class="kick"><span class="no">Nº 04</span><span class="ti-lbl">Fronteira da IA</span><span class="meta">modelos & labs</span></div>
+      <div class="list" id="ia-list"></div>
+    </section>
+
+    <section class="sec">
+      <div class="kick"><span class="no">Nº 05</span><span class="ti-lbl">Mercado</span><span class="meta">food-service · delivery</span></div>
+      <div class="list" id="mkt-list"></div>
+    </section>
+
+    <section class="sec">
+      <div class="kick"><span class="no">Nº 06</span><span class="ti-lbl">Ferramentas</span>
+        <span class="toggle" id="tools-tg"><button class="tg on" data-t="ph">Product Hunt</button><button class="tg" data-t="gh">GitHub</button></span></div>
+      <div class="list" id="tools-list"></div>
+    </section>
+
+  </div></main>
+
+  <div class="modal" id="modal"><div class="box"><a class="x" id="modal-x"><i class="ti ti-x"></i> fechar</a><div id="modal-player"></div></div></div>
+
+<script>
+let IG_ACCOUNTS=['evolving.ai','openai','ifood'];
+
+let sales=[
+  {dow:'domingo, 21 jun',dame:[7842,96,138],lov:[14107,184,301]},
+  {dow:'sábado, 20 jun', dame:[9310,121,167],lov:[16880,223,362]},
+  {dow:'sexta, 19 jun',  dame:[8120,102,149],lov:[15240,198,325]},
+  {dow:'quinta, 18 jun', dame:[6540,82,118], lov:[12430,162,268]},
+  {dow:'quarta, 17 jun', dame:[5980,74,109], lov:[11200,146,241]},
+  {dow:'terça, 16 jun',  dame:[5410,68,98],  lov:[10350,135,223]},
+  {dow:'segunda, 15 jun',dame:[5120,63,92],  lov:[9870,128,210]},
+];
+let YT=[
+  {vid:'fvXWEqut82c',canal:'Matthew Berman',cat:'IA',t:'Apple just raised prices on almost everything'},
+  {vid:'Ju8LVdvuxGM',canal:'Y Combinator',cat:'Startups',t:'India Can Create The Largest AI Companies'},
+  {vid:'zMVZvgCOr40',canal:'Matt Wolfe',cat:'Ferramentas',t:'AI News: o novo modelo que rivaliza com os melhores'},
+  {vid:'YgsVpHoyv7Q',canal:'AICodeKing',cat:'Dev',t:'GPT 5.6: honestamente, está ok. Tenho sérias dúvidas'},
+  {vid:'eEdOqSmkZy0',canal:'Matthew Berman',cat:'IA',t:'Nem acredito que isso aconteceu'},
+];
+let AI=[
+  {t:'Anthropic lança marketplace de skills para o Claude',cat:'Claude',src:'Anthropic',img:'a1'},
+  {t:'OpenAI libera GPT-5.5 com janela de 2M tokens',cat:'GPT',src:'OpenAI',img:'a2'},
+  {t:'Google DeepMind apresenta o Gemini 3 Ultra',cat:'Gemini',src:'DeepMind',img:'a3'},
+  {t:'Mistral abre pesos de um novo modelo de raciocínio',cat:'Open',src:'Mistral',img:'a4'},
+];
+let MKT=[
+  {t:'iFood reduz taxa para pequenos restaurantes',cat:'Mercado',src:'Mercado&Consumo',img:'m1'},
+  {t:'Rede de fast-food testa atendente de IA no drive-thru',cat:'Foodtech',src:'The Spoon',img:'m2'},
+  {t:'Delivery próprio cresce e restaurantes fogem das comissões',cat:'Negócios',src:'NeoFeed',img:'m3'},
+  {t:'Inflação de alimentos desacelera e alivia margem',cat:'Mercado',src:'Brazil Journal',img:'m4'},
+];
+let PH=[
+  {t:'Supra Player',src:'Product Hunt',img:'p1',resumo:'Player de mídia minimalista.'},
+  {t:'Nada',src:'Product Hunt',img:'p2',resumo:'Bloqueador de distrações.'},
+];
+let GH={day:[{r:'vercel/ai',d:'SDK para apps de IA',lang:'TypeScript',s:'1.2k'},{r:'ollama/ollama',d:'Modelos locais com um comando',lang:'Go',s:'410'}]};
+
+const brl=n=>Number(n||0).toLocaleString('pt-BR');
+const isUrl=s=>/^https?:/.test(s||'');
+const ph=s=>`https://picsum.photos/seed/${s}/120/90`;
+const timg=n=>isUrl(n.img)?n.img:ph(n.img||'x');
+const virg=v=>String(v).replace('.',',');
+function ago(s){if(!s)return'';const d=new Date(s);if(isNaN(d))return'';const m=Math.floor((Date.now()-d)/6e4);
+  if(m<2)return'agora';if(m<60)return m+'min';const h=Math.floor(m/60);if(h<24)return h+'h';
+  const dd=Math.floor(h/24);if(dd<7)return dd+'d';return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});}
+
+function ticker(t){
+  const el=document.getElementById('ticker');
+  const d=(p)=>{const up=(+p||0)>=0;return`<span class="${up?'up':'down'}" style="font-weight:800"><i class="ti ti-arrow-${up?'up-right':'down-right'}" style="font-size:13px"></i>${virg(Math.abs(+p||0))}%</span>`;};
+  const bk=v=>v>=1000?virg((v/1000).toFixed(1))+'k':String(v);
+  const clima=t&&t.clima,usd=t&&t.usd,btc=t&&t.btc;
+  el.innerHTML=
+    `<span class="tk"><i class="ti ti-cloud"></i><span class="lab">POA</span><b>${clima?clima.temp:18}°</b></span>`+
+    `<span class="tk"><span class="lab">Dólar</span><b>R$ ${usd?virg(usd.valor.toFixed(2)):'5,42'}</b>${d(usd?usd.pct:0.8)}</span>`+
+    `<span class="tk"><span class="lab">Bitcoin</span><b>US$ ${btc?bk(btc.valor):'67,2k'}</b>${d(btc?btc.pct:-1.2)}</span>`+
+    `<span class="tk" style="margin-left:auto"><span class="lab">Atualizado</span><b>${(t&&t.upd)||'agora'}</b></span>`;
+}
+
+let si=0;
+const totDia=d=>[d.dame[0]+d.lov[0],d.dame[1]+d.lov[1],d.dame[2]+d.lov[2]];
+function drawFat(){
+  const body=document.getElementById('fat-body'),day=document.getElementById('fat-day'),nav=document.getElementById('fat-nav');
+  const d=sales[si];if(!d){body.innerHTML='<div class="empty">sem dados</div>';return;}
+  const tot=totDia(d),prev=sales[si+1];
+  let dh='';
+  if(prev){const p=totDia(prev)[0],pct=p?((tot[0]-p)/p*100):0,up=pct>=0;
+    dh=`<span class="fat-d ${up?'up':'down'}"><i class="ti ti-arrow-${up?'up-right':'down-right'}"></i>${virg(Math.abs(pct).toFixed(0))}%<span class="vs">vs ${prev.dow.split(',')[0]}</span></span>`;}
+  const serie=[...sales].slice(0,7).reverse(),max=Math.max(...serie.map(s=>totDia(s)[0]),1),onIdx=serie.length-1-si;
+  const bars=serie.map((s,i)=>{const v=totDia(s)[0],hp=Math.max(6,Math.round(v/max*100)),lb=(s.dow.match(/(\d+)/)||[])[1]||'';
+    return`<div class="fat-bar ${i===onIdx?'on':''}" data-i="${serie.length-1-i}" style="height:${hp}%" title="${s.dow}: R$ ${brl(v)}"><span class="bl">${lb}</span></div>`;}).join('');
+  day.textContent=d.dow;
+  body.innerHTML=`<div class="fat-row"><div class="fat-num"><span class="c">R$</span>${brl(tot[0])}</div>${dh}</div>
+    <div class="fat-sub"><b>${tot[2]}</b> pedidos · <b>${tot[1]}</b> pizzas</div>
+    <div class="fat-split">
+      <div class="fat-st"><div class="n"><span class="d" style="background:#d8567f"></span>Dáme</div><div class="v">R$ ${brl(d.dame[0])}</div><div class="s">${d.dame[2]} ped · ${d.dame[1]} pz</div></div>
+      <div class="fat-st"><div class="n"><span class="d" style="background:#7a5bd8"></span>Lov</div><div class="v">R$ ${brl(d.lov[0])}</div><div class="s">${d.lov[2]} ped · ${d.lov[1]} pz</div></div>
+    </div>
+    <div class="fat-bars">${bars}</div>`;
+  body.querySelectorAll('.fat-bar').forEach(b=>b.onclick=()=>{si=+b.dataset.i;drawFat();});
+  nav.innerHTML=`<button class="nb" ${si===sales.length-1?'disabled':''} data-d="1"><i class="ti ti-chevron-left"></i></button><button class="nb" ${si===0?'disabled':''} data-d="-1"><i class="ti ti-chevron-right"></i></button>`;
+  nav.querySelectorAll('button').forEach(b=>b.onclick=()=>{si=Math.max(0,Math.min(sales.length-1,si+ +b.dataset.d));drawFat();});
+}
+
+function drawYT(){
+  const el=document.getElementById('yt-list');
+  el.innerHTML=(YT&&YT.length)?YT.map(v=>`<div class="ytc" data-vid="${v.vid}">
+    <div class="th"><img src="${v.img||('https://i.ytimg.com/vi/'+v.vid+'/hqdefault.jpg')}" loading="lazy" alt=""><span class="play"><i class="ti ti-player-play-filled"></i></span></div>
+    <div class="yb"><div class="yt-t">${v.t}</div><div class="yt-m">${v.canal||''} ${v.cat?`· <span class="cat">${v.cat}</span>`:''}${v.data?` · <span class="when">${ago(v.data)}</span>`:''}</div></div></div>`).join('')
+    :`<div class="empty">sem vídeos</div>`;
+  el.querySelectorAll('.ytc').forEach(c=>c.onclick=()=>openYT(c.dataset.vid));
+}
+function openYT(vid){document.getElementById('modal-player').innerHTML=`<iframe src="https://www.youtube.com/embed/${vid}?autoplay=1&rel=0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;document.getElementById('modal').classList.add('on');}
+function closeYT(){document.getElementById('modal').classList.remove('on');document.getElementById('modal-player').innerHTML='';}
+document.getElementById('modal-x').onclick=closeYT;
+document.getElementById('modal').onclick=e=>{if(e.target.id==='modal')closeYT();};
+addEventListener('keydown',e=>{if(e.key==='Escape')closeYT();});
+
+let igActive=0;
+function drawIG(){
+  const tabs=document.getElementById('ig-tabs'),frame=document.getElementById('ig-frame');
+  if(!IG_ACCOUNTS.length){tabs.innerHTML='';frame.innerHTML='<div class="empty" style="padding:24px">configure contas em IG_ACCOUNTS</div>';return;}
+  tabs.innerHTML=IG_ACCOUNTS.map((u,i)=>`<button class="ig-tab ${i===igActive?'on':''}" data-i="${i}">@${u}</button>`).join('');
+  tabs.querySelectorAll('.ig-tab').forEach(b=>b.onclick=()=>{igActive=+b.dataset.i;drawIG();});
+  const u=IG_ACCOUNTS[igActive];
+  frame.innerHTML=`<iframe src="https://www.instagram.com/${u}/embed/" loading="lazy" scrolling="no" allowtransparency="true"></iframe>`;
+}
+
+const liRow=n=>`<a class="li" href="${n.url||'#'}" target="_blank" rel="noopener">${(n.img||n.cat)?`<img class="lthumb" src="${timg(n)}" loading="lazy" alt="" onerror="this.style.visibility='hidden'">`:''}<div class="lb"><div class="lt">${n.t}</div><div class="lm">${n.cat?`<span class="cat">${n.cat}</span>`:''}<span>${n.src||''}</span>${n.data?`<span class="when">${ago(n.data)}</span>`:''}</div></div></a>`;
+const ghRow=g=>`<a class="li" href="https://github.com/${g.r}" target="_blank" rel="noopener"><div class="lb"><div class="gh-li"><div class="lt" style="font-family:var(--display);font-size:13px">${g.r}</div><span class="star"><i class="ti ti-star" style="font-size:12px"></i> ${g.s||''}</span></div><div class="lm" style="margin-top:5px"><span>${g.d||''}</span></div><div class="lm"><span class="cat">${g.lang||''}</span></div></div></a>`;
+function fill(id,items,row){const el=document.getElementById(id);el.innerHTML=(items&&items.length)?items.map(row).join(''):`<div class="empty">nada por aqui agora</div>`;}
+function drawIA(){fill('ia-list',AI,liRow);}
+function drawMKT(){fill('mkt-list',MKT,liRow);}
+
+let toolsTab='ph';
+function drawTools(){if(toolsTab==='ph')fill('tools-list',PH,liRow);else fill('tools-list',(GH&&GH.day||[]).slice(0,10),ghRow);}
+document.getElementById('tools-tg').onclick=e=>{const b=e.target.closest('.tg');if(!b)return;toolsTab=b.dataset.t;
+  document.getElementById('tools-tg').querySelectorAll('.tg').forEach(x=>x.classList.toggle('on',x===b));drawTools();};
+
+const pick=(a,b)=>(a&&a.length)?a:b;
+function render(d){
+  d=d||{};
+  ticker(d.topbar?{...d.topbar,upd:d.gerado_em?new Date(d.gerado_em).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'agora'}:null);
+  if(d.topbar&&d.topbar.dia)document.getElementById('dia').textContent=d.topbar.dia;
+  sales=pick(d.sales,sales);si=0;drawFat();
+  YT=pick(d.youtube,YT);drawYT();
+  AI=pick(d.ai,AI);drawIA();
+  MKT=pick(d.biz,MKT);drawMKT();
+  PH=pick(d.producthunt,PH);
+  if(d.github&&(d.github.day||d.github.week))GH=d.github;
+  drawTools();
+  if(d.instagram&&d.instagram.length){
+    const accs=d.instagram.map(x=>typeof x==='string'?x:(x.user||x.conta||'')).filter(Boolean);
+    if(accs.length){IG_ACCOUNTS=accs;igActive=0;drawIG();}
+  }
+}
+
+ticker(null);drawFat();drawYT();drawIG();drawIA();drawMKT();drawTools();
+function load(){return fetch('v3-data.json?t='+Date.now()).then(r=>r.ok?r.json():{}).then(render).catch(()=>{});}
+load();
+
+const rb=document.getElementById('refresh');
+rb.addEventListener('click',()=>{const ic=rb.querySelector('i');rb.classList.add('spin');ic.classList.replace('ti-refresh','ti-loader-2');
+  load().finally(()=>setTimeout(()=>{rb.classList.remove('spin');ic.classList.replace('ti-loader-2','ti-refresh');},700));});
+</script>
+</body>
+</html>
