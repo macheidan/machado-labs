@@ -95,14 +95,13 @@
   .fat-bar:hover{filter:brightness(.92)}
   .fat-bar .bl{position:absolute;bottom:-15px;left:50%;transform:translateX(-50%);font-size:8.5px;color:var(--ink-3);font-weight:700}
 
-  /* instagram */
-  .ig-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:13px}
-  .ig-tab{border:1px solid var(--line);background:var(--paper);padding:6px 11px;border-radius:2px;font-size:12px;font-weight:700;color:var(--ink-2);transition:.15s}
-  .ig-tab:hover{color:var(--ink)}
-  .ig-tab.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-  .ig-frame{flex:1;min-height:0;border:1px solid var(--line);border-radius:3px;overflow:hidden;background:#fff}
-  .ig-frame iframe{width:100%;height:540px;border:0;display:block}
-  .ig-hint{font-size:11px;color:var(--ink-3);margin-top:9px;text-align:center;font-weight:500}
+  /* instagram (um post por vez + navegação) */
+  .ig-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 11px}
+  .ig-bar.bottom{margin:11px 0 0}
+  .ig-handle{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:-.01em}
+  .ig-count{font-size:12px;color:var(--ink-2);font-weight:700;letter-spacing:.04em}
+  .ig-frame{border:1px solid var(--line);border-radius:3px;overflow:hidden;background:#fff}
+  .ig-frame iframe{width:100%;height:600px;border:0;display:block}
 
   /* youtube */
   .yt{display:flex;flex-direction:column;gap:13px;overflow-y:auto;max-height:560px;padding-right:3px}
@@ -182,9 +181,9 @@
 
     <section class="sec">
       <div class="kick"><span class="no">Nº 03</span><span class="ti-lbl">No Instagram</span></div>
-      <div class="ig-tabs" id="ig-tabs"></div>
+      <div class="ig-bar" id="ig-acc"></div>
       <div class="ig-frame" id="ig-frame"></div>
-      <div class="ig-hint">posts ao vivo via Instagram · toque numa conta</div>
+      <div class="ig-bar bottom" id="ig-post"></div>
     </section>
 
     <section class="sec">
@@ -208,7 +207,10 @@
   <div class="modal" id="modal"><div class="box"><a class="x" id="modal-x"><i class="ti ti-x"></i> fechar</a><div id="modal-player"></div></div></div>
 
 <script>
-let IG_ACCOUNTS=['evolving.ai','openai','ifood'];
+let IG_DATA=[
+  {conta:'evolving.ai',posts:['DaGMmPrjbip','DaFrQ6jjeaV','DaFhAJKjaDh','DaFKVYHgHLM','DaDsPplAFfa','DaDQgC5gLHE'].map(c=>({code:c}))},
+  {conta:'openai',     posts:['DaGcSVXD5ms','DaECfIDEt6g','DaBB7u6pk9Z','DZ-S_fDp3mp','DZ8Fxm4Pqil'].map(c=>({code:c}))},
+];
 
 let sales=[
   {dow:'domingo, 21 jun',dame:[7842,96,138],lov:[14107,184,301]},
@@ -304,14 +306,28 @@ document.getElementById('modal-x').onclick=closeYT;
 document.getElementById('modal').onclick=e=>{if(e.target.id==='modal')closeYT();};
 addEventListener('keydown',e=>{if(e.key==='Escape')closeYT();});
 
-let igActive=0;
+let igA=0,igP=0;
 function drawIG(){
-  const tabs=document.getElementById('ig-tabs'),frame=document.getElementById('ig-frame');
-  if(!IG_ACCOUNTS.length){tabs.innerHTML='';frame.innerHTML='<div class="empty" style="padding:24px">configure contas em IG_ACCOUNTS</div>';return;}
-  tabs.innerHTML=IG_ACCOUNTS.map((u,i)=>`<button class="ig-tab ${i===igActive?'on':''}" data-i="${i}">@${u}</button>`).join('');
-  tabs.querySelectorAll('.ig-tab').forEach(b=>b.onclick=()=>{igActive=+b.dataset.i;drawIG();});
-  const u=IG_ACCOUNTS[igActive];
-  frame.innerHTML=`<iframe src="https://www.instagram.com/${u}/embed/" loading="lazy" scrolling="no" allowtransparency="true"></iframe>`;
+  const accBar=document.getElementById('ig-acc'),frame=document.getElementById('ig-frame'),postBar=document.getElementById('ig-post');
+  if(!IG_DATA.length){accBar.innerHTML='';postBar.innerHTML='';frame.innerHTML='<div class="empty" style="padding:24px">configure contas em IG_DATA</div>';return;}
+  igA=Math.max(0,Math.min(IG_DATA.length-1,igA));
+  const a=IG_DATA[igA],posts=a.posts||[];
+  igP=Math.max(0,Math.min(Math.max(0,posts.length-1),igP));
+  // barra de conta: ‹  @conta (1/2)  ›
+  accBar.innerHTML=`<button class="nb" id="acc-prev" ${igA===0?'disabled':''}><i class="ti ti-chevron-left"></i></button>
+    <span class="ig-handle">@${a.conta}${IG_DATA.length>1?` <span class="ig-count">${igA+1}/${IG_DATA.length}</span>`:''}</span>
+    <button class="nb" id="acc-next" ${igA===IG_DATA.length-1?'disabled':''}><i class="ti ti-chevron-right"></i></button>`;
+  // post atual
+  const code=posts[igP]?posts[igP].code:null;
+  frame.innerHTML=code?`<iframe src="https://www.instagram.com/p/${code}/embed/captioned/" loading="lazy" scrolling="no" allowtransparency="true"></iframe>`:`<div class="empty" style="padding:24px">sem posts</div>`;
+  // barra de post: ‹  post 2/6  ›
+  postBar.innerHTML=`<button class="nb" id="post-prev" ${igP===0?'disabled':''}><i class="ti ti-chevron-left"></i></button>
+    <span class="ig-count">post ${posts.length?igP+1:0} / ${posts.length}</span>
+    <button class="nb" id="post-next" ${igP>=posts.length-1?'disabled':''}><i class="ti ti-chevron-right"></i></button>`;
+  document.getElementById('acc-prev').onclick=()=>{igA--;igP=0;drawIG();};
+  document.getElementById('acc-next').onclick=()=>{igA++;igP=0;drawIG();};
+  document.getElementById('post-prev').onclick=()=>{igP--;drawIG();};
+  document.getElementById('post-next').onclick=()=>{igP++;drawIG();};
 }
 
 const liRow=n=>`<a class="li" href="${n.url||'#'}" target="_blank" rel="noopener">${(n.img||n.cat)?`<img class="lthumb" src="${timg(n)}" loading="lazy" alt="" onerror="this.style.visibility='hidden'">`:''}<div class="lb"><div class="lt">${n.t}</div><div class="lm">${n.cat?`<span class="cat">${n.cat}</span>`:''}<span>${n.src||''}</span>${n.data?`<span class="when">${ago(n.data)}</span>`:''}</div></div></a>`;
@@ -338,8 +354,8 @@ function render(d){
   if(d.github&&(d.github.day||d.github.week))GH=d.github;
   drawTools();
   if(d.instagram&&d.instagram.length){
-    const accs=d.instagram.map(x=>typeof x==='string'?x:(x.user||x.conta||'')).filter(Boolean);
-    if(accs.length){IG_ACCOUNTS=accs;igActive=0;drawIG();}
+    const ig=d.instagram.filter(x=>x&&x.posts&&x.posts.length);
+    if(ig.length){IG_DATA=ig;igA=0;igP=0;drawIG();}
   }
 }
 
