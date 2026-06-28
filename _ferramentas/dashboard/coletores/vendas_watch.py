@@ -13,12 +13,9 @@ Fluxo por ciclo:
     python runner.py --so-consolida                 (mescla hist + sobe JSON via FTP)
     POST dash/vendas_req.php {act:done, msg}
 
-Só stdlib (urllib). Reusa a basic auth da pasta /dashboard.
-
-Config (config.json), além do que o runner já usa:
-  "dash_base": "https://fabiomachado.com.br/dashboard",
-  "dash_user": "<usuario da basic auth .htpasswd>",
-  "dash_pass": "<senha da basic auth>"
+Só stdlib. A FILA é lida/marcada via FTP (reusa ftp_server/ftp_user/ftp_pass
+que o runner já usa) — NÃO precisa de credencial extra. O navegador é quem
+escreve o pedido (req) pelo vendas_req.php; o watcher lê e marca done por FTP.
 
 Uso:
   python vendas_watch.py                 # loop, checa a cada 6s (Ctrl+C pra sair)
@@ -27,16 +24,18 @@ Uso:
   python vendas_watch.py --dia 2026-06-28  # força um dia específico ao coletar
 """
 
+import io
 import sys
+import ssl
 import json
 import time
-import base64
 import argparse
 import subprocess
-import urllib.request
-import urllib.error
+from ftplib import FTP_TLS
 from pathlib import Path
 from datetime import date, datetime
+
+QUEUE = "vendas_req.json"
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -53,33 +52,48 @@ def cfg():
     return json.loads(CFG_FILE.read_text(encoding="utf-8")) if CFG_FILE.exists() else {}
 
 
-def _auth_header(c):
-    u, p = c.get("dash_user", ""), c.get("dash_pass", "")
-    if not u:
-        return {}
-    tok = base64.b64encode(f"{u}:{p}".encode("utf-8")).decode("ascii")
-    return {"Authorization": "Basic " + tok}
+def _ftp(c):
+    srv, usr, pwd = c.get("ftp_server"), c.get("ftp_user"), c.get("ftp_pass")
+    if not (srv and usr and pwd):
+        raise SystemExit("[ERRO] faltam credenciais FTP no config.json (ftp_server/ftp_user/ftp_pass)")
+    ctx = ssl._create_unverified_context()
+    f = FTP_TLS(context=ctx)
+    f.connect(srv, int(c.get("ftp_port", 21)), timeout=40)
+    f.login(usr, pwd)
+    f.prot_p()
+    f.cwd(c.get("ftp_dir", "/dashboard"))
+    return f
 
 
-def _url(c):
-    base = (c.get("dash_base") or "").rstrip("/")
-    if not base:
-        raise SystemExit("[ERRO] falta 'dash_base' no config.json (ex: https://fabiomachado.com.br/dashboard)")
-    return base + "/vendas_req.php"
+def _baixar_fila(f):
+    if QUEUE not in f.nlst():
+        return {"req": 0, "done": 0, "msg": "", "at": ""}
+    buf = io.BytesIO()
+    f.retrbinary("RETR " + QUEUE, buf.write)
+    j = json.loads(buf.getvalue().decode("utf-8", "replace") or "{}")
+    return j if isinstance(j, dict) else {"req": 0, "done": 0}
 
 
 def ler_fila(c):
-    req = urllib.request.Request(_url(c) + "?t=" + str(int(time.time())), headers=_auth_header(c))
-    with urllib.request.urlopen(req, timeout=20) as r:
-        return json.loads(r.read().decode("utf-8", "replace"))
+    f = _ftp(c)
+    try:
+        return _baixar_fila(f)
+    finally:
+        f.quit()
 
 
 def marcar_done(c, msg=""):
-    body = json.dumps({"act": "done", "msg": msg}).encode("utf-8")
-    h = {"Content-Type": "application/json", **_auth_header(c)}
-    req = urllib.request.Request(_url(c), data=body, headers=h, method="POST")
-    with urllib.request.urlopen(req, timeout=20) as r:
-        return json.loads(r.read().decode("utf-8", "replace"))
+    f = _ftp(c)
+    try:
+        st = _baixar_fila(f)               # read-modify-write: preserva req
+        st["done"] = int(time.time())
+        st["msg"] = (msg or "")[:200]
+        st["at"] = datetime.now().isoformat(timespec="seconds")
+        data = json.dumps(st, ensure_ascii=False).encode("utf-8")
+        f.storbinary("STOR " + QUEUE, io.BytesIO(data))
+        return st
+    finally:
+        f.quit()
 
 
 def coletar(dia):
@@ -107,10 +121,8 @@ def ciclo(c, dia_forcado=None):
     """Um check: se há pedido pendente, coleta. Devolve True se processou."""
     try:
         fila = ler_fila(c)
-    except urllib.error.HTTPError as e:
-        log(f"fila HTTP {e.code} (basic auth? dash_user/dash_pass)"); return False
     except Exception as e:
-        log(f"fila indisponível: {type(e).__name__}"); return False
+        log(f"fila indisponível (FTP): {type(e).__name__}: {e}"); return False
 
     req, done = int(fila.get("req", 0)), int(fila.get("done", 0))
     if req <= done:
