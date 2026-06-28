@@ -312,6 +312,21 @@
     .ig-frame iframe{height:490px}
     .v-spark{margin-top:16px}.v-split{margin-top:12px}
   }
+
+  /* drag & drop dos cards (desktop) */
+  .card{position:relative}
+  .drag-handle{position:absolute;top:0;left:50%;transform:translateX(-50%);
+    width:38px;height:14px;display:none;place-items:center;z-index:6;overflow:hidden;
+    background:transparent;border:0;color:var(--fg-faint);cursor:grab;
+    opacity:0;transition:opacity .15s,color .15s}
+  .drag-handle i{font-size:14px;line-height:1}
+  .drag-handle:hover{color:var(--fg-soft)}
+  .drag-handle:active{cursor:grabbing}
+  .card:hover .drag-handle{opacity:.7}
+  .card.dragging{opacity:.45}
+  .zone.drop-on{outline:1px dashed var(--line-strong);outline-offset:4px;border-radius:var(--r-lg)}
+  @media (min-width:901px){ .drag-handle{display:grid} }
+  @media (prefers-reduced-motion:reduce){ .drag-handle{transition:none} }
 </style>
 </head>
 <body>
@@ -329,7 +344,7 @@
     <div class="grid">
       <!-- OPERAÇÃO + PESSOAL -->
       <div class="zone ops">
-        <div class="card">
+        <div class="card" data-card="vendas">
           <div class="ch">
             <div class="lbl"><i class="ti ti-cash-register"></i>Vendas <span class="sub" id="v-day"></span></div>
             <div class="ch-r"><div class="ch-r" id="v-nav" style="gap:6px"></div>
@@ -338,19 +353,19 @@
           <div id="v-body"></div>
         </div>
 
-        <div class="card foco">
+        <div class="card foco" data-card="foco">
           <div class="ch"><div class="lbl"><i class="ti ti-target-arrow"></i>Foco</div><span class="sub" id="foco-status"></span></div>
           <div class="foco-add"><input id="foco-input" placeholder="novo item ou lembrete..." maxlength="200" /><button class="mini" id="foco-add-btn" title="Adicionar"><i class="ti ti-plus"></i></button></div>
           <div class="foco-list" id="foco-list"></div>
           <button class="foco-arch" id="foco-arch" style="display:none"></button>
         </div>
 
-        <div class="card">
+        <div class="card" data-card="agenda">
           <div class="ch"><div class="lbl"><i class="ti ti-calendar-event"></i>Agenda <span class="sub" id="ag-day"></span></div><div class="ch-r" id="ag-nav" style="gap:6px"></div></div>
           <div class="list scroll" id="ag-list" style="max-height:200px"></div>
         </div>
 
-        <div class="card">
+        <div class="card" data-card="projetos">
           <div class="ch"><div class="lbl"><i class="ti ti-layout-kanban"></i>Projetos <span class="sub">no Claude</span></div></div>
           <div class="list scroll" id="pj-list" style="max-height:255px"></div>
         </div>
@@ -358,11 +373,11 @@
 
       <!-- MERCADO + YOUTUBE -->
       <div class="zone market">
-        <div class="card" style="min-height:360px">
+        <div class="card" style="min-height:360px" data-card="mercado">
           <div class="ch"><div class="lbl"><i class="ti ti-radar-2"></i>Mercado <span class="sub">food-service · delivery · foodtech</span></div></div>
           <div class="list scroll" id="mkt-list" style="max-height:560px"></div>
         </div>
-        <div class="card">
+        <div class="card" data-card="youtube">
           <div class="ch"><div class="lbl"><i class="ti ti-brand-youtube"></i>YouTube <span class="sub">últimos vídeos</span></div></div>
           <div class="yt scroll" id="yt-list"></div>
         </div>
@@ -370,7 +385,7 @@
 
       <!-- INSTAGRAM + RADAR IA -->
       <div class="zone social">
-        <div class="card">
+        <div class="card" data-card="instagram">
           <div class="ch"><div class="lbl"><i class="ti ti-brand-instagram"></i>Instagram</div></div>
           <div class="ig-bar" id="ig-acc"></div>
           <div class="ig-frame" id="ig-frame"></div>
@@ -379,7 +394,7 @@
       </div>
 
       <div class="zone ia">
-        <div class="card" style="min-height:380px">
+        <div class="card" style="min-height:380px" data-card="radar">
           <div class="ch" style="margin-bottom:0">
             <div class="tabs" id="r-tabs" style="margin-bottom:0"></div>
             <div class="subtabs" id="gh-sub" style="display:none"></div>
@@ -725,6 +740,71 @@ focoLoad();
   b.addEventListener('click',()=>{const ic=b.querySelector('i');b.classList.add('spin');ic.classList.replace(ic0,'ti-loader-2');
     load().finally(()=>setTimeout(()=>{b.classList.remove('spin');ic.classList.replace('ti-loader-2',ic0);},700));});
 });
+
+/* ===== drag & drop dos cards (desktop) ===== */
+(function(){
+  const KEY='dash-layout-v1';
+  const ZONES=['ops','market','social','ia'];
+  const mq=window.matchMedia('(min-width:901px)');
+  const zones=[...document.querySelectorAll('.zone')];
+  const cards=[...document.querySelectorAll('.card[data-card]')];
+  zones.forEach(z=>{ z.dataset.zone=ZONES.find(k=>z.classList.contains(k))||''; });
+
+  let dragEl=null;
+
+  function saveLayout(){
+    const map={};
+    zones.forEach(z=>{ map[z.dataset.zone]=[...z.querySelectorAll('.card[data-card]')].map(c=>c.dataset.card); });
+    try{ localStorage.setItem(KEY,JSON.stringify(map)); }catch(e){}
+  }
+  function applyLayout(){
+    let map; try{ map=JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){ map=null; }
+    if(!map)return;
+    const byId={}; cards.forEach(c=>byId[c.dataset.card]=c);
+    zones.forEach(z=>{ (map[z.dataset.zone]||[]).forEach(id=>{ if(byId[id]) z.appendChild(byId[id]); }); });
+  }
+  function afterEl(zone,y){
+    const els=[...zone.querySelectorAll('.card[data-card]:not(.dragging)')];
+    let best={off:-Infinity,el:null};
+    els.forEach(el=>{ const b=el.getBoundingClientRect();const off=y-b.top-b.height/2;
+      if(off<0&&off>best.off) best={off,el}; });
+    return best.el;
+  }
+
+  cards.forEach(c=>{
+    const h=document.createElement('button');
+    h.className='drag-handle';h.type='button';h.title='Arrastar card';
+    h.innerHTML='<i class="ti ti-grip-horizontal"></i>';
+    c.appendChild(h);
+    h.addEventListener('mousedown',()=>{ if(mq.matches) c.draggable=true; });
+  });
+  document.addEventListener('mouseup',()=>{ if(!dragEl) cards.forEach(c=>c.draggable=false); });
+
+  document.addEventListener('dragstart',e=>{
+    const c=e.target.closest('.card[data-card]');
+    if(!c||!c.draggable){ return; }
+    dragEl=c; c.classList.add('dragging');
+    e.dataTransfer.effectAllowed='move';
+    try{ e.dataTransfer.setData('text/plain',c.dataset.card); }catch(_){}
+  });
+  document.addEventListener('dragend',()=>{
+    if(dragEl){ dragEl.classList.remove('dragging'); dragEl.draggable=false; dragEl=null; }
+    zones.forEach(z=>z.classList.remove('drop-on'));
+    cards.forEach(c=>c.draggable=false);
+  });
+  zones.forEach(z=>{
+    z.addEventListener('dragover',e=>{
+      if(!dragEl)return;
+      e.preventDefault(); e.dataTransfer.dropEffect='move';
+      zones.forEach(x=>x.classList.toggle('drop-on',x===z));
+      const a=afterEl(z,e.clientY);
+      if(a==null) z.appendChild(dragEl); else z.insertBefore(dragEl,a);
+    });
+  });
+  document.addEventListener('drop',e=>{ if(!dragEl)return; e.preventDefault(); saveLayout(); });
+
+  applyLayout();
+})();
 </script>
 </body>
 </html>
