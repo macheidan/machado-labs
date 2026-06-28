@@ -290,7 +290,14 @@
 
   /* responsivo */
   @media (max-width:1500px){ .grid{grid-template-columns:340px minmax(0,1fr);grid-template-areas:"ops market" "social ia"} }
-  @media (max-width:900px){ .grid{grid-template-columns:1fr;grid-template-areas:"ops" "market" "social" "ia"} }
+  @media (max-width:900px){
+    /* zonas viram transparentes: os 8 cards empilham direto no grid (1 coluna) */
+    .grid{grid-template-columns:1fr;grid-template-areas:none}
+    .zone{display:contents}
+    /* agenda e projetos por último no mobile */
+    .card[data-card="agenda"],.card[data-card="projetos"]{order:1}
+    .card[data-card="projetos"]{order:2}
+  }
   @media (max-width:560px){
     .dash{padding:14px 13px var(--s4)}
     .meta{flex-wrap:nowrap;gap:8px;align-items:center;overflow-x:auto;scrollbar-width:none;margin-bottom:var(--s2)}
