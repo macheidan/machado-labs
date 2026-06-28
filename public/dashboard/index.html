@@ -661,9 +661,9 @@ function drawIG(){
   igA=Math.max(0,Math.min(IG_DATA.length-1,igA));
   const a=IG_DATA[igA],posts=a.posts||[];
   igP=Math.max(0,Math.min(Math.max(0,posts.length-1),igP));
-  accBar.innerHTML=`<button class="mini" id="acc-prev" ${igA===0?'disabled':''}><i class="ti ti-chevron-left"></i></button>
+  accBar.innerHTML=`<button class="mini" id="acc-prev" title="conta anterior" ${igA===0?'disabled':''}><i class="ti ti-chevron-up"></i></button>
     <span class="ig-handle">@${a.conta}${IG_DATA.length>1?`<span class="c">${igA+1}/${IG_DATA.length}</span>`:''}</span>
-    <button class="mini" id="acc-next" ${igA===IG_DATA.length-1?'disabled':''}><i class="ti ti-chevron-right"></i></button>`;
+    <button class="mini" id="acc-next" title="próxima conta" ${igA===IG_DATA.length-1?'disabled':''}><i class="ti ti-chevron-down"></i></button>`;
   const code=posts[igP]?posts[igP].code:null;
   frame.innerHTML=code?`<iframe src="https://www.instagram.com/p/${code}/embed/captioned/" loading="lazy" scrolling="no" allowtransparency="true"></iframe>`:`<div class="empty" style="padding:24px">sem posts novos</div>`;
   postBar.innerHTML=`<button class="mini" id="post-prev" ${igP===0?'disabled':''}><i class="ti ti-chevron-left"></i></button>
