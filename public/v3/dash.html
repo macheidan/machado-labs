@@ -133,6 +133,7 @@
   .toggle{display:flex;gap:4px}
   .tg{border:1px solid var(--line);background:var(--paper);padding:4px 10px;border-radius:2px;font-size:11px;font-weight:700;color:var(--ink-2)}
   .tg.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .gh-periods{display:flex;gap:5px;padding:0 0 11px;margin:0 0 4px;border-bottom:1px solid var(--line-soft)}
   .empty{font-size:12.5px;color:var(--ink-3);padding:16px 2px;font-weight:500}
 
   /* modal yt */
@@ -208,9 +209,9 @@
 
 <script>
 let IG_DATA=[
-  {conta:'myhub.ia',   posts:['DaG58S3HGLg','DaGaEUqHOP6','DaGCvREhpom','DaEPN2iHO_C','DaDd8pShhug','DaDqG3LHDF_'].map(c=>({code:c}))},
-  {conta:'evolving.ai',posts:['DaGMmPrjbip','DaFrQ6jjeaV','DaFhAJKjaDh','DaFKVYHgHLM','DaDsPplAFfa','DaDQgC5gLHE'].map(c=>({code:c}))},
-  {conta:'theaifield', posts:['DaGhFIhjBXe','DaGVfmPjGj9','DaFcMO9DACQ','DaD1YXzDAEr','DaDZ7X3jLug','DaC3jTnDNo5'].map(c=>({code:c}))},
+  {conta:'myhub.ia',   posts:['DaG58S3HGLg','DaGaEUqHOP6','DaGCvREhpom','DaEPN2iHO_C','DaDd8pShhug','DaDqG3LHDF_','DaDLb0FzeBR','DaBndxTHGEc','DaBb4AuHCCc','DaBD9StOEEn'].map(c=>({code:c}))},
+  {conta:'evolving.ai',posts:['DaGMmPrjbip','DaFrQ6jjeaV','DaFhAJKjaDh','DaFKVYHgHLM','DaDsPplAFfa','DaDQgC5gLHE','DaDL_nUzhK9','DaDGsD-ANsv','DaC1XiUgMDI','DaA5U4wjZ_N'].map(c=>({code:c}))},
+  {conta:'theaifield', posts:['DaD1YXzDAEr','DZ-izCUDOx4','DZa2FHMDKmq','DaGhFIhjBXe','DaGVfmPjGj9','DaFcMO9DACQ','DaDZ7X3jLug','DaC3jTnDNo5','DaBWnwGDIIe','DaA50ppDNJp'].map(c=>({code:c}))},
 ];
 
 let sales=[
@@ -245,7 +246,11 @@ let PH=[
   {t:'Supra Player',src:'Product Hunt',img:'p1',resumo:'Player de mídia minimalista.'},
   {t:'Nada',src:'Product Hunt',img:'p2',resumo:'Bloqueador de distrações.'},
 ];
-let GH={day:[{r:'vercel/ai',d:'SDK para apps de IA',lang:'TypeScript',s:'1.2k'},{r:'ollama/ollama',d:'Modelos locais com um comando',lang:'Go',s:'410'}]};
+let GH={
+  day:[{r:'vercel/ai',d:'SDK para apps de IA',lang:'TypeScript',s:'1.2k'},{r:'ollama/ollama',d:'Modelos locais com um comando',lang:'Go',s:'410'}],
+  week:[{r:'ggerganov/llama.cpp',d:'Inferência de LLMs em C/C++ na CPU',lang:'C++',s:'5.3k'},{r:'open-webui/open-webui',d:'Interface web pra LLMs locais',lang:'Svelte',s:'4.2k'}],
+  month:[{r:'langgenius/dify',d:'Plataforma open source para apps de LLM',lang:'TypeScript',s:'22k'},{r:'n8n-io/n8n',d:'Automação de fluxos com nós de IA',lang:'TypeScript',s:'18k'}],
+};
 
 const brl=n=>Number(n||0).toLocaleString('pt-BR');
 const isUrl=s=>/^https?:/.test(s||'');
@@ -337,8 +342,17 @@ function fill(id,items,row){const el=document.getElementById(id);el.innerHTML=(i
 function drawIA(){fill('ia-list',AI,liRow);}
 function drawMKT(){fill('mkt-list',MKT,liRow);}
 
-let toolsTab='ph';
-function drawTools(){if(toolsTab==='ph')fill('tools-list',PH,liRow);else fill('tools-list',(GH&&GH.day||[]).slice(0,10),ghRow);}
+let toolsTab='ph', ghp='day';
+function drawTools(){
+  const el=document.getElementById('tools-list');
+  if(toolsTab==='ph'){el.innerHTML=(PH&&PH.length)?PH.map(liRow).join(''):'<div class="empty">nada por aqui agora</div>';return;}
+  // GitHub no formato de antes: abas dia / semana / mês + cards de repo
+  const P=[['day','dia'],['week','semana'],['month','mês']];
+  const tabs=`<div class="gh-periods">${P.map(([k,l])=>`<button class="tg ${k===ghp?'on':''}" data-p="${k}">${l}</button>`).join('')}</div>`;
+  const repos=((GH&&GH[ghp])||[]).slice(0,10);
+  el.innerHTML=tabs+(repos.length?repos.map(ghRow).join(''):'<div class="empty">nada por aqui agora</div>');
+  el.querySelectorAll('.gh-periods .tg').forEach(b=>b.onclick=()=>{ghp=b.dataset.p;drawTools();});
+}
 document.getElementById('tools-tg').onclick=e=>{const b=e.target.closest('.tg');if(!b)return;toolsTab=b.dataset.t;
   document.getElementById('tools-tg').querySelectorAll('.tg').forEach(x=>x.classList.toggle('on',x===b));drawTools();};
 
