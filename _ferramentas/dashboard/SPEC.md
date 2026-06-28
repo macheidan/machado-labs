@@ -33,17 +33,67 @@ pizzarias, novidades de IA, mundo, negócios, projetos.
    - Acesso protegido por .htaccess (basic auth) na HostGator
 ```
 
-## Layout
+## Layout (v3.0, 2026-06-27) — design do site + conteúdo curado
 
-4 colunas na ultrawide (3440x1440, sem rolagem). Escritório (2560x1080) com
-rolagem leve. Celular: pilha vertical na ordem de prioridade.
+Segundo redesenho no mesmo dia. O Fábio rejeitou a v2 ("não é por ai"): queria
+(1) conteúdo/fontes **curados por mim a partir dos interesses dele** (lidos do
+vault) e (2) um design **na cara do site** (não o dark-azul Vision UI genérico).
 
-Barra fina (full width): data de hoje · clima POA · USD (com %) · BTC (com %) ·
-última atualização. O botão **ATUALIZAR** NÃO fica na barra: vive no cabeçalho da
-tabela **Vendas** (ícone compacto, ao lado das setas de dia) e serve só pra
-forçar a recoleta das vendas das lojas caso a coleta das 3h não tenha rodado.
-Notícias/feeds são coletados às 3h e também atualizam num **F5** normal (a página
-rebusca o JSON); só Vendas depende do botão.
+**Design:** clona o design system do `src/components/Shell.astro` (estética
+Raycast): fundo `#07080a` com **aurora** animada (laranja/violeta/ciano/rosa) +
+grain, **Inter** (corpo) + **Geist Mono** (números, dá peso de console), accent
+**laranja `#ff5c2b`**, **nav em pílula flutuante** ("Fábio Machado / dashboard"
+com mark em gradiente), cards `linear-gradient(137deg,#111214,#0c0d0f)`.
+
+**Curadoria de conteúdo (do vault — perfil-fabio, persona-decisao, 01 AI/_plano_v4):**
+o dash deixou de ser dominado por notícia de IA. Zonas por prioridade real:
+- **Operação (esq):** Vendas (herói) · **Foco** (âncora anti-inconstância: projeto
+  de IA food-service até 15/11, próximo portão = 1º high-ticket) · Agenda.
+- **Mercado (centro, destaque):** food-service/delivery/foodtech, o **radar do
+  projeto de IA** dele. Reaproveita a chave `biz` do JSON (antes coletada e
+  invisível) com fontes BR recuradas em `news.py` (FONTES_BIZ → Mercado&Consumo,
+  The Spoon, NeoFeed, Startups.com.br, Brazil Journal; validadas por HTTP).
+- **IA & ferramentas (dir):** card com abas Fronteira(`ai`) · GitHub · News
+  (`newsletters`) · Feeds(`feeds`). Toda a IA num lugar só.
+- **Projetos (dir):** cases no Claude.
+
+Sem paginador (listas rolam). Resumo no clique mantido (Mercado/IA/Feeds/News).
+Mobile = fluxo de app (Vendas → Foco → Agenda → Mercado → IA → Projetos).
+Backend intacto, exceto FONTES_BIZ em news.py. Mesmo `dashboard-data.json`.
+
+### Layout v2.0 (arquivado)
+
+Modelo de **2 zonas** (Operação | Radar de IA com abas), tema Vision UI dark-azul.
+Rejeitado por não refletir os interesses nem o design do site.
+
+Princípios da v2:
+- **Hierarquia, não uniformidade.** O dinheiro é o herói.
+- **Um painel de IA, não quatro.** As 4 fontes viram abas de um só card.
+- **Sem paginador por painel.** Listas rolam (jeito de app); vendas e agenda
+  mantêm navegação por dia (setas).
+
+| Zona | Conteúdo |
+|------|----------|
+| Topbar | saudação por horário + data · chips clima/USD/BTC (% verde/vermelho) · "atualizado HH:MM" |
+| Operação (coluna esquerda, fixa ~340-420px) | **Vendas (herói)** · Agenda · Projetos em andamento |
+| Radar de IA (coluna direita, larga) | abas **Notícias · Newsletters · GitHub · Feeds** num card só |
+
+**Vendas (herói):** número grande do total do dia (R$) + **variação % vs dia
+anterior** (verde/vermelho), KPIs pedidos/pizzas, dois blocos Dáme/Lov (cor da
+marca), e um **mini-gráfico de barras dos 7 dias** (barra do dia selecionado
+destacada e clicável). Setas ‹ › navegam por dia (até 7 dias). Botão ↻ rebusca o
+JSON (cache-bust). É o relatório das pizzarias, mantido e turbinado.
+
+**Radar de IA:** abas em pílula trocam a fonte sem sair do card. GitHub tem
+sub-abas dia/semana/mês. No ultrawide a lista vira 2 colunas pra encher a tela.
+Notícias/Newsletters/Feeds abrem **resumo no próprio card** ao clicar (GitHub
+abre o repo). Ctrl/Cmd+clique abre o original em nova aba.
+
+**Mobile (≤560px):** topbar fica sticky no topo (saudação + chips roláveis); o
+conteúdo é um fluxo vertical único na ordem Vendas → Agenda → Projetos → Radar.
+Toques grandes, abas roláveis. Sem accordion (rolagem natural, como app).
+
+### Layout antigo (v1, arquivado)
 
 | Coluna | Painéis (prioridade: Operação primeiro) |
 |--------|------------------------------------------|
@@ -219,7 +269,10 @@ protótipo; ajuste fino de paleta quando o tema final chegar.
       rebusca o JSON publicado (cache-bust); re-coleta via túnel fica pra depois.
 - [ ] Preencher credenciais FTP no config.json (ftp_server/ftp_user/ftp_pass).
 - [ ] Runner + Task Scheduler 03h (sem catch-up).
-- [ ] Cloudflare Tunnel + endpoint do botão ATUALIZAR (re-coleta na hora).
+- [x] Botão ATUALIZAR vendas re-coleta o DIA sob demanda (18h-24h) sem túnel:
+      vendas_req.php (fila no HostGator) + vendas_watch.py (watcher na máquina,
+      roda saipos --dia hoje + runner --so-consolida). Fora de 18-24h, só re-busca
+      o JSON. Agendar run_vendas_watch.cmd --once a cada 1min, 18:00-23:59.
 - [ ] .htaccess (basic auth) na HostGator — protege faturamento na URL pública.
 - [ ] (DEPOIS DO BACKEND) Skin final: consolidar cores em variáveis de tema,
       botão claro/escuro (sol/lua) no canto superior direito, aplicar paleta

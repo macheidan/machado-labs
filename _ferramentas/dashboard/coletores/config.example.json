@@ -2,5 +2,10 @@
   "profile_dir": "%LOCALAPPDATA%\\dre_ai\\browser_profile_saipos",
   "email": "",
   "senha": "",
-  "lojas": { "DAME": 0, "LOV": 1 }
+  "lojas": { "DAME": 0, "LOV": 1 },
+
+  "_comment_vendas_watch": "para o botao 'atualizar vendas' (18h-24h) acionar coleta sob demanda via vendas_watch.py",
+  "dash_base": "https://fabiomachado.com.br/dashboard",
+  "dash_user": "",
+  "dash_pass": ""
 }
