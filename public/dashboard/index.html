@@ -143,13 +143,14 @@
   .mini.spin i{animation:sp 1s linear infinite}
 
   /* drag & drop de cards entre colunas (desktop) */
-  .card-grip{flex:0 0 auto;display:none;align-items:center;justify-content:center;width:18px;height:24px;
-    margin:-2px 4px -2px -3px;color:var(--fg-faint);cursor:grab;font-size:17px;line-height:1;
-    opacity:.32;transition:opacity .15s,color .15s;-webkit-user-select:none;user-select:none;touch-action:none}
+  .card-grip{flex:0 0 auto;display:none;align-items:center;justify-content:center;width:20px;height:24px;
+    margin:-2px 4px -2px -4px;color:var(--fg-faint);cursor:grab;font-size:17px;line-height:1;
+    opacity:.38;transition:opacity .15s,color .15s;-webkit-user-select:none;user-select:none;touch-action:none}
   .card:hover>.ch>.card-grip{opacity:1;color:var(--fg-muted)}
   .card-grip:hover{color:var(--fg)!important}
-  .card-grip:active{cursor:grabbing}
-  .card.dragging{opacity:.4}
+  .card-grip:active,body.dnd-dragging,body.dnd-dragging *{cursor:grabbing!important}
+  body.dnd-dragging{-webkit-user-select:none;user-select:none}
+  .card.dragging{opacity:.42;box-shadow:0 8px 28px rgba(0,0,0,.28)}
   .zone.drag-over{outline:2px dashed var(--accent);outline-offset:5px;border-radius:var(--r-lg);background:var(--o-soft)}
   @media(min-width:901px){.card-grip{display:inline-flex}}
 
@@ -737,59 +738,80 @@ focoLoad();
     load().finally(()=>setTimeout(()=>{b.classList.remove('spin');ic.classList.replace('ti-loader-2',ic0);},700));});
 });
 
-/* ===== drag & drop de cards entre as 4 colunas (desktop) ===== */
+/* ===== drag & drop de cards entre as 4 colunas (desktop) — pointer events ===== */
 (function(){
   const LS_KEY='dash-layout';
   const cards=[...document.querySelectorAll('.card[data-card]')];
   const zones=[...document.querySelectorAll('.zone[data-zone]')];
   if(!cards.length||!zones.length) return;
-  let dragEl=null;
+  const isDesktop=()=>window.matchMedia('(min-width:901px)').matches;
+  let drag=null; // {card, x0, y0, on}
 
   // injeta o "grip" de arraste no cabeçalho de cada card
   cards.forEach(card=>{
     const ch=card.querySelector(':scope > .ch');
     if(!ch||ch.querySelector('.card-grip')) return;
     const g=document.createElement('span');
-    g.className='card-grip';g.draggable=true;g.title='Arraste para mover de coluna';
+    g.className='card-grip';g.title='Arraste para mover de coluna';
     g.innerHTML='<i class="ti ti-grip-vertical"></i>';
     ch.insertBefore(g,ch.firstChild);
-    g.addEventListener('dragstart',e=>{
-      dragEl=card;card.classList.add('dragging');
-      e.dataTransfer.effectAllowed='move';
-      try{e.dataTransfer.setData('text/plain',card.dataset.card);}catch(_){}
-      try{e.dataTransfer.setDragImage(card,24,18);}catch(_){}
-    });
-    g.addEventListener('dragend',()=>{
-      card.classList.remove('dragging');
-      zones.forEach(z=>z.classList.remove('drag-over'));
-      dragEl=null;saveLayout();
+    g.addEventListener('pointerdown',e=>{
+      if(e.button!==0||!isDesktop()) return;
+      e.preventDefault();
+      drag={card,x0:e.clientX,y0:e.clientY,on:false};
+      document.addEventListener('pointermove',onMove);
+      document.addEventListener('pointerup',onUp);
+      document.addEventListener('pointercancel',onUp);
     });
   });
 
+  // coluna mais próxima horizontalmente (cobre cursor sobre o "gap" entre colunas)
+  function nearestZone(x){
+    let best=null,bd=Infinity;
+    zones.forEach(z=>{const b=z.getBoundingClientRect();
+      const d=x<b.left?b.left-x:(x>b.right?x-b.right:0);
+      if(d<bd){bd=d;best=z;}});
+    return best;
+  }
   // card antes do qual inserir, conforme a posição vertical do cursor
-  function afterEl(zone,y){
-    const els=[...zone.querySelectorAll(':scope > .card:not(.dragging)')];
-    let closest=null,closestDelta=-Infinity;
-    els.forEach(el=>{
-      const box=el.getBoundingClientRect();
-      const delta=y-box.top-box.height/2;
-      if(delta<0&&delta>closestDelta){closestDelta=delta;closest=el;}
-    });
-    return closest;
+  function afterEl(zone,y,dragging){
+    const els=[...zone.querySelectorAll(':scope > .card')].filter(el=>el!==dragging);
+    for(const el of els){const b=el.getBoundingClientRect();if(y<b.top+b.height/2) return el;}
+    return null;
   }
 
-  zones.forEach(zone=>{
-    zone.addEventListener('dragover',e=>{
-      if(!dragEl) return;
-      e.preventDefault();
-      e.dataTransfer.dropEffect='move';
-      zones.forEach(z=>z.classList.toggle('drag-over',z===zone));
-      const after=afterEl(zone,e.clientY);
-      if(after==null) zone.appendChild(dragEl);
-      else zone.insertBefore(dragEl,after);
-    });
-    zone.addEventListener('drop',e=>{if(dragEl)e.preventDefault();});
-  });
+  function onMove(e){
+    if(!drag) return;
+    if(!drag.on){
+      if(Math.hypot(e.clientX-drag.x0,e.clientY-drag.y0)<5) return;
+      drag.on=true;
+      drag.card.classList.add('dragging');
+      drag.card.style.pointerEvents='none';
+      document.body.classList.add('dnd-dragging');
+    }
+    const card=drag.card;
+    const under=document.elementFromPoint(e.clientX,e.clientY);
+    let zone=under&&under.closest?under.closest('.zone[data-zone]'):null;
+    if(!zone) zone=nearestZone(e.clientX);
+    if(!zone) return;
+    const after=afterEl(zone,e.clientY,card);
+    if(after){if(card.nextElementSibling!==after) zone.insertBefore(card,after);}
+    else if(zone.lastElementChild!==card) zone.appendChild(card);
+    zones.forEach(z=>z.classList.toggle('drag-over',z===zone));
+  }
+  function onUp(){
+    document.removeEventListener('pointermove',onMove);
+    document.removeEventListener('pointerup',onUp);
+    document.removeEventListener('pointercancel',onUp);
+    if(drag&&drag.on){
+      drag.card.classList.remove('dragging');
+      drag.card.style.pointerEvents='';
+      document.body.classList.remove('dnd-dragging');
+      zones.forEach(z=>z.classList.remove('drag-over'));
+      saveLayout();
+    }
+    drag=null;
+  }
 
   function saveLayout(){
     const layout={};
