@@ -142,6 +142,17 @@
   .mini:disabled{opacity:.28;cursor:default}
   .mini.spin i{animation:sp 1s linear infinite}
 
+  /* drag & drop de cards entre colunas (desktop) */
+  .card-grip{flex:0 0 auto;display:none;align-items:center;justify-content:center;width:18px;height:24px;
+    margin:-2px 4px -2px -3px;color:var(--fg-faint);cursor:grab;font-size:17px;line-height:1;
+    opacity:.32;transition:opacity .15s,color .15s;-webkit-user-select:none;user-select:none;touch-action:none}
+  .card:hover>.ch>.card-grip{opacity:1;color:var(--fg-muted)}
+  .card-grip:hover{color:var(--fg)!important}
+  .card-grip:active{cursor:grabbing}
+  .card.dragging{opacity:.4}
+  .zone.drag-over{outline:2px dashed var(--accent);outline-offset:5px;border-radius:var(--r-lg);background:var(--o-soft)}
+  @media(min-width:901px){.card-grip{display:inline-flex}}
+
   /* vendas */
   .v-top{display:flex;align-items:flex-end;gap:11px;flex-wrap:wrap}
   .v-tot{font-family:var(--mono);font-size:clamp(30px,3vw,42px);font-weight:600;letter-spacing:-1.5px;line-height:.9;color:var(--fg)}
@@ -328,8 +339,8 @@
 
     <div class="grid">
       <!-- OPERAÇÃO + PESSOAL -->
-      <div class="zone ops">
-        <div class="card">
+      <div class="zone ops" data-zone="ops">
+        <div class="card" data-card="vendas">
           <div class="ch">
             <div class="lbl"><i class="ti ti-cash-register"></i>Vendas <span class="sub" id="v-day"></span></div>
             <div class="ch-r"><div class="ch-r" id="v-nav" style="gap:6px"></div>
@@ -338,39 +349,39 @@
           <div id="v-body"></div>
         </div>
 
-        <div class="card foco">
+        <div class="card foco" data-card="foco">
           <div class="ch"><div class="lbl"><i class="ti ti-target-arrow"></i>Foco</div><span class="sub" id="foco-status"></span></div>
           <div class="foco-add"><input id="foco-input" placeholder="novo item ou lembrete..." maxlength="200" /><button class="mini" id="foco-add-btn" title="Adicionar"><i class="ti ti-plus"></i></button></div>
           <div class="foco-list" id="foco-list"></div>
           <button class="foco-arch" id="foco-arch" style="display:none"></button>
         </div>
 
-        <div class="card">
+        <div class="card" data-card="agenda">
           <div class="ch"><div class="lbl"><i class="ti ti-calendar-event"></i>Agenda <span class="sub" id="ag-day"></span></div><div class="ch-r" id="ag-nav" style="gap:6px"></div></div>
           <div class="list scroll" id="ag-list" style="max-height:200px"></div>
         </div>
 
-        <div class="card">
+        <div class="card" data-card="projetos">
           <div class="ch"><div class="lbl"><i class="ti ti-layout-kanban"></i>Projetos <span class="sub">no Claude</span></div></div>
           <div class="list scroll" id="pj-list" style="max-height:255px"></div>
         </div>
       </div>
 
       <!-- MERCADO + YOUTUBE -->
-      <div class="zone market">
-        <div class="card" style="min-height:360px">
+      <div class="zone market" data-zone="market">
+        <div class="card" style="min-height:360px" data-card="mercado">
           <div class="ch"><div class="lbl"><i class="ti ti-radar-2"></i>Mercado <span class="sub">food-service · delivery · foodtech</span></div></div>
           <div class="list scroll" id="mkt-list" style="max-height:560px"></div>
         </div>
-        <div class="card">
+        <div class="card" data-card="youtube">
           <div class="ch"><div class="lbl"><i class="ti ti-brand-youtube"></i>YouTube <span class="sub">últimos vídeos</span></div></div>
           <div class="yt scroll" id="yt-list"></div>
         </div>
       </div>
 
       <!-- INSTAGRAM + RADAR IA -->
-      <div class="zone social">
-        <div class="card">
+      <div class="zone social" data-zone="social">
+        <div class="card" data-card="instagram">
           <div class="ch"><div class="lbl"><i class="ti ti-brand-instagram"></i>Instagram</div></div>
           <div class="ig-bar" id="ig-acc"></div>
           <div class="ig-frame" id="ig-frame"></div>
@@ -378,8 +389,8 @@
         </div>
       </div>
 
-      <div class="zone ia">
-        <div class="card" style="min-height:380px">
+      <div class="zone ia" data-zone="ia">
+        <div class="card" style="min-height:380px" data-card="radar">
           <div class="ch" style="margin-bottom:0">
             <div class="tabs" id="r-tabs" style="margin-bottom:0"></div>
             <div class="subtabs" id="gh-sub" style="display:none"></div>
@@ -725,6 +736,80 @@ focoLoad();
   b.addEventListener('click',()=>{const ic=b.querySelector('i');b.classList.add('spin');ic.classList.replace(ic0,'ti-loader-2');
     load().finally(()=>setTimeout(()=>{b.classList.remove('spin');ic.classList.replace('ti-loader-2',ic0);},700));});
 });
+
+/* ===== drag & drop de cards entre as 4 colunas (desktop) ===== */
+(function(){
+  const LS_KEY='dash-layout';
+  const cards=[...document.querySelectorAll('.card[data-card]')];
+  const zones=[...document.querySelectorAll('.zone[data-zone]')];
+  if(!cards.length||!zones.length) return;
+  let dragEl=null;
+
+  // injeta o "grip" de arraste no cabeçalho de cada card
+  cards.forEach(card=>{
+    const ch=card.querySelector(':scope > .ch');
+    if(!ch||ch.querySelector('.card-grip')) return;
+    const g=document.createElement('span');
+    g.className='card-grip';g.draggable=true;g.title='Arraste para mover de coluna';
+    g.innerHTML='<i class="ti ti-grip-vertical"></i>';
+    ch.insertBefore(g,ch.firstChild);
+    g.addEventListener('dragstart',e=>{
+      dragEl=card;card.classList.add('dragging');
+      e.dataTransfer.effectAllowed='move';
+      try{e.dataTransfer.setData('text/plain',card.dataset.card);}catch(_){}
+      try{e.dataTransfer.setDragImage(card,24,18);}catch(_){}
+    });
+    g.addEventListener('dragend',()=>{
+      card.classList.remove('dragging');
+      zones.forEach(z=>z.classList.remove('drag-over'));
+      dragEl=null;saveLayout();
+    });
+  });
+
+  // card antes do qual inserir, conforme a posição vertical do cursor
+  function afterEl(zone,y){
+    const els=[...zone.querySelectorAll(':scope > .card:not(.dragging)')];
+    let closest=null,closestDelta=-Infinity;
+    els.forEach(el=>{
+      const box=el.getBoundingClientRect();
+      const delta=y-box.top-box.height/2;
+      if(delta<0&&delta>closestDelta){closestDelta=delta;closest=el;}
+    });
+    return closest;
+  }
+
+  zones.forEach(zone=>{
+    zone.addEventListener('dragover',e=>{
+      if(!dragEl) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect='move';
+      zones.forEach(z=>z.classList.toggle('drag-over',z===zone));
+      const after=afterEl(zone,e.clientY);
+      if(after==null) zone.appendChild(dragEl);
+      else zone.insertBefore(dragEl,after);
+    });
+    zone.addEventListener('drop',e=>{if(dragEl)e.preventDefault();});
+  });
+
+  function saveLayout(){
+    const layout={};
+    zones.forEach(z=>{layout[z.dataset.zone]=[...z.querySelectorAll(':scope > .card[data-card]')].map(c=>c.dataset.card);});
+    try{localStorage.setItem(LS_KEY,JSON.stringify(layout));}catch(_){}
+  }
+  function applyLayout(){
+    let saved;try{saved=JSON.parse(localStorage.getItem(LS_KEY)||'null');}catch(_){return;}
+    if(!saved) return;
+    Object.keys(saved).forEach(zn=>{
+      const zone=document.querySelector('.zone[data-zone="'+zn+'"]');
+      if(!zone) return;
+      (saved[zn]||[]).forEach(id=>{
+        const card=document.querySelector('.card[data-card="'+id+'"]');
+        if(card) zone.appendChild(card);
+      });
+    });
+  }
+  applyLayout();
+})();
 </script>
 </body>
 </html>
