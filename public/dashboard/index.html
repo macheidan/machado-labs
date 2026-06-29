@@ -347,6 +347,7 @@
       <div class="hello" id="hello">Bom dia, <b>Fábio</b></div>
       <div class="meta-right">
         <div class="ctx" id="ctx"></div>
+        <button class="iconbtn" id="layout-reset" title="Restaurar 4 colunas (padrão)"><i class="ti ti-layout-columns"></i></button>
         <button class="iconbtn" id="theme" title="Tema claro/escuro"><i class="ti ti-moon"></i></button>
       </div>
     </div>
@@ -766,6 +767,9 @@ focoLoad();
   const cards=[...document.querySelectorAll('.card[data-card]')];
   const zones=[...document.querySelectorAll('.zone[data-zone]')];
   if(!cards.length||!zones.length) return;
+  // distribuicao padrao do HTML (capturada antes de aplicar layout salvo)
+  const DEFAULT_LAYOUT={};
+  zones.forEach(z=>{DEFAULT_LAYOUT[z.dataset.zone]=[...z.querySelectorAll(':scope > .card[data-card]')].map(c=>c.dataset.card);});
   const isDesktop=()=>window.matchMedia('(min-width:901px)').matches;
   const ind=document.createElement('div');ind.className='drop-ind';
   let drag=null; // {card,x0,y0,on,offX,offY,ghost,zone,before}
@@ -873,18 +877,28 @@ focoLoad();
     zones.forEach(z=>{layout[z.dataset.zone]=[...z.querySelectorAll(':scope > .card[data-card]')].map(c=>c.dataset.card);});
     try{localStorage.setItem(LS_KEY,JSON.stringify(layout));}catch(_){}
   }
-  function applyLayout(){
-    let saved;try{saved=JSON.parse(localStorage.getItem(LS_KEY)||'null');}catch(_){return;}
-    if(!saved) return;
-    Object.keys(saved).forEach(zn=>{
+  function applyArrangement(arr){
+    Object.keys(arr).forEach(zn=>{
       const zone=document.querySelector('.zone[data-zone="'+zn+'"]');
       if(!zone) return;
-      (saved[zn]||[]).forEach(id=>{
+      (arr[zn]||[]).forEach(id=>{
         const card=document.querySelector('.card[data-card="'+id+'"]');
         if(card) zone.appendChild(card);
       });
     });
   }
+  function applyLayout(){
+    let saved;try{saved=JSON.parse(localStorage.getItem(LS_KEY)||'null');}catch(_){return;}
+    if(saved) applyArrangement(saved);
+  }
+  // restaura a distribuicao padrao (4 colunas) e limpa o layout salvo
+  function resetLayout(){
+    try{localStorage.removeItem(LS_KEY);}catch(_){}
+    applyArrangement(DEFAULT_LAYOUT);
+    updateEmpties();
+  }
+  const resetBtn=document.getElementById('layout-reset');
+  if(resetBtn) resetBtn.addEventListener('click',resetLayout);
   applyLayout();updateEmpties();
 })();
 </script>
