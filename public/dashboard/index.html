@@ -762,8 +762,8 @@ focoLoad();
    barra indica onde vai cair. Só no soltar o card e movido — assim o layout nao
    reflui sob o cursor (o que, no modo 2x2, empurrava as colunas e errava o alvo). */
 (function(){
-  const LS_KEY='dash-layout-v2'; // v2: redistribuicao 2 cards/coluna (invalida layout salvo antigo)
-  try{localStorage.removeItem('dash-layout');}catch(_){}
+  const LS_KEY='dash-layout-v3'; // v3: reestabelece o padrao 4 colunas (invalida layouts salvos antigos)
+  try{localStorage.removeItem('dash-layout');localStorage.removeItem('dash-layout-v2');}catch(_){}
   const cards=[...document.querySelectorAll('.card[data-card]')];
   const zones=[...document.querySelectorAll('.zone[data-zone]')];
   if(!cards.length||!zones.length) return;
