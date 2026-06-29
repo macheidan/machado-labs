@@ -741,39 +741,12 @@ function load(){return fetch('dashboard-data.json?t='+Date.now()).then(r=>r.ok?r
 load();
 focoLoad();
 
-/* refresh vendas — entre 18h e 24h aciona a coleta do DIA na máquina (watcher
-   local via vendas_req.php); fora dessa janela só re-busca o JSON publicado. */
-(function(){
-  const b=document.getElementById('v-refresh'); if(!b) return;
-  const ic=b.querySelector('i');
-  const spin=on=>{ b.classList.toggle('spin',on); ic.classList.toggle('ti-refresh',!on); ic.classList.toggle('ti-loader-2',on); };
-  async function pedirColeta(){
-    let baseDone=0;
-    try{
-      const r=await fetch('vendas_req.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({act:'req'})});
-      const s=await r.json(); baseDone=+s.done||0;
-    }catch(e){ return false; }                 // PHP fora do ar
-    const t0=Date.now();
-    while(Date.now()-t0 < 90000){               // espera o watcher concluir (~90s)
-      await new Promise(r=>setTimeout(r,3000));
-      try{ const s=await (await fetch('vendas_req.php?t='+Date.now())).json();
-        if((+s.done||0) > baseDone) return true; }catch(e){}
-    }
-    return false;                               // timeout: máquina desligada / watcher fora
-  }
-  b.addEventListener('click',async()=>{
-    spin(true);
-    const h=new Date().getHours();
-    if(h>=18 && h<=23){
-      const ok=await pedirColeta();
-      await load();
-      b.title=ok?'Atualizar vendas':'Sem resposta da máquina (watcher desligado?)';
-    }else{
-      await load();
-    }
-    setTimeout(()=>spin(false),300);
-  });
-})();
+/* refresh — re-busca o JSON publicado (a coleta roda só às 3h). */
+[['v-refresh','ti-refresh']].forEach(([id,ic0])=>{
+  const b=document.getElementById(id);if(!b)return;
+  b.addEventListener('click',()=>{const ic=b.querySelector('i');b.classList.add('spin');ic.classList.replace(ic0,'ti-loader-2');
+    load().finally(()=>setTimeout(()=>{b.classList.remove('spin');ic.classList.replace('ti-loader-2',ic0);},700));});
+});
 
 /* ===== drag & drop dos cards (desktop) ===== */
 (function(){

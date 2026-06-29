@@ -269,10 +269,9 @@ protótipo; ajuste fino de paleta quando o tema final chegar.
       rebusca o JSON publicado (cache-bust); re-coleta via túnel fica pra depois.
 - [ ] Preencher credenciais FTP no config.json (ftp_server/ftp_user/ftp_pass).
 - [ ] Runner + Task Scheduler 03h (sem catch-up).
-- [x] Botão ATUALIZAR vendas re-coleta o DIA sob demanda (18h-24h) sem túnel:
-      vendas_req.php (fila no HostGator) + vendas_watch.py (watcher na máquina,
-      roda saipos --dia hoje + runner --so-consolida). Fora de 18-24h, só re-busca
-      o JSON. Agendar run_vendas_watch.cmd --once a cada 1min, 18:00-23:59.
+- [x] Coleta só às 3h (Task Scheduler). Botão ATUALIZAR apenas re-busca o JSON
+      publicado (cache-bust). Re-coleta sob demanda foi descartada a pedido do
+      Fábio (não quer watcher lendo a cada minuto).
 - [ ] .htaccess (basic auth) na HostGator — protege faturamento na URL pública.
 - [ ] (DEPOIS DO BACKEND) Skin final: consolidar cores em variáveis de tema,
       botão claro/escuro (sol/lua) no canto superior direito, aplicar paleta
