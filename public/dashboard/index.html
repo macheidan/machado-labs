@@ -158,10 +158,13 @@
     box-shadow:0 0 10px var(--accent);pointer-events:none}
   .zone.drag-over{outline:2px dashed var(--accent);outline-offset:5px;border-radius:var(--r-lg);background:var(--o-soft)}
   .zone.is-empty{align-self:stretch}
-  .zone-empty{flex:1 0 auto;display:flex;align-items:center;justify-content:center;text-align:center;min-height:130px;
-    padding:18px;border:1.5px dashed var(--line);border-radius:var(--r-lg);color:var(--fg-faint);
-    font-family:var(--mono);font-size:11.5px;letter-spacing:.3px;background:var(--o-soft);transition:.15s}
-  .zone.drag-over .zone-empty{border-color:var(--accent);color:var(--fg-muted)}
+  .zone-empty{flex:1 0 auto;display:flex;flex-direction:column;gap:9px;align-items:center;justify-content:center;
+    text-align:center;min-height:150px;padding:20px;border:2px dashed var(--accent);border-radius:var(--r-lg);
+    color:var(--accent);background:var(--accent-soft);font-family:var(--mono);font-size:12px;letter-spacing:.3px;
+    opacity:.78;transition:.15s}
+  .zone-empty i{font-size:26px;line-height:1}
+  .card:hover .zone-empty,.zone.drag-over .zone-empty{opacity:1}
+  .zone.drag-over .zone-empty{box-shadow:0 0 0 3px var(--accent-soft) inset;border-style:solid}
   @media(min-width:901px){.card-grip{display:inline-flex}}
 
   /* vendas */
@@ -853,7 +856,7 @@ focoLoad();
       let ph=z.querySelector(':scope > .zone-empty');
       if(!hasCard&&!ph){
         ph=document.createElement('div');ph.className='zone-empty';
-        ph.textContent='coluna vazia · arraste um card aqui';
+        ph.innerHTML='<i class="ti ti-drag-drop"></i><span>arraste um card para esta coluna</span>';
         z.appendChild(ph);
       }else if(hasCard&&ph){ph.remove();}
     });
