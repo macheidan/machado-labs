@@ -352,7 +352,7 @@
     </div>
 
     <div class="grid">
-      <!-- OPERAÇÃO + PESSOAL -->
+      <!-- VENDAS + FOCO -->
       <div class="zone ops" data-zone="ops">
         <div class="card" data-card="vendas">
           <div class="ch">
@@ -369,16 +369,6 @@
           <div class="foco-list" id="foco-list"></div>
           <button class="foco-arch" id="foco-arch" style="display:none"></button>
         </div>
-
-        <div class="card" data-card="agenda">
-          <div class="ch"><div class="lbl"><i class="ti ti-calendar-event"></i>Agenda <span class="sub" id="ag-day"></span></div><div class="ch-r" id="ag-nav" style="gap:6px"></div></div>
-          <div class="list scroll" id="ag-list" style="max-height:200px"></div>
-        </div>
-
-        <div class="card" data-card="projetos">
-          <div class="ch"><div class="lbl"><i class="ti ti-layout-kanban"></i>Projetos <span class="sub">no Claude</span></div></div>
-          <div class="list scroll" id="pj-list" style="max-height:255px"></div>
-        </div>
       </div>
 
       <!-- MERCADO + YOUTUBE -->
@@ -393,7 +383,7 @@
         </div>
       </div>
 
-      <!-- INSTAGRAM + RADAR IA -->
+      <!-- INSTAGRAM + AGENDA -->
       <div class="zone social" data-zone="social">
         <div class="card" data-card="instagram">
           <div class="ch"><div class="lbl"><i class="ti ti-brand-instagram"></i>Instagram</div></div>
@@ -401,9 +391,19 @@
           <div class="ig-frame" id="ig-frame"></div>
           <div class="ig-bar bottom" id="ig-post"></div>
         </div>
+
+        <div class="card" data-card="agenda">
+          <div class="ch"><div class="lbl"><i class="ti ti-calendar-event"></i>Agenda <span class="sub" id="ag-day"></span></div><div class="ch-r" id="ag-nav" style="gap:6px"></div></div>
+          <div class="list scroll" id="ag-list" style="max-height:200px"></div>
+        </div>
       </div>
 
+      <!-- PROJETOS + RADAR IA -->
       <div class="zone ia" data-zone="ia">
+        <div class="card" data-card="projetos">
+          <div class="ch"><div class="lbl"><i class="ti ti-layout-kanban"></i>Projetos <span class="sub">no Claude</span></div></div>
+          <div class="list scroll" id="pj-list" style="max-height:255px"></div>
+        </div>
         <div class="card" style="min-height:380px" data-card="radar">
           <div class="ch" style="margin-bottom:0">
             <div class="tabs" id="r-tabs" style="margin-bottom:0"></div>
@@ -761,7 +761,8 @@ focoLoad();
    barra indica onde vai cair. Só no soltar o card e movido — assim o layout nao
    reflui sob o cursor (o que, no modo 2x2, empurrava as colunas e errava o alvo). */
 (function(){
-  const LS_KEY='dash-layout';
+  const LS_KEY='dash-layout-v2'; // v2: redistribuicao 2 cards/coluna (invalida layout salvo antigo)
+  try{localStorage.removeItem('dash-layout');}catch(_){}
   const cards=[...document.querySelectorAll('.card[data-card]')];
   const zones=[...document.querySelectorAll('.zone[data-zone]')];
   if(!cards.length||!zones.length) return;
