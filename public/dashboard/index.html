@@ -734,7 +734,7 @@ function render(d){
   projects=pick(d.projects,projects);drawProjects();
   MKT=pick(d.biz,MKT);drawMarket();
   YT=pick(d.youtube,YT);drawYT();
-  if(d.instagram&&d.instagram.length){const ig=d.instagram.filter(x=>x&&x.posts&&x.posts.length);if(ig.length){IG_DATA=ig;igA=pickRandomIG();igP=0;}}
+  if(d.instagram&&d.instagram.length){const srv=d.instagram.filter(x=>x&&x.conta&&x.posts&&x.posts.length);const nomes=new Set(srv.map(x=>x.conta));const extra=IG_DATA.filter(x=>x&&x.conta&&!nomes.has(x.conta));/* mescla: contas do servidor + contas so-do-codigo (ex: novas ainda sem posts) */if(srv.length||extra.length){IG_DATA=[...srv,...extra];igA=pickRandomIG();igP=0;}}
   drawIG();
   AI=pick(d.ai,AI);
   PH=pick(d.producthunt,PH);
