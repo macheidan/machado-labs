@@ -142,6 +142,31 @@
   .mini:disabled{opacity:.28;cursor:default}
   .mini.spin i{animation:sp 1s linear infinite}
 
+  /* drag & drop de cards entre colunas (desktop) */
+  .card-grip{flex:0 0 auto;display:none;align-items:center;justify-content:center;width:20px;height:24px;
+    margin:-2px 4px -2px -4px;color:var(--fg-faint);cursor:grab;font-size:17px;line-height:1;
+    opacity:.38;transition:opacity .15s,color .15s;-webkit-user-select:none;user-select:none;touch-action:none}
+  .card:hover>.ch>.card-grip{opacity:1;color:var(--fg-muted)}
+  .card-grip:hover{color:var(--fg)!important}
+  .card-grip:active,body.dnd-dragging,body.dnd-dragging *{cursor:grabbing!important}
+  body.dnd-dragging{-webkit-user-select:none;user-select:none}
+  .card.dragging{opacity:.32}
+  .drag-ghost{position:fixed;left:0;top:0;z-index:9999;margin:0;pointer-events:none;
+    opacity:.95;box-shadow:0 14px 40px rgba(0,0,0,.42);transform:rotate(1.2deg);
+    transition:none;cursor:grabbing}
+  .drop-ind{height:4px;flex:0 0 auto;margin:0;border-radius:3px;background:var(--accent);
+    box-shadow:0 0 10px var(--accent);pointer-events:none}
+  .zone.drag-over{outline:2px dashed var(--accent);outline-offset:5px;border-radius:var(--r-lg);background:var(--o-soft)}
+  .zone.is-empty{align-self:stretch}
+  .zone-empty{flex:1 0 auto;display:flex;flex-direction:column;gap:9px;align-items:center;justify-content:center;
+    text-align:center;min-height:150px;padding:20px;border:2px dashed var(--accent);border-radius:var(--r-lg);
+    color:var(--accent);background:var(--accent-soft);font-family:var(--mono);font-size:12px;letter-spacing:.3px;
+    opacity:.78;transition:.15s}
+  .zone-empty i{font-size:26px;line-height:1}
+  .card:hover .zone-empty,.zone.drag-over .zone-empty{opacity:1}
+  .zone.drag-over .zone-empty{box-shadow:0 0 0 3px var(--accent-soft) inset;border-style:solid}
+  @media(min-width:901px){.card-grip{display:inline-flex}}
+
   /* vendas */
   .v-top{display:flex;align-items:flex-end;gap:11px;flex-wrap:wrap}
   .v-tot{font-family:var(--mono);font-size:clamp(30px,3vw,42px);font-weight:600;letter-spacing:-1.5px;line-height:.9;color:var(--fg)}
@@ -363,13 +388,14 @@
       <div class="hello" id="hello">Bom dia, <b>Fábio</b></div>
       <div class="meta-right">
         <div class="ctx" id="ctx"></div>
+        <button class="iconbtn" id="layout-reset" title="Restaurar 4 colunas (padrão)"><i class="ti ti-layout-columns"></i></button>
         <button class="iconbtn" id="theme" title="Tema claro/escuro"><i class="ti ti-moon"></i></button>
       </div>
     </div>
 
     <div class="grid">
-      <!-- OPERAÇÃO + PESSOAL -->
-      <div class="zone ops">
+      <!-- VENDAS + FOCO -->
+      <div class="zone ops" data-zone="ops">
         <div class="card" data-card="vendas">
           <div class="ch">
             <div class="lbl"><i class="ti ti-cash-register"></i>Vendas <span class="sub" id="v-day"></span></div>
@@ -393,20 +419,10 @@
           </div>
           <div id="fr-body"></div>
         </div>
-
-        <div class="card" data-card="agenda">
-          <div class="ch"><div class="lbl"><i class="ti ti-calendar-event"></i>Agenda <span class="sub" id="ag-day"></span></div><div class="ch-r" id="ag-nav" style="gap:6px"></div></div>
-          <div class="list scroll" id="ag-list" style="max-height:200px"></div>
-        </div>
-
-        <div class="card" data-card="projetos">
-          <div class="ch"><div class="lbl"><i class="ti ti-layout-kanban"></i>Projetos <span class="sub">no Claude</span></div></div>
-          <div class="list scroll" id="pj-list" style="max-height:255px"></div>
-        </div>
       </div>
 
       <!-- MERCADO + YOUTUBE -->
-      <div class="zone market">
+      <div class="zone market" data-zone="market">
         <div class="card" style="min-height:360px" data-card="mercado">
           <div class="ch"><div class="lbl"><i class="ti ti-radar-2"></i>Mercado <span class="sub">food-service · delivery · foodtech</span></div></div>
           <div class="list scroll" id="mkt-list" style="max-height:560px"></div>
@@ -417,17 +433,27 @@
         </div>
       </div>
 
-      <!-- INSTAGRAM + RADAR IA -->
-      <div class="zone social">
+      <!-- INSTAGRAM + AGENDA -->
+      <div class="zone social" data-zone="social">
         <div class="card" data-card="instagram">
           <div class="ch"><div class="lbl"><i class="ti ti-brand-instagram"></i>Instagram</div></div>
           <div class="ig-bar" id="ig-acc"></div>
           <div class="ig-frame" id="ig-frame"></div>
           <div class="ig-bar bottom" id="ig-post"></div>
         </div>
+
+        <div class="card" data-card="agenda">
+          <div class="ch"><div class="lbl"><i class="ti ti-calendar-event"></i>Agenda <span class="sub" id="ag-day"></span></div><div class="ch-r" id="ag-nav" style="gap:6px"></div></div>
+          <div class="list scroll" id="ag-list" style="max-height:200px"></div>
+        </div>
       </div>
 
-      <div class="zone ia">
+      <!-- PROJETOS + RADAR IA -->
+      <div class="zone ia" data-zone="ia">
+        <div class="card" data-card="projetos">
+          <div class="ch"><div class="lbl"><i class="ti ti-layout-kanban"></i>Projetos <span class="sub">no Claude</span></div></div>
+          <div class="list scroll" id="pj-list" style="max-height:255px"></div>
+        </div>
         <div class="card" style="min-height:380px" data-card="radar">
           <div class="ch" style="margin-bottom:0">
             <div class="tabs" id="r-tabs" style="margin-bottom:0"></div>
@@ -479,6 +505,9 @@ let IG_DATA=[
   {conta:'myhub.ia',   posts:['DaG58S3HGLg','DaGaEUqHOP6','DaGCvREhpom','DaEPN2iHO_C','DaDd8pShhug','DaDqG3LHDF_','DaDLb0FzeBR','DaBndxTHGEc','DaBb4AuHCCc','DaBD9StOEEn'].map(c=>({code:c}))},
   {conta:'evolving.ai',posts:['DaGMmPrjbip','DaFrQ6jjeaV','DaFhAJKjaDh','DaFKVYHgHLM','DaDsPplAFfa','DaDQgC5gLHE','DaDL_nUzhK9','DaDGsD-ANsv','DaC1XiUgMDI','DaA5U4wjZ_N'].map(c=>({code:c}))},
   {conta:'theaifield', posts:['DaD1YXzDAEr','DZ-izCUDOx4','DZa2FHMDKmq','DaGhFIhjBXe','DaGVfmPjGj9','DaFcMO9DACQ','DaDZ7X3jLug','DaC3jTnDNo5','DaBWnwGDIIe','DaA50ppDNJp'].map(c=>({code:c}))},
+  {conta:'therundownai',posts:[].map(c=>({code:c}))},
+  {conta:'design.deb',  posts:[].map(c=>({code:c}))},
+  {conta:'metav3rse',   posts:[].map(c=>({code:c}))},
 ];
 
 /* ===== helpers ===== */
@@ -698,6 +727,8 @@ addEventListener('keydown',e=>{if(e.key==='Escape')closeYT();});
 
 /* ===== instagram (1 post por vez + nav) ===== */
 let igA=0,igP=0;
+// conta inicial aleatoria a cada carregamento da pagina
+function pickRandomIG(){return IG_DATA.length?Math.floor(Math.random()*IG_DATA.length):0;}
 function drawIG(){
   const accBar=document.getElementById('ig-acc'),frame=document.getElementById('ig-frame'),postBar=document.getElementById('ig-post');
   if(!IG_DATA.length){accBar.innerHTML='';postBar.innerHTML='';frame.innerHTML='<div class="empty" style="padding:24px">sem contas</div>';return;}
@@ -752,7 +783,7 @@ function render(d){
   projects=pick(d.projects,projects);drawProjects();
   MKT=pick(d.biz,MKT);drawMarket();
   YT=pick(d.youtube,YT);drawYT();
-  if(d.instagram&&d.instagram.length){const ig=d.instagram.filter(x=>x&&x.posts&&x.posts.length);if(ig.length){IG_DATA=ig;igA=0;igP=0;}}
+  if(d.instagram&&d.instagram.length){const srv=d.instagram.filter(x=>x&&x.conta&&x.posts&&x.posts.length);const nomes=new Set(srv.map(x=>x.conta));const extra=IG_DATA.filter(x=>x&&x.conta&&!nomes.has(x.conta));/* mescla: contas do servidor + contas so-do-codigo (ex: novas ainda sem posts) */if(srv.length||extra.length){IG_DATA=[...srv,...extra];igA=pickRandomIG();igP=0;}}
   drawIG();
   AI=pick(d.ai,AI);
   PH=pick(d.producthunt,PH);
@@ -835,7 +866,7 @@ function frEdit(){
 document.getElementById('fr-edit').onclick=()=>{if(document.getElementById('fr-ta'))frRender();else frEdit();};
 
 /* primeira pintura (mock) + fetch real */
-fillCtx(null);drawSales();drawAgenda();drawProjects();drawMarket();drawYT();drawIG();drawTabs();drawRadar();frRender();
+fillCtx(null);drawSales();drawAgenda();drawProjects();drawMarket();drawYT();igA=pickRandomIG();drawIG();drawTabs();drawRadar();frRender();
 function load(){return fetch('dashboard-data.json?t='+Date.now()).then(r=>r.ok?r.json():{}).then(render).catch(()=>{});}
 load();
 focoLoad();
@@ -847,69 +878,149 @@ focoLoad();
     load().finally(()=>setTimeout(()=>{b.classList.remove('spin');ic.classList.replace('ti-loader-2',ic0);},700));});
 });
 
-/* ===== drag & drop dos cards (desktop) ===== */
+/* ===== drag & drop de cards entre as 4 colunas (desktop) — pointer events =====
+   O card arrastado fica no lugar (esmaecido); um fantasma segue o cursor e uma
+   barra indica onde vai cair. Só no soltar o card e movido — assim o layout nao
+   reflui sob o cursor (o que, no modo 2x2, empurrava as colunas e errava o alvo). */
 (function(){
-  const KEY='dash-layout-v1';
-  const ZONES=['ops','market','social','ia'];
-  const mq=window.matchMedia('(min-width:901px)');
-  const zones=[...document.querySelectorAll('.zone')];
+  const LS_KEY='dash-layout-v3'; // v3: reestabelece o padrao 4 colunas (invalida layouts salvos antigos)
+  try{localStorage.removeItem('dash-layout');localStorage.removeItem('dash-layout-v2');}catch(_){}
   const cards=[...document.querySelectorAll('.card[data-card]')];
-  zones.forEach(z=>{ z.dataset.zone=ZONES.find(k=>z.classList.contains(k))||''; });
+  const zones=[...document.querySelectorAll('.zone[data-zone]')];
+  if(!cards.length||!zones.length) return;
+  // distribuicao padrao do HTML (capturada antes de aplicar layout salvo)
+  const DEFAULT_LAYOUT={};
+  zones.forEach(z=>{DEFAULT_LAYOUT[z.dataset.zone]=[...z.querySelectorAll(':scope > .card[data-card]')].map(c=>c.dataset.card);});
+  const isDesktop=()=>window.matchMedia('(min-width:901px)').matches;
+  const ind=document.createElement('div');ind.className='drop-ind';
+  let drag=null; // {card,x0,y0,on,offX,offY,ghost,zone,before}
 
-  let dragEl=null;
-
-  function saveLayout(){
-    const map={};
-    zones.forEach(z=>{ map[z.dataset.zone]=[...z.querySelectorAll('.card[data-card]')].map(c=>c.dataset.card); });
-    try{ localStorage.setItem(KEY,JSON.stringify(map)); }catch(e){}
-  }
-  function applyLayout(){
-    let map; try{ map=JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){ map=null; }
-    if(!map)return;
-    const byId={}; cards.forEach(c=>byId[c.dataset.card]=c);
-    zones.forEach(z=>{ (map[z.dataset.zone]||[]).forEach(id=>{ if(byId[id]) z.appendChild(byId[id]); }); });
-  }
-  function afterEl(zone,y){
-    const els=[...zone.querySelectorAll('.card[data-card]:not(.dragging)')];
-    let best={off:-Infinity,el:null};
-    els.forEach(el=>{ const b=el.getBoundingClientRect();const off=y-b.top-b.height/2;
-      if(off<0&&off>best.off) best={off,el}; });
-    return best.el;
-  }
-
-  cards.forEach(c=>{
-    const h=document.createElement('button');
-    h.className='drag-handle';h.type='button';h.title='Arrastar card';
-    h.innerHTML='<i class="ti ti-grip-horizontal"></i>';
-    c.appendChild(h);
-    h.addEventListener('mousedown',()=>{ if(mq.matches) c.draggable=true; });
-  });
-  document.addEventListener('mouseup',()=>{ if(!dragEl) cards.forEach(c=>c.draggable=false); });
-
-  document.addEventListener('dragstart',e=>{
-    const c=e.target.closest('.card[data-card]');
-    if(!c||!c.draggable){ return; }
-    dragEl=c; c.classList.add('dragging');
-    e.dataTransfer.effectAllowed='move';
-    try{ e.dataTransfer.setData('text/plain',c.dataset.card); }catch(_){}
-  });
-  document.addEventListener('dragend',()=>{
-    if(dragEl){ dragEl.classList.remove('dragging'); dragEl.draggable=false; dragEl=null; }
-    zones.forEach(z=>z.classList.remove('drop-on'));
-    cards.forEach(c=>c.draggable=false);
-  });
-  zones.forEach(z=>{
-    z.addEventListener('dragover',e=>{
-      if(!dragEl)return;
-      e.preventDefault(); e.dataTransfer.dropEffect='move';
-      zones.forEach(x=>x.classList.toggle('drop-on',x===z));
-      const a=afterEl(z,e.clientY);
-      if(a==null) z.appendChild(dragEl); else z.insertBefore(dragEl,a);
+  // injeta o "grip" de arraste no cabeçalho de cada card
+  cards.forEach(card=>{
+    const ch=card.querySelector(':scope > .ch');
+    if(!ch||ch.querySelector('.card-grip')) return;
+    const g=document.createElement('span');
+    g.className='card-grip';g.title='Arraste para mover de coluna';
+    g.innerHTML='<i class="ti ti-grip-vertical"></i>';
+    ch.insertBefore(g,ch.firstChild);
+    g.addEventListener('pointerdown',e=>{
+      if(e.button!==0||!isDesktop()) return;
+      e.preventDefault();
+      const r=card.getBoundingClientRect();
+      drag={card,x0:e.clientX,y0:e.clientY,on:false,offX:e.clientX-r.left,offY:e.clientY-r.top,w:r.width,ghost:null,zone:null,before:null};
+      document.addEventListener('pointermove',onMove);
+      document.addEventListener('pointerup',onUp);
+      document.addEventListener('pointercancel',onUp);
     });
   });
-  document.addEventListener('drop',e=>{ if(!dragEl)return; e.preventDefault(); saveLayout(); });
 
-  applyLayout();
+  // zona mais próxima (distância 2D ao retângulo) — cobre o "gap" entre
+  // colunas e o layout 2x2 (<=1500px), onde colunas dividem o eixo horizontal
+  function nearestZone(x,y){
+    let best=null,bd=Infinity;
+    zones.forEach(z=>{const b=z.getBoundingClientRect();
+      const dx=x<b.left?b.left-x:(x>b.right?x-b.right:0);
+      const dy=y<b.top?b.top-y:(y>b.bottom?y-b.bottom:0);
+      const d=dx*dx+dy*dy;
+      if(d<bd){bd=d;best=z;}});
+    return best;
+  }
+  // card antes do qual inserir, conforme a posição vertical do cursor
+  function afterEl(zone,y,dragging){
+    const els=[...zone.querySelectorAll(':scope > .card')].filter(el=>el!==dragging);
+    for(const el of els){const b=el.getBoundingClientRect();if(y<b.top+b.height/2) return el;}
+    return null;
+  }
+
+  function startDrag(){
+    drag.on=true;
+    const card=drag.card;
+    card.classList.add('dragging');
+    document.body.classList.add('dnd-dragging');
+    const gh=card.cloneNode(true);
+    gh.classList.add('drag-ghost');gh.removeAttribute('data-card');
+    gh.style.width=drag.w+'px';
+    drag.ghost=gh;document.body.appendChild(gh);
+  }
+  function onMove(e){
+    if(!drag) return;
+    if(!drag.on){
+      if(Math.hypot(e.clientX-drag.x0,e.clientY-drag.y0)<5) return;
+      startDrag();
+    }
+    const gh=drag.ghost;
+    gh.style.left=(e.clientX-drag.offX)+'px';
+    gh.style.top=(e.clientY-drag.offY)+'px';
+    gh.style.visibility='hidden';
+    const under=document.elementFromPoint(e.clientX,e.clientY);
+    gh.style.visibility='';
+    let zone=under&&under.closest?under.closest('.zone[data-zone]'):null;
+    if(!zone) zone=nearestZone(e.clientX,e.clientY);
+    if(!zone) return;
+    const before=afterEl(zone,e.clientY,drag.card);
+    drag.zone=zone;drag.before=before;
+    if(before) zone.insertBefore(ind,before); else zone.appendChild(ind);
+    zones.forEach(z=>z.classList.toggle('drag-over',z===zone));
+  }
+  function onUp(){
+    document.removeEventListener('pointermove',onMove);
+    document.removeEventListener('pointerup',onUp);
+    document.removeEventListener('pointercancel',onUp);
+    if(drag&&drag.on){
+      const {card,zone,before}=drag;
+      if(zone){ if(before&&before!==card) zone.insertBefore(card,before); else zone.appendChild(card); }
+      card.classList.remove('dragging');
+      document.body.classList.remove('dnd-dragging');
+      if(drag.ghost) drag.ghost.remove();
+      if(ind.parentNode) ind.remove();
+      zones.forEach(z=>z.classList.remove('drag-over'));
+      updateEmpties();saveLayout();
+    }
+    drag=null;
+  }
+
+  // mostra um alvo "solte aqui" em colunas que ficaram sem cards
+  function updateEmpties(){
+    zones.forEach(z=>{
+      const hasCard=z.querySelector(':scope > .card[data-card]');
+      z.classList.toggle('is-empty',!hasCard); // estica a coluna vazia p/ a altura da linha
+      let ph=z.querySelector(':scope > .zone-empty');
+      if(!hasCard&&!ph){
+        ph=document.createElement('div');ph.className='zone-empty';
+        ph.innerHTML='<i class="ti ti-drag-drop"></i><span>arraste um card para esta coluna</span>';
+        z.appendChild(ph);
+      }else if(hasCard&&ph){ph.remove();}
+    });
+  }
+
+  function saveLayout(){
+    const layout={};
+    zones.forEach(z=>{layout[z.dataset.zone]=[...z.querySelectorAll(':scope > .card[data-card]')].map(c=>c.dataset.card);});
+    try{localStorage.setItem(LS_KEY,JSON.stringify(layout));}catch(_){}
+  }
+  function applyArrangement(arr){
+    Object.keys(arr).forEach(zn=>{
+      const zone=document.querySelector('.zone[data-zone="'+zn+'"]');
+      if(!zone) return;
+      (arr[zn]||[]).forEach(id=>{
+        const card=document.querySelector('.card[data-card="'+id+'"]');
+        if(card) zone.appendChild(card);
+      });
+    });
+  }
+  function applyLayout(){
+    let saved;try{saved=JSON.parse(localStorage.getItem(LS_KEY)||'null');}catch(_){return;}
+    if(saved) applyArrangement(saved);
+  }
+  // restaura a distribuicao padrao (4 colunas) e limpa o layout salvo
+  function resetLayout(){
+    try{localStorage.removeItem(LS_KEY);}catch(_){}
+    applyArrangement(DEFAULT_LAYOUT);
+    updateEmpties();
+  }
+  const resetBtn=document.getElementById('layout-reset');
+  if(resetBtn) resetBtn.addEventListener('click',resetLayout);
+  applyLayout();updateEmpties();
 })();
 </script>
 </body>
