@@ -198,6 +198,25 @@
   .foco-arch i{font-size:14px}
   .foco-empty{font-size:12.5px;color:var(--fg-faint);padding:8px 2px}
 
+  /* frase do dia */
+  .frase{background:linear-gradient(137deg,rgba(142,107,255,.09),rgba(255,92,43,.05));border-color:rgba(142,107,255,.18)}
+  .frase .q{position:relative;font-size:clamp(16px,1.7vw,21px);font-weight:600;line-height:1.42;
+    color:var(--fg);letter-spacing:-.2px;padding-left:26px;min-height:52px;display:flex;align-items:center}
+  .frase .q::before{content:'\201C';position:absolute;left:-4px;top:-14px;font-family:Georgia,serif;
+    font-size:56px;line-height:1;color:var(--violet);opacity:.5}
+  .frase .qsub{font-family:var(--mono);font-size:10.5px;color:var(--fg-faint);margin-top:12px;letter-spacing:0}
+  .fr-ta{width:100%;min-height:150px;resize:vertical;background:var(--o-mid);color:var(--fg);
+    border:1px solid var(--line-strong);border-radius:var(--r-md);padding:11px 12px;
+    font-family:var(--font);font-size:13px;line-height:1.6;letter-spacing:.1px;outline:none}
+  .fr-ta:focus{border-color:rgba(142,107,255,.5)}
+  .fr-act{display:flex;justify-content:flex-end;gap:8px;margin-top:10px}
+  .fr-btn{font-size:12.5px;font-weight:600;padding:8px 15px;border-radius:var(--r);border:0;cursor:pointer;
+    background:linear-gradient(135deg,var(--violet),#6d4fe0);color:#fff}
+  .fr-btn:active{transform:scale(.97)}
+  .fr-btn.ghost{background:var(--o-strong);color:var(--fg-soft);border:1px solid var(--line)}
+  .fr-btn.ghost:hover{color:var(--fg)}
+  .fr-hint{font-family:var(--mono);font-size:10.5px;color:var(--fg-faint);margin-top:9px;letter-spacing:0}
+
   /* listas */
   .list{display:flex;flex-direction:column;overflow-y:auto;margin:0 -4px;padding:0 4px}
   .empty{font-size:13px;color:var(--fg-faint);padding:14px 2px}
@@ -290,7 +309,14 @@
 
   /* responsivo */
   @media (max-width:1500px){ .grid{grid-template-columns:340px minmax(0,1fr);grid-template-areas:"ops market" "social ia"} }
-  @media (max-width:900px){ .grid{grid-template-columns:1fr;grid-template-areas:"ops" "market" "social" "ia"} }
+  @media (max-width:900px){
+    /* zonas viram transparentes: os 8 cards empilham direto no grid (1 coluna) */
+    .grid{grid-template-columns:1fr;grid-template-areas:none}
+    .zone{display:contents}
+    /* agenda e projetos por último no mobile */
+    .card[data-card="agenda"],.card[data-card="projetos"]{order:1}
+    .card[data-card="projetos"]{order:2}
+  }
   @media (max-width:560px){
     .dash{padding:14px 13px var(--s4)}
     .meta{flex-wrap:nowrap;gap:8px;align-items:center;overflow-x:auto;scrollbar-width:none;margin-bottom:var(--s2)}
@@ -312,6 +338,21 @@
     .ig-frame iframe{height:490px}
     .v-spark{margin-top:16px}.v-split{margin-top:12px}
   }
+
+  /* drag & drop dos cards (desktop) */
+  .card{position:relative}
+  .drag-handle{position:absolute;top:0;left:50%;transform:translateX(-50%);
+    width:38px;height:14px;display:none;place-items:center;z-index:6;overflow:hidden;
+    background:transparent;border:0;color:var(--fg-faint);cursor:grab;
+    opacity:0;transition:opacity .15s,color .15s}
+  .drag-handle i{font-size:14px;line-height:1}
+  .drag-handle:hover{color:var(--fg-soft)}
+  .drag-handle:active{cursor:grabbing}
+  .card:hover .drag-handle{opacity:.7}
+  .card.dragging{opacity:.45}
+  .zone.drop-on{outline:1px dashed var(--line-strong);outline-offset:4px;border-radius:var(--r-lg)}
+  @media (min-width:901px){ .drag-handle{display:grid} }
+  @media (prefers-reduced-motion:reduce){ .drag-handle{transition:none} }
 </style>
 </head>
 <body>
@@ -329,7 +370,7 @@
     <div class="grid">
       <!-- OPERAÇÃO + PESSOAL -->
       <div class="zone ops">
-        <div class="card">
+        <div class="card" data-card="vendas">
           <div class="ch">
             <div class="lbl"><i class="ti ti-cash-register"></i>Vendas <span class="sub" id="v-day"></span></div>
             <div class="ch-r"><div class="ch-r" id="v-nav" style="gap:6px"></div>
@@ -338,19 +379,27 @@
           <div id="v-body"></div>
         </div>
 
-        <div class="card foco">
+        <div class="card foco" data-card="foco">
           <div class="ch"><div class="lbl"><i class="ti ti-target-arrow"></i>Foco</div><span class="sub" id="foco-status"></span></div>
           <div class="foco-add"><input id="foco-input" placeholder="novo item ou lembrete..." maxlength="200" /><button class="mini" id="foco-add-btn" title="Adicionar"><i class="ti ti-plus"></i></button></div>
           <div class="foco-list" id="foco-list"></div>
           <button class="foco-arch" id="foco-arch" style="display:none"></button>
         </div>
 
-        <div class="card">
+        <div class="card frase" data-card="frase">
+          <div class="ch">
+            <div class="lbl"><i class="ti ti-quote"></i>Frase do dia</div>
+            <div class="ch-r"><button class="mini" id="fr-edit" title="Editar frases"><i class="ti ti-pencil"></i></button></div>
+          </div>
+          <div id="fr-body"></div>
+        </div>
+
+        <div class="card" data-card="agenda">
           <div class="ch"><div class="lbl"><i class="ti ti-calendar-event"></i>Agenda <span class="sub" id="ag-day"></span></div><div class="ch-r" id="ag-nav" style="gap:6px"></div></div>
           <div class="list scroll" id="ag-list" style="max-height:200px"></div>
         </div>
 
-        <div class="card">
+        <div class="card" data-card="projetos">
           <div class="ch"><div class="lbl"><i class="ti ti-layout-kanban"></i>Projetos <span class="sub">no Claude</span></div></div>
           <div class="list scroll" id="pj-list" style="max-height:255px"></div>
         </div>
@@ -358,11 +407,11 @@
 
       <!-- MERCADO + YOUTUBE -->
       <div class="zone market">
-        <div class="card" style="min-height:360px">
+        <div class="card" style="min-height:360px" data-card="mercado">
           <div class="ch"><div class="lbl"><i class="ti ti-radar-2"></i>Mercado <span class="sub">food-service · delivery · foodtech</span></div></div>
           <div class="list scroll" id="mkt-list" style="max-height:560px"></div>
         </div>
-        <div class="card">
+        <div class="card" data-card="youtube">
           <div class="ch"><div class="lbl"><i class="ti ti-brand-youtube"></i>YouTube <span class="sub">últimos vídeos</span></div></div>
           <div class="yt scroll" id="yt-list"></div>
         </div>
@@ -370,7 +419,7 @@
 
       <!-- INSTAGRAM + RADAR IA -->
       <div class="zone social">
-        <div class="card">
+        <div class="card" data-card="instagram">
           <div class="ch"><div class="lbl"><i class="ti ti-brand-instagram"></i>Instagram</div></div>
           <div class="ig-bar" id="ig-acc"></div>
           <div class="ig-frame" id="ig-frame"></div>
@@ -379,7 +428,7 @@
       </div>
 
       <div class="zone ia">
-        <div class="card" style="min-height:380px">
+        <div class="card" style="min-height:380px" data-card="radar">
           <div class="ch" style="margin-bottom:0">
             <div class="tabs" id="r-tabs" style="margin-bottom:0"></div>
             <div class="subtabs" id="gh-sub" style="display:none"></div>
@@ -713,18 +762,155 @@ function render(d){
   drawTabs();drawRadar();
 }
 
+/* ===== frase do dia (local, edita no lápis) ===== */
+const FRASES_KEY='dash-frases-v1';
+const FRASES_DEFAULT=[
+  'Quantos vencem se eu vencer?',
+  'Amigo não paga conta.',
+  'Leia e sinta cada uma destas instruções.',
+  'Não perca tempo olhando para o passado.',
+  'Aja como se fosse confiante.',
+  'E se eu pensasse diferente?',
+  'Focalize soluções.',
+  'Faça!',
+  'Conte mais histórias hoje.',
+  'Se tiver duas coisas para fazer hoje, escolha a mais arriscada.',
+  'A vida é uma só!',
+  'Relaxe o corpo. Seja auto-confiante.',
+  'Seja claro em suas palavras.',
+  'Se você quer algo que nunca teve, precisa fazer algo que nunca fez!',
+  'Não quero comodidade. Quero independência!',
+  'Jogue para ganhar!!',
+  'Não deixe que sua vida seja como filmes que passam de madrugada na TV. Servem só para preencher o espaço.',
+  'The doors we open and close each day decide the lives we live.',
+  'Life will pay whatever price you ask of it.',
+  'Where the focus goes the energy flows.',
+  'The secret of living is giving.',
+  'Empreendedor é aquele que vive riscos constantes em busca dos seus objetivos.',
+];
+const frBody=document.getElementById('fr-body');
+const frEsc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function frToday(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function frGet(){
+  let st;try{st=JSON.parse(localStorage.getItem(FRASES_KEY)||'null');}catch(e){st=null;}
+  if(!st||!Array.isArray(st.list)||!st.list.length){st={list:FRASES_DEFAULT.slice(),order:[],pos:0,date:''};}
+  return st;
+}
+function frPut(st){try{localStorage.setItem(FRASES_KEY,JSON.stringify(st));}catch(e){}}
+function frShuffle(st,lastIdx){
+  const n=st.list.length;const ord=Array.from({length:n},(_,i)=>i);
+  for(let i=n-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[ord[i],ord[j]]=[ord[j],ord[i]];}
+  if(n>1&&lastIdx!=null&&ord[0]===lastIdx){[ord[0],ord[1]]=[ord[1],ord[0]];} /* evita repetir na virada do ciclo */
+  st.order=ord;st.pos=0;
+}
+function frAdvance(st){
+  const t=frToday();
+  if(!st.order||!st.order.length){frShuffle(st,null);st.date=t;return st;}
+  if(st.pos>=st.order.length)frShuffle(st,null);
+  if(st.date===t)return st;
+  let days=1;
+  if(st.date){const a=new Date(st.date+'T00:00'),b=new Date(t+'T00:00');const diff=Math.round((b-a)/864e5);if(diff>0)days=diff;}
+  for(let k=0;k<days;k++){const last=st.order[st.pos];st.pos++;if(st.pos>=st.order.length)frShuffle(st,last);}
+  st.date=t;return st;
+}
+function frRender(){
+  const st=frAdvance(frGet());frPut(st);
+  const q=st.list[st.order[st.pos]]||st.list[0]||'';
+  frBody.innerHTML=`<div class="q">${frEsc(q)}</div>
+    <div class="qsub">${st.pos+1}/${st.list.length} · sem repetir até fechar o ciclo</div>`;
+}
+function frEdit(){
+  const st=frGet();
+  frBody.innerHTML=`<textarea class="fr-ta" id="fr-ta" spellcheck="false" placeholder="uma frase por linha">${frEsc(st.list.join('\n'))}</textarea>
+    <div class="fr-act"><button class="fr-btn ghost" id="fr-cancel">cancelar</button><button class="fr-btn" id="fr-save">salvar</button></div>
+    <div class="fr-hint">uma frase por linha · todas entram no sorteio, sem repetir</div>`;
+  document.getElementById('fr-ta').focus();
+  document.getElementById('fr-cancel').onclick=frRender;
+  document.getElementById('fr-save').onclick=()=>{
+    const list=document.getElementById('fr-ta').value.split('\n').map(s=>s.trim()).filter(Boolean);
+    const st2=frGet();st2.list=list.length?list:FRASES_DEFAULT.slice();
+    frShuffle(st2,null);st2.date=frToday();frPut(st2);frRender();
+  };
+}
+document.getElementById('fr-edit').onclick=()=>{if(document.getElementById('fr-ta'))frRender();else frEdit();};
+
 /* primeira pintura (mock) + fetch real */
-fillCtx(null);drawSales();drawAgenda();drawProjects();drawMarket();drawYT();drawIG();drawTabs();drawRadar();
+fillCtx(null);drawSales();drawAgenda();drawProjects();drawMarket();drawYT();drawIG();drawTabs();drawRadar();frRender();
 function load(){return fetch('dashboard-data.json?t='+Date.now()).then(r=>r.ok?r.json():{}).then(render).catch(()=>{});}
 load();
 focoLoad();
 
-/* refresh */
+/* refresh — re-busca o JSON publicado (a coleta roda só às 3h). */
 [['v-refresh','ti-refresh']].forEach(([id,ic0])=>{
   const b=document.getElementById(id);if(!b)return;
   b.addEventListener('click',()=>{const ic=b.querySelector('i');b.classList.add('spin');ic.classList.replace(ic0,'ti-loader-2');
     load().finally(()=>setTimeout(()=>{b.classList.remove('spin');ic.classList.replace('ti-loader-2',ic0);},700));});
 });
+
+/* ===== drag & drop dos cards (desktop) ===== */
+(function(){
+  const KEY='dash-layout-v1';
+  const ZONES=['ops','market','social','ia'];
+  const mq=window.matchMedia('(min-width:901px)');
+  const zones=[...document.querySelectorAll('.zone')];
+  const cards=[...document.querySelectorAll('.card[data-card]')];
+  zones.forEach(z=>{ z.dataset.zone=ZONES.find(k=>z.classList.contains(k))||''; });
+
+  let dragEl=null;
+
+  function saveLayout(){
+    const map={};
+    zones.forEach(z=>{ map[z.dataset.zone]=[...z.querySelectorAll('.card[data-card]')].map(c=>c.dataset.card); });
+    try{ localStorage.setItem(KEY,JSON.stringify(map)); }catch(e){}
+  }
+  function applyLayout(){
+    let map; try{ map=JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){ map=null; }
+    if(!map)return;
+    const byId={}; cards.forEach(c=>byId[c.dataset.card]=c);
+    zones.forEach(z=>{ (map[z.dataset.zone]||[]).forEach(id=>{ if(byId[id]) z.appendChild(byId[id]); }); });
+  }
+  function afterEl(zone,y){
+    const els=[...zone.querySelectorAll('.card[data-card]:not(.dragging)')];
+    let best={off:-Infinity,el:null};
+    els.forEach(el=>{ const b=el.getBoundingClientRect();const off=y-b.top-b.height/2;
+      if(off<0&&off>best.off) best={off,el}; });
+    return best.el;
+  }
+
+  cards.forEach(c=>{
+    const h=document.createElement('button');
+    h.className='drag-handle';h.type='button';h.title='Arrastar card';
+    h.innerHTML='<i class="ti ti-grip-horizontal"></i>';
+    c.appendChild(h);
+    h.addEventListener('mousedown',()=>{ if(mq.matches) c.draggable=true; });
+  });
+  document.addEventListener('mouseup',()=>{ if(!dragEl) cards.forEach(c=>c.draggable=false); });
+
+  document.addEventListener('dragstart',e=>{
+    const c=e.target.closest('.card[data-card]');
+    if(!c||!c.draggable){ return; }
+    dragEl=c; c.classList.add('dragging');
+    e.dataTransfer.effectAllowed='move';
+    try{ e.dataTransfer.setData('text/plain',c.dataset.card); }catch(_){}
+  });
+  document.addEventListener('dragend',()=>{
+    if(dragEl){ dragEl.classList.remove('dragging'); dragEl.draggable=false; dragEl=null; }
+    zones.forEach(z=>z.classList.remove('drop-on'));
+    cards.forEach(c=>c.draggable=false);
+  });
+  zones.forEach(z=>{
+    z.addEventListener('dragover',e=>{
+      if(!dragEl)return;
+      e.preventDefault(); e.dataTransfer.dropEffect='move';
+      zones.forEach(x=>x.classList.toggle('drop-on',x===z));
+      const a=afterEl(z,e.clientY);
+      if(a==null) z.appendChild(dragEl); else z.insertBefore(dragEl,a);
+    });
+  });
+  document.addEventListener('drop',e=>{ if(!dragEl)return; e.preventDefault(); saveLayout(); });
+
+  applyLayout();
+})();
 </script>
 </body>
 </html>

@@ -1,0 +1,10 @@
+# segredos e dados locais do dashboard
+coletores/config.json
+coletores/*.pickle
+data/*.json
+data/*.log
+data/_descoberta_*
+preview/shot-*.png
+preview/__pycache__/
+__pycache__/
+*.pyc
