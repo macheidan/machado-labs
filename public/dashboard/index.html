@@ -198,6 +198,25 @@
   .foco-arch i{font-size:14px}
   .foco-empty{font-size:12.5px;color:var(--fg-faint);padding:8px 2px}
 
+  /* frase do dia */
+  .frase{background:linear-gradient(137deg,rgba(142,107,255,.09),rgba(255,92,43,.05));border-color:rgba(142,107,255,.18)}
+  .frase .q{position:relative;font-size:clamp(16px,1.7vw,21px);font-weight:600;line-height:1.42;
+    color:var(--fg);letter-spacing:-.2px;padding-left:26px;min-height:52px;display:flex;align-items:center}
+  .frase .q::before{content:'\201C';position:absolute;left:-4px;top:-14px;font-family:Georgia,serif;
+    font-size:56px;line-height:1;color:var(--violet);opacity:.5}
+  .frase .qsub{font-family:var(--mono);font-size:10.5px;color:var(--fg-faint);margin-top:12px;letter-spacing:0}
+  .fr-ta{width:100%;min-height:150px;resize:vertical;background:var(--o-mid);color:var(--fg);
+    border:1px solid var(--line-strong);border-radius:var(--r-md);padding:11px 12px;
+    font-family:var(--font);font-size:13px;line-height:1.6;letter-spacing:.1px;outline:none}
+  .fr-ta:focus{border-color:rgba(142,107,255,.5)}
+  .fr-act{display:flex;justify-content:flex-end;gap:8px;margin-top:10px}
+  .fr-btn{font-size:12.5px;font-weight:600;padding:8px 15px;border-radius:var(--r);border:0;cursor:pointer;
+    background:linear-gradient(135deg,var(--violet),#6d4fe0);color:#fff}
+  .fr-btn:active{transform:scale(.97)}
+  .fr-btn.ghost{background:var(--o-strong);color:var(--fg-soft);border:1px solid var(--line)}
+  .fr-btn.ghost:hover{color:var(--fg)}
+  .fr-hint{font-family:var(--mono);font-size:10.5px;color:var(--fg-faint);margin-top:9px;letter-spacing:0}
+
   /* listas */
   .list{display:flex;flex-direction:column;overflow-y:auto;margin:0 -4px;padding:0 4px}
   .empty{font-size:13px;color:var(--fg-faint);padding:14px 2px}
@@ -365,6 +384,14 @@
           <div class="foco-add"><input id="foco-input" placeholder="novo item ou lembrete..." maxlength="200" /><button class="mini" id="foco-add-btn" title="Adicionar"><i class="ti ti-plus"></i></button></div>
           <div class="foco-list" id="foco-list"></div>
           <button class="foco-arch" id="foco-arch" style="display:none"></button>
+        </div>
+
+        <div class="card frase" data-card="frase">
+          <div class="ch">
+            <div class="lbl"><i class="ti ti-quote"></i>Frase do dia</div>
+            <div class="ch-r"><button class="mini" id="fr-edit" title="Editar frases"><i class="ti ti-pencil"></i></button></div>
+          </div>
+          <div id="fr-body"></div>
         </div>
 
         <div class="card" data-card="agenda">
@@ -735,8 +762,80 @@ function render(d){
   drawTabs();drawRadar();
 }
 
+/* ===== frase do dia (local, edita no lápis) ===== */
+const FRASES_KEY='dash-frases-v1';
+const FRASES_DEFAULT=[
+  'Quantos vencem se eu vencer?',
+  'Amigo não paga conta.',
+  'Leia e sinta cada uma destas instruções.',
+  'Não perca tempo olhando para o passado.',
+  'Aja como se fosse confiante.',
+  'E se eu pensasse diferente?',
+  'Focalize soluções.',
+  'Faça!',
+  'Conte mais histórias hoje.',
+  'Se tiver duas coisas para fazer hoje, escolha a mais arriscada.',
+  'A vida é uma só!',
+  'Relaxe o corpo. Seja auto-confiante.',
+  'Seja claro em suas palavras.',
+  'Se você quer algo que nunca teve, precisa fazer algo que nunca fez!',
+  'Não quero comodidade. Quero independência!',
+  'Jogue para ganhar!!',
+  'Não deixe que sua vida seja como filmes que passam de madrugada na TV. Servem só para preencher o espaço.',
+  'The doors we open and close each day decide the lives we live.',
+  'Life will pay whatever price you ask of it.',
+  'Where the focus goes the energy flows.',
+  'The secret of living is giving.',
+  'Empreendedor é aquele que vive riscos constantes em busca dos seus objetivos.',
+];
+const frBody=document.getElementById('fr-body');
+const frEsc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function frToday(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function frGet(){
+  let st;try{st=JSON.parse(localStorage.getItem(FRASES_KEY)||'null');}catch(e){st=null;}
+  if(!st||!Array.isArray(st.list)||!st.list.length){st={list:FRASES_DEFAULT.slice(),order:[],pos:0,date:''};}
+  return st;
+}
+function frPut(st){try{localStorage.setItem(FRASES_KEY,JSON.stringify(st));}catch(e){}}
+function frShuffle(st,lastIdx){
+  const n=st.list.length;const ord=Array.from({length:n},(_,i)=>i);
+  for(let i=n-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[ord[i],ord[j]]=[ord[j],ord[i]];}
+  if(n>1&&lastIdx!=null&&ord[0]===lastIdx){[ord[0],ord[1]]=[ord[1],ord[0]];} /* evita repetir na virada do ciclo */
+  st.order=ord;st.pos=0;
+}
+function frAdvance(st){
+  const t=frToday();
+  if(!st.order||!st.order.length){frShuffle(st,null);st.date=t;return st;}
+  if(st.pos>=st.order.length)frShuffle(st,null);
+  if(st.date===t)return st;
+  let days=1;
+  if(st.date){const a=new Date(st.date+'T00:00'),b=new Date(t+'T00:00');const diff=Math.round((b-a)/864e5);if(diff>0)days=diff;}
+  for(let k=0;k<days;k++){const last=st.order[st.pos];st.pos++;if(st.pos>=st.order.length)frShuffle(st,last);}
+  st.date=t;return st;
+}
+function frRender(){
+  const st=frAdvance(frGet());frPut(st);
+  const q=st.list[st.order[st.pos]]||st.list[0]||'';
+  frBody.innerHTML=`<div class="q">${frEsc(q)}</div>
+    <div class="qsub">${st.pos+1}/${st.list.length} · sem repetir até fechar o ciclo</div>`;
+}
+function frEdit(){
+  const st=frGet();
+  frBody.innerHTML=`<textarea class="fr-ta" id="fr-ta" spellcheck="false" placeholder="uma frase por linha">${frEsc(st.list.join('\n'))}</textarea>
+    <div class="fr-act"><button class="fr-btn ghost" id="fr-cancel">cancelar</button><button class="fr-btn" id="fr-save">salvar</button></div>
+    <div class="fr-hint">uma frase por linha · todas entram no sorteio, sem repetir</div>`;
+  document.getElementById('fr-ta').focus();
+  document.getElementById('fr-cancel').onclick=frRender;
+  document.getElementById('fr-save').onclick=()=>{
+    const list=document.getElementById('fr-ta').value.split('\n').map(s=>s.trim()).filter(Boolean);
+    const st2=frGet();st2.list=list.length?list:FRASES_DEFAULT.slice();
+    frShuffle(st2,null);st2.date=frToday();frPut(st2);frRender();
+  };
+}
+document.getElementById('fr-edit').onclick=()=>{if(document.getElementById('fr-ta'))frRender();else frEdit();};
+
 /* primeira pintura (mock) + fetch real */
-fillCtx(null);drawSales();drawAgenda();drawProjects();drawMarket();drawYT();drawIG();drawTabs();drawRadar();
+fillCtx(null);drawSales();drawAgenda();drawProjects();drawMarket();drawYT();drawIG();drawTabs();drawRadar();frRender();
 function load(){return fetch('dashboard-data.json?t='+Date.now()).then(r=>r.ok?r.json():{}).then(render).catch(()=>{});}
 load();
 focoLoad();
