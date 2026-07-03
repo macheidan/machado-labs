@@ -23,7 +23,7 @@ import urllib.parse
 import urllib.request
 from ftplib import FTP_TLS
 from pathlib import Path
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -44,7 +44,8 @@ def log(m):
 
 
 def run(script, *extra, timeout=900):
-    cmd = [sys.executable, str(COL / script), *extra]
+    # -u: sem buffer, senão a saída do coletor se perde quando o timeout mata o processo
+    cmd = [sys.executable, "-u", str(COL / script), *extra]
     log(f"\n▶ {script} {' '.join(extra)}".rstrip())
     try:
         r = subprocess.run(cmd, cwd=str(COL), timeout=timeout)
@@ -54,6 +55,62 @@ def run(script, *extra, timeout=900):
     except Exception as e:
         log(f"  ✗ {script}: {type(e).__name__} {e}")
         return False
+
+
+# ── vendas (Saipos): retry + limpeza de browser órfão + backfill ─────────────
+def matar_chromium_orfao():
+    """Mata Chromium/driver do Playwright que sobrou de um run anterior morto
+    por timeout — ele fica vivo segurando o lock do browser profile e faz a
+    tentativa seguinte travar de novo. Só mata processos do ms-playwright;
+    o Chrome do usuário não é tocado."""
+    ps = ("Get-Process chrome,headless_shell,node -ErrorAction SilentlyContinue | "
+          "Where-Object { $_.Path -like '*ms-playwright*' -or "
+          "$_.Path -like '*playwright*driver*' } | Stop-Process -Force")
+    try:
+        subprocess.run(["powershell", "-NoProfile", "-Command", ps],
+                       capture_output=True, timeout=60)
+    except Exception:
+        pass
+
+
+def coletar_vendas(headless, *extra, tentativas=3):
+    """saipos_vendas.py com retry. O browser às vezes não sobe às 3h (lock do
+    profile / carga da madrugada); antes era 1 tentativa e o dia se perdia.
+    Última tentativa cai pro modo visível (historicamente sobe quando o
+    headless trava; às 3h não atrapalha ninguém)."""
+    for t in range(1, tentativas + 1):
+        if t > 1:
+            log(f"  ↻ vendas: tentativa {t}/{tentativas}"
+                + (" (modo visível)" if t == tentativas else ""))
+        matar_chromium_orfao()
+        flags = [] if (t == tentativas) else (["--headless"] if headless else [])
+        if run("saipos_vendas.py", *flags, *extra, timeout=300):
+            return True
+    return False
+
+
+def dias_sem_venda():
+    """Dias dos últimos 7 (ontem pra trás) que faltam no histórico de vendas."""
+    tem = {h.get("data") for h in (jload("vendas_hist.json", []) or [])}
+    tem.add((jload("vendas.json") or {}).get("data"))
+    return sorted(d for d in ((date.today() - timedelta(days=i)).isoformat()
+                              for i in range(1, 8)) if d not in tem)
+
+
+def coletar_vendas_completo(headless):
+    """Coleta ontem+mês com retry e, se o browser está funcionando, faz
+    backfill dos dias que ficaram faltando em coletas anteriores (assim uma
+    noite que falhe é recuperada sozinha na noite seguinte)."""
+    ok = coletar_vendas(headless)
+    if ok:
+        atualizar_vendas()                      # solidifica ontem no histórico já
+        for d in dias_sem_venda():
+            log(f"\n▶ backfill vendas {d}")
+            if coletar_vendas(headless, "--dia", d, "--sem-mes", tentativas=2):
+                atualizar_vendas()
+    else:
+        log("  ✗ vendas: todas as tentativas falharam; backfill fica pro próximo run")
+    return ok
 
 
 def jload(name, default=None):
@@ -166,6 +223,19 @@ def atualizar_vendas():
     return sales
 
 
+def map_mes(m):
+    """Resumo do mês até hoje (vendas_mes.json) no formato do front."""
+    if not m or not m.get("lojas"):
+        return None
+    lj = m["lojas"]
+
+    def arr(x):
+        return [round(x.get("valor") or 0), x.get("pizzas") or 0, x.get("pedidos") or 0]
+
+    return {"mes": m.get("mes", ""), "de": m.get("de", ""), "ate": m.get("ate", ""),
+            "dame": arr(lj.get("DAME", {})), "lov": arr(lj.get("LOV", {}))}
+
+
 def cls_ia(cat):
     c = (cat or "").lower()
     if "claude" in c:  return "claude"
@@ -242,6 +312,28 @@ def map_feeds(fd):
     return out
 
 
+def map_yt(yt):
+    """Vídeos do YouTube (youtube.py). Título mantido no original (voz do criador)."""
+    out = []
+    for x in (yt or {}).get("itens", []):
+        out.append({"canal": x.get("canal", ""), "cat": x.get("cat", ""),
+                    "t": x.get("titulo", ""), "url": x.get("url", "#"),
+                    "img": x.get("thumb", ""), "data": x.get("data", ""),
+                    "vid": x.get("vid", "")})
+    return out
+
+
+def map_ph(news):
+    """Product Hunt (lançamentos). Nome do produto mantido; resumo traduzido."""
+    out = []
+    for x in (news or {}).get("producthunt", []):
+        out.append({"t": x.get("titulo", ""), "url": x.get("url", "#"),
+                    "img": x.get("img", ""), "src": "Product Hunt",
+                    "cat": x.get("cat", "Launch"), "data": x.get("data", ""),
+                    "resumo": encurtar(traduzir(x.get("resumo_raw", "")[:600]), 360)})
+    return out
+
+
 def consolidar():
     extras = jload("extras.json", {})
     news   = jload("news.json", {})
@@ -249,6 +341,7 @@ def consolidar():
         "gerado_em": datetime.now().isoformat(timespec="seconds"),
         "topbar":   topbar(extras),
         "sales":    atualizar_vendas(),
+        "sales_month": map_mes(jload("vendas_mes.json", {})),
         "agenda":   map_agenda(jload("agenda.json", {})),
         "projects": map_proj(jload("projetos.json", {})),
         "ai":       map_news(news.get("ia"), cls_ia),
@@ -257,23 +350,27 @@ def consolidar():
         "github":   map_gh(news),
         "feeds":    map_feeds(jload("feeds.json", {})),
         "newsletters": map_newsletters(jload("newsletters.json", {})),
+        # /v3 (público): YouTube, Product Hunt e Instagram (lista de posts p/ embed)
+        "youtube":     map_yt(jload("youtube.json", {})),
+        "producthunt": map_ph(news),
+        "instagram":   (jload("instagram.json", {}) or {}).get("itens", []),
     }
     _trad_save()
     out = DATA / "dashboard-data.json"
     out.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
     log(f"\n✓ {out.name}  ({out.stat().st_size} bytes) — "
-        f"{len(data['ai'])} IA · {len(data['feeds'])} feeds · "
-        f"{len(data['newsletters'])} newsletters · "
+        f"{len(data['ai'])} IA · {len(data['youtube'])} yt · "
+        f"{len(data['producthunt'])} PH · {len(data['biz'])} mercado · "
         f"{len(data['sales'])} dias de venda")
     return out
 
 
 # ── envio FTPS ───────────────────────────────────────────────────────────────
-def enviar(arquivo, cfg):
+def enviar(arquivo, cfg, dst=None):
     srv = cfg.get("ftp_server")
     usr = cfg.get("ftp_user")
     pwd = cfg.get("ftp_pass")
-    dst = cfg.get("ftp_dir", "/dashboard")
+    dst = dst or cfg.get("ftp_dir", "/dashboard")
     if not (srv and usr and pwd):
         log("\n[AVISO] credenciais FTP ausentes no config.json "
             "(ftp_server / ftp_user / ftp_pass). JSON gravado local, não enviado.")
@@ -303,6 +400,8 @@ def enviar(arquivo, cfg):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--so-consolida", dest="so_consolida", action="store_true")
+    ap.add_argument("--so-vendas", dest="so_vendas", action="store_true",
+                    help="só coleta vendas (com retry/backfill), consolida e envia")
     ap.add_argument("--sem-envio", dest="sem_envio", action="store_true")
     ap.add_argument("--headless", action="store_true")
     a = ap.parse_args()
@@ -311,20 +410,23 @@ def main():
     cfg = json.loads(CFG.read_text(encoding="utf-8")) if CFG.exists() else {}
 
     log(f"=== runner do dashboard — {datetime.now():%Y-%m-%d %H:%M} ===")
-    if not a.so_consolida:
+    if not (a.so_consolida or a.so_vendas):
         run("extras.py")
         run("projetos.py")
         run("agenda.py")
         run("news.py")
+        run("youtube.py")
+        run("instagram.py")
         run("harvester.py")
         run("newsletters.py")
-        # Saipos é o único que abre browser e pode travar; timeout curto p/ falhar
-        # rápido (5 min) em vez de segurar o runner por 15 min.
-        run("saipos_vendas.py", *(["--headless"] if a.headless else []), timeout=300)
+    if not a.so_consolida:
+        # Saipos é o único que abre browser e pode travar; timeout curto por
+        # tentativa (5 min) + retry/backfill em coletar_vendas_completo.
+        coletar_vendas_completo(a.headless)
 
     arq = consolidar()
     if not a.sem_envio:
-        enviar(arq, cfg)
+        enviar(arq, cfg, cfg.get("ftp_dir", "/dashboard"))   # /dashboard (com senha)
     log("\n== fim ==")
 
 
