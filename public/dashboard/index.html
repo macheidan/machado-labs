@@ -208,7 +208,7 @@
   .fcheck:hover{border-color:var(--accent)}
   .fitem.arch .fcheck{background:var(--accent);border-color:var(--accent)}
   .fitem.arch .fcheck i{opacity:1}
-  .ftext{flex:1;min-width:0;font-size:13px;line-height:1.4;color:var(--fg-soft);cursor:text;word-break:break-word;outline:none}
+  .ftext{flex:1;min-width:0;font-size:13px;line-height:1.4;color:var(--fg);cursor:text;word-break:break-word;outline:none}
   .ftext:focus{border-bottom:1px dashed var(--accent)}
   .fitem.arch .ftext{color:var(--fg-faint);text-decoration:line-through}
   .fdots{flex:0 0 auto;color:var(--fg-faint);cursor:pointer;font-size:16px;line-height:1;padding:0 2px;opacity:.5;transition:.15s}
@@ -223,13 +223,10 @@
   .foco-arch i{font-size:14px}
   .foco-empty{font-size:12.5px;color:var(--fg-faint);padding:8px 2px}
 
-  /* frase do dia */
+  /* pensamentos */
   .frase{background:linear-gradient(137deg,rgba(142,107,255,.09),rgba(255,92,43,.05));border-color:rgba(142,107,255,.18)}
-  .frase .q{position:relative;font-size:clamp(16px,1.7vw,21px);font-weight:600;line-height:1.42;
-    color:var(--fg);letter-spacing:-.2px;padding-left:26px;min-height:52px;display:flex;align-items:center}
-  .frase .q::before{content:'\201C';position:absolute;left:-4px;top:-14px;font-family:Georgia,serif;
-    font-size:56px;line-height:1;color:var(--violet);opacity:.5}
-  .frase .qsub{font-family:var(--mono);font-size:10.5px;color:var(--fg-faint);margin-top:12px;letter-spacing:0}
+  .frase .q{font-size:clamp(16px,1.7vw,21px);font-weight:600;line-height:1.42;
+    color:var(--fg);letter-spacing:-.2px;min-height:52px;display:flex;align-items:center}
   .fr-ta{width:100%;min-height:150px;resize:vertical;background:var(--o-mid);color:var(--fg);
     border:1px solid var(--line-strong);border-radius:var(--r-md);padding:11px 12px;
     font-family:var(--font);font-size:13px;line-height:1.6;letter-spacing:.1px;outline:none}
@@ -332,6 +329,21 @@
   .modal iframe{width:100%;height:100%;border:0}
   .modal .x{position:absolute;top:-40px;right:0;color:#fff;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;gap:6px}
 
+  /* desktop: colunas preenchem a altura da janela, sem rolagem da página.
+     Cards de lista (foco, mercado, youtube, agenda, radar) esticam e rolam por dentro. */
+  @media (min-width:1501px) and (min-height:760px){
+    body{overflow:hidden}
+    .dash{height:100dvh;display:flex;flex-direction:column;padding-bottom:var(--s2)}
+    .meta{flex:0 0 auto}
+    .grid{flex:1 1 auto;min-height:0;align-items:stretch}
+    .zone{min-height:0;overflow:hidden}
+    .card{min-height:0}
+    .card[data-card="foco"],.card[data-card="mercado"],.card[data-card="youtube"],
+    .card[data-card="agenda"],.card[data-card="radar"]{flex:1 1 0;min-height:0!important}
+    #mkt-list,#r-list,#ag-list,.yt{max-height:none!important;flex:1 1 auto;min-height:0}
+    .foco-list{flex:1 1 auto;min-height:0;overflow-y:auto}
+  }
+
   /* responsivo */
   @media (max-width:1500px){ .grid{grid-template-columns:340px minmax(0,1fr);grid-template-areas:"ops market" "social ia"} }
   @media (max-width:900px){
@@ -414,7 +426,7 @@
 
         <div class="card frase" data-card="frase">
           <div class="ch">
-            <div class="lbl"><i class="ti ti-quote"></i>Frase do dia</div>
+            <div class="lbl"><i class="ti ti-quote"></i>Pensamentos</div>
             <div class="ch-r"><button class="mini" id="fr-edit" title="Editar frases"><i class="ti ti-pencil"></i></button></div>
           </div>
           <div id="fr-body"></div>
@@ -428,7 +440,7 @@
           <div class="list scroll" id="mkt-list" style="max-height:560px"></div>
         </div>
         <div class="card" data-card="youtube">
-          <div class="ch"><div class="lbl"><i class="ti ti-brand-youtube"></i>YouTube <span class="sub">últimos vídeos</span></div></div>
+          <div class="ch"><div class="lbl"><i class="ti ti-brand-youtube"></i>YouTube <span class="sub" id="yt-pg"></span></div><div class="ch-r" id="yt-nav" style="gap:6px"></div></div>
           <div class="yt scroll" id="yt-list"></div>
         </div>
       </div>
@@ -710,13 +722,21 @@ function renderList(id,items,row){const el=document.getElementById(id);el.innerH
 function drawMarket(){renderList('mkt-list',MKT,newsRow);}
 attachDetail(document.getElementById('mkt-list'),()=>MKT);
 
-/* ===== youtube ===== */
+/* ===== youtube (10 por página, sem shorts) ===== */
+let ytPage=0;const YT_POR_PAG=10;
+function ytItems(){return (YT||[]).filter(v=>!v.short&&!/#?shorts?\b/i.test(v.t||''));}
 function drawYT(){
-  const el=document.getElementById('yt-list');
-  el.innerHTML=(YT&&YT.length)?YT.map(v=>`<div class="ytc" data-vid="${v.vid}">
+  const el=document.getElementById('yt-list'),nav=document.getElementById('yt-nav'),pg=document.getElementById('yt-pg');
+  const items=ytItems();const pages=Math.max(1,Math.ceil(items.length/YT_POR_PAG));
+  ytPage=Math.max(0,Math.min(pages-1,ytPage));
+  const view=items.slice(ytPage*YT_POR_PAG,(ytPage+1)*YT_POR_PAG);
+  el.innerHTML=view.length?view.map(v=>`<div class="ytc" data-vid="${v.vid}">
     <div class="th"><img src="${v.img||('https://i.ytimg.com/vi/'+v.vid+'/hqdefault.jpg')}" loading="lazy" alt=""><span class="play"><i class="ti ti-player-play-filled"></i></span></div>
     <div><div class="yt-t">${v.t}</div><div class="yt-m">${v.canal||''}${v.cat?` · <span class="cat">${v.cat}</span>`:''}${v.data?` · ${ago(v.data)}`:''}</div></div></div>`).join('')
     :`<div class="empty">sem vídeos</div>`;
+  pg.textContent=pages>1?`· ${ytPage+1}/${pages}`:'';
+  nav.innerHTML=pages>1?`<button class="mini" ${ytPage===0?'disabled':''} data-d="-1"><i class="ti ti-chevron-left"></i></button><button class="mini" ${ytPage===pages-1?'disabled':''} data-d="1"><i class="ti ti-chevron-right"></i></button>`:'';
+  nav.querySelectorAll('button').forEach(b=>b.onclick=()=>{ytPage+=+b.dataset.d;drawYT();document.getElementById('yt-list').scrollTop=0;});
   el.querySelectorAll('.ytc').forEach(c=>c.onclick=()=>openYT(c.dataset.vid));
 }
 function openYT(vid){document.getElementById('modal-player').innerHTML=`<iframe src="https://www.youtube.com/embed/${vid}?autoplay=1&rel=0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;document.getElementById('modal').classList.add('on');}
@@ -782,7 +802,7 @@ function render(d){
   AGENDA=(d.agenda&&d.agenda.length)?d.agenda:AGENDA;agi=0;drawAgenda();
   projects=pick(d.projects,projects);drawProjects();
   MKT=pick(d.biz,MKT);drawMarket();
-  YT=pick(d.youtube,YT);drawYT();
+  YT=pick(d.youtube,YT);ytPage=0;drawYT();
   if(d.instagram&&d.instagram.length){const srv=d.instagram.filter(x=>x&&x.conta&&x.posts&&x.posts.length);const nomes=new Set(srv.map(x=>x.conta));const extra=IG_DATA.filter(x=>x&&x.conta&&!nomes.has(x.conta));/* mescla: contas do servidor + contas so-do-codigo (ex: novas ainda sem posts) */if(srv.length||extra.length){IG_DATA=[...srv,...extra];igA=pickRandomIG();igP=0;}}
   drawIG();
   AI=pick(d.ai,AI);
@@ -847,8 +867,7 @@ function frAdvance(st){
 function frRender(){
   const st=frAdvance(frGet());frPut(st);
   const q=st.list[st.order[st.pos]]||st.list[0]||'';
-  frBody.innerHTML=`<div class="q">${frEsc(q)}</div>
-    <div class="qsub">${st.pos+1}/${st.list.length} · sem repetir até fechar o ciclo</div>`;
+  frBody.innerHTML=`<div class="q">${frEsc(q)}</div>`;
 }
 function frEdit(){
   const st=frGet();
