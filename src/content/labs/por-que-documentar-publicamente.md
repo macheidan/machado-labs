@@ -2,7 +2,7 @@
 title: 'Por que estou documentando isso publicamente'
 heroTitle: 'Por que estou <em>documentando</em><br/>isso <span class="accent">publicamente</span>'
 description: 'Começa aqui. Expor o processo de colocar um time de agentes de IA pra trabalhar dentro de uma empresa real é decisão estratégica, não estética.'
-pubDate: 'Apr 25 2026'
+pubDate: 'Feb 10 2026'
 updatedDate: 'Jul 5 2026'
 tags: ['bastidores', 'estrategia']
 keywords: ['IA aplicada', 'consultoria IA', 'agentes em empresas', 'IA em PME', 'IA aplicada em pequenas empresas', 'time de agentes IA']

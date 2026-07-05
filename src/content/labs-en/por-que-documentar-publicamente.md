@@ -2,7 +2,7 @@
 title: 'Why I''m documenting this publicly'
 heroTitle: 'Why I''m <em>documenting</em><br/>this <span class="accent">publicly</span>'
 description: 'Start here. Exposing the process of putting a team of AI agents to work inside a real company is a strategic decision, not an aesthetic one.'
-pubDate: 'Apr 25 2026'
+pubDate: 'Feb 10 2026'
 updatedDate: 'Jul 5 2026'
 tags: ['bastidores', 'estrategia']
 keywords: ['applied AI', 'AI consulting', 'agents in business', 'AI for SMB', 'applied AI in small business', 'AI agent team']
