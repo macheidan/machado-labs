@@ -24,13 +24,11 @@ The text is the quality control of the thinking. Kept in a drawer, nothing force
 
 ## Each post is proof, not an ad
 
-The rest follows. I don't need to convince anyone it works: the page is the proof. Whoever shows up shows up already convinced, with the whole track record in front of them. I stop being a salesman prospecting and become the person the line comes looking for.
+The rest follows. I don't need to convince anyone it works: the page is the proof. Whoever shows up shows up already convinced, with the whole track record in front of them.
 
 And I leave the map open on purpose.
 
-> If you own a company, you'll leave here with a path to do this in your own business, even if you decide never to hire me.
-
-That doesn't cost me clients. It does the opposite. Whoever tries it and sees the size of the hole understands faster why it's worth bringing in someone who's already crossed it.
+> If you own a company, you'll leave here with a path to do this in your own business.
 
 ## What's here
 

@@ -24,13 +24,11 @@ O texto é o controle de qualidade do pensamento. Guardado na gaveta, ninguém m
 
 ## Cada post é prova, não anúncio
 
-O resto é consequência. Não preciso convencer ninguém de que funciona: a página é a prova. Quem chega, chega já convencido, com o histórico inteiro na frente. Eu deixo de ser vendedor prospectando e viro a pessoa que a fila procura.
+O resto é consequência. Não preciso convencer ninguém de que funciona: a página é a prova. Quem chega, chega já convencido, com o histórico inteiro na frente.
 
 E deixo o mapa aberto de propósito.
 
-> Se você é dono de empresa, sai daqui com um caminho pra fazer no seu próprio negócio, mesmo que decida nunca me contratar.
-
-Isso não me tira cliente. Faz o contrário. Quem tenta e vê o tamanho do buraco entende mais rápido por que vale trazer alguém que já atravessou.
+> Se você é dono de empresa, sai daqui com um caminho pra fazer no seu próprio negócio.
 
 ## O que tem aqui
 
