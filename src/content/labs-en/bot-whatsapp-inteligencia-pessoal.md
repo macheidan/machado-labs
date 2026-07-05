@@ -38,10 +38,6 @@ So the rule became the opposite of what most people do with AI: fixed format, an
 
 Looks like a technical detail, but it's an owner's concern: I built redundancy. If the main model is down or out of quota, it tries the second, then the third. Models get deprecated from one week to the next, quotas run out, APIs go down on a Sunday night, and the summary still has to arrive. Cost so far: zero, it fits inside free tiers at the scale of one person.
 
-## The next step is letting it reply
-
-Today it only reads. Phase 2 is letting it reply to the small stuff for me, inside clear rules: "on my way", "got it", the confirmation finance already passed me. No end customer, no decision. Just what eats my day without adding anything. For that it has to learn the way I write, and that comes from the same source: it reading what I send myself.
-
 ***
 
 Just from reading, it already changed how I show up on Monday. Building an agent that acts in the real world, without inventing and without becoming hostage to a single API, is exactly the kind of project I help companies build.

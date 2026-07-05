@@ -47,10 +47,6 @@ Então a regra virou o contrário do que a maioria faz com IA: formato fixo, pro
 
 Parece detalhe técnico, mas é de dono: montei redundância. Se o modelo principal cai ou estoura a cota, ele tenta o segundo, depois o terceiro. Modelo é depreciado de uma semana pra outra, cota acaba, API cai num domingo de noite, e mesmo assim o resumo tem que chegar. Custo até hoje: zero, cabe nos planos gratuitos pra escala de uma pessoa.
 
-## O próximo passo é deixar ele responder
-
-Hoje ele só lê. A fase 2 é deixar ele responder o pequeno por mim, dentro de regra clara: "tô a caminho", "recebi", a confirmação que o financeiro já tinha me passado. Nada de cliente final, nada de decisão. Só o que come o meu dia sem agregar. Pra isso ele precisa aprender o jeito que eu escrevo, e isso sai da mesma fonte: ele lendo o que eu mesmo mando.
-
 ***
 
 Só de ler, já mudou como eu chego na segunda. Montar um agente que age no mundo real, sem inventar e sem virar refém de uma única API, é exatamente o tipo de projeto que eu ajudo empresa a montar.
