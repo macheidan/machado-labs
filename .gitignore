@@ -26,3 +26,7 @@ pnpm-debug.log*
 # local agent / tooling caches
 .claude/
 .design-systems/
+
+# projeto aninhado com repositorio proprio (macheidan/viagem-eua-2026)
+# NAO versionar aqui: machado-labs e publico e o app-viagem e privado
+_ferramentas/app-viagem/
