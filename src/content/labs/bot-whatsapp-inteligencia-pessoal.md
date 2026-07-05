@@ -49,6 +49,6 @@ Parece detalhe técnico, mas é de dono: montei redundância. Se o modelo princi
 
 ***
 
-Só de ler, já mudou como eu chego na segunda. Montar um agente que age no mundo real, sem inventar e sem virar refém de uma única API, é exatamente o tipo de projeto que eu ajudo empresa a montar.
+Só de ler, já mudou como eu chego na segunda. Montar um agente que age no mundo real, sem inventar e sem virar refém de uma única API, é exatamente o tipo de projeto que eu ajudo empresas a montar.
 
 **Stack:** roda em Node 24/7 no PC de casa, conectado ao WhatsApp direto pelo QR code (sem API paga, sem número separado); a análise passa por uma cascata de modelos (Gemini com fallback pra Groq, Cerebras e OpenRouter) agendada por cron (diário, domingo, dia 1); estado em arquivo único com retenção curta, só texto, comandos que eu mando pra mim mesmo, e prompts conservadores onde a saída vira decisão. Custo: zero.
