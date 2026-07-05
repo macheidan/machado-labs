@@ -1,7 +1,7 @@
 ---
 title: 'How I put my monthly P&L on autopilot'
 heroTitle: 'How I put my <em>P&L</em><br/>on <span class="accent">autopilot</span>'
-description: 'A question for any owner: how much was left last month, and why? I used to spend a full day pulling six sources by hand. I put each one on autopilot and let AI categorize on my own criteria, so the month closes early enough to correct course.'
+description: 'The close lived scattered across six sources and cost me a full day. I put each one on autopilot, with AI categorizing the statement and card on my own criteria, so the month started closing early enough to correct course while there''s still time.'
 pubDate: 'Mar 24 2026'
 tags: ['financeiro', 'dre', 'ia']
 keywords: ['automated P&L', 'monthly close', 'SMB controllership', 'categorize expenses with AI', 'how much was left', 'AI for finance', 'AI for business owners']

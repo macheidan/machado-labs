@@ -1,7 +1,7 @@
 ---
 title: 'Como coloquei o DRE no automático'
 heroTitle: 'Como coloquei o <em>DRE</em><br/>no <span class="accent">automático</span>'
-description: 'Pergunta pra qualquer dono: quanto sobrou no mês passado, e por quê? Eu levava um dia juntando seis fontes na mão. Botei cada uma no automático e a IA categoriza no meu critério, então o mês fecha cedo o bastante pra corrigir rota.'
+description: 'O fechamento vivia espalhado em seis fontes e me tomava um dia inteiro. Botei cada uma no automático, com a IA categorizando extrato e cartão no meu critério, e o mês passou a fechar cedo o bastante pra corrigir rota enquanto ainda dá.'
 pubDate: 'Mar 24 2026'
 tags: ['financeiro', 'dre', 'ia']
 keywords: ['DRE automático', 'fechamento do mês', 'controladoria PME', 'categorizar despesas com IA', 'quanto sobrou no mês', 'IA para financeiro', 'IA para dono de empresa']
