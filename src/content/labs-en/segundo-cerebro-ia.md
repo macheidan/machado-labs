@@ -1,85 +1,54 @@
 ---
 title: 'How I''m building My Digital Cortex'
 heroTitle: 'How I''m<br/>building <em>My</em><br/><span class="accent">Digital Cortex</span>'
-description: 'Every business owner re-explains their own company to each AI, from scratch. I built a markdown system, version-controlled in git and readable by any model, that gives AI permanent memory of the business and of how I decide.'
+description: 'Every business owner re-explains their own company to each AI, from scratch. I built a system that gives artificial intelligence permanent memory of the business and of how I decide, so I stopped starting over every time.'
 pubDate: 'Apr 26 2026'
 updatedDate: 'Jul 5 2026'
 tags: ['cortex', 'agentes', 'ia-first']
 keywords: ['second brain', 'AI memory', 'AI agents', 'context for AI', 'AI with company memory', 'give context to ChatGPT', 'AI first', 'AI for business owners']
 ---
 
-A business owner runs on many fronts at once and decides in different contexts. When I open any AI to help, it **starts from scratch, knowing nothing about the business or how I think**. Same re-explanation every time.
+I run several fronts at once, and for a long time I repeated the same waste: every time I opened an AI to help, it **started from scratch**. It didn't know my businesses, didn't know how I think, didn't remember anything from the previous conversation. I spent half my time re-explaining the context before getting anything useful.
 
-The fix I built was an external brain in markdown that serves as *the single source of truth for any agent*. I called it **My Digital Cortex**. Any model I open already arrives knowing who I am, how the companies run, and how I decide.
+It took me a while to realize the problem wasn't the AI. It was that **my context lived nowhere**. It was scattered in my head, in loose conversations, in lost notes. No tool could know what was never written down.
 
-## The core idea
+That's where the idea came from: build an external brain, outside any tool, that would be the **single source of truth about me and the businesses**. Any AI I open reads that first and arrives already knowing. I called it **My Digital Cortex**.
 
-I don't want to depend on a specific tool. I want simple `.md` files, readable by any model: Claude, ChatGPT, Gemini, Cursor, whatever. AI is a commodity and swaps out constantly. **Context is the asset, and the asset has to be mine.**
+## Why I didn't tie it to a tool
 
-> Tools die. Markdown survives.
+The obvious mistake would be building this inside the trendy product. And AI products change every week.
 
-This is what I call thinking **AI first**: it isn't picking the trendy AI, it's organizing the business so that any AI can work inside it. The Cortex is that layer.
+> Tools die. Context survives.
 
-## Architecture in 4 layers
+AI became a commodity: it swaps name, owner, price. What can't swap is the context of my business. So it's **mine**, in a simple format any model can read, today and five years from now. This is what I call thinking **AI first**: it isn't picking the best AI, it's organizing the business so that any AI can work inside it.
 
-```
-┌─────────────────────────────┐
-│ 4. TRIGGERS (cron, webhook) │
-├─────────────────────────────┤
-│ 3. AGENCY (Gmail, Cal, WA)  │  ← I'm here
-├─────────────────────────────┤
-│ 2. PERSONA (how I decide)   │  ← done
-├─────────────────────────────┤
-│ 1. MEMORY (what I know)     │  ← done
-└─────────────────────────────┘
-```
+## The problems that showed up along the way
 
-Each layer only exists once the one below it works. Without memory, the rest is guesswork.
+Building this wasn't dumping information in a corner. Each layer brought a real problem:
 
-## Phase 1: Memory
+- **AI is a flatterer.** It invents things to look useful, and in a business, deciding on invented data is worse than deciding on no data.
+- **I don't decide the way I think I do.** When I went to describe my process, what I *thought* didn't match what I *did*.
+- **The automation that feeds the system makes mistakes.** If it overwrites or records what it didn't observe, it poisons the whole base.
 
-I scanned every source: Drive folders, projects, context scattered across a thousand places. Classified everything into categories and copied it into the Cortex structure. **Never moved originals without approval.**
+Each of those turned into a rule of the system.
 
-The structure:
+## How I solved it
 
-```
-Cortex/
-├── 00-meta/           # instructions for any agent
-├── 01-pizzarias/      # the companies: marketing, ops, finance
-├── 02-projetos-dev/   # all code projects
-├── 03-pessoal/        # profile and how I decide
-├── 04-consultoria/    # projects and clients
-├── 08-secretaria-log/ # operational logs (out of git)
-```
+I built it in four layers, and each one only comes in when the one below is solid:
 
-Every file has a simple header with `project`, `status`, `updated`, and `tags`. That lets any agent grasp the context **without reading the whole file**, and without burning processing for nothing.
+1. **Memory.** I gathered all the scattered context into one place, organized by business. Never deleted an original without approving it first.
+2. **Persona.** I captured how I *actually* decide, not how I'd like to. It's descriptive, not aspirational. With it, the AI **flags me when it senses I'm in the wrong mode** for an important decision. An AI that only agrees is worthless; this one corrects me.
+3. **Agency.** Here the agents stop advising and start acting. The first was the WhatsApp one, which runs on its own and returns to the system only what is **genuinely new**. I walked through it in [I built an AI agent that takes care of my WhatsApp](/en/labs/bot-whatsapp-inteligencia-pessoal/).
+4. **Triggers.** The next step: actions that fire on their own, without me asking.
 
-## Phase 2: Persona
+The principle that holds it all together is distrust:
 
-This is the trick almost nobody does: I captured how I *actually* decide, not how I think I do.
+> Better to record nothing than to record something wrong.
 
-- I decide alone, rarely asking for input first
-- I prefer data and numbers, but impulse can override the analysis
-- I tend to overestimate how well I know a problem and underestimate the real effort
+## Where it left me
 
-The file isn't aspirational. **It's descriptive.** With it, the AI flags me when it senses I'm in the wrong mode for an important decision. An AI that only flatters is worthless. This one corrects me.
+Today any AI I open already works knowing my business and how I think. I stopped starting from scratch, and on a day of overload the system **knows my context better than I do at that moment**.
 
-## Phase 3: Agency (in progress)
+It took me months of finding what breaks to get here. Today it's the foundation of everything I do with AI, and it's exactly the kind of project I help other companies build.
 
-Here the agents stop giving advice and start *acting*. The automation reads my profile files from time to time and adds **only what is genuinely new**, no overwriting, no invention.
-
-That's how I connected WhatsApp to the Cortex: the first agent that runs on its own in the background and feeds the system back. I walked through it step by step in [I built an AI agent that takes care of my WhatsApp](/en/labs/bot-whatsapp-inteligencia-pessoal/).
-
-## What I've learned so far
-
-The Cortex only works if it's easy to maintain. A complicated file doesn't get read, doesn't get updated, **it dies**. And the automation that feeds it has to be conservative.
-
-> Better to write nothing than to write something wrong.
-
-An AI that invents to look useful poisons the whole base. That's why the prompt tells the model to return "nothing new" when there's no clear observation. In a business, deciding on wrong data is worse than deciding on no data.
-
----
-
-Next up is Gmail and Calendar entering the same logic, then the automatic triggers: actions that fire without me asking. The end goal is a system that **knows my context better than I do** on a day of overload, and that any business owner could build for their own company.
-
-**Stack:** pure markdown version-controlled in git, synced through Google Drive and open in Obsidian; a `YAML` header in each file for selective reading; and a cascade of models (Claude, GPT, Gemini) that reads and feeds the Cortex back, with facts computed in code and the AI only writing them up.
+**Stack:** simple text files version-controlled in Git and synced through Google Drive, opened in Obsidian; and a cascade of models (Claude, GPT, Gemini) that reads and feeds the base back, with the numbers computed in code and the AI only writing them up.

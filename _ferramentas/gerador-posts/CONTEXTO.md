@@ -28,18 +28,27 @@ conteúdo de autoridade. "Capturado > produzido": cada coisa real vira 1 artefat
   ou sabores, etc.), abstraído quando sensível.
 
 ## 4. Voz e tom
-- **Monólogo**: Fábio pensando alto pra ele mesmo. Sem subtítulo didático, sem lista
-  de ganhos, sem pitch de fechamento.
-- A linguagem transmite **conhecimento, autoridade e inteligência do Fábio em
-  "AI first"** pela substância (decisões, trade-offs, como ele pensa a operação com
-  IA no centro), nunca por auto-elogio.
+- **Monólogo objetivo**: Fábio pensando alto, direto ao ponto. Sem subtítulo
+  didático, sem lista de ganhos, sem pitch de fechamento explícito.
+- **Sensação-alvo: "estou um passo à frente de quem está lendo".** O texto transmite
+  conhecimento, autoridade e inteligência em **"AI first"** pela substância, nunca
+  por auto-elogio.
+- **Intuito:** que o leitor sinta que quer **contratar o Fábio ou pedir ajuda** pra
+  fazer o mesmo projeto. Isso vem do enquadramento (problema difícil resolvido por
+  quem já passou por ele), não de uma chamada de venda.
 - **Sempre pt-BR e EN** (as duas versões, toda vez — ver tópico 10).
 - Nunca travessão (em-dash).
 
 ## 5. Estrutura do texto
+- **Arco narrativo padrão:** de onde e por que veio a ideia → quais problemas eu
+  encontrei → como resolvi → onde isso me deixou (um passo à frente).
 - Corpo em linguagem leiga, sem jargão, com **ritmo visual**: negrito, blockquote,
   subheads, quebras.
-- **Bloco "stack" técnico no fim, no máximo 1 parágrafo.**
+- **Não listar estrutura de pastas / diretórios.** Não citar jargão de arquivo
+  (`.md`, markdown, YAML, frontmatter) no corpo — isso é técnico demais pro
+  empresário.
+- **Bloco "stack" técnico no fim, no máximo 1 parágrafo** (único lugar onde ferramenta
+  concreta é nomeada; ainda assim sem detalhe de formato de arquivo).
 
 ## 6. Frontmatter / SEO
 - Campos: `title`, `heroTitle`, `description`, `pubDate`, `updatedDate`, `tags`,
