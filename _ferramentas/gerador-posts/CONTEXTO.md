@@ -58,6 +58,8 @@ conteúdo de autoridade. "Capturado > produzido": cada coisa real vira 1 artefat
 - Campos: `title`, `heroTitle`, `description`, `pubDate`, `updatedDate`, `tags`,
   `keywords`.
 - `heroTitle` segue o modelo da home e do hero do post: `<em>`, `.accent`, `<br/>`.
+- **`description` (subtítulo do hero) nunca repete a primeira frase do corpo.** Complementa por
+  outro ângulo (o problema, o número, o ganho), não ecoa a abertura.
 
 ## 7. Linkagem interna
 - **Todo post linka pelo menos outro post** do site.
