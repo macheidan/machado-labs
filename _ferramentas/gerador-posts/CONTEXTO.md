@@ -13,6 +13,10 @@ conteúdo de autoridade. "Capturado > produzido": cada coisa real vira 1 artefat
   O post é motor de **profundidade** (pouco e fundo), não de volume.
 - **Herói = resultado da operação/gestão**, não a jornada de dev do Fábio.
 - **Vender por dor/resultado, nunca por "IA".** Pizzaria como laboratório, não rótulo.
+- **Altitude do narrador:** o Fábio escreve como **operador AI-first com visão grande** (construindo
+  sistema/método, reorganizando a operação inteira em torno de IA, um passo à frente do mercado), e
+  **não** como pequeno empreendedor sofrendo. A dor de "pequeno/PME" é do **leitor** (tópico 2); o
+  Fábio é quem já resolveu e leva pra fora. A pizzaria prova o método na marra, não é a identidade.
 - Ângulo recorrente: série *"como eu faço no meu negócio / na minha pizzaria"*.
 
 ## 2. Público

@@ -8,11 +8,11 @@ tags: ['bastidores', 'estrategia']
 keywords: ['IA aplicada', 'consultoria IA', 'agentes em empresas', 'IA em PME', 'IA aplicada em pequenas empresas', 'time de agentes IA']
 ---
 
-Existe uma distância enorme entre **montar um agente de IA num laboratório** e botar um time inteiro deles pra trabalhar dentro de uma empresa de verdade. Quase tudo que se escreve sobre IA na internet vive do lado fácil dessa distância. Eu não posso.
+Existe uma distância enorme entre **montar um agente de IA num laboratório** e botar um time inteiro deles pra rodar uma empresa de verdade, com fornecedor pra pagar e cliente esperando resposta todo dia. Quase tudo que se escreve sobre IA vive do lado fácil dessa distância. Eu escolhi o lado difícil de propósito.
 
 > Minhas duas pizzarias estão pagando a conta.
 
-Dáme e Lov não são exemplo hipotético. Tem fornecedor pra pagar, equipe pra tocar, cardápio pra revisar, anúncio pra rodar, cliente pra responder, todo dia. Nos últimos meses comecei a passar pedaços do meu trabalho de dono pra agentes: financeiro, marketing, operação, atendimento, dados. E resolvi escrever cada passo aqui, à vista de todo mundo.
+Dáme e Lov não são exemplo hipotético. Nos últimos meses comecei a reconstruir a operação delas em torno de um time de agentes de IA: financeiro, marketing, operação, atendimento, dados. Não é a IA me ajudando com uma tarefa aqui e ali. É a empresa inteira sendo reorganizada pra rodar com IA no centro, e as pizzarias são onde eu provo isso na marra antes de levar pra fora. Resolvi escrever cada passo aqui, à vista de todo mundo.
 
 A pergunta que me fazem é por que expor, em vez de guardar a vantagem.
 

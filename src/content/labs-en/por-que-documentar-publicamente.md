@@ -8,11 +8,11 @@ tags: ['bastidores', 'estrategia']
 keywords: ['applied AI', 'AI consulting', 'agents in business', 'AI for SMB', 'applied AI in small business', 'AI agent team']
 ---
 
-There's a huge gap between **building one AI agent in a lab** and putting an entire team of them to work inside a real company. Almost everything written about AI online lives on the easy side of that gap. I can't.
+There's a huge gap between **building one AI agent in a lab** and putting an entire team of them to run a real company, with suppliers to pay and customers waiting on a reply every day. Almost everything written about AI lives on the easy side of that gap. I chose the hard side on purpose.
 
 > My two pizzerias are paying the bill.
 
-Dáme and Lov aren't hypotheticals. There are suppliers to pay, teams to run, menus to review, ads to run, customers to answer, every day. Over the last few months I started handing pieces of my owner's job to agents: finance, marketing, operations, customer service, data. And I decided to write down every step here, in plain sight.
+Dáme and Lov aren't hypotheticals. Over the last few months I started rebuilding their operation around a team of AI agents: finance, marketing, operations, customer service, data. This isn't AI helping me with a task here and there. It's the whole company being reorganized to run with AI at the center, and the pizzerias are where I prove it the hard way before taking it outside. I decided to write down every step here, in plain sight.
 
 The question people ask me is why expose it, instead of keeping the edge.
 
