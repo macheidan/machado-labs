@@ -1,9 +1,9 @@
 ---
 title: Criei um agente de IA que cuida do meu WhatsApp
 heroTitle: Criei um <em>agente</em> de IA<br/>que cuida do meu <span class="accent">WhatsApp</span>
-description: Tava perdendo coisa importante nos grupos toda semana. Coloquei um agente pra ler meu WhatsApp por mim, mandar o que precisa de resposta urgente no fim do dia, e um resumo de cada contato e cada grupo no domingo. Roda no PC de casa, custo zero, plugado no meu próprio número.
+description: Tava perdendo coisa importante do negócio no WhatsApp toda semana. Coloquei um agente pra ler por mim e me avisar o que precisa de resposta, sem ele inventar nada e sem depender de uma só API. Roda no PC de casa, custo zero.
 pubDate: May 01 2026
-updatedDate: ''
+updatedDate: 'Jul 5 2026'
 heroImage: ''
 heroAlt: Agente de IA lendo as mensagens do meu WhatsApp em segundo plano
 tags:
@@ -19,107 +19,40 @@ keywords:
   - IA para dono de empresa
 ---
 
-Tava gastando **tempo demais no WhatsApp**. Grupo de fornecedor, repasse pro gerente, cotação, grupo da família que eu já tinha largado dois dias antes.
+Segunda de manhã hoje é diferente. Eu chego sabendo o que ficou pendente no fim de semana, o que precisa de resposta e o que pode esperar. Antes eu chegava no escuro e descobria o que tinha escapado quando já era tarde: o fornecedor cobrando uma cotação que eu jurava ter respondido.
 
-Toda noite a mesma sensação: **passou coisa importante e eu não sei o quê**.
+O problema nunca foi o WhatsApp. **Era a minha atenção vazando** por um buraco que eu não tapava no braço.
 
-Às vezes era paranoia. Às vezes não. Descobria na segunda, quando o fornecedor cobrava resposta que nunca chegou.
+## Um bot que lê, não que fala
 
-## Em vez de bot que fala, bot que lê
+Todo mundo pensa em bot de WhatsApp como atendimento: um robô que fala com cliente. Eu fiz o contrário.
 
-Eu já tava montando o [Meu Cortex Digital](/labs/segundo-cerebro-ia/). Memória pronta, persona pronta. Faltava o que eu chamei de _"agência"_: o agente parar de só responder e começar a **agir no meu mundo**.
+> Em vez de um bot que fala, um bot que me lê.
 
-WhatsApp era o lugar mais óbvio pra começar. **É lá que minha atenção vaza primeiro.**
+Ele acompanha os grupos e as conversas que importam pro negócio e me entrega três coisas: no fim do dia, o que precisa de resposta urgente; no domingo, o resumo do que rolou e do que ficou pendente; no dia 1, o mês inteiro. Roda no PC que já fica ligado em casa, plugado no meu próprio número. Vê o que eu vejo, e não fala com ninguém.
 
-> Em vez de bot que fala com cliente, bot que me lê.
+É a camada de "agência" do [Meu Cortex Digital](/labs/segundo-cerebro-ia/): o agente para de só responder pergunta e começa a agir onde a minha atenção escapa primeiro.
 
-O que ele faz, em três linhas:
+## A parte difícil não é ler. É confiar.
 
-- **Diário, 20h.** O que precisa de resposta urgente hoje.
-- **Domingo, 20h.** Resumo de cada grupo importante e de cada contato relevante.
-- **Mensal, dia 1.** Panorama do mês inteiro.
+Ler, qualquer modelo lê. O problema apareceu na primeira versão: ela me devolveu **romance**. Deduziu intenção que ninguém escreveu, cravou conclusão sobre assunto que mal tinha três mensagens. Pareceu profundo. Era invenção.
 
-Tudo o que ele observa volta pro Cortex. Toda outra IA que eu uso depois já sabe **com quem andei falando, do que, e o que ficou pendente**.
-
-## Montei numa noite
-
-Roda no PC que já fica ligado em casa. Plugado no meu próprio número. **Vê tudo que eu vejo, e não fala com ninguém.**
-
-Primeira semana já valeu. Domingo de noite chegou o resumo e tinham **dois assuntos que eu não tinha visto**:
-
-1. Fornecedor cobrando cotação que eu jurava ter respondido.
-2. Lembrete da escola do meu filho. Eu ia perder o prazo.
-
-Nenhum dos dois ia me quebrar. Os dois iam me dar dor de cabeça.
-
-> O problema não era WhatsApp. Era atenção.
-
-## A parte que mais me interessou
-
-Não foi o resumo dos grupos. **Foi o resumo dos contatos individuais.**
-
-Pra cada pessoa relevante, ele:
-
-- Olha as últimas semanas de conversa.
-- Escreve em duas linhas o que tá rolando no relacionamento.
-- Marca quando alguém sumiu.
-
-Eu lembrava de pessoas no susto, quando algo já me cobrava. Agora tem alguém me empurrando isso pra cima toda semana, **antes de virar problema**.
-
-Bonus: domingo de noite ele lê **as minhas próprias mensagens** da semana e atualiza meu perfil dentro do Cortex. Sem inventar, só o que dá pra observar do que eu mesmo escrevi.
-
-## A pegadinha da invenção
-
-Esse é o ponto onde um modelo solto **inventa o universo**.
-
-A primeira versão me devolveu romance. Traçou perfil psicológico de gente com quem troquei três mensagens. Deduziu intenção que ninguém disse. Pareceu profundo. Era invenção.
-
-Reescrevi o prompt obrigando formato fixo e proibindo invenção. **Se não tem o que dizer, não diz.**
+E aqui não é enfeite. **Esse bot escreve dentro do meu Cortex.** Se ele inventa, eu decido a semana seguinte em cima da invenção dele.
 
 > Prefiro nada do que errado.
 
-Esse bot escreve no Cortex. Se ele inventar, eu tomo decisão na semana seguinte baseado em invenção dele. Não compensa.
+Então a regra virou o contrário do que a maioria faz com IA: formato fixo, proibição explícita de deduzir, e ordem pra devolver "nada novo" quando não há o que dizer. A inteligência do sistema não está em falar bonito. Está em **saber calar quando não observou nada.**
 
-## Plano B, C, D
+## Por que ele nunca para
 
-Pra não depender de um único modelo, montei redundância. Se o primeiro cair ou estourar quota, tenta o segundo. Cai o segundo, vai pro terceiro.
+Parece detalhe técnico, mas é de dono: montei redundância. Se o modelo principal cai ou estoura a cota, ele tenta o segundo, depois o terceiro. Modelo é depreciado de uma semana pra outra, cota acaba, API cai num domingo de noite, e mesmo assim o resumo tem que chegar. Custo até hoje: zero, cabe nos planos gratuitos pra escala de uma pessoa.
 
-Não é luxo:
+## O próximo passo é deixar ele responder
 
-- **Modelo é depreciado** de uma semana pra outra.
-- **Quota acaba.**
-- **API cai num domingo de noite.**
-
-O bot precisa rodar. Custo até hoje: **zero**. Cabe nos planos gratuitos pra escala de uma pessoa.
-
-## Fase 2: deixar ele responder
-
-Fase 1 é leitura. **Fase 2 é deixar ele responder coisa pequena por mim**, dentro de regra clara. _"Tô a caminho"_, _"recebi sim"_, _"que horas a gente combinou"_, confirmação de pagamento que o financeiro já tinha me passado.
-
-Nada de cliente final. Nada de decisão. Só o agradecimento e a confirmação que comem o meu dia sem agregar nada.
-
-Pra isso funcionar sem virar pesadelo, preciso de três coisas:
-
-1. **Saber quem é cada contato.** A fase 1 já tá construindo isso no Cortex.
-2. **Regra clara** do que ele responde sozinho, do que ele rascunha pra eu aprovar com um clique, e do que ele nunca toca.
-3. **Aprender o jeito que eu escrevo**, pra resposta dele parecer comigo.
-
-Os três saem da mesma fonte: o agente lendo o que eu mesmo escrevo.
+Hoje ele só lê. A fase 2 é deixar ele responder o pequeno por mim, dentro de regra clara: "tô a caminho", "recebi", a confirmação que o financeiro já tinha me passado. Nada de cliente final, nada de decisão. Só o que come o meu dia sem agregar. Pra isso ele precisa aprender o jeito que eu escrevo, e isso sai da mesma fonte: ele lendo o que eu mesmo mando.
 
 ***
 
-Por enquanto ele só lê. E só de ler já mudou a forma como eu chego em segunda de manhã.
+Só de ler, já mudou como eu chego na segunda. Montar um agente que age no mundo real, sem inventar e sem virar refém de uma única API, é exatamente o tipo de projeto que eu ajudo empresa a montar.
 
-## Stack
-
-- Node 24/7 no PC de casa.
-- `@whiskeysockets/baileys` pra conexão direta com o WhatsApp via QR code. Sem API oficial paga, sem número separado. O bot fica logado em paralelo ao celular.
-- `@google/genai` (Gemini) pra análise, com fallback automático pra Groq, Cerebras e OpenRouter. Dentro do Gemini, fallback entre `gemini-2.5-flash`, `gemini-2.0-flash` e `gemini-2.0-flash-lite`.
-- `node-cron` pra agendar: diário 20h, semanal domingo 20h, mensal dia 1.
-- Estado em JSON puro num arquivo único (`.state.json`). Sem banco, sem ORM, sem container, sem fila.
-- Retenção: 30 dias pras DMs e pras minhas próprias mensagens, 7 dias pros grupos. Acima disso, descarta no save. Estado nunca cresce sem limite.
-- Áudio, figurinha, documento e broadcast: ignorados. Só texto.
-- Comandos via mensagem que eu mando pra mim mesmo começando com `/` (`/resumo`, `/resumo grupos`, `/resumo mensal`). O painel é o próprio WhatsApp.
-- Relatórios salvos como markdown no Cortex (sincronizado pelo Drive) e mandados pra mim no WhatsApp.
-- Prompts conservadores onde o output vira insumo de decisão. Formato fixo, proibição explícita de inventar, instrução pra retornar "nada novo" quando não houver o que dizer.
-- Custo até hoje: zero. Tier gratuito do Gemini cobre a escala de um usuário só.
+**Stack:** roda em Node 24/7 no PC de casa, conectado ao WhatsApp direto pelo QR code (sem API paga, sem número separado); a análise passa por uma cascata de modelos (Gemini com fallback pra Groq, Cerebras e OpenRouter) agendada por cron (diário, domingo, dia 1); estado em arquivo único com retenção curta, só texto, comandos que eu mando pra mim mesmo, e prompts conservadores onde a saída vira decisão. Custo: zero.

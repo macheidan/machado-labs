@@ -1,44 +1,41 @@
 ---
 title: 'Why I''m documenting this publicly'
 heroTitle: 'Why I''m <em>documenting</em><br/>this <span class="accent">publicly</span>'
-description: 'Start here. The decision to expose the process of building a team of AI agents inside the pizzerias is strategic, not aesthetic.'
+description: 'Start here. Exposing the process of putting a team of AI agents to work inside a real company is a strategic decision, not an aesthetic one.'
 pubDate: 'Apr 25 2026'
+updatedDate: 'Jul 5 2026'
 tags: ['bastidores', 'estrategia']
 keywords: ['applied AI', 'AI consulting', 'agents in business', 'AI for SMB', 'applied AI in small business', 'AI agent team']
 ---
 
-There's a big difference between **building one AI agent in a lab** and putting an entire team of them to work inside a real company.
-
-Most of what you read about AI online ignores that difference. I can't afford to ignore it.
+There's a huge gap between **building one AI agent in a lab** and putting an entire team of them to work inside a real company. Almost everything written about AI online lives on the easy side of that gap. I can't.
 
 > My two pizzerias are paying the bill.
 
-Dáme Pizza and Lov Pizza aren't hypotheticals. There are suppliers to pay, teams to manage, menus to review, ads to run, customers to answer. All of it, every day, *without overheating*.
+Dáme and Lov aren't hypotheticals. There are suppliers to pay, teams to run, menus to review, ads to run, customers to answer, every day. Over the last few months I started handing pieces of my owner's job to agents: finance, marketing, operations, customer service, data. And I decided to write down every step here, in plain sight.
 
-Over the last few months I've started **replacing parts of my brain with agents**: finance, marketing, operations, customer service, data. The result is strange to explain to anyone who hasn't seen it working.
+The question people ask me is why expose it, instead of keeping the edge.
 
-The first one in production is an [agent that watches my WhatsApp](/en/labs/bot-whatsapp-inteligencia-pessoal/), wired to the [Digital Cortex](/en/labs/segundo-cerebro-ia/) that serves as shared memory for everything else.
+## Writing in public forces me to think straight
 
-## Why public, not private
+The least obvious answer came first. Every time I try to explain a decision to a reader who isn't inside my head, the hole shows up. **I've thrown out entire agents mid-way through writing about them**, because the logic didn't hold up on paper.
 
-I could write this just for myself, in an Obsidian notebook. It would make more sense in some ways: less pressure to polish, less risk of a competitor copying, less exposure.
+The text is the quality control of the thinking. Kept in a drawer, nothing forces me to close the reasoning.
 
-But three things change when you document in public:
+## Each post is proof, not an ad
 
-1. **Writing quality forces thinking quality.** Every time I try to explain a decision to a reader who isn't inside my head, I find holes in the reasoning. I've thrown out entire agents just by trying to write about them.
-2. **Each post becomes a case study.** I don't need to convince anyone it works. The whole page here is the proof. Whoever shows up already shows up convinced.
-3. **The audience becomes a waitlist, not a sales funnel.** People who want to deploy agents in their own company find me with a documented track record, instead of me having to prospect.
+The rest follows. I don't need to convince anyone it works: the page is the proof. Whoever shows up shows up already convinced, with the whole track record in front of them. I stop being a salesman prospecting and become the person the line comes looking for.
 
-## What you'll find here
+And I leave the map open on purpose.
 
-Real architecture decisions, context formats that worked (and the ones that didn't), metrics from both pizzerias, token costs, failures in production, and the why behind every choice.
+> If you own a company, you'll leave here with a path to do this in your own business, even if you decide never to hire me.
 
-No get-rich-quick promises, no theory from someone who's never run anything.
+That doesn't cost me clients. It does the opposite. Whoever tries it and sees the size of the hole understands faster why it's worth bringing in someone who's already crossed it.
 
-> If you're a small or mid-size business owner, you'll leave here with a map to do this in your own business, even if you decide not to hire me.
+## What's here
 
-For those building something similar in another context: let's talk.
+Real architecture decisions, context formats that worked and the ones that didn't, numbers from both pizzerias, cost, failures in production, and the why behind every choice. No get-rich-quick promises, no theory from someone who never ran anything. The first agent in production was the [one that watches my WhatsApp](/en/labs/bot-whatsapp-inteligencia-pessoal/), wired to the [Digital Cortex](/en/labs/segundo-cerebro-ia/) that serves as memory for the others.
 
----
+***
 
-Next post opens the architecture: which agents exist today, what each one does, and why the orchestrator was the piece that took the longest to get right.
+If you're building something similar, or want to and don't know where to start, it's for you that I write.

@@ -1,61 +1,35 @@
 ---
-title: 'Como o GPT-4 está ajudando minha rotina'
-heroTitle: 'Como o <em>GPT-4</em><br/>está ajudando<br/>minha <span class="accent">rotina</span>'
-description: 'Três tarefas de dono que parei de fazer na unha desde que o GPT-4 ganhou upload de arquivos: fórmulas de planilha, projeção de vendas e conferência de caixa.'
+title: 'Eu já colocava IA pra ler minhas planilhas em 2023'
+heroTitle: 'Eu já colocava <em>IA</em> pra ler<br/>minhas <span class="accent">planilhas</span> em 2023'
+description: 'Isto é de 2023, quando subir um arquivo no ChatGPT tinha acabado de virar possível. Eu já usava pra ler minhas planilhas e me mostrar o que eu não estava vendo. O princípio virou base de tudo que faço com IA hoje.'
 pubDate: 'Apr 15 2023'
-updatedDate: 'Apr 26 2026'
+updatedDate: 'Jul 5 2026'
 tags: ['chatgpt', 'planilhas', 'rotina']
 keywords: ['ChatGPT planilhas', 'análise com IA', 'projeção de vendas', 'fechamento de caixa', 'IA para empresas', 'IA para dono de empresa', 'IA para PME']
 ---
 
-Todo dono tem 3 a 5 planilhas que **tomam a noite**. Comparativo de venda, fechamento de caixa, planilha de produto que ninguém atualiza.
+Isto aqui é de 2023. Subir um arquivo dentro do ChatGPT tinha acabado de virar possível, e quase ninguém no meu meio estava usando pra trabalhar. Eu já estava.
 
-Cada uma trava alguma decisão.
+Todo dono tem três a cinco planilhas que **tomam a noite**: comparativo de venda, fechamento de caixa, a planilha de produto que ninguém atualiza. Cada uma trava uma decisão. Foi por elas que comecei.
 
-O GPT-4 ganhou upload de arquivos. Sobe o XLS direto. Sobe o PDF do relatório. Sobe o extrato.
+O que descobri ali continua sendo a coisa mais importante que eu aprendi sobre IA, e que a maioria ainda não entendeu:
 
-Eu toco as duas pizzarias e tenho três tarefas de dono que faço *direto, na unha*. Foram essas três que entraram primeiro.
+> A IA não serve pra fazer mais rápido o que você já faz. Serve pra te mostrar o que você não estava vendo.
 
-## Fórmulas e análise de planilha
+## O dado sempre esteve lá
 
-Sempre usei CRM e Excel bem estruturado. Não é falta de organização que me travava. É que o dado tava lá, mas a extração de sentido **dependia de mim**.
+Nunca foi falta de organização. Sempre tive CRM e Excel arrumados. O dado estava lá, mas **tirar sentido dele dependia de mim** estar disponível, lembrar a fórmula certa, ter cabeça pra cruzar.
 
-Quando não lembro a fórmula que compara o mesmo dia da semana com 4 semanas atrás, pergunto ali. Resposta com a fórmula pronta pra Sheets, com explicação do porquê. O que antes exigia pesquisa ou um analista disponível agora sai em segundos dentro do próprio contexto da planilha aberta.
+No começo era só velocidade. Quando eu não lembrava como comparar o mesmo dia da semana com quatro semanas atrás, perguntava e voltava a fórmula pronta, com o porquê. O que exigia um analista à mão passou a sair em segundos.
 
-> O dado sempre existiu. O que mudou foi a velocidade de chegar na pergunta certa.
+O pulo veio quando parei de pedir resposta e comecei a pedir leitura. Subo as semanas e peço "me diz o que mudou e o que provavelmente explica". O que voltava era 80% do que um analista júnior entregaria, em trinta segundos, sem reunião e sem custo, e às vezes apontava o que eu nem tinha pensado em perguntar.
 
-## Comparativo de vendas e projeções
+A conferência de caixa foi a prova final. Três fontes que eu cruzava na mão toda semana, mais extrato e cartão por operadora. Muita fonte, muita margem pra erro. Passei a subir tudo como estava e pedir a consolidação. Ele não fecha o caixa por mim. Ele aponta onde olhar antes: "esse valor de cartão está fora do padrão das últimas quatro sextas". Que é, no fim, o que um bom analista faz.
 
-Esse é o que mais tá me marcando.
+## O que sobrou de tudo isso
 
-Já usava o GPT-4 pra analisar números. Mas com o upload, o processo ficou diferente. Subo as semanas em XLS e peço: *"me diz o que mudou e o que provavelmente explica"*. Depois peço projeção com base no histórico.
+O ganho real nunca foi hora economizada. **Foi espaço mental.** Não cabe em métrica, mas é o que faz dono dormir.
 
-A análise não é perfeita. Mas é **80% do que um analista júnior entregaria**, em 30 segundos, sem reunião e sem custo.
+E o princípio de 2023 virou tudo o que eu faço hoje. Em vez de subir os mesmos arquivos toda semana, deixei o contexto morar num lugar só, o [Cortex Digital](/labs/segundo-cerebro-ia/), lido por qualquer modelo. E [um agente plugado no WhatsApp](/labs/bot-whatsapp-inteligencia-pessoal/) passou a gerar boa parte das hipóteses sozinho, sem eu abrir nada.
 
-E é aqui que tá caindo a ficha de uma coisa que eu suspeitava:
-
-> O ganho de IA não é fazer mais rápido o que já faço. É me mostrar o que eu não estava vendo.
-
-## Conferência de caixa
-
-Esse era o processo mais pesado. Um Excel consolidava manualmente os dados de três fontes: iFood, delivery direto e SAIPOS. Além disso, pegava na mão extratos bancários e resultados de cartão de cada operadora.
-
-Muita fonte. Muita conferência. **Muita margem pra erro humano.**
-
-Com o GPT-4, automatizei esse cruzamento. Subo os arquivos, descrevo a estrutura de cada fonte e peço a consolidação. Ele aponta discrepância antes de eu precisar procurar: *"esse valor de cartão tá fora do padrão das últimas 4 sextas, vale checar"* ou *"aqui tem uma categoria que sumiu em relação à semana passada"*.
-
-Ele não fecha o caixa por mim. Ele aponta onde olhar antes de eu fechar. Que é, no fim, o que um bom analista faz.
-
-## O que aprendi até agora
-
-O GPT-4 lê dado, cruza informação e devolve hipótese. **Quem usa só pra gerar texto está deixando a melhor parte de lado.**
-
-O que mudou de verdade com o upload é a fricção zero: não preciso tratar o dado antes de perguntar. Subo o arquivo como está e começo. Planilha de três sistemas diferentes, extrato bancário direto do banco, resultado de cartão por operadora. Tudo entra.
-
-E o aprendizado que mais importa: o ROI desses três usos juntos não é economia de horas.
-
-> É espaço mental. Esse efeito não cabe em métrica, mas é o que faz dono dormir.
-
----
-
-Três anos depois, esse mesmo princípio virou base do [Cortex Digital](/labs/segundo-cerebro-ia/): em vez de subir o mesmo arquivo toda semana, deixar o contexto persistente, lido por qualquer modelo. E [um agente acoplado ao WhatsApp](/labs/bot-whatsapp-inteligencia-pessoal/) começou a gerar a maior parte das hipóteses sozinho, sem eu precisar abrir nada.
+Eu estava três anos à frente sem saber. Tirar essa mesma vantagem pra dentro de uma empresa é o que eu faço agora.
