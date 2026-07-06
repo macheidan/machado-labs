@@ -50,12 +50,16 @@ FONTES_GLOBAL = [
     ("Singularity Hub", "Futurism", "https://singularityhub.com/feed/"),
 ]
 
-# Biz: startups, ideias de negócio, administração (global)
+# Mercado (chave "biz"): food-service, delivery, foodtech e negócios BR, o radar
+# do projeto de IA do Fábio (consultoria pra restaurantes/PME). Curado p/ os
+# interesses dele: iFood/delivery, restaurant tech, varejo de consumo, startups.
+# Títulos são traduzidos pra pt-BR no runner (The Spoon vem em inglês).
 FONTES_BIZ = [
-    ("TechCrunch",   "Startups",   "https://techcrunch.com/category/startups/feed/"),
-    ("Hacker News",  "Startups",   "https://hnrss.org/newest?q=startup+OR+founder&points=30"),
-    ("Entrepreneur", "Business",   "https://www.entrepreneur.com/latest.rss"),
-    ("Inc",          "Management", "https://www.inc.com/rss/"),
+    ("Mercado&Consumo", "Mercado",  "https://mercadoeconsumo.com.br/feed/"),
+    ("The Spoon",       "Foodtech", "https://thespoon.tech/feed/"),
+    ("NeoFeed",         "Negócios", "https://neofeed.com.br/feed/"),
+    ("Startups",        "Startups", "https://startups.com.br/feed/"),
+    ("Brazil Journal",  "Mercado",  "https://braziljournal.com/feed/"),
 ]
 
 
@@ -211,6 +215,10 @@ def main():
     data["ia"]     = enriquecer_imagens(coletar_secao(FONTES_IA, total=12))
     data["global"] = enriquecer_imagens(coletar_secao(FONTES_GLOBAL, total=10))
     data["biz"]    = enriquecer_imagens(coletar_secao(FONTES_BIZ, total=10))
+    # Product Hunt (lançamentos de ferramentas novas) — para o /v3, painel builder
+    data["producthunt"] = enriquecer_imagens(coletar_secao(
+        [("Product Hunt", "Launch", "https://www.producthunt.com/feed")],
+        por_fonte=12, total=12))
     data["github"] = {
         "day":   github_trending("daily", 10),
         "week":  github_trending("weekly", 10),

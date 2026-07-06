@@ -237,7 +237,49 @@ def selecionar_loja(page, loja, idx):
     print(f"  [AVISO] Não confirmou seleção de {loja} (segue mesmo assim).")
 
 
-def abrir_relatorio(page, dia, url=SAIPOS_REPORT, slug="sales-by-period"):
+def fechar_modais(page):
+    """Fecha pop-ups do Saipos (novidades/avisos) que aparecem ao navegar e
+    interceptam cliques nos campos do relatório. Best-effort, não derruba nada."""
+    for _ in range(4):
+        try:
+            modal = page.locator("[uib-modal-window], .modal.in, .modal.show").first
+            if not modal.is_visible(timeout=600):
+                break
+        except Exception:
+            break
+        clicou = False
+        for sel in ("[uib-modal-window] button[ng-click*='close']",
+                    "[uib-modal-window] button[ng-click*='cancel']",
+                    "[uib-modal-window] button[ng-click*='dismiss']",
+                    "[uib-modal-window] .close",
+                    "[uib-modal-window] button:has-text('Fechar')",
+                    "[uib-modal-window] button:has-text('Entendi')",
+                    "[uib-modal-window] button:has-text('OK')"):
+            try:
+                b = page.locator(sel).first
+                if b.is_visible(timeout=400):
+                    b.click(timeout=2500)
+                    clicou = True
+                    break
+            except Exception:
+                continue
+        if not clicou:
+            try:
+                page.keyboard.press("Escape")
+            except Exception:
+                pass
+        page.wait_for_timeout(600)
+    # remove backdrops órfãos que sobram e continuam bloqueando o ponteiro
+    try:
+        page.evaluate("""() => {
+          document.querySelectorAll('.modal-backdrop').forEach(e => e.remove());
+          document.body.classList.remove('modal-open');
+        }""")
+    except Exception:
+        pass
+
+
+def abrir_relatorio(page, dia, url=SAIPOS_REPORT, slug="sales-by-period", dia_fim=None):
     page.goto(url, wait_until="domcontentloaded", timeout=60000)
     page.wait_for_timeout(2000)
     if slug not in page.url:
@@ -245,7 +287,9 @@ def abrir_relatorio(page, dia, url=SAIPOS_REPORT, slug="sales-by-period"):
         page.wait_for_timeout(500)
         page.reload(wait_until="domcontentloaded", timeout=60000)
         page.wait_for_timeout(3000)
+    fechar_modais(page)
     d = dia.strftime("%d/%m/%Y")
+    d2 = (dia_fim or dia).strftime("%d/%m/%Y")
     inputs = []
     for sel in ["input[ng-model='dateString']", "input[placeholder*='data']",
                 "input[placeholder*='Data']"]:
@@ -257,8 +301,13 @@ def abrir_relatorio(page, dia, url=SAIPOS_REPORT, slug="sales-by-period"):
         except PWTimeout:
             continue
     if len(inputs) >= 2:
-        for inp, val in zip(inputs[:2], [d, d]):   # mesmo dia início e fim
-            inp.click(click_count=3); inp.type(val, delay=70); inp.press("Tab")
+        for inp, val in zip(inputs[:2], [d, d2]):   # início e fim (iguais = 1 dia)
+            try:
+                inp.click(click_count=3, timeout=8000)
+            except PWTimeout:
+                fechar_modais(page)                  # modal apareceu no meio: fecha e repete
+                inp.click(click_count=3, timeout=8000)
+            inp.type(val, delay=70); inp.press("Tab")
         page.wait_for_timeout(400)
     for sel in ["button[ng-click*='search']", "button[ng-click*='Search']",
                 "button[ng-click*='filter']"]:
@@ -280,6 +329,18 @@ def coletar_loja(page, loja, idx, dia, cfg):
     return {"valor": valor, "pizzas": pizzas, "pedidos": pedidos}
 
 
+def coletar_loja_periodo(page, loja, idx, d1, d2, cfg):
+    """Mesma coleta, mas para um intervalo (ex.: mês até hoje)."""
+    selecionar_loja(page, loja, idx)
+    abrir_relatorio(page, d1, SAIPOS_REPORT, "sales-by-period", dia_fim=d2)
+    valor   = extrair_valor(page)
+    pedidos = extrair_inteiro(page, LBL_PEDIDOS)
+    abrir_relatorio(page, d1, SAIPOS_ITENS, "store-item-sold", dia_fim=d2)
+    page.wait_for_timeout(1500)
+    pizzas, _ = pizzas_from_scope(extrair_scope(page), cfg)
+    return {"valor": valor, "pizzas": pizzas, "pedidos": pedidos}
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dia", help="YYYY-MM-DD (padrão: ontem)")
@@ -290,6 +351,8 @@ def main():
     ap.add_argument("--testar-pizzas", dest="testar_pizzas", action="store_true",
                     help="calcula pizzas do _scope salvo (sem abrir browser)")
     ap.add_argument("--loja", default="DAME", help="loja para os modos --descobrir*/--testar")
+    ap.add_argument("--so-mes", dest="so_mes", action="store_true", help="coleta só o mês até hoje")
+    ap.add_argument("--sem-mes", dest="sem_mes", action="store_true", help="pula o resumo do mês")
     ap.add_argument("--headless", action="store_true")
     args = ap.parse_args()
 
@@ -346,22 +409,39 @@ def main():
             ctx.close()
             return
 
-        lojas = {}
-        for loja, idx in cfg["lojas"].items():
-            print(f"── {loja} ──")
-            lojas[loja] = coletar_loja(page, loja, idx, dia, cfg)
-            print(f"   {lojas[loja]}")
-        ctx.close()
+        # ── diário (grava JÁ, pra não perder se o mês falhar) ──
+        if not args.so_mes:
+            lojas = {}
+            for loja, idx in cfg["lojas"].items():
+                print(f"── {loja} ──")
+                lojas[loja] = coletar_loja(page, loja, idx, dia, cfg)
+                print(f"   {lojas[loja]}")
+            saida = {"data": dia.isoformat(), "dow": DOW_PT[dia.weekday()],
+                     "lojas": lojas,
+                     "gerado_em": datetime.now().isoformat(timespec="seconds")}
+            (DATA_DIR / "vendas.json").write_text(
+                json.dumps(saida, ensure_ascii=False, indent=2), encoding="utf-8")
+            print(f"\n✓ vendas.json ({dia.isoformat()})")
 
-    saida = {
-        "data": dia.isoformat(),
-        "dow": DOW_PT[dia.weekday()],
-        "lojas": lojas,
-        "gerado_em": datetime.now().isoformat(timespec="seconds"),
-    }
-    out = DATA_DIR / "vendas.json"
-    out.write_text(json.dumps(saida, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"\n✓ Gravado em {out}")
+        # ── mês até hoje (best-effort; não derruba o diário) ──
+        if not args.sem_mes:
+            try:
+                d1 = date.today().replace(day=1)
+                d2 = date.today()
+                mes = {}
+                for loja, idx in cfg["lojas"].items():
+                    print(f"── {loja} (mês {d1.day:02d}–{d2.day:02d}/{d2.month:02d}) ──")
+                    mes[loja] = coletar_loja_periodo(page, loja, idx, d1, d2, cfg)
+                    print(f"   {mes[loja]}")
+                (DATA_DIR / "vendas_mes.json").write_text(json.dumps(
+                    {"mes": d1.strftime("%Y-%m"), "de": d1.isoformat(), "ate": d2.isoformat(),
+                     "lojas": mes, "gerado_em": datetime.now().isoformat(timespec="seconds")},
+                    ensure_ascii=False, indent=2), encoding="utf-8")
+                print("\n✓ vendas_mes.json")
+            except Exception as e:
+                print(f"  [mês] falhou: {type(e).__name__} {e}")
+
+        ctx.close()
 
 
 if __name__ == "__main__":

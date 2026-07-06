@@ -1,6 +1,6 @@
 ---
-title: 'I found out the price I agree with the supplier is a lie'
-heroTitle: 'I found out the <em>price</em> I agree<br/>with the supplier is a <span class="accent">lie</span>'
+title: 'I built an AI that checks if the invoice matches the negotiated deal'
+heroTitle: 'I built an <em>AI</em> that checks if the invoice<br/>matches the <span class="accent">negotiated deal</span>'
 description: 'Taxes, freight, a value that came different from the deal: the cost I used to decide was never the real one. I put a bot to pull the invoices straight from the tax authority, normalize everything, and warn the team when an input goes up.'
 pubDate: 'Jun 28 2026'
 tags: ['operacao', 'compras', 'ia']

@@ -1,6 +1,6 @@
 ---
-title: 'Descobri que o preço que combino com o fornecedor é mentira'
-heroTitle: 'Descobri que o <em>preço</em> que combino<br/>com o fornecedor é <span class="accent">mentira</span>'
+title: 'Fiz uma IA que confere se a NFe bate com a compra negociada'
+heroTitle: 'Fiz uma <em>IA</em> que confere se a NFe<br/>bate com a <span class="accent">compra negociada</span>'
 description: 'Imposto, frete, valor que veio diferente do combinado: o custo que eu usava pra decidir nunca era o real. Botei um bot pra puxar as notas direto da Receita, normalizar tudo e avisar a equipe quando um insumo sobe.'
 pubDate: 'Jun 28 2026'
 tags: ['operacao', 'compras', 'ia']

@@ -30,3 +30,7 @@ pnpm-debug.log*
 # projeto aninhado com repositorio proprio (macheidan/viagem-eua-2026)
 # NAO versionar aqui: machado-labs e publico e o app-viagem e privado
 _ferramentas/app-viagem/
+
+# projeto aninhado com repositorio proprio (macheidan/investimentos)
+# NAO versionar aqui: machado-labs e publico e o investimentos e privado
+_ferramentas/investimentos/
