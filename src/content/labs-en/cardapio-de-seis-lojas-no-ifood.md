@@ -23,7 +23,7 @@ In a multi-store operation, that becomes the rule, not the exception. The menu i
 
 I solved it by flipping the problem inside out. Instead of me going store by store on iFood, the menu now lives in **one place**, my source of truth. When it changes there, an automation opens each store and applies the same adjustment to all of them, in the same pass.
 
-Six stores, dozens of items, one run. And, as always, with a review step first: it shows me what will change in each store so I can approve. I trust, but I verify.
+Add it all up and it's over 2,000 items. I gain time and accuracy: no item ends up charged wrong. When it was done by hand, there was always one that slipped through.
 
 The obvious gain is time. What matters is that the menu **stays the same everywhere, always**, and the silent mismatch stops existing.
 

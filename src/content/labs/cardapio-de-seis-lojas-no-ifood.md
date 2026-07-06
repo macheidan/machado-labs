@@ -23,7 +23,7 @@ Numa operação de várias lojas, isso vira regra, não exceção. O cardápio n
 
 Resolvi virando o problema do avesso. Em vez de eu ir loja por loja no iFood, o cardápio passa a viver **num lugar só**, a minha fonte de verdade. Quando muda ali, uma automação abre cada loja e aplica o mesmo ajuste em todas, no mesmo passe.
 
-Seis lojas, dezenas de itens, uma rodada. E, como sempre, com um passo de conferência antes: ela me mostra o que vai mudar em cada loja pra eu aprovar. Confio, mas confiro.
+Se somar, são mais de 2000 itens. Ganho tempo e precisão, não existe item sendo cobrado errado. Quando era feito manualmente sempre tinha algum que escapava.
 
 O ganho óbvio é o tempo. O que importa é que o cardápio **fica igual em todo lugar, sempre**, e o desencontro silencioso deixa de existir.
 
