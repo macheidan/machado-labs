@@ -1,6 +1,6 @@
 ---
-title: 'O preço que negocio não é o que chega'
-heroTitle: 'O <em>preço</em> que negocio<br/>não é o que <span class="accent">chega</span>'
+title: 'Sei quando um insumo sobe e se a nota bateu o combinado'
+heroTitle: 'Sei quando um <em>insumo sobe</em><br/>e se a nota bateu o <span class="accent">combinado</span>'
 description: 'Imposto, frete, valor que veio diferente do combinado: o custo que eu usava pra decidir nunca era o real. Botei um bot pra puxar as notas direto da Receita, normalizar tudo e avisar a equipe quando um insumo sobe.'
 pubDate: 'Jun 28 2026'
 tags: ['operacao', 'compras', 'ia']
