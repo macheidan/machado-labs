@@ -1,6 +1,6 @@
 ---
-title: 'I know when an input rises and if the invoice matched the deal'
-heroTitle: 'I know when an <em>input rises</em><br/>and if the invoice matched the <span class="accent">deal</span>'
+title: 'I found out the price I agree with the supplier is a lie'
+heroTitle: 'I found out the <em>price</em> I agree<br/>with the supplier is a <span class="accent">lie</span>'
 description: 'Taxes, freight, a value that came different from the deal: the cost I used to decide was never the real one. I put a bot to pull the invoices straight from the tax authority, normalize everything, and warn the team when an input goes up.'
 pubDate: 'Jun 28 2026'
 tags: ['operacao', 'compras', 'ia']

@@ -1,6 +1,6 @@
 ---
-title: 'Sei quando um insumo sobe e se a nota bateu o combinado'
-heroTitle: 'Sei quando um <em>insumo sobe</em><br/>e se a nota bateu o <span class="accent">combinado</span>'
+title: 'Descobri que o preço que combino com o fornecedor é mentira'
+heroTitle: 'Descobri que o <em>preço</em> que combino<br/>com o fornecedor é <span class="accent">mentira</span>'
 description: 'Imposto, frete, valor que veio diferente do combinado: o custo que eu usava pra decidir nunca era o real. Botei um bot pra puxar as notas direto da Receita, normalizar tudo e avisar a equipe quando um insumo sobe.'
 pubDate: 'Jun 28 2026'
 tags: ['operacao', 'compras', 'ia']
