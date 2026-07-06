@@ -12,7 +12,7 @@ keywords: ['WhatsApp AI agent', 'WhatsApp automation for business', 'AI for What
 
 Monday morning is different now. I show up knowing what's still pending from the weekend, what needs a reply, and what can wait. Before, I showed up in the dark and found out what had slipped only when it was too late: a supplier chasing a quote I swore I had answered.
 
-The problem was never WhatsApp. **It was my attention leaking** through a hole I couldn't plug by hand.
+The problem was never WhatsApp. It was attention: **keeping up by hand doesn't scale**, and the answer was never to try harder.
 
 ## A bot that reads, not one that talks
 

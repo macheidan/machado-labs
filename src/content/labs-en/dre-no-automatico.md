@@ -7,9 +7,9 @@ tags: ['financeiro', 'dre', 'ia']
 keywords: ['automated P&L', 'monthly close', 'SMB controllership', 'categorize expenses with AI', 'how much was left', 'AI for finance', 'AI for business owners']
 ---
 
-A question for any owner: how much was left last month, and why? Most can't answer on the spot. I couldn't either. The number existed, but it was only ready around the 10th, after I'd lost a full day pulling everything together by hand.
+A question for any owner: how much was left last month, and why? Most can't answer on the spot, and for a long time that number was only ready around the 10th, after a full day pulling everything together by hand. To me, the 10th was always unacceptable.
 
-And the 10th is late. By the time the close is ready, the month is over. If it went badly, you find out when there's nothing left to react to.
+A close that's only ready once the month is over is useless for deciding anything. If it went badly, you find out when there's nothing left to react to.
 
 ## Why closing the month is such a pain
 

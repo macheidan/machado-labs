@@ -8,9 +8,9 @@ tags: ['cortex', 'agentes', 'ia-first']
 keywords: ['segundo cérebro', 'memória de IA', 'agentes de IA', 'contexto para IA', 'IA com memória da empresa', 'dar contexto pro ChatGPT', 'IA first', 'IA para empresários']
 ---
 
-Toco várias frentes ao mesmo tempo, e por muito tempo repeti o mesmo desperdício: toda vez que eu abria uma IA pra ajudar, ela **começava do zero**. Não sabia dos meus negócios, não sabia como eu penso, não lembrava de nada da conversa anterior. Eu gastava metade do tempo reexplicando o contexto antes de conseguir qualquer coisa útil.
+Eu opero várias frentes ao mesmo tempo, e cedo bati num teto que quase ninguém no mercado enxerga: toda IA que eu abria **começava do zero**. Não sabia dos meus negócios, não sabia como eu penso, não lembrava da conversa anterior. E isso não é problema de produtividade pessoal, é estrutural.
 
-Demorei a entender que o problema não era a IA. Era que **o meu contexto não morava em lugar nenhum**. Estava espalhado na minha cabeça, em conversas soltas, em anotações perdidas. Nenhuma ferramenta tinha como saber o que nunca foi escrito.
+O problema não era a IA. Era que **o meu contexto não morava em lugar nenhum**. Estava espalhado na minha cabeça, em conversas soltas, em anotações perdidas. Nenhuma ferramenta tinha como saber o que nunca foi escrito.
 
 Daí veio a ideia: construir um cérebro externo, fora de qualquer ferramenta, que fosse a **fonte única de verdade sobre mim e sobre as empresas**. Qualquer IA que eu abrir lê isso primeiro e já chega sabendo. Chamei de **Meu Cortex Digital**.
 

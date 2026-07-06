@@ -21,7 +21,7 @@ keywords:
 
 Segunda de manhã hoje é diferente. Eu chego sabendo o que ficou pendente no fim de semana, o que precisa de resposta e o que pode esperar. Antes eu chegava no escuro e descobria o que tinha escapado quando já era tarde: o fornecedor cobrando uma cotação que eu jurava ter respondido.
 
-O problema nunca foi o WhatsApp. **Era a minha atenção vazando** por um buraco que eu não tapava no braço.
+O problema nunca foi o WhatsApp. Era atenção: **acompanhar tudo no braço não escala**, e a saída nunca foi me esforçar mais.
 
 ## Um bot que lê, não que fala
 

@@ -7,9 +7,9 @@ tags: ['financeiro', 'dre', 'ia']
 keywords: ['DRE automático', 'fechamento do mês', 'controladoria PME', 'categorizar despesas com IA', 'quanto sobrou no mês', 'IA para financeiro', 'IA para dono de empresa']
 ---
 
-Pergunta pra qualquer dono: quanto sobrou no mês passado, e por quê? A maioria não responde na hora. Eu também não respondia. O número existia, mas só ficava pronto lá pelo dia 10, depois de eu perder um dia inteiro juntando tudo na mão.
+Pergunta pra qualquer dono: quanto sobrou no mês passado, e por quê? A maioria não responde na hora, e por muito tempo esse número só ficava pronto lá pelo dia 10, depois de um dia inteiro juntando tudo na mão. Pra mim, dia 10 sempre foi inaceitável.
 
-E dia 10 é tarde. Quando o fechamento fica pronto, o mês já acabou. Se deu ruim, você descobre quando não dá mais pra reagir.
+Fechamento que só fica pronto com o mês já encerrado não serve pra decidir nada. Se deu ruim, você descobre quando não dá mais pra reagir.
 
 ## Por que fechar o mês é tão chato
 

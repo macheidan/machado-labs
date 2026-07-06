@@ -8,9 +8,9 @@ tags: ['cortex', 'agentes', 'ia-first']
 keywords: ['second brain', 'AI memory', 'AI agents', 'context for AI', 'AI with company memory', 'give context to ChatGPT', 'AI first', 'AI for business owners']
 ---
 
-I run several fronts at once, and for a long time I repeated the same waste: every time I opened an AI to help, it **started from scratch**. It didn't know my businesses, didn't know how I think, didn't remember anything from the previous conversation. I spent half my time re-explaining the context before getting anything useful.
+I run several fronts at once, and I hit a ceiling early that most of the market doesn't even see: every AI I opened **started from scratch**. It didn't know my businesses, didn't know how I think, didn't remember the previous conversation. And that isn't a personal productivity problem, it's structural.
 
-It took me a while to realize the problem wasn't the AI. It was that **my context lived nowhere**. It was scattered in my head, in loose conversations, in lost notes. No tool could know what was never written down.
+The problem wasn't the AI. It was that **my context lived nowhere**. It was scattered in my head, in loose conversations, in lost notes. No tool could know what was never written down.
 
 That's where the idea came from: build an external brain, outside any tool, that would be the **single source of truth about me and the businesses**. Any AI I open reads that first and arrives already knowing. I called it **My Digital Cortex**.
 
