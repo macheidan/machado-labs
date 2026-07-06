@@ -1,7 +1,7 @@
 ---
 title: 'I made the operation stop depending on me'
 heroTitle: 'I made the operation stop<br/><em>depending</em> on <span class="accent">me</span>'
-description: 'For a long time the company stopped whenever I didn''t pick up the phone: a price, a procedure, what to reply. I took the operation out of my head and put it somewhere the team (and an AI assistant) can reach on its own.'
+description: 'Calendar, HR, purchasing, content, reviews, and an assistant that answers the team: I put the whole operation in one place, so it would stop living in my head.'
 pubDate: 'Jun 15 2026'
 tags: ['operacao', 'equipe', 'ia']
 keywords: ['operational intranet', 'team hub', 'operation without the owner', 'AI knowledge base', 'internal AI assistant', 'reduce owner dependency', 'AI for operations']
@@ -17,7 +17,17 @@ I didn't need to answer faster. I needed to **stop being the answer.**
 
 The operation's information existed, it just lived in the worst possible place: in my head and in loose WhatsApp threads. When it lives there, only I can reach it, and only when I feel like it.
 
-So I took it all out of me and put it in one place: a hub where the team runs the whole operation. Tasks and calendar, purchasing, content plan, reviews, HR. One place, in real time, instead of "text my phone".
+So I took it all out of me and put it in one place: a hub where the team runs the whole operation, in real time, instead of "text my phone".
+
+## What became a single screen
+
+Each thing that used to live in a WhatsApp group, a notebook, or my memory became a tab:
+
+- **Calendar and tasks.** What needs doing, by whom and when, without me remembering and chasing it in my head.
+- **HR.** Each person's payroll and file in one place, no stray spreadsheet.
+- **Purchasing.** What's missing and who to order from, without depending on me being in the store to know.
+- **Content plan.** What goes out for each brand, agreed ahead, not in the rush of the day.
+- **Reviews.** What the customer is saying, gathered, to become action instead of vanishing in the feed.
 
 ## The piece that got me out of the middle
 

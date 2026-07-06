@@ -1,7 +1,7 @@
 ---
 title: 'Fiz a operação parar de depender de mim'
 heroTitle: 'Fiz a operação parar<br/>de <em>depender</em> de <span class="accent">mim</span>'
-description: 'Por muito tempo a empresa parava quando eu não atendia o celular: preço, procedimento, o que responder. Tirei a operação da minha cabeça e botei num lugar onde a equipe (e um assistente de IA) alcança sozinha.'
+description: 'Calendário, departamento pessoal, compras, conteúdo, avaliações e um assistente que responde a equipe: juntei a operação inteira num lugar só, pra ela parar de morar na minha cabeça.'
 pubDate: 'Jun 15 2026'
 tags: ['operacao', 'equipe', 'ia']
 keywords: ['intranet operacional', 'central da equipe', 'operação sem o dono', 'base de conhecimento com IA', 'assistente de IA interno', 'reduzir dependência do dono', 'IA para operação']
@@ -17,7 +17,17 @@ Eu não precisava responder mais rápido. Precisava **parar de ser a resposta.**
 
 A informação da operação existia, só que morava no pior lugar possível: na minha cabeça e em conversas soltas de WhatsApp. Quando mora ali, só eu alcanço, e só quando eu quero.
 
-Então tirei tudo de dentro de mim e botei num lugar só: uma central onde a equipe toca a operação inteira. Tarefas e agenda, compras, plano de conteúdo, avaliações, departamento pessoal. Um lugar, em tempo real, no lugar do "manda no meu zap".
+Então tirei tudo de dentro de mim e botei num lugar só: uma central onde a equipe toca a operação inteira, em tempo real, no lugar do "manda no meu zap".
+
+## O que virou uma tela só
+
+Cada coisa que antes vivia num grupo de WhatsApp, num caderno ou na minha memória virou uma aba:
+
+- **Calendário e tarefas.** O que precisa ser feito, por quem e quando, sem eu lembrar e cobrar de cabeça.
+- **Departamento pessoal.** A folha e a ficha de cada pessoa num lugar só, sem planilha perdida.
+- **Compras.** O que falta e de quem pedir, sem depender de eu estar na loja pra saber.
+- **Plano de conteúdo.** O que vai ao ar em cada marca, combinado antes, não no susto do dia.
+- **Avaliações.** O que o cliente está dizendo, reunido, pra virar ação em vez de sumir no feed.
 
 ## A peça que me tirou do meio
 
