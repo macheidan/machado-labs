@@ -25,8 +25,6 @@ I solved it by flipping the problem inside out. Instead of me going store by sto
 
 Add it all up and it's over 2,000 items. I gain time and accuracy: no item ends up charged wrong. When it was done by hand, there was always one that slipped through.
 
-The obvious gain is time. What matters is that the menu **stays the same everywhere, always**, and the silent mismatch stops existing.
-
 ***
 
 Taking the boring, repetitive task off the owner's plate, the one that only breeds mistakes, without them losing control of what changes, is the kind of project I help companies build. Same spirit as [putting the monthly close on autopilot](/en/labs/dre-no-automatico/): the manual work goes, the control stays.

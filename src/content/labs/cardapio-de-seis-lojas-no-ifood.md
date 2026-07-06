@@ -25,8 +25,6 @@ Resolvi virando o problema do avesso. Em vez de eu ir loja por loja no iFood, o 
 
 Se somar, são mais de 2000 itens. Ganho tempo e precisão, não existe item sendo cobrado errado. Quando era feito manualmente sempre tinha algum que escapava.
 
-O ganho óbvio é o tempo. O que importa é que o cardápio **fica igual em todo lugar, sempre**, e o desencontro silencioso deixa de existir.
-
 ***
 
 Tirar da frente do dono a tarefa chata e repetitiva que só gera erro, sem ele perder o controle do que muda, é o tipo de projeto que eu ajudo empresas a montar. Mesmo espírito de [colocar o fechamento do mês no automático](/labs/dre-no-automatico/): o trabalho braçal sai, o controle fica.
