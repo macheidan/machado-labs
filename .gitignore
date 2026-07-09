@@ -34,3 +34,6 @@ _ferramentas/app-viagem/
 # projeto aninhado com repositorio proprio (macheidan/investimentos)
 # NAO versionar aqui: machado-labs e publico e o investimentos e privado
 _ferramentas/investimentos/
+
+# projeto pessoal com IP/config de servidor (RustDesk/Oracle) — NAO versionar no repo publico
+_ferramentas/machadodesk/
