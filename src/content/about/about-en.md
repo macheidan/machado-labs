@@ -1,6 +1,5 @@
 ---
 heroTitle: I'm <em>Fábio</em>
-lede: I'm 42. Owner-operator of two pizza shops in Porto Alegre, Lov Pizza and Dáme Pizza. I build AI agents that cover management roles inside my own businesses, like marketing, finance, customer service, team control and content. And I document the process here.
 heroImage: /fabio.jpg
 heroAlt: Fábio Machado
 ---

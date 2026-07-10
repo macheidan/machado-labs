@@ -1,6 +1,5 @@
 ---
 heroTitle: Sou o <em>Fábio</em>
-lede: Tenho 42 anos. Dono-operador de duas pizzarias em Porto Alegre, Lov Pizza e Dáme Pizza. Construo agentes de IA que cobrem funções de gestão na operação das minhas próprias empresas, como marketing, financeiro, atendimento, controle de equipe e conteúdo. E documento o processo aqui.
 heroImage: /fabio.jpg
 heroAlt: Fábio Machado
 ---

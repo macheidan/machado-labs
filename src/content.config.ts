@@ -42,7 +42,6 @@ const about = defineCollection({
 	loader: glob({ base: './src/content/about', pattern: '**/*.md' }),
 	schema: z.object({
 		heroTitle: z.string(),
-		lede: z.string(),
 		heroImage: z.string().optional(),
 		heroAlt: z.string().optional(),
 	}),

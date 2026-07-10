@@ -8,7 +8,7 @@ const description = 'About Fábio Machado — entrepreneur, consultant, and buil
 const jsonLd = profileGraph('en', description);
 
 const entry = await getEntry('about', 'about-en');
-const { heroTitle, lede, heroImage, heroAlt } = entry!.data;
+const { heroTitle, heroImage, heroAlt } = entry!.data;
 const { Content } = await render(entry!);
 ---
 
@@ -22,7 +22,6 @@ const { Content } = await render(entry!);
 >
   <section class="post-hero">
     <h1 set:html={heroTitle} />
-    <p class="lede">{lede}</p>
   </section>
 
   <article class="post-body">
