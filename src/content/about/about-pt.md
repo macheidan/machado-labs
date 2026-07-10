@@ -8,7 +8,7 @@ Comecei em 1998, aos 14 anos, consertando computadores e fazendo sites, e em 200
 
 Em 2012 decidi mudar de ramo e ir para um setor onde pudesse criar meus próprios produtos e aplicar o que sabia de gestão e marketing em uma marca minha, em vez de ficar só na teoria. Abri a [**Lov Pizza**](https://www.lovpizza.com.br) e, em 2015, comprei a M&E Pizza, hoje [**Dáme Pizza**](https://www.damepizza.com.br). Cheguei a operar 6 marcas simultâneas em Porto Alegre, o melhor stress test que eu poderia ter pedido: operação real, margem apertada, time reduzido e decisão todo dia.
 
-Foi nessa rotina que entendi o problema central do dono de pequenos e médios negócios no Brasil. A operação exige cinco a oito papéis especializados, como marketing, financeiro, RH, compras, atendimento, business intelligence, conteúdo e suporte. E o faturamento de empresas desse porte não cobre cinco a oito salários. O empresário termina fazendo a maior parte, senão todos esses papéis, mal, sozinho, e nunca sai da operação.
+Foi nessa rotina que entendi o problema central do dono de pequenos e médios negócios no Brasil: a operação exige papéis especializados que o faturamento de empresas desse porte não cobre em salários. O empresário termina fazendo a maior parte, senão todos, mal, sozinho, e nunca sai da operação.
 
 Em 2022 comecei a construir a resposta com IA. Hoje minhas empresas rodam com um time de agentes cobrindo essas funções como infraestrutura, não como experimento. As pizzarias são o laboratório onde o método é testado antes de existir.
 
