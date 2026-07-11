@@ -7,17 +7,19 @@ tags: ['operacao', 'equipe', 'ia']
 keywords: ['operational intranet', 'team hub', 'operation without the owner', 'AI knowledge base', 'internal AI assistant', 'reduce owner dependency', 'AI for operations']
 ---
 
-An uncomfortable discovery: for a long time, **my company stopped whenever I didn't pick up the phone.** How much does this ingredient cost, how do you do that procedure, where's that piece of information, what do I reply to this customer. It all went through me. I was the help desk of my own operation.
+**Before, my company stopped whenever I didn't pick up the phone.** How much does this ingredient cost, how do you do that procedure, where's that piece of information, what do I reply to this customer. It all went through me. I was the help desk of my own operation.
 
 There's a perverse pride in it at first, feeling that nothing moves without you. Then it becomes the ceiling. If everything depends on you being available, the business doesn't grow beyond your day.
 
-## The mistake is thinking the fix is to answer faster
+## The mistake I kept making was thinking the way out was to answer faster
 
 I didn't need to answer faster. I needed to **stop being the answer.**
 
 The operation's information existed, it just lived in the worst possible place: in my head and in loose WhatsApp threads. When it lives there, only I can reach it, and only when I feel like it.
 
-So I took it all out of me and put it in one place: a hub where the team runs the whole operation, in real time, instead of "text my phone".
+## What I did was take it all out of myself
+
+I took each thing that lived in my memory or in a WhatsApp group and put it in one place: a hub where the team runs the whole operation, in real time, instead of "text my phone".
 
 ## What became a single screen
 
@@ -39,11 +41,11 @@ It's fed with the store's knowledge base, the way we do things, and it has a per
 
 It's the same idea as [the Digital Cortex](/en/labs/segundo-cerebro-ia/), my external brain, but turned outward: instead of giving context to my AIs, it gives context to my team.
 
-## Taking the owner out of the middle isn't losing control
+## What changed is that today the operation runs without me being the bottleneck
 
 The owner's fear is that if they step out of the middle, things fall apart. It's the opposite. **While the operation lives in your head, you don't have control, you have dependency.** Control is when the standard is written down, reachable, and being followed even with you gone.
 
-Today the operation runs without me being the bottleneck. And my day, which used to be made of interruptions, became time to think about the business instead of just putting out its fires.
+Now the information no longer lives in me, and my day, which used to be made of interruptions, became time to think about the business instead of just putting out its fires.
 
 ***
 

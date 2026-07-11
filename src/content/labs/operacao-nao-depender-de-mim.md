@@ -7,17 +7,19 @@ tags: ['operacao', 'equipe', 'ia']
 keywords: ['intranet operacional', 'central da equipe', 'operação sem o dono', 'base de conhecimento com IA', 'assistente de IA interno', 'reduzir dependência do dono', 'IA para operação']
 ---
 
-Descoberta desconfortável: por muito tempo, **a minha empresa parava quando eu não atendia o celular.** Quanto custa esse insumo, como faz aquele procedimento, onde está tal informação, o que respondo pra esse cliente. Tudo passava por mim. Eu era o help desk da própria operação.
+**Antes, a minha empresa parava quando eu não atendia o celular.** Quanto custa esse insumo, como faz aquele procedimento, onde está tal informação, o que respondo pra esse cliente. Tudo passava por mim. Eu era o help desk da própria operação.
 
 Dá um orgulho perverso no começo, sentir que nada anda sem você. Depois vira o teto. Se tudo depende de você estar disponível, o negócio não cresce além do seu dia.
 
-## O erro é achar que a solução é responder mais rápido
+## O erro que eu cometia era achar que a saída era responder mais rápido
 
 Eu não precisava responder mais rápido. Precisava **parar de ser a resposta.**
 
 A informação da operação existia, só que morava no pior lugar possível: na minha cabeça e em conversas soltas de WhatsApp. Quando mora ali, só eu alcanço, e só quando eu quero.
 
-Então tirei tudo de dentro de mim e botei num lugar só: uma central onde a equipe toca a operação inteira, em tempo real, no lugar do "manda no meu zap".
+## O que eu fiz foi tirar tudo de dentro de mim
+
+Peguei cada coisa que vivia na minha memória ou num grupo de zap e botei num lugar só: uma central onde a equipe toca a operação inteira, em tempo real, no lugar do "manda no meu zap".
 
 ## O que virou uma tela só
 
@@ -39,11 +41,11 @@ Ele é alimentado com a base de conhecimento da loja, o jeito que a gente faz as
 
 É a mesma ideia do [Cortex Digital](/labs/segundo-cerebro-ia/), o meu cérebro externo, mas virada pra fora: em vez de dar contexto pras minhas IAs, dá contexto pra minha equipe.
 
-## Tirar o dono do meio não é perder o controle
+## O que mudou é que hoje a operação anda sem eu ser o gargalo
 
 O medo do dono é que, se ele sai do meio, a coisa desanda. É o contrário. **Enquanto a operação vive na sua cabeça, você não tem controle, tem dependência.** Controle é quando o padrão está escrito, acessível e sendo seguido mesmo com você fora.
 
-Hoje a operação anda sem eu ser o gargalo. E o meu dia, que era feito de interrupção, virou tempo pra pensar no negócio em vez de só apagar incêndio dele.
+Agora a informação não mora mais em mim, e o meu dia, que era feito de interrupção, virou tempo pra pensar no negócio em vez de só apagar incêndio dele.
 
 ***
 
