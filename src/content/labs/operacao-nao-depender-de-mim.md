@@ -1,7 +1,7 @@
 ---
 title: 'Fiz a operação parar de depender de mim'
 heroTitle: 'Fiz a operação parar<br/>de <em>depender</em> de <span class="accent">mim</span>'
-description: 'Calendário, departamento pessoal, compras, conteúdo, avaliações e um assistente que responde a equipe: juntei a operação inteira num lugar só, pra ela parar de morar na minha cabeça.'
+description: 'Calendário, compras, precificação, marketing, financeiro e departamento pessoal num portal só, com dados em tempo real e um assistente de IA que responde a equipe: tirei a operação inteira da minha cabeça.'
 pubDate: 'Jun 15 2026'
 tags: ['operacao', 'equipe', 'ia']
 keywords: ['intranet operacional', 'central da equipe', 'operação sem o dono', 'base de conhecimento com IA', 'assistente de IA interno', 'reduzir dependência do dono', 'IA para operação']
@@ -30,10 +30,13 @@ Então tirei tudo de dentro de mim e botei num lugar só: uma central onde a equ
 Cada coisa que antes vivia num grupo de WhatsApp, num caderno ou na minha memória virou uma aba:
 
 - **Calendário e tarefas.** O que precisa ser feito, por quem e quando, sem eu lembrar e cobrar de cabeça.
+- **Compras.** O que falta e de quem pedir, com histórico de preço pra negociar melhor com o fornecedor.
+- **Precificação.** O preço de cada item saindo do custo real, não do chute.
+- **Marketing.** O que vai ao ar em cada marca, combinado antes, não no susto do dia.
+- **Financeiro.** Contas, fluxo de caixa e o resultado do mês num painel só, alimentado pelos números reais.
 - **Departamento pessoal.** A folha e a ficha de cada pessoa num lugar só, sem planilha perdida.
-- **Compras.** O que falta e de quem pedir, sem depender de eu estar na loja pra saber.
-- **Plano de conteúdo.** O que vai ao ar em cada marca, combinado antes, não no susto do dia.
-- **Avaliações.** O que o cliente está dizendo, reunido, pra virar ação em vez de sumir no feed.
+
+E não sou eu que abasteço tudo isso na mão. Os dados chegam sozinhos do meu sistema de pedidos, do iFood, da Receita Federal e do site, em tempo real.
 
 ## A peça que me tirou do meio
 
@@ -55,4 +58,4 @@ Hoje a operação anda sem eu ser o gargalo. E o meu dia, que era feito de inter
 
 Tirar a operação da cabeça do dono e botar num lugar onde a equipe e a IA alcançam, sem ele perder o controle, é exatamente o tipo de projeto que eu ajudo empresas a montar.
 
-**Stack:** uma intranet em tempo real onde a equipe toca tarefas, compras, conteúdo, avaliações e departamento pessoal, com login por conta Google e visão de admin sobre tudo, mais um assistente de IA que responde a partir de uma base de conhecimento e de uma persona configuráveis pela própria casa.
+**Stack:** uma intranet em tempo real onde a equipe toca calendário, compras, precificação, marketing, financeiro e departamento pessoal, com os dados entrando sozinhos do sistema de pedidos, iFood, Receita Federal e site, login por conta Google e visão de admin sobre tudo, mais um assistente de IA que responde a partir de uma base de conhecimento e de uma persona configuráveis pela própria casa.

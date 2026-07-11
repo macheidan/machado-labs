@@ -1,7 +1,7 @@
 ---
 title: 'I made the operation stop depending on me'
 heroTitle: 'I made the operation stop<br/><em>depending</em> on <span class="accent">me</span>'
-description: 'Calendar, HR, purchasing, content, reviews, and an assistant that answers the team: I put the whole operation in one place, so it would stop living in my head.'
+description: 'Calendar, purchasing, pricing, marketing, finance, and HR in a single portal, with real-time data and an AI assistant that answers the team: I took the whole operation out of my head.'
 pubDate: 'Jun 15 2026'
 tags: ['operacao', 'equipe', 'ia']
 keywords: ['operational intranet', 'team hub', 'operation without the owner', 'AI knowledge base', 'internal AI assistant', 'reduce owner dependency', 'AI for operations']
@@ -30,10 +30,13 @@ So I took it all out of me and put it in one place: a hub where the team runs th
 Each thing that used to live in a WhatsApp group, a notebook, or my memory became a tab:
 
 - **Calendar and tasks.** What needs doing, by whom and when, without me remembering and chasing it in my head.
+- **Purchasing.** What's missing and who to order from, with price history to negotiate better with the supplier.
+- **Pricing.** Each item's price coming from the real cost, not a guess.
+- **Marketing.** What goes out for each brand, agreed ahead, not in the rush of the day.
+- **Finance.** Bills, cash flow, and the month's result in a single panel, fed by the real numbers.
 - **HR.** Each person's payroll and file in one place, no stray spreadsheet.
-- **Purchasing.** What's missing and who to order from, without depending on me being in the store to know.
-- **Content plan.** What goes out for each brand, agreed ahead, not in the rush of the day.
-- **Reviews.** What the customer is saying, gathered, to become action instead of vanishing in the feed.
+
+And I'm not the one filling all of this in by hand. The data flows in on its own from my ordering system, iFood, the tax authority, and the site, in real time.
 
 ## The piece that got me out of the middle
 
@@ -55,4 +58,4 @@ Today the operation runs without me being the bottleneck. And my day, which used
 
 Taking the operation out of the owner's head and putting it somewhere the team and the AI can reach, without them losing control, is exactly the kind of project I help companies build.
 
-**Stack:** a real-time intranet where the team runs tasks, purchasing, content, reviews, and HR, with Google-account login and admin visibility over everything, plus an AI assistant that answers from a knowledge base and a persona the house configures itself.
+**Stack:** a real-time intranet where the team runs calendar, purchasing, pricing, marketing, finance, and HR, with the data flowing in on its own from the ordering system, iFood, the tax authority, and the site, Google-account login and admin visibility over everything, plus an AI assistant that answers from a knowledge base and a persona the house configures itself.
