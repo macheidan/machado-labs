@@ -7,9 +7,9 @@ tags: ['operacao', 'equipe', 'ia']
 keywords: ['intranet operacional', 'central da equipe', 'operação sem o dono', 'base de conhecimento com IA', 'assistente de IA interno', 'reduzir dependência do dono', 'IA para operação']
 ---
 
-**Como era:** tudo passava por mim, eu era o help desk da própria operação e ela parava quando eu não atendia o celular.
-**O que fiz:** juntei calendário, compras, conteúdo, avaliações e departamento pessoal numa central só, com um assistente de IA que responde a equipe no meu lugar.
-**Resultados:** a operação anda sem eu ser o gargalo e o meu dia virou tempo pra pensar no negócio em vez de apagar incêndio.
+**Como era:** tudo passava por mim, da parte administrativa às decisões operacionais, com a informação espalhada entre sistemas diferentes, planilhas e pastas.
+**O que fiz:** criei um portal online, atualizado em tempo real e acessível a gerentes e ao administrativo, que junta calendário, compras, precificação, marketing, financeiro e departamento pessoal num lugar só, com um assistente de IA que responde a equipe no meu lugar. Os dados chegam sozinhos do meu sistema de pedidos, do iFood, da Receita Federal e do site.
+**Resultados:** comunicação interna melhor, menos erros e mais poder de negociação com fornecedor. Sem custo fixo, sem depender de sistema de terceiros e completamente personalizado.
 
 ***
 
