@@ -1,11 +1,19 @@
 ---
 title: 'I built an AI that checks if the invoice matches the negotiated deal'
 heroTitle: 'I built an <em>AI</em> that checks if the invoice<br/>matches the <span class="accent">negotiated deal</span>'
-description: 'Taxes, freight, a value that came different from the deal: the cost I used to decide was never the real one. I put a bot to pull the invoices straight from the tax authority, normalize everything, and warn the team when an input goes up.'
+description: 'I know the real cost of every input and which supplier is cheapest, without calculating anything. I stop buying out of habit and start buying on the best price.'
 pubDate: 'Jun 28 2026'
 tags: ['operacao', 'compras', 'ia']
 keywords: ['real input cost', 'supplier price', 'invoice from tax authority', 'compare supplier prices', 'cost control', 'COGS', 'AI for purchasing']
 ---
+
+**Challenge:** the price I agree on with the supplier is never the one that hits my cost. Tax, freight, and a value different from the deal land on the invoice, and comparing suppliers turned into a manual rule-of-three nobody does every day.
+
+**Solution:** a bot pulls my invoices straight from the Receita Federal, extracts each item already with tax and freight, normalizes by real unit to make suppliers comparable, and feeds the intranet, which fires an alert the day an input goes up.
+
+**Results:** the real cost of every item in hand, suppliers compared on their own (the rule-of-three is dead), and a price increase flagged the same day, not 30 days later at the month's close.
+
+***
 
 You sit with the supplier, negotiate a price, shake hands. Then the invoice arrives and the number is different. Taxes, freight, a value that came different from the deal, and suddenly the real cost of the input isn't what you wrote down. I was running the operation deciding on top of a price that **didn't really exist.**
 

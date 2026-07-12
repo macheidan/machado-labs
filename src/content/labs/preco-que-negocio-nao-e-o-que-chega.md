@@ -1,11 +1,19 @@
 ---
 title: 'Fiz uma IA que confere se a NFe bate com a compra negociada'
 heroTitle: 'Fiz uma <em>IA</em> que confere se a NFe<br/>bate com a <span class="accent">compra negociada</span>'
-description: 'Imposto, frete, valor que veio diferente do combinado: o custo que eu usava pra decidir nunca era o real. Botei um bot pra puxar as notas direto da Receita, normalizar tudo e avisar a equipe quando um insumo sobe.'
+description: 'Sei o custo real de cada insumo e qual fornecedor está mais barato, sem calcular nada. Deixo de comprar no hábito e passo a comprar no melhor preço.'
 pubDate: 'Jun 28 2026'
 tags: ['operacao', 'compras', 'ia']
 keywords: ['custo real de insumo', 'preço de fornecedor', 'nota fiscal Receita Federal', 'comparar preço de fornecedor', 'controle de custos', 'CMV', 'IA para compras']
 ---
+
+**Desafio:** o preço que combino com o fornecedor nunca é o que bate no custo. Imposto, frete e um valor diferente do combinado entram na nota, e comparar fornecedor virava uma regra de 3 na mão que ninguém faz todo dia.
+
+**Solução:** um bot puxa minhas notas direto da Receita Federal, extrai cada item já com imposto e frete, normaliza por unidade real pra deixar os fornecedores comparáveis e alimenta a intranet, que dispara um alerta no dia em que um insumo sobe.
+
+**Resultados:** custo real de cada item na mão, fornecedores comparados sozinhos (a regra de 3 morreu) e aumento de preço avisado no mesmo dia, não 30 dias depois no fechamento do mês.
+
+***
 
 Você senta com o fornecedor, negocia um preço, aperta a mão. Depois a nota chega e o número é outro. Imposto, frete, um valor que veio diferente do combinado, e de repente o custo real do insumo não é o que você anotou. Eu tocava a operação decidindo em cima de um preço que **não existia de verdade.**
 
