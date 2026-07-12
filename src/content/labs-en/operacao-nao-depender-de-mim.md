@@ -7,9 +7,11 @@ tags: ['operacao', 'equipe', 'ia']
 keywords: ['operational intranet', 'team hub', 'operation without the owner', 'AI knowledge base', 'internal AI assistant', 'reduce owner dependency', 'AI for operations']
 ---
 
-**How it was:** everything went through me, from admin work to operational decisions, with information scattered across different systems, spreadsheets, and folders.
-**What I did:** I built an online portal, updated in real time and open to managers and the admin team, that brings calendar, purchasing, pricing, marketing, finance, and HR into one place, with an AI assistant that answers the team in my place. The data flows in on its own from my ordering system, iFood, the tax authority, and the site.
-**Results:** better internal communication, fewer errors, and more leverage with suppliers. No fixed cost, no dependence on third-party systems, and fully customized.
+**Challenge:** the operation's information lived scattered across different systems, spreadsheets, folders, and my own head. In practice, the business stopped whenever I didn't pick up the phone.
+
+**Solution:** I built an online portal, in real time, open to managers, the admin team, and marketing, that brings calendar, purchasing, pricing, marketing, finance, and HR into one place, with an AI assistant that answers the team in my place. The data flows in on its own from the ordering system, iFood, the tax authority, and the site.
+
+**Results:** 6 areas of the operation on a single screen, 4 data sources flowing in with no manual entry, R$ 0 in monthly licensing (no third-party system), and the team answered on the spot, anytime, without depending on me.
 
 ***
 
