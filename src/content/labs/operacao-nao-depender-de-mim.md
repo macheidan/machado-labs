@@ -1,7 +1,7 @@
 ---
 title: 'Criei uma intranet personalizada para as minhas empresas'
 heroTitle: 'Criei uma <em>intranet</em> personalizada<br/>para as minhas <span class="accent">empresas</span>'
-description: 'Calendário, compras, preço, marketing e financeiro num lugar só, com dados em tempo real e uma IA que responde a equipe. A operação parou de depender de mim.'
+description: 'Minha equipe toca a operação inteira sem me chamar, com uma IA que responde no meu lugar. Ganhei meu tempo de volta.'
 pubDate: 'Jun 15 2026'
 tags: ['operacao', 'equipe', 'ia']
 keywords: ['intranet operacional', 'central da equipe', 'operação sem o dono', 'base de conhecimento com IA', 'assistente de IA interno', 'reduzir dependência do dono', 'IA para operação']
