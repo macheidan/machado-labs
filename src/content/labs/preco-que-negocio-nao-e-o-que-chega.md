@@ -1,6 +1,6 @@
 ---
-title: 'Economizamos 1% no custo de compra sem contratar ninguém, com essa IA'
-heroTitle: 'Economizamos <em>1%</em> no custo de compra<br/>sem contratar ninguém, com essa <span class="accent">IA</span>'
+title: 'Economizamos 2% no custo de compra sem contratar ninguém, com essa IA'
+heroTitle: 'Economizamos <em>2%</em> no custo de compra<br/>sem contratar ninguém, com essa <span class="accent">IA</span>'
 description: 'Sei o custo real de cada insumo e qual fornecedor está mais barato, sem calcular nada. Deixo de comprar no hábito e passo a comprar no melhor preço.'
 pubDate: 'Jun 28 2026'
 tags: ['operacao', 'compras', 'ia']

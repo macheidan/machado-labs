@@ -1,6 +1,6 @@
 ---
-title: 'We cut 1% of purchasing cost without hiring anyone, with this AI'
-heroTitle: 'We cut <em>1%</em> of purchasing cost<br/>without hiring anyone, with this <span class="accent">AI</span>'
+title: 'We cut 2% of purchasing cost without hiring anyone, with this AI'
+heroTitle: 'We cut <em>2%</em> of purchasing cost<br/>without hiring anyone, with this <span class="accent">AI</span>'
 description: 'I know the real cost of every input and which supplier is cheapest, without calculating anything. I stop buying out of habit and start buying on the best price.'
 pubDate: 'Jun 28 2026'
 tags: ['operacao', 'compras', 'ia']
