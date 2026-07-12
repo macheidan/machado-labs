@@ -1,6 +1,6 @@
 ---
-title: 'I built an AI portal and stepped out of the operation'
-heroTitle: 'I built an <em>AI portal</em> and<br/>stepped out of the <span class="accent">operation</span>'
+title: 'I built a custom intranet for my companies'
+heroTitle: 'I built a <em>custom intranet</em><br/>for my <span class="accent">companies</span>'
 description: 'Calendar, purchasing, pricing, marketing, and finance in one place, with real-time data and an AI that answers the team. The operation stopped depending on me.'
 pubDate: 'Jun 15 2026'
 tags: ['operacao', 'equipe', 'ia']

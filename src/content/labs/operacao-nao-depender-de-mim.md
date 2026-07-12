@@ -1,6 +1,6 @@
 ---
-title: 'Criei um portal com IA e saí do meio da operação'
-heroTitle: 'Criei um <em>portal com IA</em><br/>e saí do meio da <span class="accent">operação</span>'
+title: 'Criei uma intranet personalizada para as minhas empresas'
+heroTitle: 'Criei uma <em>intranet</em> personalizada<br/>para as minhas <span class="accent">empresas</span>'
 description: 'Calendário, compras, preço, marketing e financeiro num lugar só, com dados em tempo real e uma IA que responde a equipe. A operação parou de depender de mim.'
 pubDate: 'Jun 15 2026'
 tags: ['operacao', 'equipe', 'ia']
