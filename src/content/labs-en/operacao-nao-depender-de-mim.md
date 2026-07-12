@@ -1,7 +1,7 @@
 ---
-title: 'I made the operation stop depending on me'
-heroTitle: 'I made the operation stop<br/><em>depending</em> on <span class="accent">me</span>'
-description: 'Calendar, purchasing, pricing, marketing, finance, and HR in a single portal, with real-time data and an AI assistant that answers the team: I took the whole operation out of my head.'
+title: 'I built an AI portal and stepped out of the operation'
+heroTitle: 'I built an <em>AI portal</em> and<br/>stepped out of the <span class="accent">operation</span>'
+description: 'Calendar, purchasing, pricing, marketing, and finance in one place, with real-time data and an AI that answers the team. The operation stopped depending on me.'
 pubDate: 'Jun 15 2026'
 tags: ['operacao', 'equipe', 'ia']
 keywords: ['operational intranet', 'team hub', 'operation without the owner', 'AI knowledge base', 'internal AI assistant', 'reduce owner dependency', 'AI for operations']
@@ -28,10 +28,6 @@ The operation's information existed, it just lived in the worst possible place: 
 So I took it all out of me and put it in one place: a hub where the team runs the whole operation, in real time, instead of "text my phone".
 
 ## What became a single screen
-
-![The Dáme & Lov portal: a weekly operations calendar, with Calendar, Notes, Purchasing, Pricing, and HR tabs across the top and gestão, marketing, and finance reminder cards down the sides.](../imgs/portal-operacao.png)
-
-*The whole operating week on one screen: the tabs up top, the gestão, marketing, and finance reminders down the sides.*
 
 Each thing that used to live in a WhatsApp group, a notebook, or my memory became a tab:
 

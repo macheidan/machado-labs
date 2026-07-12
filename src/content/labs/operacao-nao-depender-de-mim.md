@@ -1,7 +1,7 @@
 ---
-title: 'Fiz a operação parar de depender de mim'
-heroTitle: 'Fiz a operação parar<br/>de <em>depender</em> de <span class="accent">mim</span>'
-description: 'Calendário, compras, precificação, marketing, financeiro e departamento pessoal num portal só, com dados em tempo real e um assistente de IA que responde a equipe: tirei a operação inteira da minha cabeça.'
+title: 'Criei um portal com IA e saí do meio da operação'
+heroTitle: 'Criei um <em>portal com IA</em><br/>e saí do meio da <span class="accent">operação</span>'
+description: 'Calendário, compras, preço, marketing e financeiro num lugar só, com dados em tempo real e uma IA que responde a equipe. A operação parou de depender de mim.'
 pubDate: 'Jun 15 2026'
 tags: ['operacao', 'equipe', 'ia']
 keywords: ['intranet operacional', 'central da equipe', 'operação sem o dono', 'base de conhecimento com IA', 'assistente de IA interno', 'reduzir dependência do dono', 'IA para operação']
@@ -28,10 +28,6 @@ A informação da operação existia, só que morava no pior lugar possível: na
 Então tirei tudo de dentro de mim e botei num lugar só: uma central onde a equipe toca a operação inteira, em tempo real, no lugar do "manda no meu zap".
 
 ## O que virou uma tela só
-
-![Tela do portal Dáme & Lov: calendário semanal da operação, com abas de Calendário, Anotações, Compras, Preços e Depto Pessoal no topo e cartões de lembrete de gestão, marketing e financeiro nas laterais.](../imgs/portal-operacao.png)
-
-*A semana inteira da operação numa tela: as abas em cima, os lembretes de gestão, marketing e financeiro nas laterais.*
 
 Cada coisa que antes vivia num grupo de WhatsApp, num caderno ou na minha memória virou uma aba:
 
