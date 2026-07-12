@@ -1,7 +1,7 @@
 ---
 title: 'I built a custom intranet for my companies'
 heroTitle: 'I built a <em>custom intranet</em><br/>for my <span class="accent">companies</span>'
-description: 'My team runs the whole operation without calling me, with an AI that answers in my place. I got my time back.'
+description: 'The whole operation in one place, in real time, with an AI that answers the team''s questions. My day turned into time to think about the business.'
 pubDate: 'Jun 15 2026'
 tags: ['operacao', 'equipe', 'ia']
 keywords: ['operational intranet', 'team hub', 'operation without the owner', 'AI knowledge base', 'internal AI assistant', 'reduce owner dependency', 'AI for operations']
