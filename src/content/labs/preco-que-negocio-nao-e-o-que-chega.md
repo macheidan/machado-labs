@@ -7,11 +7,11 @@ tags: ['operacao', 'compras', 'ia']
 keywords: ['custo real de insumo', 'preço de fornecedor', 'nota fiscal Receita Federal', 'comparar preço de fornecedor', 'controle de custos', 'CMV', 'IA para compras']
 ---
 
-**Desafio:** são mais de 130 insumos por loja, comprados toda semana. O preço que o setor de compras negocia com o fornecedor nem sempre é o que aparece quando a nota fiscal chega: imposto, frete e valores fora do combinado entram na conta. E comparar fornecedor virava uma regra de 3 na mão que ninguém faz todo dia. Sem IA, ajustar cada nota era puro trabalho manual.
+**Desafio:** são mais de 130 insumos por loja, comprados toda semana. O preço negociado quase nunca é o que chega na nota (imposto, frete e valores fora do combinado entram na conta), e comparar fornecedor virava regra de 3 na mão.
 
-**Solução:** um bot puxa as notas direto da Receita Federal, extrai cada item já com imposto e frete e normaliza tudo por unidade real (preço por kg ou por unidade), deixando os fornecedores comparáveis maçã com maçã. Esse número alimenta a intranet, que dispara um alerta no dia em que um insumo sobe.
+**Solução:** um bot puxa as notas direto da Receita Federal, já com imposto e frete embutidos, e normaliza tudo por unidade real (preço por kg ou unidade) pra comparar fornecedor maçã com maçã. A intranet avisa no dia em que um insumo sobe.
 
-**Resultados:** com o alerta na mão, o setor de compras liga pro fornecedor e negocia na hora: reemissão do boleto ou abatimento na próxima compra. O mesmo número vira base pra pressionar outros fornecedores. No fim, 2% a menos no custo de compra, sem contratar ninguém pra isso.
+**Resultados:** com o alerta na mão, o setor de compras negocia na hora com o fornecedor e usa o mesmo número pra pressionar os outros. No fim, 2% a menos no custo de compra, sem contratar ninguém.
 
 ***
 

@@ -7,11 +7,11 @@ tags: ['operacao', 'compras', 'ia']
 keywords: ['real input cost', 'supplier price', 'invoice from tax authority', 'compare supplier prices', 'cost control', 'COGS', 'AI for purchasing']
 ---
 
-**Challenge:** more than 130 inputs per store, bought every week. The price the purchasing team negotiates with the supplier isn't always what shows up when the invoice arrives: tax, freight, and amounts off the agreed deal all land on it. And comparing suppliers turned into a manual rule-of-three nobody does every day. Without AI, adjusting each invoice was pure manual work.
+**Challenge:** more than 130 inputs per store, bought every week. The negotiated price is almost never what lands on the invoice (tax, freight, and off-deal amounts pile on), and comparing suppliers meant a manual rule-of-three.
 
-**Solution:** a bot pulls the invoices straight from the Receita Federal, extracts each item already with tax and freight, and normalizes everything by real unit (price per kg or per unit), making suppliers comparable apples to apples. That number feeds the intranet, which fires an alert the day an input goes up.
+**Solution:** a bot pulls the invoices straight from the Receita Federal, tax and freight already baked in, and normalizes everything by real unit (price per kg or unit) to compare suppliers apples to apples. The intranet flags the day an input goes up.
 
-**Results:** with the alert in hand, the purchasing team calls the supplier and negotiates on the spot: a corrected charge or a discount on the next order. The same number becomes leverage with other suppliers. In the end, 2% less on purchasing cost, without hiring anyone for it.
+**Results:** with the alert in hand, the purchasing team negotiates with the supplier on the spot and uses the same number as leverage with the others. In the end, 2% less on purchasing cost, without hiring anyone.
 
 ***
 
