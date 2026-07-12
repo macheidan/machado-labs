@@ -9,7 +9,7 @@ keywords: ['real input cost', 'supplier price', 'invoice from tax authority', 'c
 
 **Challenge:** more than 130 inputs per store, bought every week. The negotiated price is almost never what lands on the invoice (tax, freight, and off-deal amounts pile on), and comparing suppliers meant a manual rule-of-three.
 
-**Solution:** a bot pulls the invoices straight from the Receita Federal, tax and freight already baked in, and normalizes everything by real unit (price per kg or unit) to compare suppliers apples to apples. The intranet flags the day an input goes up.
+**Solution:** a bot pulls the invoices straight from the Receita Federal, tax and freight already baked in, and normalizes everything by real unit (per kg/unit) to compare suppliers. The intranet flags the day an input goes up.
 
 **Results:** with the alert in hand, the purchasing team negotiates with the supplier on the spot and uses the same number as leverage with the others. In the end, 2% less on purchasing cost, without hiring anyone.
 

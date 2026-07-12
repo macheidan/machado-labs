@@ -9,7 +9,7 @@ keywords: ['custo real de insumo', 'preço de fornecedor', 'nota fiscal Receita 
 
 **Desafio:** são mais de 130 insumos por loja, comprados toda semana. O preço negociado quase nunca é o que chega na nota (imposto, frete e valores fora do combinado entram na conta), e comparar fornecedor virava regra de 3 na mão.
 
-**Solução:** um bot puxa as notas direto da Receita Federal, já com imposto e frete embutidos, e normaliza tudo por unidade real (preço por kg ou unidade) pra comparar fornecedor maçã com maçã. A intranet avisa no dia em que um insumo sobe.
+**Solução:** um bot puxa as notas direto da Receita Federal, já com imposto e frete embutidos, e normaliza tudo por unidade real (por kg/un) pra comparar fornecedores. A intranet avisa no dia em que um insumo sobe.
 
 **Resultados:** com o alerta na mão, o setor de compras negocia na hora com o fornecedor e usa o mesmo número pra pressionar os outros. No fim, 2% a menos no custo de compra, sem contratar ninguém.
 
