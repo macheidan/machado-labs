@@ -54,6 +54,12 @@ Ele é alimentado com a base de conhecimento da loja, o jeito que a gente faz as
 
 É a mesma ideia do [Cortex Digital](/labs/segundo-cerebro-ia/), o meu cérebro externo, mas virada pra fora: em vez de dar contexto pras minhas IAs, dá contexto pra minha equipe.
 
+## O que mudou, em número
+
+Seis áreas que viviam espalhadas entre sistema, planilha e a minha memória hoje cabem numa tela só, com o dado entrando sozinho de quatro fontes. E o custo disso rodando todo mês é **zero de licença**: não aluguei sistema de ninguém.
+
+Mas o número que mais me importa não tem unidade. É **quantas vezes por dia alguém precisa de mim pra operação andar.** Antes era o dia inteiro. Hoje é perto de zero.
+
 ## Tirar o dono do meio não é perder o controle
 
 O medo do dono é que, se ele sai do meio, a coisa desanda. É o contrário. **Enquanto a operação vive na sua cabeça, você não tem controle, tem dependência.** Controle é quando o padrão está escrito, acessível e sendo seguido mesmo com você fora.

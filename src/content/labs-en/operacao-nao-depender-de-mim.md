@@ -54,6 +54,12 @@ It's fed with the store's knowledge base, the way we do things, and it has a per
 
 It's the same idea as [the Digital Cortex](/en/labs/segundo-cerebro-ia/), my external brain, but turned outward: instead of giving context to my AIs, it gives context to my team.
 
+## What changed, in numbers
+
+Six areas that used to live scattered across systems, spreadsheets, and my own memory now fit on a single screen, with the data flowing in on its own from four sources. And the cost of running all of it every month is **zero in licensing**: I'm not renting anyone's system.
+
+But the number that matters most has no unit. It's **how many times a day someone needs me for the operation to move.** It used to be all day. Now it's close to zero.
+
 ## Taking the owner out of the middle isn't losing control
 
 The owner's fear is that if they step out of the middle, things fall apart. It's the opposite. **While the operation lives in your head, you don't have control, you have dependency.** Control is when the standard is written down, reachable, and being followed even with you gone.
