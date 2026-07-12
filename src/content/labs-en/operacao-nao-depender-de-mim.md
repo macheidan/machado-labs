@@ -27,6 +27,10 @@ So I took it all out of me and put it in one place: a hub where the team runs th
 
 ## What became a single screen
 
+![The Dáme & Lov portal: a weekly operations calendar, with Calendar, Notes, Purchasing, Pricing, and HR tabs across the top and gestão, marketing, and finance reminder cards down the sides.](../imgs/portal-operacao.png)
+
+*The whole operating week on one screen: the tabs up top, the gestão, marketing, and finance reminders down the sides.*
+
 Each thing that used to live in a WhatsApp group, a notebook, or my memory became a tab:
 
 - **Calendar and tasks.** What needs doing, by whom and when, without me remembering and chasing it in my head.

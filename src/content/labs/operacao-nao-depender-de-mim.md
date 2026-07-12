@@ -27,6 +27,10 @@ Então tirei tudo de dentro de mim e botei num lugar só: uma central onde a equ
 
 ## O que virou uma tela só
 
+![Tela do portal Dáme & Lov: calendário semanal da operação, com abas de Calendário, Anotações, Compras, Preços e Depto Pessoal no topo e cartões de lembrete de gestão, marketing e financeiro nas laterais.](../imgs/portal-operacao.png)
+
+*A semana inteira da operação numa tela: as abas em cima, os lembretes de gestão, marketing e financeiro nas laterais.*
+
 Cada coisa que antes vivia num grupo de WhatsApp, num caderno ou na minha memória virou uma aba:
 
 - **Calendário e tarefas.** O que precisa ser feito, por quem e quando, sem eu lembrar e cobrar de cabeça.
