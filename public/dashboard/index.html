@@ -73,8 +73,8 @@
 
   /* aurora */
   .aurora{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;opacity:var(--aurora-op);transition:opacity .3s;
-    background:var(--bg) url('wallpaper.webp') center/cover no-repeat}
-  body.light .aurora{background-image:none}
+    background:var(--bg) center/cover no-repeat} /* imagem do dia via JS (setWall) */
+  body.light .aurora{background-image:none!important}
   .aurora .blob{position:absolute;border-radius:50%;filter:blur(90px);opacity:.5}
   .aurora .b1{width:60vw;height:60vw;top:-18vw;left:-14vw;background:radial-gradient(circle,var(--violet) 0%,transparent 70%);opacity:.22;animation:d1 24s ease-in-out infinite}
   .aurora .b2{width:55vw;height:55vw;top:-8vw;right:-16vw;background:radial-gradient(circle,var(--pink) 0%,transparent 70%);opacity:.18;animation:d2 30s ease-in-out infinite}
@@ -541,6 +541,23 @@ function ago(s){if(!s)return'';const d=new Date(s);if(isNaN(d))return'';const m=
   const dd=Math.floor(h/24);if(dd<7)return dd+'d';return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});}
 function saud(){const h=new Date().getHours();return h<12?'Bom dia':h<18?'Boa tarde':'Boa noite';}
 document.getElementById('hello').innerHTML=saud()+', <b>Fábio</b>';
+
+/* ===== papel de parede do dia (sorteio deterministico pela data, troca a meia-noite) ===== */
+const WALLS_N=19; // walls/wall-01.webp ... wall-19.webp
+function wallOfDay(){
+  const d=new Date();
+  let h=d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();
+  h=(h*2654435761)%4294967296; h=(h^(h>>>13))>>>0; // hash: dias vizinhos caem longe
+  return 'walls/wall-'+String(h%WALLS_N+1).padStart(2,'0')+'.webp';
+}
+function setWall(){
+  const url=wallOfDay(),img=new Image();
+  img.onload=()=>{document.querySelector('.aurora').style.backgroundImage=`url('${url}')`;};
+  img.src=url;
+}
+function nextMidnight(){const n=new Date(),m=new Date(n);m.setHours(24,0,0,0);return m-n;}
+function wallTimer(){setTimeout(()=>{setWall();wallTimer();},nextMidnight()+2000);}
+setWall();wallTimer();
 
 /* ===== tema (sol/lua) ===== */
 function setTheme(t){
