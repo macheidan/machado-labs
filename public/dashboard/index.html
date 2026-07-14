@@ -31,7 +31,7 @@
     --nav-bg:linear-gradient(137deg,rgba(60,40,120,.38) 4.87%,rgba(16,10,40,.6) 75.88%);
     --nav-inset:inset 0 1px 1px 0 rgba(255,255,255,.18);
     --card-shadow:0 1px 0 rgba(255,255,255,.07) inset,0 0 0 1px rgba(140,110,255,.07) inset,0 24px 60px -30px rgba(0,0,0,.9);
-    --veil:rgba(10,6,24,.3); --veil-end:rgba(10,6,24,.62); --aurora-op:1; --grain:rgba(255,255,255,.014);
+    --veil:rgba(10,6,24,.3); --veil-end:rgba(10,6,24,.62); --film:rgba(0,0,0,.5); --aurora-op:1; --grain:rgba(255,255,255,.014);
     --font:'Inter','Inter Fallback',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
     --mono:'Geist Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
     --r-sm:6px; --r:9px; --r-md:14px; --r-lg:20px;
@@ -55,7 +55,7 @@
     --nav-bg:linear-gradient(137deg,rgba(255,255,255,.82) 4.87%,rgba(247,244,236,.92) 75.88%);
     --nav-inset:inset 0 1px 1px 0 rgba(255,255,255,.7);
     --card-shadow:0 1px 0 rgba(255,255,255,.6) inset,0 16px 34px -26px rgba(0,0,0,.35);
-    --veil:rgba(244,241,234,.4); --veil-end:var(--bg); --aurora-op:.5; --grain:rgba(0,0,0,.014);
+    --veil:rgba(244,241,234,.4); --veil-end:var(--bg); --film:transparent; --aurora-op:.5; --grain:rgba(0,0,0,.014);
   }
 
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -83,6 +83,7 @@
   body.light .aurora .blob{opacity:.4}
   body.light .aurora .b3{opacity:.2}
   .aurora::after{content:'';position:absolute;inset:0;background:
+    linear-gradient(var(--film),var(--film)),
     radial-gradient(ellipse at 50% 0%,transparent 0%,var(--veil) 60%,var(--veil-end) 100%),
     repeating-linear-gradient(0deg,var(--grain) 0 1px,transparent 1px 3px)}
   @keyframes d1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(40px,30px) scale(1.06)}}
