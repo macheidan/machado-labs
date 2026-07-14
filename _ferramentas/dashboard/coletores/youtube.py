@@ -32,26 +32,19 @@ ATOM = "{http://www.w3.org/2005/Atom}"
 
 # 🎛️ CANAIS — troque pelos seus. (nome exibido, channel_id ou @handle, categoria)
 CANAIS = [
-    ("Two Minute Papers", "UCbfYPyITQ-7l4upoX8nvctg", "Pesquisa"),
-    ("Matt Wolfe",        "UChpleBmo18P08aKCIgti38g", "Ferramentas"),
-    ("AI Explained",      "UCNJ1Ymd5yFuUPtn21xtRbbw", "Fundo"),
-    ("Matthew Berman",    "UCawZsQWqfGSbCI5yjkdVkTA", "IA"),
-    ("AICodeKing",        "UC0m81bQuthaQZmFbXEY9QSw", "Dev"),
-    ("Fireship",          "UCsBjURrPoezykLs9EqgamOA", "Dev"),
-    ("Y Combinator",      "UCcefcZRL2oaA_uBNeo5UOWg", "Startups"),
+    ("Fala João Branco",  "UCwPLKgrUOvoBttsFCiNGRew", "Marketing"),
+    ("Inteligência Ltda", "UCWZoPPW7u2I4gZfhJBZ6NqQ", "Podcast"),
+    ("ROI Hunters",       "UCI88YBkUa1nA8u2U1TfG-PQ", "Marketing"),
     ("Flow Podcast",      "UC4ncvgh5hFr5O83MH7-jRJg", "Podcast"),
+    ("Dwarkesh Patel",    "UCXl4i9dYBrFOabk0xGmbkRA", "IA"),
+    ("Lex Fridman",       "UCSHZKyawb77ixDdsGog4iWA", "Podcast"),
+    ("Joe Rogan",         "UCzQUP1qoWDoEbmsQxvdjxgQ", "Podcast"),
+    ("Deborah Folloni",   "UCta1sF9e9YzzNG4OlQgIlXw", "Podcast"),
 ]
 
-POR_CANAL = 10     # quantos vídeos por canal (RSS traz ~15)
+POR_CANAL = 5      # quantos vídeos por canal (RSS traz ~15)
 TOTAL = 40         # teto final (frontend pagina de 10 em 10)
 
-# 🎯 INTERESSES — vídeos cujo título bate aqui sobem pro topo (edite à vontade)
-INTERESSES = [
-    "claude", "anthropic", "gpt", "openai", "gemini", "llm", "agent", "agente",
-    "automation", "automação", "ai ", " ia ", "artificial intelligence",
-    "startup", "business", "negócio", "empreend", "saas", "small business",
-    "restaurant", "food", "delivery", "pme",
-]
 
 
 def get(url, timeout=20):
@@ -126,11 +119,6 @@ def feed(channel_id, n):
     return out
 
 
-def interessa(titulo):
-    t = f" {titulo.lower()} "
-    return any(k in t for k in INTERESSES)
-
-
 def main():
     DATA_DIR.mkdir(exist_ok=True)
     cache = _cache_load()
@@ -141,13 +129,18 @@ def main():
             print(f"  [{nome}] não resolveu '{ref}'")
             continue
         try:
-            n_shorts = 0
-            for v in feed(cid, POR_CANAL):
+            n_shorts = n_ok = 0
+            # varre o RSS inteiro (~15) até juntar POR_CANAL vídeos de verdade;
+            # canal pesado em shorts não fica sem representação
+            for v in feed(cid, 15):
                 if "#short" in v["titulo"].lower() or is_short(v["vid"], cache):
                     n_shorts += 1
                     continue
                 v["canal"], v["cat"] = nome, cat
                 itens.append(v)
+                n_ok += 1
+                if n_ok >= POR_CANAL:
+                    break
             print(f"  [{nome}] ok ({cid})" + (f" — {n_shorts} shorts fora" if n_shorts else ""))
         except Exception as e:
             print(f"  [{nome}] {type(e).__name__}")
@@ -155,8 +148,8 @@ def main():
         _SHORTS_CACHE.write_text(json.dumps(cache), encoding="utf-8")
     except Exception:
         pass
-    # interesses primeiro, depois o resto; recente primeiro dentro de cada grupo
-    itens.sort(key=lambda x: (interessa(x["titulo"]), x.get("data", "")), reverse=True)
+    # mais recente primeiro (canais escolhidos a dedo, sem ranking por palavra-chave)
+    itens.sort(key=lambda x: x.get("data", ""), reverse=True)
     itens = itens[:TOTAL]
     out = DATA_DIR / "youtube.json"
     out.write_text(json.dumps({"gerado_em": datetime.now().isoformat(timespec="seconds"),
