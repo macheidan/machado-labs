@@ -20,6 +20,7 @@
     --fg:#ffffff; --fg-soft:#f1f1f5; --fg-muted:#dcdce4; --fg-faint:#b4b4c0;
     --card:linear-gradient(137deg,rgba(255,255,255,.06) 0%,rgba(16,16,21,.62) 45%,rgba(8,8,11,.72) 100%);
     --line:rgba(255,255,255,.13); --line-strong:rgba(255,255,255,.24);
+    --card-line:rgba(255,255,255,.22);
     --o-soft:rgba(255,255,255,.055); --o-mid:rgba(255,255,255,.08);
     --o-strong:rgba(255,255,255,.12); --o-hover:rgba(255,255,255,.17);
     --scroll:rgba(255,255,255,.16); --scroll-h:rgba(255,255,255,.3);
@@ -30,7 +31,7 @@
     --bg:var(--grey-900);
     --nav-bg:linear-gradient(137deg,rgba(40,40,50,.42) 4.87%,rgba(14,14,18,.6) 75.88%);
     --nav-inset:inset 0 1px 1px 0 rgba(255,255,255,.18);
-    --card-shadow:0 1px 0 rgba(255,255,255,.07) inset,0 0 0 1px rgba(255,255,255,.04) inset,0 24px 60px -30px rgba(0,0,0,.9);
+    --card-shadow:0 1px 0 rgba(255,255,255,.14) inset,0 0 0 1px rgba(255,255,255,.05) inset,0 24px 60px -30px rgba(0,0,0,.9);
     --veil:transparent; --veil-end:transparent; --film:transparent; --aurora-op:1; --grain:rgba(255,255,255,.014);
     --font:'Inter','Inter Fallback',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
     --mono:'Geist Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
@@ -45,6 +46,7 @@
     --fg:#17130d; --fg-soft:#3a352c; --fg-muted:#6a6253; --fg-faint:#9b9180;
     --card:linear-gradient(137deg,#ffffff 4.87%,#f7f4ec 75.88%);
     --line:rgba(0,0,0,.10); --line-strong:rgba(0,0,0,.16);
+    --card-line:rgba(0,0,0,.14);
     --o-soft:rgba(0,0,0,.035); --o-mid:rgba(0,0,0,.05);
     --o-strong:rgba(0,0,0,.08); --o-hover:rgba(0,0,0,.10);
     --scroll:rgba(0,0,0,.18); --scroll-h:rgba(0,0,0,.32);
@@ -138,7 +140,7 @@
   .zone{display:flex;flex-direction:column;gap:var(--s2);min-width:0}
   .zone.ops{grid-area:ops}.zone.market{grid-area:market}.zone.social{grid-area:social}.zone.ia{grid-area:ia}
 
-  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);
+  .card{background:var(--card);border:1px solid var(--card-line);border-radius:var(--r-lg);
     padding:var(--s2);display:flex;flex-direction:column;min-width:0;box-shadow:var(--card-shadow);
     backdrop-filter:blur(22px) saturate(1.35);-webkit-backdrop-filter:blur(22px) saturate(1.35)}
   .ch{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
@@ -204,8 +206,16 @@
   .v-month .mv{font-family:var(--mono);font-size:18px;font-weight:600;letter-spacing:-.5px;color:var(--fg);white-space:nowrap}
   .v-month .mv .c{font-size:.6em;color:var(--fg-muted);margin-right:2px}
 
+  /* cards "glass total": foco, pensamentos, agenda e instagram compartilham a mesma transparencia */
+  .card.foco,.card.frase,.card[data-card="agenda"],.card[data-card="instagram"]{
+    background:linear-gradient(137deg,var(--accent-soft),rgba(142,107,255,.05))}
+  /* sobre fundo tao transparente, texto precisa ser branco + sombra pra segurar leitura (so no dark) */
+  body:not(.light) .card.foco,body:not(.light) .card.frase,
+  body:not(.light) .card[data-card="agenda"],body:not(.light) .card[data-card="instagram"]{
+    --fg-soft:#ffffff;--fg-muted:#eef0f6;--fg-faint:#d6d9e4;
+    text-shadow:0 1px 3px rgba(0,0,0,.45)}
+
   /* foco (lista de tarefas) */
-  .foco{background:linear-gradient(137deg,var(--accent-soft),rgba(142,107,255,.05));border-color:var(--accent-soft)}
   .foco-add{display:flex;gap:6px;margin-bottom:10px}
   .foco-add input{flex:1;min-width:0;background:var(--o-soft);border:1px solid var(--line);border-radius:var(--r);color:var(--fg);font:inherit;font-size:13px;padding:8px 11px;outline:none}
   .foco-add input::placeholder{color:var(--fg-faint)}
@@ -234,7 +244,6 @@
   .foco-empty{font-size:12.5px;color:var(--fg-faint);padding:8px 2px}
 
   /* pensamentos */
-  .frase{border-color:var(--line-strong)}
   .frase .q{font-size:clamp(16px,1.7vw,21px);font-weight:600;line-height:1.42;
     color:var(--fg);letter-spacing:-.2px;min-height:52px;display:flex;align-items:center}
   .fr-ta{width:100%;min-height:150px;resize:vertical;background:var(--o-mid);color:var(--fg);
@@ -291,13 +300,14 @@
   .gh .star{font-family:var(--mono);font-size:11.5px;color:var(--green);font-weight:500;display:flex;align-items:center;gap:3px;flex:0 0 auto}
 
   /* abas radar */
-  .tabs{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;margin-bottom:13px}
+  .tabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin-bottom:13px;min-width:0;flex:1}
   .tabs::-webkit-scrollbar{display:none}
-  .tab{display:flex;align-items:center;gap:5px;padding:7px 10px;border-radius:999px;background:var(--o-soft);border:1px solid var(--line);color:var(--fg-muted);font-size:11.5px;font-weight:500;cursor:pointer;white-space:nowrap;transition:.15s}
+  .tab{display:flex;align-items:center;justify-content:center;gap:4px;padding:7px 8px;border-radius:999px;background:var(--o-soft);border:1px solid var(--line);color:var(--fg-muted);font-size:11px;font-weight:500;cursor:pointer;white-space:nowrap;transition:.15s;flex:0 1 auto;min-width:0}
   .tab i{font-size:14px}
+  .tab:not(.on) i{display:none} /* icone so na aba ativa: as 5 abas cabem na largura do card */
   .tab:hover{color:var(--fg)}
   .tab.on{color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent-2));border-color:transparent;box-shadow:0 0 16px -4px var(--accent-glow)}
-  .subtabs{display:flex;gap:2px}
+  .subtabs{display:flex;gap:2px;margin-top:10px}
   .subtab{font-family:var(--mono);font-size:11px;color:var(--fg-muted);background:none;border:0;padding:4px 8px;border-radius:6px;cursor:pointer}
   .subtab:hover{color:var(--fg)}.subtab.on{color:var(--fg);background:var(--o-strong)}
 
@@ -479,9 +489,9 @@
         <div class="card" style="min-height:380px" data-card="radar">
           <div class="ch" style="margin-bottom:0">
             <div class="tabs" id="r-tabs" style="margin-bottom:0"></div>
-            <div class="subtabs" id="gh-sub" style="display:none"></div>
           </div>
-          <div class="list scroll" id="r-list" style="max-height:520px;margin-top:13px"></div>
+          <div class="subtabs" id="gh-sub" style="display:none"></div>
+          <div class="list scroll" id="r-list" style="max-height:520px;margin-top:12px"></div>
         </div>
       </div>
     </div>
@@ -543,7 +553,7 @@ function ago(s){if(!s)return'';const d=new Date(s);if(isNaN(d))return'';const m=
 function saud(){const h=new Date().getHours();return h<12?'Bom dia':h<18?'Boa tarde':'Boa noite';}
 document.getElementById('hello').innerHTML=saud()+', <b>Fábio</b>';
 
-/* ===== papel de parede do dia (sorteio deterministico pela data, troca a meia-noite) ===== */
+/* ===== papel de parede (sorteio a cada carregamento, sem repetir o anterior) ===== */
 const WALLS_N=41; // walls/wall-01.webp ... wall-41.webp (futuristas + papeis de parede do Windows)
 let wallCur=null;
 const wallUrl=i=>'walls/wall-'+String(i+1).padStart(2,'0')+'.webp';
