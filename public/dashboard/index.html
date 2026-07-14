@@ -17,7 +17,7 @@
   :root{
     --grey-50:#e6e6e6; --grey-100:#cdcece; --grey-200:#9c9c9d; --grey-300:#6a6b6c;
     --grey-400:#434345; --grey-700:#111214; --grey-900:#09090d; --white:#fff;
-    --fg:#fafafc; --fg-soft:#d2d2da; --fg-muted:#a8a8b4; --fg-faint:#78788a;
+    --fg:#ffffff; --fg-soft:#f1f1f5; --fg-muted:#dcdce4; --fg-faint:#b4b4c0;
     --card:linear-gradient(137deg,rgba(255,255,255,.06) 0%,rgba(16,16,21,.62) 45%,rgba(8,8,11,.72) 100%);
     --line:rgba(255,255,255,.13); --line-strong:rgba(255,255,255,.24);
     --o-soft:rgba(255,255,255,.055); --o-mid:rgba(255,255,255,.08);
@@ -547,26 +547,22 @@ document.getElementById('hello').innerHTML=saud()+', <b>Fábio</b>';
 const WALLS_N=41; // walls/wall-01.webp ... wall-41.webp (futuristas + papeis de parede do Windows)
 let wallCur=null;
 const wallUrl=i=>'walls/wall-'+String(i+1).padStart(2,'0')+'.webp';
-function wallOfDay(){
-  const d=new Date();
-  let h=d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();
-  h=(h*2654435761)%4294967296; h=(h^(h>>>13))>>>0; // hash: dias vizinhos caem longe
-  return h%WALLS_N;
-}
 function applyWall(i){
   wallCur=i;
   const url=wallUrl(i),img=new Image();
   img.onload=()=>{document.querySelector('.aurora').style.backgroundImage=`url('${url}')`;};
   img.src=url;
 }
-function setWall(){applyWall(wallOfDay());}
-function nextMidnight(){const n=new Date(),m=new Date(n);m.setHours(24,0,0,0);return m-n;}
-function wallTimer(){setTimeout(()=>{setWall();wallTimer();},nextMidnight()+2000);}
-setWall();wallTimer();
-document.getElementById('wall-shuffle').onclick=()=>{
-  let i;do{i=Math.floor(Math.random()*WALLS_N);}while(i===wallCur&&WALLS_N>1);
+// Sorteia um fundo diferente do atual (evita repetir o último visto entre reloads).
+function sortearWall(){
+  let last=wallCur;
+  if(last==null){try{last=parseInt(localStorage.getItem('dash-wall'),10);}catch(e){}}
+  let i;do{i=Math.floor(Math.random()*WALLS_N);}while(i===last&&WALLS_N>1);
+  try{localStorage.setItem('dash-wall',String(i));}catch(e){}
   applyWall(i);
-};
+}
+sortearWall();
+document.getElementById('wall-shuffle').onclick=sortearWall;
 
 /* ===== tema (sol/lua) ===== */
 function setTheme(t){
