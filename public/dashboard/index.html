@@ -410,6 +410,7 @@
       <div class="hello" id="hello">Bom dia, <b>Fábio</b></div>
       <div class="meta-right">
         <div class="ctx" id="ctx"></div>
+        <button class="iconbtn" id="wall-shuffle" title="Trocar papel de parede"><i class="ti ti-photo"></i></button>
         <button class="iconbtn" id="layout-reset" title="Restaurar 4 colunas (padrão)"><i class="ti ti-layout-columns"></i></button>
         <button class="iconbtn" id="theme" title="Tema claro/escuro"><i class="ti ti-moon"></i></button>
       </div>
@@ -545,20 +546,28 @@ document.getElementById('hello').innerHTML=saud()+', <b>Fábio</b>';
 
 /* ===== papel de parede do dia (sorteio deterministico pela data, troca a meia-noite) ===== */
 const WALLS_N=19; // walls/wall-01.webp ... wall-19.webp
+let wallCur=null;
+const wallUrl=i=>'walls/wall-'+String(i+1).padStart(2,'0')+'.webp';
 function wallOfDay(){
   const d=new Date();
   let h=d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate();
   h=(h*2654435761)%4294967296; h=(h^(h>>>13))>>>0; // hash: dias vizinhos caem longe
-  return 'walls/wall-'+String(h%WALLS_N+1).padStart(2,'0')+'.webp';
+  return h%WALLS_N;
 }
-function setWall(){
-  const url=wallOfDay(),img=new Image();
+function applyWall(i){
+  wallCur=i;
+  const url=wallUrl(i),img=new Image();
   img.onload=()=>{document.querySelector('.aurora').style.backgroundImage=`url('${url}')`;};
   img.src=url;
 }
+function setWall(){applyWall(wallOfDay());}
 function nextMidnight(){const n=new Date(),m=new Date(n);m.setHours(24,0,0,0);return m-n;}
 function wallTimer(){setTimeout(()=>{setWall();wallTimer();},nextMidnight()+2000);}
 setWall();wallTimer();
+document.getElementById('wall-shuffle').onclick=()=>{
+  let i;do{i=Math.floor(Math.random()*WALLS_N);}while(i===wallCur&&WALLS_N>1);
+  applyWall(i);
+};
 
 /* ===== tema (sol/lua) ===== */
 function setTheme(t){
