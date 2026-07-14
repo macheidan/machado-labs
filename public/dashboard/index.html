@@ -411,7 +411,6 @@
       <div class="meta-right">
         <div class="ctx" id="ctx"></div>
         <button class="iconbtn" id="wall-shuffle" title="Trocar papel de parede"><i class="ti ti-photo"></i></button>
-        <button class="iconbtn" id="layout-reset" title="Restaurar 4 colunas (padrão)"><i class="ti ti-layout-columns"></i></button>
         <button class="iconbtn" id="theme" title="Tema claro/escuro"><i class="ti ti-moon"></i></button>
       </div>
     </div>
@@ -545,7 +544,7 @@ function saud(){const h=new Date().getHours();return h<12?'Bom dia':h<18?'Boa ta
 document.getElementById('hello').innerHTML=saud()+', <b>Fábio</b>';
 
 /* ===== papel de parede do dia (sorteio deterministico pela data, troca a meia-noite) ===== */
-const WALLS_N=19; // walls/wall-01.webp ... wall-19.webp
+const WALLS_N=41; // walls/wall-01.webp ... wall-41.webp (futuristas + papeis de parede do Windows)
 let wallCur=null;
 const wallUrl=i=>'walls/wall-'+String(i+1).padStart(2,'0')+'.webp';
 function wallOfDay(){
