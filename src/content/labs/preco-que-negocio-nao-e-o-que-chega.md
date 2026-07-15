@@ -47,6 +47,8 @@ Aí a regra de 3 morreu. O sistema já me diz quanto custa o mesmo insumo em cad
 
 O pulo final foi tirar isso do meu colo e botar na [central da equipe](/labs/operacao-nao-depender-de-mim/). A seção de preços de insumos **avisa todo dia quando um item subiu.** O administrativo vê na hora, não no fechamento do mês, quando o estrago já passou.
 
+Na prática, funciona assim: o alerta aparece na intranet com o insumo, o fornecedor e o tamanho do aumento. O setor de compras **entra em contato no mesmo dia**, com a nota na mão, e negocia o abatimento do que veio acima do combinado. E como o assunto já está na mesa, aproveita a mesma conversa pra travar o preço do próximo pedido. O aumento que antes passava batido virou negociação no dia em que aconteceu.
+
 > Custo que você descobre no fim do mês é custo que você só constata. Custo que você vê no dia é custo que você negocia.
 
 ***

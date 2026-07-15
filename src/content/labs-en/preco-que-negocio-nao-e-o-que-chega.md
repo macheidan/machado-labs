@@ -35,6 +35,8 @@ That killed the rule-of-three. The system already tells me what the same input c
 
 The final leap was taking this off my lap and putting it in the [team hub](/en/labs/operacao-nao-depender-de-mim/). The input-prices section **flags every day when an item goes up.** The admin team sees it right away, not at the month's close, when the damage is already done.
 
+In practice, it works like this: the alert shows up in the intranet with the input, the supplier, and the size of the increase. The purchasing team **reaches out the same day**, invoice in hand, and negotiates a rebate on what came in above the deal. And since the subject is already on the table, they use the same conversation to lock in the price of the next order. The increase that used to slip by became a negotiation on the day it happened.
+
 > Cost you discover at the end of the month is cost you can only confirm. Cost you see on the day is cost you can negotiate.
 
 ***
