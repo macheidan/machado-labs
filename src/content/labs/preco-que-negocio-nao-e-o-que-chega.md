@@ -27,8 +27,9 @@ keywords:
 
 **Resultados:** com o alerta na mão, o setor de compras negocia na hora com o fornecedor e usa o mesmo número pra pressionar os outros. No fim, 2% a menos no custo de compra, sem contratar ninguém.
 
-## </div>
-O preço combinado é uma ficção
+</div>
+
+## O preço combinado é uma ficção
 
 O preço da negociação é uma promessa. O preço que importa é o que **bate no seu custo**, e esse só aparece depois, embutido na nota, misturado com tributo e frete. Quem controla custo pelo que combinou está controlando uma ficção.
 
