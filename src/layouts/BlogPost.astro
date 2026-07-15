@@ -116,7 +116,7 @@ const jsonLd = articleGraph({
   /* Post header — replica .post-header_title / _description do raycast */
   .post-hero {
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding-bottom: 64px;
+    padding-bottom: 28px;
     margin-bottom: 64px;
   }
   .post-hero h1 {
@@ -138,7 +138,7 @@ const jsonLd = articleGraph({
     -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
   }
   .post-hero .lede {
-    margin-bottom: 24px;
+    margin-bottom: 8px;
     font-size: 18px;
     font-weight: 400;
     line-height: 1.6;
@@ -192,6 +192,7 @@ const jsonLd = articleGraph({
     color: var(--Base-White);
   }
   .post-body :global(h2 + h3) { padding-top: 0; }
+  .post-body :global(.case-summary + h2) { padding-top: 8px; }
   .post-body :global(h3) {
     padding-top: 48px;
     margin-bottom: 16px;
@@ -280,7 +281,7 @@ const jsonLd = articleGraph({
 
   /* Card do resumo Desafio/Solução/Resultados dos posts de case */
   .post-body :global(.case-summary) {
-    margin: 0 0 48px;
+    margin: 0 0 16px;
     padding: 28px 28px 6px;
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 16px;
