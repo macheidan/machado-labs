@@ -37,6 +37,8 @@ E tem uma segunda armadilha, mais silenciosa: mesmo quando eu tinha o preço rea
 
 ## Puxei o número da fonte, não do papel
 
+O caminho óbvio seria resolver dentro do meu próprio sistema de pedidos, que também registra as compras. Mas **o sistema só enxerga o que alguém digita nele.** O preço que entra é o combinado, imposto e frete ficam de fora da conta, e cada fornecedor descreve o mesmo insumo com nome e peso diferentes. Eu estaria pagando alguém pra digitar a mesma ficção num lugar mais organizado, toda semana, pra mais de 130 insumos.
+
 Resolvi indo na fonte de verdade: as minhas próprias notas fiscais, direto na Receita Federal. Um bot busca cada nota, já com imposto e frete embutidos, e **ajusta e categoriza todo item** num formato comparável. Preço por unidade real, normalizado, maçã com maçã.
 
 Aí a regra de 3 morreu. O sistema já me diz quanto custa o mesmo insumo em cada fornecedor, no mesmo padrão, sem eu calcular nada.

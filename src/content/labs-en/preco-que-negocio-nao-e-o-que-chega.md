@@ -25,6 +25,8 @@ And there's a second trap, quieter: even when I had the real price, comparing su
 
 ## I pulled the number from the source, not the paper
 
+The obvious route would be to solve this inside my own ordering system, which also records purchases. But **the system only sees what someone types into it.** The price that goes in is the negotiated one, tax and freight stay out of the math, and every supplier describes the same input with a different name and weight. I'd be paying someone to type the same fiction into a tidier place, every week, for more than 130 inputs.
+
 I solved it by going to the source of truth: my own invoices, straight from the tax authority (Receita Federal). A bot fetches each invoice, already with tax and freight baked in, and **adjusts and categorizes every item** into a comparable format. Real price per unit, normalized, apples to apples.
 
 That killed the rule-of-three. The system already tells me what the same input costs at each supplier, in the same standard, without me calculating anything.
