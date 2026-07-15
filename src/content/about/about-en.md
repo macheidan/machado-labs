@@ -4,7 +4,7 @@ heroImage: /fabio.jpg
 heroAlt: Fábio Machado
 ---
 
-I started in 1998, at 14, fixing computers and building websites, and in 2003 I opened my first webdesign company. Later I became a partner at Pcom Marketing Estratégico, where I worked with brands like Latam, Petrobras, Gerdau, XP and Vivo and learned what works when the client is large and the margin for error is small.
+My path started in 1998, at 14, fixing computers and building websites, and in 2003 I opened my first webdesign company. Later I became a partner at Pcom Marketing Estratégico. Over my career, I worked with brands like Latam, Petrobras, Gerdau, XP and Vivo and learned what works when the client is large and the margin for error is small.
 
 In 2012 I decided to switch industries and move into a sector where I could create my own products and apply what I knew about management and marketing inside a brand of my own, instead of staying only in theory. I opened [**Lov Pizza**](https://www.lovpizza.com.br) and, in 2015, I acquired M&E Pizza, today [**Dáme Pizza**](https://www.damepizza.com.br). At one point I operated 6 brands simultaneously in Porto Alegre, the best stress test I could have asked for: real operations, tight margins, small team and daily decisions.
 
