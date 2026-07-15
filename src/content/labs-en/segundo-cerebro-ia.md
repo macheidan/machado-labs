@@ -8,47 +8,40 @@ tags: ['cortex', 'agentes', 'ia-first']
 keywords: ['second brain', 'AI memory', 'AI agents', 'context for AI', 'AI with company memory', 'give context to ChatGPT', 'AI first', 'AI for business owners']
 ---
 
-I run several fronts at once, and I hit a ceiling early that most of the market doesn't even see: every AI I opened **started from scratch**. It didn't know my businesses, didn't know how I think, didn't remember the previous conversation. And that isn't a personal productivity problem, it's structural.
+<div class="case-summary">
 
-The problem wasn't the AI. It was that **my context lived nowhere**. It was scattered in my head, in loose conversations, in lost notes. No tool could know what was never written down.
+**Challenge:** every AI I opened started from scratch: it didn't know my businesses, didn't know how I decide, didn't remember the previous conversation. I re-explained my own company at the start of every chat, because the context lived only in my head and in loose notes.
 
-That's where the idea came from: build an external brain, outside any tool, that would be the **single source of truth about me and the businesses**. Any AI I open reads that first and arrives already knowing. I called it **My Digital Cortex**.
+**Solution:** an external brain, outside any tool, that is the single source of truth about me and the businesses: memory organized by business, the way I actually decide, and agents that feed the base on their own. Any AI reads it first and arrives already knowing.
 
-## Why I didn't tie it to a tool
+**Results:** I stopped starting over. Any model I open (Claude, GPT, Gemini) already works knowing the business and how I think, flags me when it senses I'm deciding in the wrong mode, and on a day of overload knows my context better than I do.
 
-The obvious mistake would be building this inside the trendy product. And AI products change every week.
+</div>
 
-> Tools die. Context survives.
+## Every AI I opened started from scratch
 
-AI became a commodity: it swaps name, owner, price. What can't swap is the context of my business. So it's **mine**, in a simple format any model can read, today and five years from now. This is what I call thinking **AI first**: it isn't picking the best AI, it's organizing the business so that any AI can work inside it.
+I run several fronts at once, and I hit a ceiling early that most of the market doesn't even see: each AI I opened didn't know my businesses, didn't know how I think, didn't remember the previous conversation. I spent the start of every chat **re-explaining my own company.** And that isn't a personal productivity problem, it's structural.
 
-## The problems that showed up along the way
+And there's a second trap, less visible: the problem wasn't the AI. It was that **my context lived nowhere.** It was scattered in my head, in loose conversations, in lost notes. No tool can know what was never written down.
 
-Building this wasn't dumping information in a corner. Each layer brought a real problem:
+## I built the brain outside the tools
 
-- **AI is a flatterer.** It invents things to look useful, and in a business, deciding on invented data is worse than deciding on no data.
-- **I don't decide the way I think I do.** When I went to describe my process, what I *thought* didn't match what I *did*.
-- **The automation that feeds the system makes mistakes.** If it overwrites or records what it didn't observe, it poisons the whole base.
+The obvious route would be building this inside the trendy product. But AI products change every week: they swap name, owner, price. If my context lived in there, every tool change would mean starting over. **Tools die. Context survives.**
 
-Each of those turned into a rule of the system.
+So I built **My Digital Cortex**: the single source of truth about me and the businesses, in a simple format any model can read, today and five years from now. It's four layers, and each one only comes in when the one below is solid: **memory** (all the context in one place, organized by business), **persona** (how I actually decide, not how I'd like to), **agency** (agents that stop advising and start acting, like the [one that takes care of my WhatsApp](/en/labs/bot-whatsapp-inteligencia-pessoal/)), and **triggers**, the next step: actions that fire on their own, without me asking.
 
-## How I solved it
+Each layer was born from a real problem that showed up along the way: AI invents things to look useful, I don't decide the way I think I do, and the automation that feeds the base makes mistakes. That's why the principle holding it all together is distrust.
 
-I built it in four layers, and each one only comes in when the one below is solid:
+## Any AI arrives already knowing
 
-1. **Memory.** I gathered all the scattered context into one place, organized by business. Never deleted an original without approving it first.
-2. **Persona.** I captured how I *actually* decide, not how I'd like to. It's descriptive, not aspirational. With it, the AI **flags me when it senses I'm in the wrong mode** for an important decision. An AI that only agrees is worthless; this one corrects me.
-3. **Agency.** Here the agents stop advising and start acting. The first was the WhatsApp one, which runs on its own and returns to the system only what is **genuinely new**. I walked through it in [I built an AI agent that takes care of my WhatsApp](/en/labs/bot-whatsapp-inteligencia-pessoal/).
-4. **Triggers.** The next step: actions that fire on their own, without me asking.
+In practice, it works like this: I open any AI and it reads the Cortex first. It arrives knowing the business and the way I think, and when it senses I'm in the wrong mode for an important decision, **it flags me.** An AI that only agrees is worthless; this one corrects me.
 
-The principle that holds it all together is distrust:
+It took me months of finding what breaks to get here. Today it's the foundation of everything I do with AI, and on a day of overload the system **knows my context better than I do at that moment.**
 
 > Better to record nothing than to record something wrong.
 
-## Where it left me
+***
 
-Today any AI I open already works knowing my business and how I think. I stopped starting from scratch, and on a day of overload the system **knows my context better than I do at that moment**.
-
-It took me months of finding what breaks to get here. Today it's the foundation of everything I do with AI, and it's exactly the kind of project I help other companies build.
+Giving any AI permanent memory of the business, without tying it to any tool, is exactly the kind of project I help companies build.
 
 **Stack:** simple text files version-controlled in Git and synced through Google Drive, opened in Obsidian; and a cascade of models (Claude, GPT, Gemini) that reads and feeds the base back, with the numbers computed in code and the AI only writing them up.

@@ -8,47 +8,40 @@ tags: ['cortex', 'agentes', 'ia-first']
 keywords: ['segundo cérebro', 'memória de IA', 'agentes de IA', 'contexto para IA', 'IA com memória da empresa', 'dar contexto pro ChatGPT', 'IA first', 'IA para empresários']
 ---
 
-Eu opero várias frentes ao mesmo tempo, e cedo bati num teto que quase ninguém no mercado enxerga: toda IA que eu abria **começava do zero**. Não sabia dos meus negócios, não sabia como eu penso, não lembrava da conversa anterior. E isso não é problema de produtividade pessoal, é estrutural.
+<div class="case-summary">
 
-O problema não era a IA. Era que **o meu contexto não morava em lugar nenhum**. Estava espalhado na minha cabeça, em conversas soltas, em anotações perdidas. Nenhuma ferramenta tinha como saber o que nunca foi escrito.
+**Desafio:** toda IA que eu abria começava do zero: não sabia dos meus negócios, não sabia como eu decido, não lembrava da conversa anterior. Eu reexplicava a própria empresa a cada conversa, porque o contexto morava só na minha cabeça e em anotações soltas.
 
-Daí veio a ideia: construir um cérebro externo, fora de qualquer ferramenta, que fosse a **fonte única de verdade sobre mim e sobre as empresas**. Qualquer IA que eu abrir lê isso primeiro e já chega sabendo. Chamei de **Meu Cortex Digital**.
+**Solução:** um cérebro externo, fora de qualquer ferramenta, que é a fonte única de verdade sobre mim e sobre as empresas: memória organizada por negócio, o meu jeito real de decidir e agentes que alimentam a base sozinhos. Qualquer IA lê isso primeiro e já chega sabendo.
 
-## Por que não amarrei numa ferramenta
+**Resultados:** parei de começar do zero. Qualquer modelo que eu abro (Claude, GPT, Gemini) já trabalha sabendo do negócio e de como eu penso, me alerta quando percebe que estou decidindo no modo errado, e num dia de sobrecarga conhece meu contexto melhor do que eu.
 
-O erro óbvio seria construir isso dentro do produto da moda. E produto de IA muda toda semana.
+</div>
 
-> Ferramenta morre. O contexto sobrevive.
+## Toda IA que eu abria começava do zero
 
-A IA virou commodity: troca de nome, de dono, de preço. O que não pode trocar é o contexto do meu negócio. Por isso ele é **meu**, num formato simples que qualquer modelo consegue ler, hoje e daqui a cinco anos. É isso que eu chamo de pensar **AI first**: não é escolher a melhor IA, é organizar o negócio pra que qualquer IA consiga trabalhar dentro dele.
+Eu opero várias frentes ao mesmo tempo, e cedo bati num teto que quase ninguém no mercado enxerga: cada IA que eu abria não sabia dos meus negócios, não sabia como eu penso, não lembrava da conversa anterior. Eu passava o começo de toda conversa **reexplicando a própria empresa.** E isso não é problema de produtividade pessoal, é estrutural.
 
-## Os problemas que apareceram no caminho
+E tem uma segunda armadilha, menos visível: o problema não era a IA. Era que **o meu contexto não morava em lugar nenhum.** Estava espalhado na minha cabeça, em conversas soltas, em anotações perdidas. Nenhuma ferramenta tem como saber o que nunca foi escrito.
 
-Montar isso não foi jogar informação num canto. Cada camada trouxe um problema real:
+## Construí o cérebro fora das ferramentas
 
-- **A IA é bajuladora.** Ela inventa pra parecer útil, e num negócio decidir com dado inventado é pior do que decidir sem dado nenhum.
-- **Eu não decido como acho que decido.** Quando fui descrever meu processo, o que eu *achava* não batia com o que eu *fazia*.
-- **A automação que alimenta o sistema erra.** Se ela reescreve por cima ou anota o que não observou, contamina a base inteira.
+O caminho óbvio seria construir isso dentro do produto da moda. Mas produto de IA muda toda semana: troca de nome, de dono, de preço. Se o meu contexto morasse lá dentro, cada troca de ferramenta seria começar de novo. **Ferramenta morre. O contexto sobrevive.**
 
-Cada um desses virou uma regra do sistema.
+Então montei o **Meu Cortex Digital**: a fonte única de verdade sobre mim e sobre as empresas, num formato simples que qualquer modelo consegue ler, hoje e daqui a cinco anos. São quatro camadas, e cada uma só entra quando a de baixo está firme: a **memória** (todo o contexto num lugar só, organizado por negócio), a **persona** (como eu realmente decido, não como eu gostaria de decidir), a **agência** (agentes que param de aconselhar e passam a agir, como o [que cuida do meu WhatsApp](/labs/bot-whatsapp-inteligencia-pessoal/)) e os **gatilhos**, o próximo passo: ações que disparam sozinhas, sem eu pedir.
 
-## Como resolvi
+Cada camada nasceu de um problema real que apareceu no caminho: a IA inventa pra parecer útil, eu não decido como acho que decido, e a automação que alimenta a base erra. Por isso o princípio que segura tudo é a desconfiança.
 
-Montei em quatro camadas, e cada uma só entra quando a de baixo está firme:
+## Qualquer IA já chega sabendo
 
-1. **Memória.** Juntei todo o contexto espalhado num lugar só, organizado por negócio. Nunca apaguei nada original sem aprovar antes.
-2. **Persona.** Capturei como eu *realmente* decido, não como eu gostaria de decidir. É descritivo, não aspiracional. Com isso a IA me **alerta quando percebe que tô no modo errado** pra uma decisão importante. Uma IA que só concorda não vale nada; essa me corrige.
-3. **Agência.** Aqui os agentes param de aconselhar e passam a agir. O primeiro foi o do WhatsApp, que roda sozinho e devolve pro sistema só o que for **genuinamente novo**. Contei o passo a passo em [Criei um agente de IA que cuida do meu WhatsApp](/labs/bot-whatsapp-inteligencia-pessoal/).
-4. **Gatilhos.** O próximo passo: ações que disparam sozinhas, sem eu pedir.
+Na prática, funciona assim: abro qualquer IA e ela lê o Cortex primeiro. Já chega sabendo do negócio e do meu jeito de pensar, e quando percebe que estou no modo errado pra uma decisão importante, **ela me alerta.** Uma IA que só concorda não vale nada; essa me corrige.
 
-O princípio que segura tudo é a desconfiança:
+Levei meses descobrindo o que quebra pra chegar aqui. Hoje é a base de tudo que eu faço com IA, e num dia de sobrecarga o sistema **conhece meu contexto melhor do que eu mesmo naquele momento.**
 
 > Melhor não anotar nada do que anotar errado.
 
-## Onde isso me deixou
+***
 
-Hoje qualquer IA que eu abro já trabalha sabendo do meu negócio e de como eu penso. Parei de começar do zero, e num dia de sobrecarga o sistema **conhece meu contexto melhor do que eu mesmo naquele momento**.
-
-Levei meses descobrindo o que quebra pra chegar aqui. Hoje é a base de tudo que eu faço com IA, e é exatamente esse tipo de projeto que eu ajudo outras empresas a montar.
+Dar memória permanente do negócio pra qualquer IA, sem amarrar em ferramenta nenhuma, é exatamente o tipo de projeto que eu ajudo empresas a montar.
 
 **Stack:** arquivos de texto simples versionados no Git e sincronizados no Google Drive, abertos no Obsidian; e uma cascata de modelos (Claude, GPT, Gemini) que lê e realimenta a base, com os números apurados em código e a IA só redigindo.

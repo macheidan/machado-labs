@@ -19,33 +19,35 @@ keywords:
   - IA para dono de empresa
 ---
 
-Segunda de manhã hoje é diferente. Eu chego sabendo o que ficou pendente no fim de semana, o que precisa de resposta e o que pode esperar. Antes eu chegava no escuro e descobria o que tinha escapado quando já era tarde: o fornecedor cobrando uma cotação que eu jurava ter respondido.
+<div class="case-summary">
 
-O problema nunca foi o WhatsApp. Era atenção: **acompanhar tudo no braço não escala**, e a saída nunca foi me esforçar mais.
+**Desafio:** coisa importante do negócio escapava no WhatsApp toda semana: fornecedor cobrando cotação que eu jurava ter respondido, pendência enterrada em grupo. Acompanhar tudo no braço não escala.
+
+**Solução:** um agente que me lê, em vez de falar com cliente: acompanha os grupos e conversas que importam e entrega o que precisa de resposta no fim do dia, o resumo da semana no domingo e o mês no dia 1. Com proibição explícita de inventar e modelos de reserva pra nunca parar.
+
+**Resultados:** chego na segunda sabendo o que ficou pendente e o que precisa de resposta. Nada importante escapa, o resumo nunca deixou de chegar, e o custo até hoje é zero.
+
+</div>
+
+## Eu chegava na segunda no escuro
+
+Antes, eu descobria o que tinha escapado no fim de semana quando já era tarde: o fornecedor cobrando uma cotação que eu jurava ter respondido. Hoje eu chego sabendo **o que ficou pendente, o que precisa de resposta e o que pode esperar.**
+
+E o problema nunca foi o WhatsApp. Era atenção: **acompanhar tudo no braço não escala**, e a saída nunca foi me esforçar mais.
 
 ## Um bot que lê, não que fala
 
-Todo mundo pensa em bot de WhatsApp como atendimento: um robô que fala com cliente. Eu fiz o contrário.
-
-> Em vez de um bot que fala, um bot que me lê.
-
-Ele acompanha os grupos e as conversas que importam pro negócio e me entrega três coisas: no fim do dia, o que precisa de resposta urgente; no domingo, o resumo do que rolou e do que ficou pendente; no dia 1, o mês inteiro. Roda no PC que já fica ligado em casa, plugado no meu próprio número. Vê o que eu vejo, e não fala com ninguém.
+O caminho óbvio seria um bot de atendimento, um robô que fala com cliente. Mas o meu problema não era falar com cliente, era o que escapava de mim. Então fiz o contrário: **em vez de um bot que fala, um bot que me lê.** Ele acompanha os grupos e as conversas que importam pro negócio, roda no PC que já fica ligado em casa, plugado no meu próprio número. Vê o que eu vejo, e não fala com ninguém.
 
 É a camada de "agência" do [Meu Cortex Digital](/labs/segundo-cerebro-ia/): o agente para de só responder pergunta e começa a agir onde a minha atenção escapa primeiro.
 
 ## A parte difícil não é ler. É confiar.
 
-Ler, qualquer modelo lê. O problema apareceu na primeira versão: ela me devolveu **romance**. Deduziu intenção que ninguém escreveu, cravou conclusão sobre assunto que mal tinha três mensagens. Pareceu profundo. Era invenção.
+Ler, qualquer modelo lê. A primeira versão me devolveu **romance**: deduziu intenção que ninguém escreveu, cravou conclusão sobre assunto que mal tinha três mensagens. Pareceu profundo. Era invenção. E aqui não é enfeite: esse bot escreve dentro do meu Cortex. Se ele inventa, eu decido a semana seguinte em cima da invenção dele. Então a regra virou o contrário do que a maioria faz com IA: formato fixo, proibição explícita de deduzir, e ordem pra devolver "nada novo" quando não há o que dizer. A inteligência do sistema está em **saber calar quando não observou nada.**
 
-E aqui não é enfeite. **Esse bot escreve dentro do meu Cortex.** Se ele inventa, eu decido a semana seguinte em cima da invenção dele.
+Na prática, funciona assim: no fim do dia ele me entrega o que precisa de resposta urgente; no domingo, o resumo do que rolou e do que ficou pendente; no dia 1, o mês inteiro. E se o modelo principal cai ou estoura a cota, ele tenta o segundo, depois o terceiro: modelo é depreciado de uma semana pra outra, API cai num domingo de noite, e mesmo assim o resumo tem que chegar. Custo até hoje: **zero**, cabe nos planos gratuitos pra escala de uma pessoa.
 
 > Prefiro nada do que errado.
-
-Então a regra virou o contrário do que a maioria faz com IA: formato fixo, proibição explícita de deduzir, e ordem pra devolver "nada novo" quando não há o que dizer. A inteligência do sistema não está em falar bonito. Está em **saber calar quando não observou nada.**
-
-## Por que ele nunca para
-
-Parece detalhe técnico, mas é de dono: montei redundância. Se o modelo principal cai ou estoura a cota, ele tenta o segundo, depois o terceiro. Modelo é depreciado de uma semana pra outra, cota acaba, API cai num domingo de noite, e mesmo assim o resumo tem que chegar. Custo até hoje: zero, cabe nos planos gratuitos pra escala de uma pessoa.
 
 ***
 

@@ -7,35 +7,35 @@ tags: ['financeiro', 'dre', 'ia']
 keywords: ['automated P&L', 'monthly close', 'SMB controllership', 'categorize expenses with AI', 'how much was left', 'AI for finance', 'AI for business owners']
 ---
 
-A question for any owner: how much was left last month, and why? Most can't answer on the spot, and for a long time that number was only ready around the 10th, after a full day pulling everything together by hand. To me, the 10th was always unacceptable.
+<div class="case-summary">
 
-A close that's only ready once the month is over is useless for deciding anything. If it went badly, you find out when there's nothing left to react to.
+**Challenge:** the month's number lived scattered across six sources (dining room, iFood, bank, card, payroll, reconciliations), each in its own format. Pulling it together and categorizing line by line cost a full day, and the close was only ready around the 10th.
 
-## Why closing the month is such a pain
+**Solution:** one collector per source, fetching on its own and dropping into the right spot of the P&L, with AI categorizing the statement and card on my own criteria, anchored on history. Before writing anything, it shows me the result to check.
 
-The problem isn't laziness. It's that **the number doesn't live in one place**. It's scattered: what sold in the dining room, what sold on iFood, what left the bank, what went on the card, payroll, the reconciliations. Six places, six formats, each its own way.
+**Results:** the lost day became run and check, and the close for two companies is ready in the very start of the next month, early enough to correct course while there's still time.
 
-And pulling it together isn't even the worst part.
+</div>
 
-> The real work is categorizing.
+## The month's number doesn't live in one place
 
-Every expense on the statement and every line on the card has to become a category, or the total tells you nothing. "This much went out" is useless. "This much on ingredients, this much on staff, this much on marketplace fees" is a decision. It's that classification, line by line, that eats the afternoon.
+A question for any owner: how much was left last month, and why? Most can't answer on the spot. For me, for a long time, that number was only ready around the 10th, after a full day pulling everything together by hand. **A close that's only ready once the month is over is useless for deciding anything.** If it went badly, you find out when there's nothing left to react to.
 
-## How I solved it
+And there's a second trap: pulling it together isn't even the worst part. **The real work is categorizing.** Every expense on the statement and every line on the card has to become a category, or the total tells you nothing. "This much went out" is useless. "This much on ingredients, this much on staff, this much on marketplace fees" is a decision. It's that classification, line by line, that eats the afternoon.
 
-Each source got a collector that fetches on its own and drops into the right spot of the P&L. What sold, it pulls straight from the POS and iFood. What I spent, it reads from the statement and the card invoices.
+## I put AI to repeat my criteria, not to guess
 
-The part that was hell, categorizing the statement and the card, is where AI comes in. It looks at my history from previous months and my reference table, and classifies each entry the way **I would classify it**. It isn't guessing: it's repeating my criteria, fast.
+The obvious route would be hiring someone to type this in every month, or subscribing to a management system that promises to integrate everything. But the first is paying for manual work that fails silently, and the second hits the same wall: my six sources don't speak the same language, and no off-the-shelf system knows **my** categorization criteria.
 
-And there's one lock I won't drop: before writing anything, it shows me the result to check. I trust, but I verify. On a number that becomes a decision, AI that writes on its own without me seeing it is an invitation to a costly mistake.
+So each source got a collector that fetches on its own and drops into the right spot of the P&L: what sold, it pulls straight from the POS and iFood; what I spent, it reads from the statement and the card invoices. And the part that was hell, categorizing, is where AI comes in: it looks at my history from previous months and my reference table, and classifies each entry the way **I would classify it.** It isn't guessing, it's repeating my criteria, fast.
 
-## What actually changed
+## I stopped driving by the rearview mirror
 
-Time dropped, obviously. The lost day became run and check.
+In practice, it works like this: I run it, the AI categorizes everything and **shows me the result before writing anything.** I trust, but I verify. On a number that becomes a decision, AI that writes on its own without me seeing it is an invitation to a costly mistake. The lost day became run and check.
 
-But that's not what matters. What changed was **when** I see the month. Now the close is ready in the very start of the next month, early enough for me to correct course while there's still time. I stopped driving by the rearview mirror alone.
+But time isn't what matters. What changed was **when** I see the month: the close for two companies is ready in the very start of the next month, early enough for me to correct course while there's still time. Three years ago this started small, with me uploading a loose spreadsheet to AI and asking it to find what I wasn't seeing. [I told that beginning here](/en/labs/como-gpt-4-ajuda-rotina/).
 
-Three years ago this started small, with me uploading a loose spreadsheet to AI and asking it to find what I wasn't seeing. [I told that beginning here](/en/labs/como-gpt-4-ajuda-rotina/). Today it's a system that closes the month for two companies almost on its own.
+> A number that's ready on the 10th is history. A number that's ready on the 2nd is a decision.
 
 ***
 
