@@ -181,9 +181,11 @@ const { src, label = 'Ouvir o post', title, artwork } = Astro.props;
 <script>
   function fmt(s: number) {
     if (!Number.isFinite(s)) return '0:00';
-    const m = Math.floor(s / 60);
-    const r = Math.floor(s % 60);
-    return `${m}:${String(r).padStart(2, '0')}`;
+    // Arredonda o total antes de quebrar em min/seg: truncar faria um audio de
+    // 479.99s (8:00) aparecer como 7:59.
+    const total = Math.round(s);
+    const m = Math.floor(total / 60);
+    return `${m}:${String(total % 60).padStart(2, '0')}`;
   }
 
   document.querySelectorAll<HTMLElement>('[data-audio-player]').forEach((root) => {
