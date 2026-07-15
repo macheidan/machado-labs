@@ -147,7 +147,8 @@ const { src, label = 'Ouvir o post', title, artwork } = Astro.props;
 
   .time {
     flex-shrink: 0;
-    min-width: 4.5ch;
+    /* cabe "-10:00" sem a barra pular quando o numero encolhe */
+    min-width: 5.5ch;
     font-family: var(--font-mono);
     font-size: 12px;
     color: var(--grey-200);
@@ -204,9 +205,9 @@ const { src, label = 'Ouvir o post', title, artwork } = Astro.props;
       fill.style.width = `${pct}%`;
       knob.style.left = `${pct}%`;
       track.setAttribute('aria-valuenow', String(Math.round(pct)));
-      // Enquanto não tocou, mostra a duração total; depois, o tempo corrente.
-      time.textContent =
-        audio.currentTime > 0 || !Number.isFinite(d) ? fmt(audio.currentTime) : fmt(d);
+      // Contagem regressiva: quanto ainda falta. Parado no início, isso é a
+      // própria duração total, então o número já diz o tamanho do post.
+      time.textContent = Number.isFinite(d) ? `-${fmt(Math.max(0, d - audio.currentTime))}` : '-0:00';
     };
 
     const seekFromPointer = (clientX: number) => {
