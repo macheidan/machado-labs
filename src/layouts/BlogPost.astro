@@ -2,6 +2,7 @@
 import type { CollectionEntry } from 'astro:content';
 import { Image } from 'astro:assets';
 import Shell from '../components/Shell.astro';
+import AudioPlayer from '../components/AudioPlayer.astro';
 import { articleGraph, SITE_URL } from '../lib/seo';
 
 type Props = CollectionEntry<'labs'>['data'] & {
@@ -17,6 +18,7 @@ const {
   updatedDate,
   heroImage,
   heroAlt,
+  audio,
   author,
   tags = [],
   keywords,
@@ -77,6 +79,11 @@ const jsonLd = articleGraph({
       ? <h1 set:html={heroTitleClean} />
       : <h1>{title}</h1>}
     <p class="lede">{description}</p>
+    {audio && (
+      <div class="post-audio">
+        <AudioPlayer src={audio} label={isEn ? 'Listen to the post' : 'Ouvir o post'} />
+      </div>
+    )}
   </section>
 
   {heroImage && (
@@ -145,6 +152,8 @@ const jsonLd = articleGraph({
     letter-spacing: 0.2px;
     color: var(--grey-200);
   }
+  .post-audio { margin-top: 20px; }
+
   .post-meta-top .date {
     font-family: var(--font-mono);
     font-size: 12px;

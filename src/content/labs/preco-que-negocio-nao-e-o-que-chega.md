@@ -5,6 +5,7 @@ description: Sabemos o custo real de cada insumo e qual fornecedor está mais ba
 pubDate: Jun 28 2026
 updatedDate: ''
 heroAlt: ''
+audio: /audio/preco-que-negocio-nao-e-o-que-chega.mp3
 tags:
   - operacao
   - compras

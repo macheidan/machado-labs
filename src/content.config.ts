@@ -13,6 +13,7 @@ const schema = ({ image }: { image: () => any }) =>
 		updatedDate: z.preprocess(emptyStringToUndefined, z.coerce.date().optional()),
 		heroImage: z.preprocess(emptyStringToUndefined, z.optional(image())),
 		heroAlt: z.string().optional(),
+		audio: z.preprocess(emptyStringToUndefined, z.string().optional()),
 		author: z.string().default('Fábio Machado'),
 		tags: z.array(z.string()).default([]),
 		keywords: z.array(z.string()).optional(),

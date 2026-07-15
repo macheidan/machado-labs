@@ -1,0 +1,250 @@
+---
+type Props = {
+  src: string;
+  label?: string;
+};
+
+const { src, label = 'Ouvir o post' } = Astro.props;
+---
+
+<div class="audio-glaze" data-audio-player>
+  <div class="inner">
+    <button type="button" class="play" aria-label={label} data-play>
+      <svg class="icon-play" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+        <path d="M4.5 2.6v10.8c0 .5.55.8.97.53l8.4-5.4a.63.63 0 0 0 0-1.06l-8.4-5.4A.63.63 0 0 0 4.5 2.6Z" />
+      </svg>
+      <svg class="icon-pause" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+        <path d="M4.6 2.4h2.1c.3 0 .5.2.5.5v10.2c0 .3-.2.5-.5.5H4.6a.5.5 0 0 1-.5-.5V2.9c0-.3.2-.5.5-.5ZM9.3 2.4h2.1c.3 0 .5.2.5.5v10.2c0 .3-.2.5-.5.5H9.3a.5.5 0 0 1-.5-.5V2.9c0-.3.2-.5.5-.5Z" />
+      </svg>
+    </button>
+
+    <div
+      class="track"
+      role="slider"
+      tabindex="0"
+      aria-label="Andamento do áudio"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      aria-valuenow="0"
+      data-track
+    >
+      <div class="rail"></div>
+      <div class="fill" data-fill></div>
+      <div class="knob" data-knob></div>
+    </div>
+
+    <span class="time" data-time>0:00</span>
+  </div>
+
+  <audio preload="metadata" src={src} data-audio></audio>
+</div>
+
+<style>
+  /* Mesmo tratamento do .btn-glaze da home: casca com gradiente cônico
+     animado e miolo escuro arredondado. */
+  .audio-glaze {
+    --r2: 0deg;
+    --x: 9%;
+    display: block;
+    width: 100%;
+    padding: 1px;
+    background:
+      conic-gradient(from calc(var(--r2) - 80deg) at var(--x) 50%,
+        transparent 0,
+        rgb(236, 165, 167) 20%,
+        transparent 25%),
+      #452324;
+    border-radius: 43px;
+    box-shadow: 0 0 20px 0 rgba(245, 48, 107, 0.1);
+    transition: box-shadow 0.2s ease;
+    transform: translateZ(0);
+    animation:
+      glaze-rot 3s linear -0.64s infinite,
+      glaze-x 3s linear -0.64s infinite;
+  }
+  .audio-glaze:hover { box-shadow: 0 0 20px 3px rgba(245, 49, 108, 0.25); }
+
+  .inner {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    height: 44px;
+    padding: 0 16px 0 12px;
+    background: rgb(19, 13, 14);
+    border-radius: 1000px;
+  }
+
+  .play {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 28px; height: 28px;
+    padding: 0;
+    color: var(--Base-White);
+    background: rgba(255, 255, 255, 0.08);
+    border: 0;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+  }
+  .play:hover { background: rgba(255, 255, 255, 0.16); }
+  .play:active { transform: scale(0.94); }
+  .play:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .play svg { width: 13px; height: 13px; }
+  .play .icon-pause { display: none; }
+  .audio-glaze[data-playing] .play .icon-play { display: none; }
+  .audio-glaze[data-playing] .play .icon-pause { display: block; }
+
+  .track {
+    position: relative;
+    flex: 1;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    touch-action: none;
+  }
+  .track:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  .rail {
+    position: absolute;
+    inset-inline: 0;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+  }
+  .fill {
+    position: absolute;
+    left: 0;
+    width: 0%;
+    height: 3px;
+    background: linear-gradient(90deg, #ffb088 0%, var(--accent) 60%, var(--pink) 100%);
+    border-radius: 999px;
+  }
+  .knob {
+    position: absolute;
+    left: 0;
+    width: 10px; height: 10px;
+    margin-left: -5px;
+    background: var(--Base-White);
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(245, 48, 107, 0.5);
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+  .track:hover .knob,
+  .track:focus-visible .knob,
+  .audio-glaze[data-playing] .knob { opacity: 1; }
+
+  .time {
+    flex-shrink: 0;
+    min-width: 4.5ch;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--grey-200);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  @keyframes glaze-x {
+    0%           { --x: 9%; }
+    32.82275711% { --x: 91%; }
+    50%          { --x: 91%; }
+    82.82275711% { --x: 9%; }
+    100%         { --x: 9%; }
+  }
+  @keyframes glaze-rot {
+    0%           { --r2: 0deg; }
+    32.82275711% { --r2: 0deg; }
+    50%          { --r2: 180deg; }
+    82.82275711% { --r2: 180deg; }
+    100%         { --r2: 360deg; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .audio-glaze { animation: none; }
+  }
+  @media (max-width: 800px) {
+    .inner { height: 40px; gap: 10px; padding: 0 12px 0 10px; }
+  }
+</style>
+
+<script>
+  function fmt(s: number) {
+    if (!Number.isFinite(s)) return '0:00';
+    const m = Math.floor(s / 60);
+    const r = Math.floor(s % 60);
+    return `${m}:${String(r).padStart(2, '0')}`;
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-audio-player]').forEach((root) => {
+    const audio = root.querySelector<HTMLAudioElement>('[data-audio]')!;
+    const playBtn = root.querySelector<HTMLButtonElement>('[data-play]')!;
+    const track = root.querySelector<HTMLElement>('[data-track]')!;
+    const fill = root.querySelector<HTMLElement>('[data-fill]')!;
+    const knob = root.querySelector<HTMLElement>('[data-knob]')!;
+    const time = root.querySelector<HTMLElement>('[data-time]')!;
+
+    let scrubbing = false;
+
+    const render = () => {
+      const d = audio.duration;
+      const pct = Number.isFinite(d) && d > 0 ? (audio.currentTime / d) * 100 : 0;
+      fill.style.width = `${pct}%`;
+      knob.style.left = `${pct}%`;
+      track.setAttribute('aria-valuenow', String(Math.round(pct)));
+      // Enquanto não tocou, mostra a duração total; depois, o tempo corrente.
+      time.textContent =
+        audio.currentTime > 0 || !Number.isFinite(d) ? fmt(audio.currentTime) : fmt(d);
+    };
+
+    const seekFromPointer = (clientX: number) => {
+      const r = track.getBoundingClientRect();
+      const ratio = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
+      if (Number.isFinite(audio.duration)) audio.currentTime = ratio * audio.duration;
+      render();
+    };
+
+    playBtn.addEventListener('click', () => {
+      if (audio.paused) {
+        // Só um player tocando por vez na página.
+        document.querySelectorAll<HTMLAudioElement>('[data-audio]').forEach((o) => {
+          if (o !== audio) o.pause();
+        });
+        audio.play();
+      } else {
+        audio.pause();
+      }
+    });
+
+    audio.addEventListener('play', () => root.setAttribute('data-playing', ''));
+    audio.addEventListener('pause', () => root.removeAttribute('data-playing'));
+    audio.addEventListener('ended', () => root.removeAttribute('data-playing'));
+    audio.addEventListener('loadedmetadata', render);
+    audio.addEventListener('timeupdate', () => {
+      if (!scrubbing) render();
+    });
+
+    track.addEventListener('pointerdown', (e) => {
+      scrubbing = true;
+      track.setPointerCapture(e.pointerId);
+      seekFromPointer(e.clientX);
+    });
+    track.addEventListener('pointermove', (e) => {
+      if (scrubbing) seekFromPointer(e.clientX);
+    });
+    track.addEventListener('pointerup', (e) => {
+      scrubbing = false;
+      track.releasePointerCapture(e.pointerId);
+    });
+    track.addEventListener('keydown', (e) => {
+      if (!Number.isFinite(audio.duration)) return;
+      const step = e.key === 'ArrowRight' ? 5 : e.key === 'ArrowLeft' ? -5 : 0;
+      if (!step) return;
+      e.preventDefault();
+      audio.currentTime = Math.min(audio.duration, Math.max(0, audio.currentTime + step));
+      render();
+    });
+
+    render();
+  });
+</script>
