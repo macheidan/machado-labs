@@ -17,8 +17,6 @@ keywords: ['custo real de insumo', 'preço de fornecedor', 'nota fiscal Receita 
 
 </div>
 
-Você senta com o fornecedor, negocia um preço, aperta a mão. Depois a nota chega e o número é outro. Imposto, frete, um valor que veio diferente do combinado, e de repente o custo real do insumo não é o que você anotou. Eu tocava a operação decidindo em cima de um preço que **não existia de verdade.**
-
 ## O preço combinado é uma ficção
 
 O preço da negociação é uma promessa. O preço que importa é o que **bate no seu custo**, e esse só aparece depois, embutido na nota, misturado com tributo e frete. Quem controla custo pelo que combinou está controlando uma ficção.

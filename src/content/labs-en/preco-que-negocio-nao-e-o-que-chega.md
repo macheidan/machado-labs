@@ -17,8 +17,6 @@ keywords: ['real input cost', 'supplier price', 'invoice from tax authority', 'c
 
 </div>
 
-You sit with the supplier, negotiate a price, shake hands. Then the invoice arrives and the number is different. Taxes, freight, a value that came different from the deal, and suddenly the real cost of the input isn't what you wrote down. I was running the operation deciding on top of a price that **didn't really exist.**
-
 ## The negotiated price is a fiction
 
 The negotiation price is a promise. The price that matters is the one that **hits your cost**, and that one only shows up later, buried in the invoice, mixed with tax and freight. Whoever controls cost by what they agreed on is controlling a fiction.
