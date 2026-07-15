@@ -81,7 +81,12 @@ const jsonLd = articleGraph({
     <p class="lede">{description}</p>
     {audio && (
       <div class="post-audio">
-        <AudioPlayer src={audio} label={isEn ? 'Listen to the post' : 'Ouvir o post'} />
+        <AudioPlayer
+          src={audio}
+          label={isEn ? 'Listen to the post' : 'Ouvir o post'}
+          title={title}
+          artwork={ogImageUrl}
+        />
       </div>
     )}
   </section>

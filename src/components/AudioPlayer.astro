@@ -2,12 +2,21 @@
 type Props = {
   src: string;
   label?: string;
+  /** Título mostrado na tela de bloqueio do celular. */
+  title?: string;
+  /** Capa mostrada na tela de bloqueio (URL absoluta ou do site). */
+  artwork?: string;
 };
 
-const { src, label = 'Ouvir o post' } = Astro.props;
+const { src, label = 'Ouvir o post', title, artwork } = Astro.props;
 ---
 
-<div class="audio-glaze" data-audio-player>
+<div
+  class="audio-glaze"
+  data-audio-player
+  data-title={title}
+  data-artwork={artwork}
+>
   <div class="inner">
     <button type="button" class="play" aria-label={label} data-play>
       <svg class="icon-play" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
@@ -36,7 +45,8 @@ const { src, label = 'Ouvir o post' } = Astro.props;
     <span class="time" data-time>0:00</span>
   </div>
 
-  <audio preload="metadata" src={src} data-audio></audio>
+  <!-- playsinline evita que o iOS assuma a sessão em tela cheia. -->
+  <audio preload="metadata" src={src} playsinline data-audio></audio>
 </div>
 
 <style>
@@ -216,10 +226,66 @@ const { src, label = 'Ouvir o post' } = Astro.props;
       }
     });
 
-    audio.addEventListener('play', () => root.setAttribute('data-playing', ''));
-    audio.addEventListener('pause', () => root.removeAttribute('data-playing'));
-    audio.addEventListener('ended', () => root.removeAttribute('data-playing'));
-    audio.addEventListener('loadedmetadata', render);
+    // Media Session: coloca o post na tela de bloqueio / central de mídia do
+    // celular, com capa e controles que continuam funcionando de tela apagada.
+    const ms = (navigator as any).mediaSession;
+    const setupMediaSession = () => {
+      if (!ms || typeof MediaMetadata === 'undefined') return;
+      const art = root.dataset.artwork;
+      ms.metadata = new MediaMetadata({
+        title: root.dataset.title || document.title,
+        artist: 'Fábio Machado',
+        album: 'fabiomachado.com.br',
+        // sizes precisa bater com o arquivo real, senão a tela de bloqueio
+        // corta/distorce a capa. A og é 1200x630 (retangular, não quadrada).
+        artwork: art ? [{ src: art, sizes: '1200x630', type: 'image/png' }] : [],
+      });
+      ms.setActionHandler('play', () => audio.play());
+      ms.setActionHandler('pause', () => audio.pause());
+      ms.setActionHandler('seekbackward', (d: any) => {
+        audio.currentTime = Math.max(0, audio.currentTime - (d?.seekOffset || 10));
+      });
+      ms.setActionHandler('seekforward', (d: any) => {
+        audio.currentTime = Math.min(audio.duration, audio.currentTime + (d?.seekOffset || 10));
+      });
+      ms.setActionHandler('seekto', (d: any) => {
+        if (d?.seekTime != null) audio.currentTime = d.seekTime;
+        render();
+      });
+    };
+
+    const syncPositionState = () => {
+      if (!ms?.setPositionState || !Number.isFinite(audio.duration)) return;
+      try {
+        ms.setPositionState({
+          duration: audio.duration,
+          playbackRate: audio.playbackRate,
+          position: Math.min(audio.currentTime, audio.duration),
+        });
+      } catch {
+        // setPositionState é sensível a valores fora de faixa; ignorar é seguro.
+      }
+    };
+
+    audio.addEventListener('play', () => {
+      root.setAttribute('data-playing', '');
+      setupMediaSession();
+      if (ms) ms.playbackState = 'playing';
+      syncPositionState();
+    });
+    audio.addEventListener('pause', () => {
+      root.removeAttribute('data-playing');
+      if (ms) ms.playbackState = 'paused';
+    });
+    audio.addEventListener('ended', () => {
+      root.removeAttribute('data-playing');
+      if (ms) ms.playbackState = 'none';
+    });
+    audio.addEventListener('loadedmetadata', () => {
+      render();
+      syncPositionState();
+    });
+    audio.addEventListener('seeked', syncPositionState);
     audio.addEventListener('timeupdate', () => {
       if (!scrubbing) render();
     });
