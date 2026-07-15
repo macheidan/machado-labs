@@ -24,19 +24,21 @@ keywords: ['WhatsApp AI agent', 'WhatsApp automation for business', 'AI for What
 
 Before, I found out what had slipped over the weekend only when it was too late: a supplier chasing a quote I swore I had answered. Today I show up knowing **what's still pending, what needs a reply, and what can wait.**
 
-And the problem was never WhatsApp. It was attention: **keeping up by hand doesn't scale**, and the answer was never to try harder.
+And the problem was never WhatsApp. It was attention: **keeping up by hand doesn't scale**, and the answer was never to try harder. In an operation that runs on messages, the important thing doesn't shout. It just sinks under the others.
 
-## A bot that reads, not one that talks
+## A bot that reads me, not one that talks
 
-The obvious route would be a customer-service bot, a robot that talks to clients. But my problem wasn't talking to clients, it was what slipped past me. So I did the opposite: **instead of a bot that talks, a bot that reads me.** It follows the groups and conversations that matter to the business, runs on the PC that's already on at home, plugged into my own number. Sees what I see, and talks to nobody.
+The obvious route would be a customer-service bot, a robot that talks to clients. But my problem wasn't talking to clients, it was what slipped past me. So I did the opposite: **instead of a bot that talks, a bot that reads me.**
 
-It's the "agency" layer of [My Digital Cortex](/en/labs/segundo-cerebro-ia/): the agent stops just answering questions and starts acting where my attention leaks first.
+It follows the groups and conversations that matter to the business, runs on the PC that's already on at home, plugged into my own number. Sees what I see, and talks to nobody. It's the "agency" layer of [My Digital Cortex](/en/labs/segundo-cerebro-ia/): the agent stops just answering questions and starts acting where my attention leaks first.
 
-## The hard part isn't reading. It's trusting.
+And here came the hard part, which isn't reading. **It's trusting.** The first version handed me a novel: it deduced intentions nobody wrote and stated conclusions about a thread that barely had three messages. It looked deep. It was made up.
 
-Any model can read. The first version handed me a **novel**: it deduced intentions nobody wrote, stated conclusions about a thread that barely had three messages. It looked deep. It was made up. And this isn't decoration: this bot writes inside my Cortex. If it invents, next week I'm deciding on top of its invention. So the rule became the opposite of what most people do with AI: fixed format, an explicit ban on deducing, and an order to return "nothing new" when there's nothing to say. The system's intelligence is in **knowing to stay quiet when it observed nothing.**
+## It knows to stay quiet when it observed nothing
 
-In practice, it works like this: at the end of the day it hands me what needs an urgent reply; on Sunday, a summary of what happened and what's still open; on the 1st, the whole month. And if the main model is down or out of quota, it tries the second, then the third: models get deprecated from one week to the next, APIs go down on a Sunday night, and the summary still has to arrive. Cost so far: **zero**, it fits inside free tiers at the scale of one person.
+This isn't decoration: this bot **writes inside my Cortex.** If it invents, next week I'm deciding on top of its invention. So the rule became the opposite of what most people do with AI: fixed format, an explicit ban on deducing, and an order to return "nothing new" when there's nothing to say.
+
+In practice, it works like this: at the end of the day it hands me what needs an urgent reply, on Sunday a summary of what's still open, on the 1st the whole month. If the main model is down or out of quota, it tries the second, then the third. An API goes down on a Sunday night and the summary arrives all the same. Cost so far: **zero.**
 
 > I'd rather have nothing than wrong.
 

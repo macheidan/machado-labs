@@ -27,7 +27,9 @@ E tem uma segunda armadilha: juntar nem é a pior parte. **O trabalho de verdade
 
 O caminho óbvio seria contratar alguém pra digitar isso todo mês, ou assinar um sistema de gestão que promete integrar tudo. Mas o primeiro é pagar por trabalho braçal que erra em silêncio, e o segundo esbarra no mesmo problema: as minhas seis fontes não falam a mesma língua, e nenhum sistema de prateleira sabe **o meu** critério de categorização.
 
-Então cada fonte ganhou um coletor que busca sozinho e joga no lugar certo do DRE: o que vendeu, ele pega direto do PDV e do iFood; o que gastei, ele lê do extrato e das faturas do cartão. E a parte que era o inferno, categorizar, é onde a IA entra: ela olha o meu histórico dos meses anteriores e a minha tabela de referência, e classifica cada lançamento do jeito que **eu já classificaria.** Não é ela adivinhando, é ela repetindo o meu critério, rápido.
+Então cada fonte ganhou um coletor que busca sozinho e joga no lugar certo do DRE. O que vendeu, ele pega direto do PDV e do iFood. O que gastei, ele lê do extrato e das faturas do cartão. Ninguém digita nada.
+
+E a parte que era o inferno, categorizar, é onde a IA entra: ela olha o meu histórico dos meses anteriores e a minha tabela de referência, e classifica cada lançamento do jeito que **eu já classificaria.** Não é ela adivinhando, é ela repetindo o meu critério, rápido.
 
 ## Parei de dirigir olhando pro retrovisor
 

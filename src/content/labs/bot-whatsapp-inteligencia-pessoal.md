@@ -31,21 +31,23 @@ keywords:
 
 ## Eu chegava na segunda no escuro
 
-Antes, eu descobria o que tinha escapado no fim de semana quando já era tarde: o fornecedor cobrando uma cotação que eu jurava ter respondido. Hoje eu chego sabendo **o que ficou pendente, o que precisa de resposta e o que pode esperar.**
+Antes eu descobria o que tinha escapado no fim de semana quando já era tarde: o fornecedor cobrando uma cotação que eu jurava ter respondido. Hoje eu chego sabendo **o que ficou pendente, o que precisa de resposta e o que pode esperar.**
 
-E o problema nunca foi o WhatsApp. Era atenção: **acompanhar tudo no braço não escala**, e a saída nunca foi me esforçar mais.
+E o problema nunca foi o WhatsApp. Era atenção: **acompanhar tudo no braço não escala**, e a saída nunca foi me esforçar mais. Numa operação que vive de mensagem, a coisa importante não grita. Ela só afunda no meio das outras.
 
-## Um bot que lê, não que fala
+## Um bot que me lê, não que fala
 
-O caminho óbvio seria um bot de atendimento, um robô que fala com cliente. Mas o meu problema não era falar com cliente, era o que escapava de mim. Então fiz o contrário: **em vez de um bot que fala, um bot que me lê.** Ele acompanha os grupos e as conversas que importam pro negócio, roda no PC que já fica ligado em casa, plugado no meu próprio número. Vê o que eu vejo, e não fala com ninguém.
+O caminho óbvio seria um bot de atendimento, um robô que fala com cliente. Mas o meu problema não era falar com cliente, era o que escapava de mim. Então fiz o contrário: **em vez de um bot que fala, um bot que me lê.**
 
-É a camada de "agência" do [Meu Cortex Digital](/labs/segundo-cerebro-ia/): o agente para de só responder pergunta e começa a agir onde a minha atenção escapa primeiro.
+Ele acompanha os grupos e as conversas que importam pro negócio, roda no PC que já fica ligado em casa, plugado no meu próprio número. Vê o que eu vejo, e não fala com ninguém. É a camada de "agência" do [Meu Cortex Digital](/labs/segundo-cerebro-ia/): o agente para de só responder pergunta e começa a agir onde a minha atenção escapa primeiro.
 
-## A parte difícil não é ler. É confiar.
+E aqui veio a parte difícil, que não é ler. **É confiar.** A primeira versão me devolveu romance: deduziu intenção que ninguém escreveu e cravou conclusão sobre assunto que mal tinha três mensagens. Pareceu profundo. Era invenção.
 
-Ler, qualquer modelo lê. A primeira versão me devolveu **romance**: deduziu intenção que ninguém escreveu, cravou conclusão sobre assunto que mal tinha três mensagens. Pareceu profundo. Era invenção. E aqui não é enfeite: esse bot escreve dentro do meu Cortex. Se ele inventa, eu decido a semana seguinte em cima da invenção dele. Então a regra virou o contrário do que a maioria faz com IA: formato fixo, proibição explícita de deduzir, e ordem pra devolver "nada novo" quando não há o que dizer. A inteligência do sistema está em **saber calar quando não observou nada.**
+## Ele sabe calar quando não observou nada
 
-Na prática, funciona assim: no fim do dia ele me entrega o que precisa de resposta urgente; no domingo, o resumo do que rolou e do que ficou pendente; no dia 1, o mês inteiro. E se o modelo principal cai ou estoura a cota, ele tenta o segundo, depois o terceiro: modelo é depreciado de uma semana pra outra, API cai num domingo de noite, e mesmo assim o resumo tem que chegar. Custo até hoje: **zero**, cabe nos planos gratuitos pra escala de uma pessoa.
+Isso não é enfeite: esse bot **escreve dentro do meu Cortex.** Se ele inventa, eu decido a semana seguinte em cima da invenção dele. Então a regra virou o contrário do que a maioria faz com IA: formato fixo, proibição explícita de deduzir, e ordem pra devolver "nada novo" quando não há o que dizer.
+
+Na prática, funciona assim: no fim do dia ele me entrega o que precisa de resposta urgente, no domingo o resumo do que ficou pendente, no dia 1 o mês inteiro. Se o modelo principal cai ou estoura a cota, ele tenta o segundo, depois o terceiro. API cai num domingo de noite e o resumo chega igual. Custo até hoje: **zero.**
 
 > Prefiro nada do que errado.
 

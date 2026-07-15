@@ -27,11 +27,15 @@ E o problema nem é o tempo. É a diferença que fica no ar: trabalho manual e r
 
 O caminho óbvio seria botar alguém pra fazer, ou criar uma rotina de conferência semanal loja por loja. Mas isso não resolve, só transfere: a pessoa vai errar em silêncio do mesmo jeito, e conferir 2000 itens na mão é mais trabalho braçal ainda, não menos. O erro não estava em quem digitava. **Estava em ter seis cardápios pra manter iguais.**
 
-Resolvi virando o problema do avesso. Em vez de eu ir loja por loja no iFood, o cardápio passa a viver **num lugar só**, a minha fonte de verdade. Quando muda ali, uma automação abre cada loja e aplica o mesmo ajuste em todas, no mesmo passe. Deixaram de existir seis cardápios: existe um, replicado.
+Resolvi virando o problema do avesso. Em vez de eu ir loja por loja no iFood, o cardápio passa a viver **num lugar só**, a minha fonte de verdade. Quando muda ali, uma automação abre cada loja e aplica o mesmo ajuste em todas, no mesmo passe.
+
+Deixaram de existir seis cardápios pra manter iguais. Existe um, replicado.
 
 ## O braçal sai, o controle fica
 
-Na prática, funciona assim: eu mudo o item na fonte, a automação me mostra **o preview do que vai mudar em cada loja**, eu confiro e ela grava. Se somar, são mais de 2000 itens saindo de um lugar só. Ganho tempo e ganho precisão: não existe mais item sendo cobrado errado porque escapou. Quando era feito na mão, sempre tinha algum.
+Na prática, funciona assim: eu mudo o item na fonte, a automação me mostra **o preview do que vai mudar em cada loja**, eu confiro e ela grava. A meia tarde de clique virou um passe conferido.
+
+Se somar, são mais de **2000 itens** saindo de um lugar só. Ganho tempo e ganho precisão: não existe mais item sendo cobrado errado porque escapou. Quando era feito na mão, sempre tinha algum.
 
 > Tarefa repetitiva não te acorda de noite. Ela sangra devagar, e você só descobre no fechamento.
 

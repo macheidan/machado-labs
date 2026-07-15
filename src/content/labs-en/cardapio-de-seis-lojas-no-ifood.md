@@ -27,11 +27,15 @@ And the problem isn't the time. It's the difference that sits live: manual, repe
 
 The obvious route would be putting someone on it, or setting up a weekly check store by store. But that doesn't solve it, it just moves it: the person will fail silently all the same, and checking 2,000 items by hand is more manual work, not less. The mistake wasn't in whoever was typing. **It was in having six menus to keep identical.**
 
-I solved it by flipping the problem inside out. Instead of me going store by store on iFood, the menu now lives in **one place**, my source of truth. When it changes there, an automation opens each store and applies the same adjustment to all of them, in the same pass. There stopped being six menus: there's one, replicated.
+I solved it by flipping the problem inside out. Instead of me going store by store on iFood, the menu now lives in **one place**, my source of truth. When it changes there, an automation opens each store and applies the same adjustment to all of them, in the same pass.
+
+There stopped being six menus to keep identical. There's one, replicated.
 
 ## The manual work goes, the control stays
 
-In practice, it works like this: I change the item at the source, the automation shows me **a preview of what will change in each store**, I check it and it writes. Add it all up and it's over 2,000 items coming from a single place. I gain time and I gain accuracy: no item ends up charged wrong because it slipped. When it was done by hand, there was always one.
+In practice, it works like this: I change the item at the source, the automation shows me **a preview of what will change in each store**, I check it and it writes. Half an afternoon of clicking became one checked pass.
+
+Add it all up and it's over **2,000 items** coming from a single place. I gain time and I gain accuracy: no item ends up charged wrong because it slipped. When it was done by hand, there was always one.
 
 > A repetitive task doesn't wake you up at night. It bleeds slowly, and you only find out at the close.
 

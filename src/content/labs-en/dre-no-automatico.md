@@ -27,7 +27,9 @@ And there's a second trap: pulling it together isn't even the worst part. **The 
 
 The obvious route would be hiring someone to type this in every month, or subscribing to a management system that promises to integrate everything. But the first is paying for manual work that fails silently, and the second hits the same wall: my six sources don't speak the same language, and no off-the-shelf system knows **my** categorization criteria.
 
-So each source got a collector that fetches on its own and drops into the right spot of the P&L: what sold, it pulls straight from the POS and iFood; what I spent, it reads from the statement and the card invoices. And the part that was hell, categorizing, is where AI comes in: it looks at my history from previous months and my reference table, and classifies each entry the way **I would classify it.** It isn't guessing, it's repeating my criteria, fast.
+So each source got a collector that fetches on its own and drops into the right spot of the P&L. What sold, it pulls straight from the POS and iFood. What I spent, it reads from the statement and the card invoices. Nobody types anything.
+
+And the part that was hell, categorizing, is where AI comes in: it looks at my history from previous months and my reference table, and classifies each entry the way **I would classify it.** It isn't guessing, it's repeating my criteria, fast.
 
 ## I stopped driving by the rearview mirror
 

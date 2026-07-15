@@ -14,29 +14,29 @@ keywords: ['segundo cérebro', 'memória de IA', 'agentes de IA', 'contexto para
 
 **Solução:** um cérebro externo, fora de qualquer ferramenta, que é a fonte única de verdade sobre mim e sobre as empresas: memória organizada por negócio, o meu jeito real de decidir e agentes que alimentam a base sozinhos. Qualquer IA lê isso primeiro e já chega sabendo.
 
-**Resultados:** parei de começar do zero. Qualquer modelo que eu abro (Claude, GPT, Gemini) já trabalha sabendo do negócio e de como eu penso, me alerta quando percebe que estou decidindo no modo errado, e num dia de sobrecarga conhece meu contexto melhor do que eu.
+**Resultados:** parei de começar do zero. Qualquer modelo que eu abro já trabalha sabendo do negócio e de como eu penso, me alerta quando percebe que estou decidindo no modo errado, e num dia de sobrecarga conhece meu contexto melhor do que eu.
 
 </div>
 
 ## Toda IA que eu abria começava do zero
 
-Eu opero várias frentes ao mesmo tempo, e cedo bati num teto que quase ninguém no mercado enxerga: cada IA que eu abria não sabia dos meus negócios, não sabia como eu penso, não lembrava da conversa anterior. Eu passava o começo de toda conversa **reexplicando a própria empresa.** E isso não é problema de produtividade pessoal, é estrutural.
+Eu opero várias frentes ao mesmo tempo, e cedo bati num teto que quase ninguém enxerga: cada IA que eu abria não sabia dos meus negócios, não sabia como eu penso, não lembrava da conversa anterior. Eu passava o começo de toda conversa **reexplicando a própria empresa.**
 
-E tem uma segunda armadilha, menos visível: o problema não era a IA. Era que **o meu contexto não morava em lugar nenhum.** Estava espalhado na minha cabeça, em conversas soltas, em anotações perdidas. Nenhuma ferramenta tem como saber o que nunca foi escrito.
+E tem uma segunda armadilha, menos visível: o problema não era a IA. Era que **o meu contexto não morava em lugar nenhum.** Estava espalhado na minha cabeça, em conversas soltas, em anotações perdidas. Nenhuma ferramenta tem como saber o que nunca foi escrito. Isso não é problema de produtividade pessoal, é estrutural.
 
 ## Construí o cérebro fora das ferramentas
 
-O caminho óbvio seria construir isso dentro do produto da moda. Mas produto de IA muda toda semana: troca de nome, de dono, de preço. Se o meu contexto morasse lá dentro, cada troca de ferramenta seria começar de novo. **Ferramenta morre. O contexto sobrevive.**
+O caminho óbvio seria construir isso dentro do produto da moda. Mas produto de IA muda toda semana: troca de nome, de dono, de preço. Se o meu contexto morasse lá dentro, cada troca de ferramenta seria recomeçar do zero. **Ferramenta morre. O contexto sobrevive.**
 
-Então montei o **Meu Cortex Digital**: a fonte única de verdade sobre mim e sobre as empresas, num formato simples que qualquer modelo consegue ler, hoje e daqui a cinco anos. São quatro camadas, e cada uma só entra quando a de baixo está firme: a **memória** (todo o contexto num lugar só, organizado por negócio), a **persona** (como eu realmente decido, não como eu gostaria de decidir), a **agência** (agentes que param de aconselhar e passam a agir, como o [que cuida do meu WhatsApp](/labs/bot-whatsapp-inteligencia-pessoal/)) e os **gatilhos**, o próximo passo: ações que disparam sozinhas, sem eu pedir.
+Então montei o **Meu Cortex Digital** fora de tudo: a fonte única de verdade sobre mim e sobre as empresas, num formato simples que qualquer modelo consegue ler, hoje e daqui a cinco anos. São quatro camadas, e cada uma só entra quando a de baixo está firme.
 
-Cada camada nasceu de um problema real que apareceu no caminho: a IA inventa pra parecer útil, eu não decido como acho que decido, e a automação que alimenta a base erra. Por isso o princípio que segura tudo é a desconfiança.
+**Memória**, todo o contexto num lugar só, organizado por negócio. **Persona**, como eu realmente decido, não como eu gostaria de decidir. **Agência**, agentes que param de aconselhar e passam a agir, como o [que cuida do meu WhatsApp](/labs/bot-whatsapp-inteligencia-pessoal/). E os **gatilhos**, ações que disparam sozinhas, sem eu pedir.
 
 ## Qualquer IA já chega sabendo
 
 Na prática, funciona assim: abro qualquer IA e ela lê o Cortex primeiro. Já chega sabendo do negócio e do meu jeito de pensar, e quando percebe que estou no modo errado pra uma decisão importante, **ela me alerta.** Uma IA que só concorda não vale nada; essa me corrige.
 
-Levei meses descobrindo o que quebra pra chegar aqui. Hoje é a base de tudo que eu faço com IA, e num dia de sobrecarga o sistema **conhece meu contexto melhor do que eu mesmo naquele momento.**
+Cada camada nasceu de um problema que apareceu na marra: a IA inventa pra parecer útil, eu não decido como acho que decido, e a automação que alimenta a base erra. Foram meses descobrindo o que quebra, e o princípio que segura tudo hoje é a desconfiança.
 
 > Melhor não anotar nada do que anotar errado.
 
