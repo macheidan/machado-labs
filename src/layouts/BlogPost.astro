@@ -278,6 +278,32 @@ const jsonLd = articleGraph({
     content: counter(listCounter) ".";
   }
 
+  /* Card do resumo Desafio/Solução/Resultados dos posts de case */
+  .post-body :global(.case-summary) {
+    margin: 0 0 48px;
+    padding: 28px 28px 6px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.02));
+  }
+  .post-body :global(.case-summary p) {
+    margin-bottom: 26px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.78);
+  }
+  .post-body :global(.case-summary p > strong:first-child) {
+    display: block;
+    margin-bottom: 6px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    background: linear-gradient(120deg, #ffb088 0%, var(--accent) 60%, var(--pink) 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+
   /* Blockquote com barra vertical à esquerda */
   .post-body :global(blockquote) {
     position: relative;
@@ -411,5 +437,6 @@ const jsonLd = articleGraph({
     .post-cover { padding: 0 16px; }
     .post-body { padding: 0 16px; }
     .post-body :global(blockquote) { padding-left: 12px; }
+    .post-body :global(.case-summary) { padding: 20px 18px 2px; border-radius: 12px; }
   }
 </style>

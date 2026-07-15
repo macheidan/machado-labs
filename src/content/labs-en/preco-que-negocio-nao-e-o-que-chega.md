@@ -7,13 +7,15 @@ tags: ['operacao', 'compras', 'ia']
 keywords: ['real input cost', 'supplier price', 'invoice from tax authority', 'compare supplier prices', 'cost control', 'COGS', 'AI for purchasing']
 ---
 
+<div class="case-summary">
+
 **Challenge:** more than 130 inputs per store, bought every week. The negotiated price is almost never what lands on the invoice (tax, freight, and off-deal amounts pile on), and comparing suppliers meant a manual rule-of-three.
 
 **Solution:** a bot pulls the invoices straight from the Receita Federal, tax and freight already baked in, and normalizes everything by real unit (per kg/unit) to compare suppliers. The intranet flags the day an input goes up.
 
 **Results:** with the alert in hand, the purchasing team negotiates with the supplier on the spot and uses the same number as leverage with the others. In the end, 2% less on purchasing cost, without hiring anyone.
 
-***
+</div>
 
 You sit with the supplier, negotiate a price, shake hands. Then the invoice arrives and the number is different. Taxes, freight, a value that came different from the deal, and suddenly the real cost of the input isn't what you wrote down. I was running the operation deciding on top of a price that **didn't really exist.**
 

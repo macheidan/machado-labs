@@ -7,13 +7,15 @@ tags: ['operacao', 'compras', 'ia']
 keywords: ['custo real de insumo', 'preço de fornecedor', 'nota fiscal Receita Federal', 'comparar preço de fornecedor', 'controle de custos', 'CMV', 'IA para compras']
 ---
 
+<div class="case-summary">
+
 **Desafio:** são mais de 130 insumos por loja, comprados toda semana. O preço negociado quase nunca é o que chega na nota (imposto, frete e valores fora do combinado entram na conta), e comparar fornecedor virava regra de 3 na mão.
 
 **Solução:** um bot puxa as notas direto da Receita Federal, já com imposto e frete embutidos, e normaliza tudo por unidade real (por kg/un) pra comparar fornecedores. A intranet avisa no dia em que um insumo sobe.
 
 **Resultados:** com o alerta na mão, o setor de compras negocia na hora com o fornecedor e usa o mesmo número pra pressionar os outros. No fim, 2% a menos no custo de compra, sem contratar ninguém.
 
-***
+</div>
 
 Você senta com o fornecedor, negocia um preço, aperta a mão. Depois a nota chega e o número é outro. Imposto, frete, um valor que veio diferente do combinado, e de repente o custo real do insumo não é o que você anotou. Eu tocava a operação decidindo em cima de um preço que **não existia de verdade.**
 
