@@ -87,6 +87,7 @@ def audio_clip(cid, name, path, start_f, out_f, fade_frames):
             <mediatype>audio</mediatype><pproBypass>false</pproBypass>
             <parameter authoringApp="PremierePro"><parameterid>level</parameterid><name>Level</name>
               <valuemin>0</valuemin><valuemax>3.98109</valuemax>
+              <value>1</value>
               <keyframe><when>0</when><value>0</value></keyframe>
               <keyframe><when>{fade_frames}</when><value>1</value></keyframe>
             </parameter>
@@ -161,6 +162,9 @@ def main():
           <fielddominance>none</fielddominance>
           <colordepth>24</colordepth>
         </samplecharacteristics></format>
+        <track>
+          <enabled>TRUE</enabled><locked>FALSE</locked>
+        </track>
       </video>
       <audio>
         <numOutputChannels>2</numOutputChannels>
