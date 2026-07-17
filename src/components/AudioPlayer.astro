@@ -189,7 +189,14 @@ const { src, label = 'Ouvir o post', title, artwork } = Astro.props;
     return `${m}:${String(total % 60).padStart(2, '0')}`;
   }
 
-  document.querySelectorAll<HTMLElement>('[data-audio-player]').forEach((root) => {
+  function initAudioPlayers() {
+   document.querySelectorAll<HTMLElement>('[data-audio-player]').forEach((root) => {
+    // Com o ClientRouter (view transitions) o script não roda de novo a cada
+    // navegação; religamos no astro:page-load. A guarda evita ligar o mesmo
+    // player duas vezes (o page-load também dispara na carga inicial).
+    if (root.dataset.bound) return;
+    root.dataset.bound = '1';
+
     const audio = root.querySelector<HTMLAudioElement>('[data-audio]')!;
     const playBtn = root.querySelector<HTMLButtonElement>('[data-play]')!;
     const track = root.querySelector<HTMLElement>('[data-track]')!;
@@ -223,7 +230,7 @@ const { src, label = 'Ouvir o post', title, artwork } = Astro.props;
         document.querySelectorAll<HTMLAudioElement>('[data-audio]').forEach((o) => {
           if (o !== audio) o.pause();
         });
-        audio.play();
+        audio.play().catch(() => {});
       } else {
         audio.pause();
       }
@@ -315,5 +322,9 @@ const { src, label = 'Ouvir o post', title, artwork } = Astro.props;
     });
 
     render();
-  });
+   });
+  }
+
+  initAudioPlayers();
+  document.addEventListener('astro:page-load', initAudioPlayers);
 </script>
