@@ -206,6 +206,11 @@ const { src, label = 'Ouvir o post', title, artwork } = Astro.props;
 
     let scrubbing = false;
 
+    // Com o ClientRouter, o <audio> chega por troca de DOM e o navegador nem
+    // sempre inicia o preload sozinho -> loadedmetadata nunca dispara e o player
+    // fica travado em -0:00. Forçar o load kicka o download de metadados.
+    if (audio.readyState === 0) audio.load();
+
     const render = () => {
       const d = audio.duration;
       const pct = Number.isFinite(d) && d > 0 ? (audio.currentTime / d) * 100 : 0;
@@ -295,6 +300,9 @@ const { src, label = 'Ouvir o post', title, artwork } = Astro.props;
       render();
       syncPositionState();
     });
+    // durationchange é mais confiável que loadedmetadata quando o elemento
+    // entra por troca de DOM (ClientRouter) em vez de parser.
+    audio.addEventListener('durationchange', render);
     audio.addEventListener('seeked', syncPositionState);
     audio.addEventListener('timeupdate', () => {
       if (!scrubbing) render();
