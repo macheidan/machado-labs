@@ -1,49 +1,53 @@
 ---
-title: 'I built an AI agent that takes care of my WhatsApp'
-heroTitle: 'I built an <em>agent</em><br/>that runs my <span class="accent">WhatsApp</span>'
-description: 'I was missing important business stuff on WhatsApp every week. So I put an agent to read it for me and flag what needs a reply, without it inventing anything and without depending on a single API. Runs on the home PC, costs zero.'
+title: 'A personal secretary inside my WhatsApp'
+heroTitle: 'A personal <em>secretary</em><br/>inside my <span class="accent">WhatsApp</span>'
+description: 'It is connected to the number and could reply to customers, blast messages, handle chats in my place. It does not, and that was a decision. We built an AI secretary that only reads, summarizes, and flags what needs me. Runs on our server, costs zero.'
 pubDate: 'May 01 2026'
-updatedDate: 'Jul 5 2026'
+updatedDate: 'Jul 19 2026'
 heroImage: '../imgs/260501.jpeg'
-heroAlt: 'AI agent reading my WhatsApp messages in the background'
+heroAlt: 'AI secretary reading my WhatsApp messages in the background'
 tags: ['cortex', 'agentes', 'whatsapp']
-keywords: ['WhatsApp AI agent', 'WhatsApp automation for business', 'AI for WhatsApp', 'WhatsApp group summaries', 'save time on WhatsApp', 'AI for business owners']
+keywords: ['WhatsApp AI agent', 'WhatsApp virtual secretary', 'WhatsApp automation for business', 'WhatsApp group summaries', 'save time on WhatsApp', 'AI for business owners']
 ---
 
 <div class="case-summary">
 
-**Challenge:** important business stuff slipped through WhatsApp every week: a supplier chasing a quote I swore I had answered, a pending item buried in a group. Keeping up by hand doesn't scale.
+**Challenge:** important business matters slipped through WhatsApp every single day.
 
-**Solution:** an agent that reads me, instead of talking to customers: it follows the groups and conversations that matter and hands me what needs a reply at the end of the day, the week's summary on Sunday, and the month on the 1st. With an explicit ban on inventing and backup models so it never stops.
+**Solution:** a secretary that reads and summarizes for me, without inventing anything and without depending on a single API:
 
-**Results:** I show up on Monday knowing what's pending and what needs a reply. Nothing important slips, the summary has never failed to arrive, and the cost so far is zero.
+- Follows the supplier-promotion groups and delivers a report at 4pm every day to my admin team.
+- At 2pm it flags the important matters that hinge on my decision and that I still haven't answered.
+- Summarizes the group conversations since the last time I stopped reading.
+
+**Results:** I stay on top of the important matters that, without it, would surely have slipped. Cost so far: zero.
 
 </div>
 
-## I used to show up on Monday in the dark
+## Something sank every day
 
-Before, I found out what had slipped over the weekend only when it was too late: a supplier chasing a quote I swore I had answered. Today I show up knowing **what's still pending, what needs a reply, and what can wait.**
+The problem wasn't once a week. It was every day. A supplier promotion I needed to see, a question sitting there waiting on my decision, a group I had stopped reading. In an operation that runs on messages, the important thing doesn't shout. **It just sinks under the others.**
 
-And the problem was never WhatsApp. It was attention: **keeping up by hand doesn't scale**, and the answer was never to try harder. In an operation that runs on messages, the important thing doesn't shout. It just sinks under the others.
+And keeping up by hand doesn't scale. The answer was never to try harder to read more. It was to stop reading in the dark.
 
-## A bot that reads me, not one that talks
+## A secretary, not an attendant
 
-The obvious route would be a customer-service bot, a robot that talks to clients. But my problem wasn't talking to clients, it was what slipped past me. So I did the opposite: **instead of a bot that talks, a bot that reads me.**
+The obvious route would be a customer-service bot, a robot that talks to clients pretending to be us. But our problem was never talking to clients, it was what slipped past us. So we did the opposite: **we hired a secretary, not an attendant.** A good secretary doesn't answer in your place. She reads everything and tells you what needs you.
 
-It follows the groups and conversations that matter to the business, runs on the PC that's already on at home, plugged into my own number. Sees what I see, and talks to nobody. It's the "agency" layer of [My Digital Cortex](/en/labs/segundo-cerebro-ia/): the agent stops just answering questions and starts acting where my attention leaks first.
+And here's the part almost everyone would do differently. She's plugged into the number, the same way any customer-service bot would be. **She could reply to customers, blast messages, handle chats in my place.** The plumbing for that is ready. She doesn't. **It was a decision, not a limitation.**
 
-And here came the hard part, which isn't reading. **It's trusting.** The first version handed me a novel: it deduced intentions nobody wrote and stated conclusions about a thread that barely had three messages. It looked deep. It was made up.
+Turning an AI loose to talk to my customers, in my name, is a risk I chose not to take. The value was never in her talking. It was in her reading. So she talks to one person only: me. It's the "agency" layer of [our digital second brain](/en/labs/segundo-cerebro-ia/): the agent stops just answering questions and starts acting where my attention leaks first, without ever touching what it shouldn't.
 
-## It knows to stay quiet when it observed nothing
+## She knows to stay quiet when she saw nothing
 
-This isn't decoration: this bot **writes inside my Cortex.** If it invents, next week I'm deciding on top of its invention. So the rule became the opposite of what most people do with AI: fixed format, an explicit ban on deducing, and an order to return "nothing new" when there's nothing to say.
+There's another hard part, and it isn't reading. **It's trusting.** The first version handed me a novel: it deduced intentions nobody wrote and stated conclusions about a thread that barely had three messages. It looked deep. It was made up. And this secretary **writes inside our second brain**: if she invents, we decide on top of her invention.
 
-In practice, it works like this: at the end of the day it hands me what needs an urgent reply, on Sunday a summary of what's still open, on the 1st the whole month. If the main model is down or out of quota, it tries the second, then the third. An API goes down on a Sunday night and the summary arrives all the same. Cost so far: **zero.**
+So the rule became the opposite of what most people do with AI: fixed format, an explicit ban on deducing, and an order to return "nothing new" when there's nothing to say. If the main model is down or out of quota, she tries the second, then the third. An API goes down on a Sunday night and the report arrives all the same. Cost so far: **zero.**
 
 > I'd rather have nothing than wrong.
 
 ***
 
-Just from reading, it already changed how I show up on Monday. Building an agent that acts in the real world, without inventing and without becoming hostage to a single API, is exactly the kind of project I help companies build.
+Just from reading, it already changed how I show up midday. Building an agent that acts in the real world, without inventing, without becoming hostage to a single API, and that knows where it shouldn't reach, is exactly the kind of project we help other companies build.
 
-**Stack:** runs on Node 24/7 on the home PC, connected to WhatsApp directly over QR code (no paid API, no separate number); the analysis goes through a cascade of models (Gemini with fallback to Groq, Cerebras, and OpenRouter) scheduled by cron (daily, Sunday, the 1st); state in a single file with short retention, text only, commands I send to myself, and conservative prompts wherever the output becomes a decision. Cost: zero.
+**Stack:** runs on Node 24/7 on our server, connected to WhatsApp directly over QR code (no paid API, no separate number), with the auto-reply function deliberately switched off; the analysis goes through a cascade of models (Gemini with fallback to Groq, Cerebras, and OpenRouter) scheduled by cron; state in a single file with short retention, text only, and conservative prompts wherever the output becomes a decision. Cost: zero.
