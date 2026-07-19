@@ -134,7 +134,9 @@ const bodyClass = variant === 'home' ? 'home-body' : '';
         :root { --navbar-height: 76px; --header-offset: 92px; }
       }
 
-      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+      /* remove o contorno azul de foco que fica grudado apos tocar no mobile, mantendo o foco visivel no teclado */
+      :focus:not(:focus-visible) { outline: none; }
       html, body { background: var(--bg); color: var(--fg); }
       body {
         font-family: var(--font-inter);

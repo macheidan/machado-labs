@@ -63,7 +63,9 @@ const postsUrl = isEn ? '/en/posts' : '/v5/posts';
         --bg: #F4ECDC; --fg: #1A1410; --muted: #5C4F42;
         --faint: #8B7B6A; --line: #D9CCB8; --accent: #C2683A; --warm: #ECB05A;
       }
-      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+      /* remove o contorno azul de foco que fica grudado apos tocar no mobile, mantendo o foco visivel no teclado */
+      :focus:not(:focus-visible) { outline: none; }
       html, body { background: #F4ECDC; }
       html {
         background: linear-gradient(
