@@ -6,6 +6,7 @@ pubDate: May 01 2026
 updatedDate: 'Jul 19 2026'
 heroImage: ''
 heroAlt: Secretária de IA lendo as mensagens do meu WhatsApp em segundo plano
+audio: /audio/bot-whatsapp-inteligencia-pessoal.mp3
 tags:
   - agentes
   - ia
