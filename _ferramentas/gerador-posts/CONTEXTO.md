@@ -17,7 +17,7 @@ conteúdo de autoridade. "Capturado > produzido": cada coisa real vira 1 artefat
   sistema/método, reorganizando a operação inteira em torno de IA, um passo à frente do mercado), e
   **não** como pequeno empreendedor sofrendo. A dor de "pequeno/PME" é do **leitor** (tópico 2); o
   Fábio é quem já resolveu e leva pra fora. A pizzaria prova o método na marra, não é a identidade.
-- Ângulo recorrente: série *"como eu faço no meu negócio / na minha pizzaria"*.
+- Ângulo recorrente: série *"como fazemos no nosso negócio / na nossa operação"*.
 
 ## 2. Público
 - **Empresários / donos de empresa em geral** (amplo — não só food-service; food é
@@ -32,8 +32,15 @@ conteúdo de autoridade. "Capturado > produzido": cada coisa real vira 1 artefat
   ou sabores, etc.), abstraído quando sensível.
 
 ## 4. Voz e tom
-- **Monólogo objetivo**: Fábio pensando alto, direto ao ponto. Sem subtítulo
-  didático, sem lista de ganhos, sem pitch de fechamento explícito.
+- **Primeira pessoa do plural ("fazíamos", "montamos", "resolvemos")**: o trabalho é
+  narrado como de uma **equipe**, não de um cara sozinho no monólogo. Direta ou
+  indiretamente, o texto deixa claro que há uma **equipe administrativa** por trás da
+  operação. Segue direto ao ponto, sem subtítulo didático, sem lista de ganhos, sem
+  pitch de fechamento explícito.
+- **Plural = equipe, nunca sócio.** "Nós" é o time/operação, não um sócio (ver tópico 8:
+  dono único). A autoridade/assinatura continua sendo o Fábio; o que muda é que ele fala
+  como quem **lidera um time**, não como quem faz tudo na mão. Vale igual no EN:
+  "we / our team", não "I alone".
 - **Sensação-alvo: "estou um passo à frente de quem está lendo".** O texto transmite
   conhecimento, autoridade e inteligência em **"AI first"** pela substância, nunca
   por auto-elogio.
@@ -53,6 +60,9 @@ conteúdo de autoridade. "Capturado > produzido": cada coisa real vira 1 artefat
   empresário.
 - **Bloco "stack" técnico no fim, no máximo 1 parágrafo** (único lugar onde ferramenta
   concreta é nomeada; ainda assim sem detalhe de formato de arquivo).
+- **Léxico de infraestrutura:** nunca "PC de casa", "computador de casa" nem "máquina de
+  casa". A infra é sempre o **Servidor** (EN: "our server"). Reforça operação séria, não
+  gambiarra doméstica.
 
 ## 6. Frontmatter / SEO
 - Campos: `title`, `heroTitle`, `description`, `pubDate`, `updatedDate`, `tags`,
@@ -100,3 +110,32 @@ conteúdo de autoridade. "Capturado > produzido": cada coisa real vira 1 artefat
    atualização (bloco "Atualizações" datado + bump de `updatedDate`).
 3. **Curadoria humana:** o robô **captura candidatos**; publicar poucos e fundos é
    escolha do Fábio (coerente com "pouco e fundo > muito e raso").
+
+---
+
+## Checklist de publicação (todo post)
+
+Estrutura:
+- [ ] `heroTitle` com `<em>`, `.accent`, `<br/>` (mesmo modelo da home e do hero).
+- [ ] `description` não repete a 1ª frase do corpo.
+- [ ] Arco: origem da ideia → problemas → como resolvi → um passo à frente.
+- [ ] Corpo em linguagem leiga, com ritmo visual (negrito, blockquote, subhead, quebras).
+- [ ] Bloco "stack" só no fim, no máximo 1 parágrafo.
+
+Voz:
+- [ ] Primeira pessoa do **plural** ("fazíamos"), passando ideia de **equipe** (nunca sócio).
+- [ ] Sem subtítulo didático, sem lista de ganhos, sem pitch de fechamento.
+- [ ] Infra chamada de **Servidor**, nunca "PC de casa".
+- [ ] Ganho real (tempo, dinheiro ou decisão) pra dono/diretor.
+
+Links e léxico:
+- [ ] Pelo menos 1 link interno pra outro post, com âncora amigável (sem URL crua, sem "aqui/clique").
+- [ ] "Cortex Digital" para o segundo cérebro.
+
+Privacidade:
+- [ ] Sem faturamento, saúde, segredo de negócio nem dado pessoal de terceiros. Números abstraídos.
+
+Global:
+- [ ] Zero travessão (em-dash).
+- [ ] Versão pt-BR **e** EN no mesmo commit, mesmo slug.
+- [ ] Commit + push direto após a mudança.
