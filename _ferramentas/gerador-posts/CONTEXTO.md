@@ -80,7 +80,7 @@ conteúdo de autoridade. "Capturado > produzido": cada coisa real vira 1 artefat
   dado sensível pessoal** (nomes de terceiros, contatos, família, patrimônio,
   credenciais).
 - Números de operação sempre **abstraídos/relativos**.
-- **Sem sócio** (dono único). "Cortex Digital" para o segundo cérebro.
+- **Sem sócio** (dono único).
 
 ## 9. Escopo elegível (que projeto pode virar post)
 - **Provas vivas de gestão/operação de PME em geral** (não só food): DRE/controladoria,
@@ -93,7 +93,7 @@ conteúdo de autoridade. "Capturado > produzido": cada coisa real vira 1 artefat
 - Gerar as **duas** versões em todo post: `src/content/labs/<slug>.md` (pt-BR) e
   `src/content/labs-en/<slug>.md` (EN), mesmo `id`/slug.
 - Traduzir `title` e `description` no frontmatter. Manter voz/tom do original.
-- Nomes próprios sem tradução (Lov Pizza, Dáme Pizza, Cortex Digital).
+- Nomes próprios sem tradução (Lov Pizza, Dáme Pizza).
 
 ## 11. SEO e indexação
 - Otimizar cada post para busca: `keywords`/`description` com **termos de dor real**,
@@ -115,6 +115,10 @@ conteúdo de autoridade. "Capturado > produzido": cada coisa real vira 1 artefat
 
 ## Checklist de publicação (todo post)
 
+Público-alvo:
+- [ ] Escreve pra **dono, diretor ou gestor de PME** (dono-operador que administra o
+  negócio), amplo e não só food-service. Nunca pra dev.
+
 Estrutura:
 - [ ] `heroTitle` com `<em>`, `.accent`, `<br/>` (mesmo modelo da home e do hero).
 - [ ] `description` não repete a 1ª frase do corpo.
@@ -130,7 +134,6 @@ Voz:
 
 Links e léxico:
 - [ ] Pelo menos 1 link interno pra outro post, com âncora amigável (sem URL crua, sem "aqui/clique").
-- [ ] "Cortex Digital" para o segundo cérebro.
 
 Privacidade:
 - [ ] Sem faturamento, saúde, segredo de negócio nem dado pessoal de terceiros. Números abstraídos.
