@@ -113,6 +113,32 @@ def coletar_vendas_completo(headless):
     return ok
 
 
+def dias_faltando_mes():
+    """Dias do mês corrente (do dia 1 até ontem) ainda ausentes em vendas_dias.json."""
+    mes = date.today().strftime("%Y-%m")
+    acc = jload("vendas_dias.json", {}) or {}
+    tem = set(acc.get("dias", {})) if acc.get("mes") == mes else set()
+    hoje = date.today()
+    return [date(hoje.year, hoje.month, d).isoformat()
+            for d in range(1, hoje.day)
+            if date(hoje.year, hoje.month, d).isoformat() not in tem]
+
+
+def backfill_mes(headless):
+    """Coleta cada dia faltante do mês corrente (uso pontual pra popular a tabela
+    diária do mês na primeira vez). Cada dia é uma coleta Saipos (~30s)."""
+    faltam = dias_faltando_mes()
+    if not faltam:
+        log("  mês já completo em vendas_dias.json")
+        return
+    log(f"\n▶ backfill do mês: {len(faltam)} dia(s) — {faltam[0]}..{faltam[-1]}")
+    for d in faltam:
+        log(f"\n▶ backfill mês {d}")
+        if coletar_vendas(headless, "--dia", d, "--sem-mes", tentativas=2):
+            atualizar_vendas()
+            atualizar_dias_mes()
+
+
 def jload(name, default=None):
     f = DATA / name
     if f.exists():
@@ -232,8 +258,73 @@ def map_mes(m):
     def arr(x):
         return [round(x.get("valor") or 0), x.get("pizzas") or 0, x.get("pedidos") or 0]
 
-    return {"mes": m.get("mes", ""), "de": m.get("de", ""), "ate": m.get("ate", ""),
-            "dame": arr(lj.get("DAME", {})), "lov": arr(lj.get("LOV", {}))}
+    def canal_arr(x):
+        """Agrupa a tabela CANAL do Saipos em ifood/site ([valor, pedidos]).
+        Site = Delivery Direto (método do DRE); o front calcula
+        saipos = total - ifood - site."""
+        out = {"ifood": [0, 0], "site": [0, 0]}
+        for nome, d in (x.get("canais") or {}).items():
+            low = nome.lower()
+            key = "ifood" if "ifood" in low else ("site" if "delivery direto" in low else None)
+            if key:
+                out[key][0] += round(d.get("valor") or 0)
+                out[key][1] += d.get("pedidos") or 0
+        return out
+
+    saida = {"mes": m.get("mes", ""), "de": m.get("de", ""), "ate": m.get("ate", ""),
+             "dame": arr(lj.get("DAME", {})), "lov": arr(lj.get("LOV", {}))}
+    if any((x or {}).get("canais") for x in lj.values()):
+        saida["canais"] = {"dame": canal_arr(lj.get("DAME", {})),
+                           "lov": canal_arr(lj.get("LOV", {}))}
+    return saida
+
+
+DOW3 = ["seg", "ter", "qua", "qui", "sex", "sáb", "dom"]
+
+
+def atualizar_dias_mes():
+    """Acumula vendas por dia do MÊS corrente em vendas_dias.json e devolve a
+    série no formato do front (sales_days). O vendas_hist.json só guarda 7 dias,
+    então este acumulador é o que permite a tabela com o mês inteiro. Reseta ao
+    virar o mês; alimenta-se de vendas.json (ontem) e vendas_hist.json (7 dias),
+    e o backfill do mês (--backfill-mes) preenche os dias antigos que faltarem."""
+    mes = date.today().strftime("%Y-%m")
+    acc = jload("vendas_dias.json", {}) or {}
+    if acc.get("mes") != mes:
+        acc = {"mes": mes, "dias": {}}
+    dias = acc.get("dias", {})
+
+    fontes = []
+    hoje = jload("vendas.json")
+    if hoje:
+        fontes.append(hoje)
+    fontes += (jload("vendas_hist.json", []) or [])
+    for r in fontes:
+        dt = r.get("data", "")
+        if dt.startswith(mes) and r.get("lojas"):
+            dias[dt] = {"dow": r.get("dow", ""), "lojas": r["lojas"]}
+
+    acc["dias"] = dias
+    acc["gerado_em"] = datetime.now().isoformat(timespec="seconds")
+    (DATA / "vendas_dias.json").write_text(
+        json.dumps(acc, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    def arr(lj):
+        return [round(lj.get("valor") or 0), lj.get("pizzas") or 0, lj.get("pedidos") or 0]
+
+    out = []
+    for dt in sorted(dias):
+        try:
+            d = date.fromisoformat(dt)
+        except Exception:
+            continue
+        lojas = dias[dt].get("lojas", {})
+        out.append({
+            "data": dt, "dia": d.day, "dow": DOW3[d.weekday()],
+            "dame": arr(lojas.get("DAME", {})),
+            "lov":  arr(lojas.get("LOV", {})),
+        })
+    return out
 
 
 def cls_ia(cat):
@@ -342,6 +433,7 @@ def consolidar():
         "topbar":   topbar(extras),
         "sales":    atualizar_vendas(),
         "sales_month": map_mes(jload("vendas_mes.json", {})),
+        "sales_days":  atualizar_dias_mes(),
         "agenda":   map_agenda(jload("agenda.json", {})),
         "projects": map_proj(jload("projetos.json", {})),
         "ai":       map_news(news.get("ia"), cls_ia),
@@ -366,17 +458,18 @@ def consolidar():
 
 
 # ── envio FTPS ───────────────────────────────────────────────────────────────
-def enviar(arquivo, cfg, dst=None):
+def enviar(arquivo, cfg, dst=None, remote_name=None):
     srv = cfg.get("ftp_server")
     usr = cfg.get("ftp_user")
     pwd = cfg.get("ftp_pass")
     dst = dst or cfg.get("ftp_dir", "/dashboard")
+    remote_name = remote_name or arquivo.name
     if not (srv and usr and pwd):
         log("\n[AVISO] credenciais FTP ausentes no config.json "
             "(ftp_server / ftp_user / ftp_pass). JSON gravado local, não enviado.")
         return False
     ctx = ssl._create_unverified_context()        # security: loose (igual ao deploy)
-    log(f"\n▶ FTPS {usr}@{srv}  ->  {dst}/{arquivo.name}")
+    log(f"\n▶ FTPS {usr}@{srv}  ->  {dst}/{remote_name}")
     try:
         ftps = FTP_TLS(context=ctx)
         ftps.connect(srv, int(cfg.get("ftp_port", 21)), timeout=40)
@@ -385,10 +478,18 @@ def enviar(arquivo, cfg, dst=None):
         try:
             ftps.cwd(dst)
         except Exception:
-            ftps.mkd(dst)
-            ftps.cwd(dst)
+            # cria a árvore de diretórios parte a parte (dst pode ser aninhado,
+            # ex.: .../pizzas/data, com 'data' ainda inexistente)
+            base = "/" if dst.startswith("/") else ""
+            ftps.cwd(base or ".")
+            for part in dst.strip("/").split("/"):
+                try:
+                    ftps.cwd(part)
+                except Exception:
+                    ftps.mkd(part)
+                    ftps.cwd(part)
         with open(arquivo, "rb") as f:
-            ftps.storbinary(f"STOR {arquivo.name}", f)
+            ftps.storbinary(f"STOR {remote_name}", f)
         ftps.quit()
         log("  ✓ enviado")
         return True
@@ -402,6 +503,8 @@ def main():
     ap.add_argument("--so-consolida", dest="so_consolida", action="store_true")
     ap.add_argument("--so-vendas", dest="so_vendas", action="store_true",
                     help="só coleta vendas (com retry/backfill), consolida e envia")
+    ap.add_argument("--backfill-mes", dest="backfill_mes", action="store_true",
+                    help="coleta os dias faltantes do mês corrente (popula a tabela diária)")
     ap.add_argument("--sem-envio", dest="sem_envio", action="store_true")
     ap.add_argument("--headless", action="store_true")
     a = ap.parse_args()
@@ -423,10 +526,22 @@ def main():
         # Saipos é o único que abre browser e pode travar; timeout curto por
         # tentativa (5 min) + retry/backfill em coletar_vendas_completo.
         coletar_vendas_completo(a.headless)
+        if a.backfill_mes:
+            backfill_mes(a.headless)
 
     arq = consolidar()
     if not a.sem_envio:
-        enviar(arq, cfg, cfg.get("ftp_dir", "/dashboard"))   # /dashboard (com senha)
+        ftp_dir = cfg.get("ftp_dir", "/dashboard")
+        enviar(arq, cfg, ftp_dir)                            # /dashboard (com basic auth)
+        # publica também no /pizzas (mesmo domínio, servido junto do app React;
+        # o Dash lê same-origin). Nome carrega token secreto porque /pizzas não
+        # tem auth nos estáticos — URL não-adivinhável (dash_token no config.json,
+        # espelhado em VITE_DASH_TOKEN no .env do app).
+        dst_pizzas = cfg.get("ftp_dir_pizzas") or (
+            ftp_dir.rsplit("/", 1)[0] + "/pizzas/data")
+        token = cfg.get("dash_token")
+        remote = f"dashboard-data-{token}.json" if token else arq.name
+        enviar(arq, cfg, dst_pizzas, remote_name=remote)
     log("\n== fim ==")
 
 

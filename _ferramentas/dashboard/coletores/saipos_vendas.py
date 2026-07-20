@@ -117,6 +117,33 @@ def extrair_inteiro(page, labels):
     return None
 
 
+def extrair_canais(page):
+    """Tabelas CANAL | QTDE | VALOR do sales-by-period (Delivery Direto, iFood,
+    Telefone, WhatsApp...). Retorna {nome: {"pedidos": int, "valor": float}}.
+    Método do DRE: Site = Delivery Direto, iFood = iFood, Saipos = resto
+    (o resto é calculado no front: total - ifood - site)."""
+    try:
+        texto = page.locator("body").inner_text(timeout=5000)
+    except Exception:
+        return {}
+    i = texto.find("CANAL")
+    if i < 0:
+        return {}
+    j = texto.find("PEDIDO", i)
+    trecho = texto[i:j] if j > i else texto[i:]
+    canais = {}
+    for m in re.finditer(r"^([^\t\n]+)\t(\d[\d.]*)\tR\$\s*([\d.,]+)", trecho, re.MULTILINE):
+        nome = m.group(1).strip()
+        if not nome or nome.upper() == "CANAL":
+            continue
+        try:
+            canais[nome] = {"pedidos": int(m.group(2).replace(".", "")),
+                            "valor": parse_valor_brl(m.group(3))}
+        except Exception:
+            continue
+    return canais
+
+
 # ── store-item-sold: pizzas via scope AngularJS ──────────────────────────────
 JS_SCOPE = r"""() => {
   const el = document.querySelector('[ng-repeat*="choicesResult"]') ||
@@ -335,10 +362,11 @@ def coletar_loja_periodo(page, loja, idx, d1, d2, cfg):
     abrir_relatorio(page, d1, SAIPOS_REPORT, "sales-by-period", dia_fim=d2)
     valor   = extrair_valor(page)
     pedidos = extrair_inteiro(page, LBL_PEDIDOS)
+    canais  = extrair_canais(page)
     abrir_relatorio(page, d1, SAIPOS_ITENS, "store-item-sold", dia_fim=d2)
     page.wait_for_timeout(1500)
     pizzas, _ = pizzas_from_scope(extrair_scope(page), cfg)
-    return {"valor": valor, "pizzas": pizzas, "pedidos": pedidos}
+    return {"valor": valor, "pizzas": pizzas, "pedidos": pedidos, "canais": canais}
 
 
 def main():
@@ -433,11 +461,16 @@ def main():
                     print(f"── {loja} (mês {d1.day:02d}–{d2.day:02d}/{d2.month:02d}) ──")
                     mes[loja] = coletar_loja_periodo(page, loja, idx, d1, d2, cfg)
                     print(f"   {mes[loja]}")
-                (DATA_DIR / "vendas_mes.json").write_text(json.dumps(
-                    {"mes": d1.strftime("%Y-%m"), "de": d1.isoformat(), "ate": d2.isoformat(),
-                     "lojas": mes, "gerado_em": datetime.now().isoformat(timespec="seconds")},
-                    ensure_ascii=False, indent=2), encoding="utf-8")
-                print("\n✓ vendas_mes.json")
+                if all(v.get("valor") is None for v in mes.values()):
+                    # Saipos rendeu em branco (acontece fora da madrugada):
+                    # não sobrescreve o vendas_mes.json bom da última coleta.
+                    print("\n  [mês] coleta vazia — vendas_mes.json mantido")
+                else:
+                    (DATA_DIR / "vendas_mes.json").write_text(json.dumps(
+                        {"mes": d1.strftime("%Y-%m"), "de": d1.isoformat(), "ate": d2.isoformat(),
+                         "lojas": mes, "gerado_em": datetime.now().isoformat(timespec="seconds")},
+                        ensure_ascii=False, indent=2), encoding="utf-8")
+                    print("\n✓ vendas_mes.json")
             except Exception as e:
                 print(f"  [mês] falhou: {type(e).__name__} {e}")
 
