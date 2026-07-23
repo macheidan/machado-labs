@@ -35,7 +35,7 @@ And it didn't come out as a spreadsheet dressed up as a system. It came out with
 
 In practice, it works like this: the attendant types the phone number and, if the customer has ordered before, name and address fill in on their own. Build the pizza, start typing the street and the system suggests the neighborhood, measures the distance and selects the right delivery fee. On checkout, it shows the receipt for review and prints straight to the thermal printer. Project cost: **2 hours** of one day and **$0 in monthly fees** forever.
 
-The next Friday, the main system could go down again and orders would keep coming out. And both brands run side by side on the same counter, each with its own screen and its own numbering. It's the same logic as when we made the [menu of all six stores flow from a single source](/labs/cardapio-de-seis-lojas-no-ifood/): the information is ours, and it's the information that has to live in our hands.
+The next Friday, the main system could go down again and orders would keep coming out. It's the same logic as when we made the [menu of all six stores flow from a single source](/labs/cardapio-de-seis-lojas-no-ifood/): the information is ours, and it's the information that has to live in our hands.
 
 > Depending on a good system isn't the problem. The problem is having no way out when it closes its door.
 

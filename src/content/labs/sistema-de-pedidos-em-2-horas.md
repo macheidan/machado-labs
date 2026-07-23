@@ -35,7 +35,7 @@ E não saiu uma planilha disfarçada de sistema. Saiu um sistema com as regras r
 
 Na prática, funciona assim: a atendente digita o telefone e, se o cliente já pediu antes, nome e endereço preenchem sozinhos. Monta a pizza, começa a digitar a rua e o sistema sugere o bairro, mede a distância e seleciona a taxa de entrega certa. Ao finalizar, mostra o cupom pra conferir e imprime direto na térmica. Custo do projeto: **2 horas** de um dia e **R$ 0 de mensalidade** pra sempre.
 
-Na sexta seguinte, o sistema principal podia cair de novo que o pedido continuava saindo. E as duas marcas rodam lado a lado no mesmo balcão, cada uma com a sua tela e a sua numeração. É a mesma lógica de quando colocamos o [cardápio das seis lojas pra sair de uma fonte só](/labs/cardapio-de-seis-lojas-no-ifood/): a informação é nossa, e é ela que tem que morar na nossa mão.
+Na sexta seguinte, o sistema principal podia cair de novo que o pedido continuava saindo. É a mesma lógica de quando colocamos o [cardápio das seis lojas pra sair de uma fonte só](/labs/cardapio-de-seis-lojas-no-ifood/): a informação é nossa, e é ela que tem que morar na nossa mão.
 
 > Depender de um sistema bom não é o problema. O problema é não ter porta de saída quando ele fecha a dele.
 
