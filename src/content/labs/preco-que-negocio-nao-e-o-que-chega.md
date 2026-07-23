@@ -1,6 +1,6 @@
 ---
-title: Economizamos 2% no custo de compra sem contratar ninguém, com essa IA
-heroTitle: Economizamos <em>2%</em> no custo de compra<br/>sem contratar ninguém, com essa <span class="accent">IA</span>
+title: Economizamos 2% no custo de compra com essa IA
+heroTitle: Economizamos <em>2%</em> no custo de compra<br/>com essa <span class="accent">IA</span>
 description: Sabemos o custo real de cada insumo e qual fornecedor está mais barato, sem calcular nada. Minha equipe deixa de comprar no hábito e passa a comprar no melhor preço.
 pubDate: Jun 28 2026
 updatedDate: ''
