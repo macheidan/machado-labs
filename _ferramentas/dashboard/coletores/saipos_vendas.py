@@ -36,6 +36,10 @@ from datetime import date, datetime, timedelta
 
 from playwright.sync_api import sync_playwright, TimeoutError as PWTimeout
 
+sys.path.insert(0, r"C:\claude_project\Hub\creds")
+from otp_email import marco_zero  # noqa: E402
+from saipos_2fa import tratar_2fa  # noqa: E402
+
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
@@ -224,8 +228,10 @@ def garantir_login(page, cfg):
         inj(e,{json.dumps(cfg['email'])}); inj(s,{json.dumps(cfg['senha'])});
     }})();""")
     page.wait_for_timeout(600)
+    marco = marco_zero()   # antes do submit: só aceita código de email posterior
     page.locator("button[type='submit']").first.click()
     page.wait_for_timeout(2500)
+    tratar_2fa(page, marco)   # código de 6 dígitos por email; no-op se não pedir
     try:
         page.wait_for_selector(".confirm", timeout=4000)
         page.evaluate("document.querySelector('.confirm').click()")
