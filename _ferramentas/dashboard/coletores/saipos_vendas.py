@@ -231,13 +231,15 @@ def garantir_login(page, cfg):
     marco = marco_zero()   # antes do submit: só aceita código de email posterior
     page.locator("button[type='submit']").first.click()
     page.wait_for_timeout(2500)
-    tratar_2fa(page, marco)   # código de 6 dígitos por email; no-op se não pedir
     try:
         page.wait_for_selector(".confirm", timeout=4000)
         page.evaluate("document.querySelector('.confirm').click()")
         page.wait_for_timeout(2000)
     except PWTimeout:
         pass
+    # 2FA por email; depois do diálogo de sessão — com ele na frente o Saipos
+    # nem chega a mandar o código. No-op quando não é pedido.
+    tratar_2fa(page, marco)
     print(f"  Login OK ✓  ({page.url})")
 
 
