@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="robots" content="noindex, nofollow, noarchive" />
+<meta name="referrer" content="no-referrer" />
+<meta name="theme-color" content="#09090d" />
+<title>ps</title>
+<link rel="icon" href="/favicon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#09090d; --bg-2:#111117; --bg-3:#17171f; --line:#23232d; --line-2:#2f2f3b;
+    --fg:#f1f1f5; --fg-2:#b4b4c0; --fg-3:#7c7c8a;
+    --acc:#e8b95a; --acc-2:#f5d48a; --ok:#5ad38a; --err:#ff6b6b;
+    --font:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    --mono:'Geist Mono',ui-monospace,Menlo,Consolas,monospace;
+    --r:12px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;min-height:100dvh}
+  button,input,textarea{font:inherit;color:inherit}
+  button{cursor:pointer;background:none;border:0}
+  a{color:var(--acc)}
+  .hide{display:none!important}
+
+  /* ---- centered card screens ---- */
+  .center{min-height:100dvh;display:grid;place-items:center;padding:24px}
+  .card{width:100%;max-width:380px;background:var(--bg-2);border:1px solid var(--line);border-radius:18px;padding:32px 28px;display:flex;flex-direction:column;gap:18px}
+  .brand{display:flex;align-items:center;gap:10px;color:var(--fg-2);font-size:13px;letter-spacing:.4px;text-transform:uppercase}
+  .brand b{width:28px;height:28px;border-radius:8px;background:var(--acc);color:#1a1405;display:grid;place-items:center;font-weight:700;font-size:13px}
+  h1{font-size:22px;font-weight:600;letter-spacing:-.3px}
+  p.sub{color:var(--fg-2);font-size:14px}
+  .msg{font-size:13px;color:var(--fg-3);min-height:18px}
+  .msg.err{color:var(--err)} .msg.ok{color:var(--ok)}
+  #gbtn{display:flex;justify-content:center;min-height:44px}
+
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field label{font-size:12px;color:var(--fg-3);text-transform:uppercase;letter-spacing:.5px}
+  .inp{display:flex;align-items:center;background:var(--bg-3);border:1px solid var(--line-2);border-radius:10px;padding:0 4px 0 12px;transition:border-color .15s}
+  .inp:focus-within{border-color:var(--acc)}
+  .inp input,.inp textarea{flex:1;background:none;border:0;outline:0;padding:11px 0;min-width:0}
+  .inp textarea{resize:vertical;min-height:70px;padding-right:10px}
+  .inp .ib{width:34px;height:34px;border-radius:8px;color:var(--fg-3);display:grid;place-items:center;flex:none}
+  .inp .ib:hover{background:var(--line);color:var(--fg)}
+  .inp .ib svg{width:17px;height:17px}
+  .mono{font-family:var(--mono);font-size:14px}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 16px;border-radius:10px;font-weight:600;font-size:14px;background:var(--bg-3);border:1px solid var(--line-2);transition:background .15s,border-color .15s}
+  .btn:hover{background:var(--line);border-color:var(--fg-3)}
+  .btn.pri{background:var(--acc);color:#1a1405;border-color:var(--acc)}
+  .btn.pri:hover{background:var(--acc-2)}
+  .btn.danger{color:var(--err)}
+  .btn.danger:hover{border-color:var(--err)}
+  .btn.sm{padding:7px 11px;font-size:13px}
+  .btn svg{width:16px;height:16px}
+  .btn:disabled{opacity:.5;cursor:default}
+
+  /* ---- app ---- */
+  .app{max-width:960px;margin:0 auto;padding:18px 16px 90px}
+  .top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .top .brand{flex:none}
+  .top .search{flex:1}
+  .top .search .inp{border-radius:12px}
+  .top .acts{display:flex;gap:6px;flex:none}
+  .icon-b{width:40px;height:40px;border-radius:10px;border:1px solid var(--line-2);background:var(--bg-2);color:var(--fg-2);display:grid;place-items:center}
+  .icon-b:hover{color:var(--fg);border-color:var(--fg-3)}
+  .icon-b svg{width:18px;height:18px}
+
+  .list{display:flex;flex-direction:column;gap:6px}
+  .item{display:flex;align-items:center;gap:12px;background:var(--bg-2);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;text-align:left;width:100%;transition:border-color .12s}
+  .item:hover{border-color:var(--line-2)}
+  .item .av{width:38px;height:38px;border-radius:10px;background:var(--bg-3);display:grid;place-items:center;font-weight:700;color:var(--acc);flex:none;font-size:15px}
+  .item .tx{flex:1;min-width:0}
+  .item .nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .item .us{color:var(--fg-3);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .item .qa{display:flex;gap:2px;flex:none}
+  .item .qa button{width:34px;height:34px;border-radius:8px;color:var(--fg-3);display:grid;place-items:center}
+  .item .qa button:hover{background:var(--bg-3);color:var(--fg)}
+  .item .qa svg{width:16px;height:16px}
+  .empty{color:var(--fg-3);text-align:center;padding:60px 20px;font-size:14px}
+  .stat{color:var(--fg-3);font-size:12px;margin:0 2px 8px;display:flex;justify-content:space-between}
+
+  .fab{position:fixed;right:20px;bottom:24px;width:56px;height:56px;border-radius:18px;background:var(--acc);color:#1a1405;display:grid;place-items:center;box-shadow:0 10px 30px rgba(232,185,90,.3);z-index:5}
+  .fab svg{width:24px;height:24px}
+  .fab:hover{background:var(--acc-2)}
+
+  /* ---- sheet / modal ---- */
+  .ov{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);display:grid;place-items:end center;z-index:10;padding:0}
+  @media(min-width:640px){.ov{place-items:center;padding:20px}}
+  .sheet{width:100%;max-width:520px;background:var(--bg-2);border:1px solid var(--line-2);border-radius:20px 20px 0 0;padding:20px 20px 28px;display:flex;flex-direction:column;gap:14px;max-height:92dvh;overflow:auto}
+  @media(min-width:640px){.sheet{border-radius:18px;padding:24px}}
+  .sheet h2{font-size:17px;font-weight:600;display:flex;align-items:center;justify-content:space-between}
+  .sheet .row{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+  .sheet .row .left{margin-right:auto}
+  .gen{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--fg-2)}
+  .gen input[type=range]{width:110px;accent-color:var(--acc)}
+  .gen label{display:inline-flex;align-items:center;gap:4px}
+  .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:9px 16px;border-radius:999px;font-size:13px;font-weight:600;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
+  .toast.on{opacity:1}
+  .menu{position:absolute;right:16px;top:64px;background:var(--bg-2);border:1px solid var(--line-2);border-radius:12px;padding:6px;display:flex;flex-direction:column;min-width:200px;z-index:8;box-shadow:0 12px 30px rgba(0,0,0,.4)}
+  .menu button{text-align:left;padding:9px 12px;border-radius:8px;font-size:14px;color:var(--fg-2)}
+  .menu button:hover{background:var(--bg-3);color:var(--fg)}
+  .menu hr{border:0;border-top:1px solid var(--line);margin:4px 0}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<section id="s-login" class="center hide">
+  <div class="card">
+    <div class="brand"><b>ps</b> cofre</div>
+    <h1>Entrar</h1>
+    <p class="sub">Acesso restrito. Entre com a conta Google autorizada.</p>
+    <div id="gbtn"></div>
+    <div id="login-msg" class="msg"></div>
+  </div>
+</section>
+
+<!-- UNLOCK / CREATE MASTER -->
+<section id="s-unlock" class="center hide">
+  <form class="card" id="f-unlock" autocomplete="off">
+    <div class="brand"><b>ps</b> cofre</div>
+    <h1 id="unlock-title">Desbloquear</h1>
+    <p class="sub" id="unlock-sub">Digite a senha-mestra. Ela nunca sai do navegador.</p>
+    <div class="field"><label>Senha-mestra</label>
+      <div class="inp"><input id="mp" type="password" autocomplete="off" required />
+        <button type="button" class="ib" data-eye="mp" title="mostrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+    <div class="field hide" id="mp2-wrap"><label>Confirmar</label>
+      <div class="inp"><input id="mp2" type="password" autocomplete="off" /></div></div>
+    <button class="btn pri" type="submit" id="unlock-btn">Abrir</button>
+    <div id="unlock-msg" class="msg"></div>
+    <button type="button" class="btn sm" id="unlock-logout" style="align-self:center">Sair da conta Google</button>
+  </form>
+</section>
+
+<!-- APP -->
+<section id="s-app" class="app hide">
+  <div class="top">
+    <div class="brand"><b>ps</b></div>
+    <div class="search"><div class="inp"><input id="q" placeholder="Buscar..." autocomplete="off" />
+      <button type="button" class="ib" id="q-clear" title="limpar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div></div>
+    <div class="acts">
+      <button class="icon-b" id="b-lock" title="Bloquear"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></button>
+      <button class="icon-b" id="b-menu" title="Mais"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button>
+    </div>
+  </div>
+  <div class="menu hide" id="menu">
+    <button id="m-export">Exportar (JSON)</button>
+    <button id="m-import">Importar (JSON)</button>
+    <hr />
+    <button id="m-master">Trocar senha-mestra</button>
+    <hr />
+    <button id="m-logout">Sair da conta Google</button>
+  </div>
+  <div class="stat"><span id="st-count"></span><span id="st-sync"></span></div>
+  <div class="list" id="list"></div>
+  <button class="fab" id="b-add" title="Novo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></button>
+  <input type="file" id="file-import" accept="application/json" class="hide" />
+</section>
+
+<!-- EDITOR -->
+<div class="ov hide" id="ov-edit">
+  <form class="sheet" id="f-edit" autocomplete="off">
+    <h2><span id="ed-title">Novo item</span><button type="button" class="ib icon-b" id="ed-close" style="width:34px;height:34px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button></h2>
+    <input type="hidden" id="ed-id" />
+    <div class="field"><label>Nome</label><div class="inp"><input id="ed-name" required placeholder="Ex.: iFood, Itaú, Gmail" /></div></div>
+    <div class="field"><label>Usuário / e-mail</label><div class="inp"><input id="ed-user" autocomplete="off" />
+      <button type="button" class="ib" data-copy="ed-user" title="copiar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button></div></div>
+    <div class="field"><label>Senha</label><div class="inp"><input id="ed-pass" type="password" class="mono" autocomplete="new-password" />
+      <button type="button" class="ib" data-eye="ed-pass" title="mostrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+      <button type="button" class="ib" data-copy="ed-pass" title="copiar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button></div>
+      <div class="gen"><button type="button" class="btn sm" id="gen-btn">Gerar</button>
+        <input type="range" id="gen-len" min="8" max="40" value="20" /><span id="gen-len-v">20</span>
+        <label><input type="checkbox" id="gen-sym" checked /> símbolos</label></div></div>
+    <div class="field"><label>URL</label><div class="inp"><input id="ed-url" placeholder="https://" inputmode="url" /></div></div>
+    <div class="field"><label>Notas</label><div class="inp"><textarea id="ed-notes"></textarea></div></div>
+    <div class="row"><button type="button" class="btn danger left hide" id="ed-del">Excluir</button>
+      <button type="button" class="btn" id="ed-cancel">Cancelar</button><button type="submit" class="btn pri">Salvar</button></div>
+  </form>
+</div>
+
+<!-- CHANGE MASTER -->
+<div class="ov hide" id="ov-master">
+  <form class="sheet" id="f-master" autocomplete="off">
+    <h2>Trocar senha-mestra</h2>
+    <div class="field"><label>Nova senha-mestra</label><div class="inp"><input id="nm1" type="password" required minlength="8" /></div></div>
+    <div class="field"><label>Confirmar</label><div class="inp"><input id="nm2" type="password" required /></div></div>
+    <div class="msg" id="master-msg"></div>
+    <div class="row"><button type="button" class="btn" id="master-cancel">Cancelar</button><button type="submit" class="btn pri">Trocar</button></div>
+  </form>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  const API = '/ps/api.php';
+  const $ = s => document.querySelector(s);
+  const KDF_ITER = 600000;
+  const IDLE_MS = 10 * 60 * 1000;
+  const enc = new TextEncoder(), dec = new TextDecoder();
+
+  let clientId = null, key = null, salt = null, rev = 0, data = { items: [] }, dirty = false, saving = false, idleT = null;
+
+  // ---------- utils ----------
+  const b64 = u8 => btoa(String.fromCharCode(...u8));
+  const ub64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+  const rnd = n => crypto.getRandomValues(new Uint8Array(n));
+  const uid = () => b64(rnd(9)).replace(/[+/=]/g, '').slice(0, 12);
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const api = async (a, opt = {}) => {
+    const r = await fetch(API + '?a=' + a, { credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-PS': '1' }, ...opt });
+    let j = {}; try { j = await r.json(); } catch (e) {}
+    return { status: r.status, ...j };
+  };
+  let toastT; const toast = m => { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 1600); };
+  const copy = async (txt, label) => { try { await navigator.clipboard.writeText(txt || ''); toast((label || 'Copiado') + ' ✓'); setTimeout(() => navigator.clipboard.writeText('').catch(() => {}), 45000); } catch (e) { toast('Falha ao copiar'); } };
+  const show = id => { ['#s-login', '#s-unlock', '#s-app'].forEach(s => $(s).classList.add('hide')); $(id).classList.remove('hide'); };
+  const setMsg = (id, m, cls) => { const el = $(id); el.textContent = m || ''; el.className = 'msg ' + (cls || ''); };
+
+  // ---------- crypto ----------
+  async function derive(pass, saltU8) {
+    const km = await crypto.subtle.importKey('raw', enc.encode(pass), 'PBKDF2', false, ['deriveKey']);
+    return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: saltU8, iterations: KDF_ITER, hash: 'SHA-256' }, km, { name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+  }
+  async function encrypt(obj) {
+    const iv = rnd(12);
+    const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc.encode(JSON.stringify(obj))));
+    return 'v1:' + b64(salt) + '.' + b64(iv) + '.' + b64(ct);
+  }
+  async function decrypt(blob, k) {
+    const [v, rest] = [blob.slice(0, 3), blob.slice(3)];
+    if (v !== 'v1:') throw new Error('formato');
+    const [s, iv, ct] = rest.split('.').map(ub64);
+    const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, k, ct);
+    return { salt: s, data: JSON.parse(dec.decode(pt)) };
+  }
+  async function cacheKey() {
+    if (!key) { sessionStorage.removeItem('ps_k'); sessionStorage.removeItem('ps_salt'); return; }
+    sessionStorage.setItem('ps_k', b64(new Uint8Array(await crypto.subtle.exportKey('raw', key))));
+    sessionStorage.setItem('ps_salt', b64(salt));
+  }
+  async function restoreKey() {
+    const k = sessionStorage.getItem('ps_k'), s = sessionStorage.getItem('ps_salt');
+    if (!k || !s) return false;
+    key = await crypto.subtle.importKey('raw', ub64(k), 'AES-GCM', true, ['encrypt', 'decrypt']);
+    salt = ub64(s); return true;
+  }
+
+  // ---------- flow ----------
+  async function boot() {
+    const cfg = await api('config'); clientId = cfg.clientId;
+    const me = await api('me');
+    if (me.status !== 200) return showLogin();
+    if (await restoreKey()) { try { await loadVault(); return; } catch (e) { key = null; } }
+    showUnlock();
+  }
+
+  function showLogin() {
+    show('#s-login');
+    if (!clientId || clientId.startsWith('__')) { setMsg('#login-msg', 'Google Client ID ainda não configurado no api.php.', 'err'); return; }
+    const render = () => {
+      google.accounts.id.initialize({ client_id: clientId, callback: onGoogle, auto_select: true, ux_mode: 'popup', use_fedcm_for_prompt: true });
+      google.accounts.id.renderButton($('#gbtn'), { theme: 'filled_black', size: 'large', shape: 'pill', text: 'signin_with', width: 300, locale: 'pt-BR' });
+      google.accounts.id.prompt();
+    };
+    if (window.google && google.accounts) return render();
+    const s = document.createElement('script'); s.src = 'https://accounts.google.com/gsi/client'; s.async = true; s.onload = render; document.head.appendChild(s);
+  }
+  async function onGoogle(resp) {
+    setMsg('#login-msg', 'Verificando...');
+    const r = await api('login', { method: 'POST', body: JSON.stringify({ credential: resp.credential }) });
+    if (r.status === 200) { setMsg('#login-msg', ''); showUnlock(); }
+    else if (r.status === 403) setMsg('#login-msg', 'Conta não autorizada.', 'err');
+    else setMsg('#login-msg', 'Falha no login (' + (r.err || r.status) + ').', 'err');
+  }
+  async function logout() { await api('logout', { method: 'POST' }); key = null; await cacheKey(); location.reload(); }
+
+  let vaultBlob = null;
+  async function showUnlock() {
+    show('#s-unlock'); setMsg('#unlock-msg', '');
+    const v = await api('vault');
+    if (v.status !== 200) return showLogin();
+    vaultBlob = v.blob; rev = v.rev || 0;
+    const first = !vaultBlob;
+    $('#unlock-title').textContent = first ? 'Criar senha-mestra' : 'Desbloquear';
+    $('#unlock-sub').textContent = first ? 'Primeiro acesso. Essa senha criptografa tudo no navegador; se perder, não tem recuperação.' : 'Digite a senha-mestra. Ela nunca sai do navegador.';
+    $('#mp2-wrap').classList.toggle('hide', !first);
+    $('#mp2').required = first;
+    $('#unlock-btn').textContent = first ? 'Criar cofre' : 'Abrir';
+    $('#mp').value = ''; $('#mp2').value = ''; setTimeout(() => $('#mp').focus(), 50);
+  }
+  $('#f-unlock').addEventListener('submit', async e => {
+    e.preventDefault();
+    const p = $('#mp').value; const first = !vaultBlob;
+    if (first) {
+      if (p.length < 8) return setMsg('#unlock-msg', 'Mínimo 8 caracteres.', 'err');
+      if (p !== $('#mp2').value) return setMsg('#unlock-msg', 'As senhas não conferem.', 'err');
+    }
+    $('#unlock-btn').disabled = true; setMsg('#unlock-msg', 'Derivando chave...');
+    try {
+      if (first) {
+        salt = rnd(16); key = await derive(p, salt); data = { items: [] };
+        await persist(true);
+      } else {
+        const s = ub64(vaultBlob.slice(3).split('.')[0]);
+        const k = await derive(p, s);
+        const r = await decrypt(vaultBlob, k);
+        key = k; salt = r.salt; data = r.data || { items: [] };
+      }
+      await cacheKey(); openApp();
+    } catch (err) {
+      setMsg('#unlock-msg', first ? 'Erro ao criar: ' + err.message : 'Senha incorreta.', 'err');
+    } finally { $('#unlock-btn').disabled = false; }
+  });
+  async function loadVault() {
+    const v = await api('vault');
+    if (v.status !== 200) throw new Error('auth');
+    rev = v.rev || 0;
+    if (!v.blob) { data = { items: [] }; }
+    else { const r = await decrypt(v.blob, key); data = r.data || { items: [] }; }
+    openApp();
+  }
+  function lock() { key = null; cacheKey(); data = { items: [] }; $('#list').innerHTML = ''; showUnlock(); }
+
+  // ---------- persist ----------
+  async function persist(silent) {
+    if (!key) return;
+    saving = true; $('#st-sync').textContent = 'salvando...';
+    const blob = await encrypt(data);
+    const r = await api('vault', { method: 'POST', body: JSON.stringify({ blob, rev }) });
+    saving = false;
+    if (r.status === 200) { rev = r.rev; dirty = false; $('#st-sync').textContent = 'salvo'; if (!silent) toast('Salvo'); }
+    else if (r.status === 409) { $('#st-sync').textContent = 'conflito'; toast('Conflito: recarregando'); setTimeout(() => location.reload(), 900); }
+    else if (r.status === 401) { location.reload(); }
+    else { $('#st-sync').textContent = 'erro ao salvar'; toast('Erro ao salvar (' + (r.err || r.status) + ')'); }
+  }
+
+  // ---------- app ----------
+  function openApp() { show('#s-app'); render(); touchIdle(); }
+  function touchIdle() { clearTimeout(idleT); idleT = setTimeout(() => { if (key) lock(); }, IDLE_MS); }
+  ['click', 'keydown', 'touchstart', 'mousemove'].forEach(ev => document.addEventListener(ev, () => { if (key) touchIdle(); }, { passive: true }));
+
+  function sorted() { return [...data.items].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' })); }
+  function render() {
+    const q = $('#q').value.trim().toLowerCase();
+    const items = sorted().filter(it => !q || [it.name, it.user, it.url, it.notes].some(f => (f || '').toLowerCase().includes(q)));
+    $('#st-count').textContent = items.length + (data.items.length !== items.length ? ' de ' + data.items.length : '') + ' ite' + (data.items.length === 1 ? 'm' : 'ns');
+    if (!items.length) { $('#list').innerHTML = '<div class="empty">' + (data.items.length ? 'Nada encontrado.' : 'Cofre vazio. Toque em + para adicionar.') + '</div>'; return; }
+    $('#list').innerHTML = items.map(it => `
+      <div class="item" data-id="${it.id}">
+        <div class="av">${esc((it.name || '?').trim()[0].toUpperCase())}</div>
+        <button class="tx" data-open="${it.id}"><div class="nm">${esc(it.name)}</div><div class="us">${esc(it.user || (it.url || '').replace(/^https?:\/\//, '') || '')}</div></button>
+        <div class="qa">
+          ${it.user ? `<button data-cu="${it.id}" title="copiar usuário"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></button>` : ''}
+          <button data-cp="${it.id}" title="copiar senha"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 7a4 4 0 1 1-4 4l-7 7v3h3l1-1v-2h2v-2h2l1-1"/></svg></button>
+          ${it.url ? `<button data-go="${it.id}" title="abrir site"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 4h6v6M20 4l-9 9M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></svg></button>` : ''}
+        </div>
+      </div>`).join('');
+  }
+  const byId = id => data.items.find(i => i.id === id);
+  $('#list').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.open) return openEditor(byId(b.dataset.open));
+    if (b.dataset.cu) return copy(byId(b.dataset.cu).user, 'Usuário copiado');
+    if (b.dataset.cp) return copy(byId(b.dataset.cp).pass, 'Senha copiada');
+    if (b.dataset.go) { let u = byId(b.dataset.go).url; if (!/^https?:\/\//i.test(u)) u = 'https://' + u; window.open(u, '_blank', 'noopener'); }
+  });
+  $('#q').addEventListener('input', render);
+  $('#q-clear').addEventListener('click', () => { $('#q').value = ''; render(); $('#q').focus(); });
+  $('#b-lock').addEventListener('click', lock);
+  $('#unlock-logout').addEventListener('click', logout);
+  $('#m-logout').addEventListener('click', logout);
+  $('#b-menu').addEventListener('click', e => { e.stopPropagation(); $('#menu').classList.toggle('hide'); });
+  document.addEventListener('click', e => { if (!e.target.closest('#menu')) $('#menu').classList.add('hide'); });
+
+  // ---------- editor ----------
+  function openEditor(it) {
+    it = it || null;
+    $('#ed-title').textContent = it ? 'Editar' : 'Novo item';
+    $('#ed-id').value = it ? it.id : '';
+    $('#ed-name').value = it ? it.name : '';
+    $('#ed-user').value = it ? it.user || '' : '';
+    $('#ed-pass').value = it ? it.pass || '' : ''; $('#ed-pass').type = 'password';
+    $('#ed-url').value = it ? it.url || '' : '';
+    $('#ed-notes').value = it ? it.notes || '' : '';
+    $('#ed-del').classList.toggle('hide', !it);
+    $('#ov-edit').classList.remove('hide');
+    setTimeout(() => $(it ? '#ed-pass' : '#ed-name').focus(), 60);
+  }
+  const closeEditor = () => $('#ov-edit').classList.add('hide');
+  $('#b-add').addEventListener('click', () => openEditor(null));
+  $('#ed-close').addEventListener('click', closeEditor);
+  $('#ed-cancel').addEventListener('click', closeEditor);
+  $('#ov-edit').addEventListener('click', e => { if (e.target === e.currentTarget) closeEditor(); });
+  $('#f-edit').addEventListener('submit', async e => {
+    e.preventDefault();
+    const id = $('#ed-id').value;
+    const obj = { id: id || uid(), name: $('#ed-name').value.trim(), user: $('#ed-user').value.trim(), pass: $('#ed-pass').value, url: $('#ed-url').value.trim(), notes: $('#ed-notes').value.trim(), updated: Date.now() };
+    if (!obj.name) return;
+    const i = data.items.findIndex(x => x.id === obj.id);
+    if (i >= 0) { obj.created = data.items[i].created || obj.updated; data.items[i] = obj; } else { obj.created = obj.updated; data.items.push(obj); }
+    closeEditor(); render(); await persist();
+  });
+  $('#ed-del').addEventListener('click', async () => {
+    const id = $('#ed-id').value; const it = byId(id);
+    if (!it || !confirm('Excluir "' + it.name + '"?')) return;
+    data.items = data.items.filter(x => x.id !== id);
+    closeEditor(); render(); await persist();
+  });
+  document.querySelectorAll('[data-eye]').forEach(b => b.addEventListener('click', () => { const i = document.getElementById(b.dataset.eye); i.type = i.type === 'password' ? 'text' : 'password'; }));
+  document.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', () => copy(document.getElementById(b.dataset.copy).value)));
+
+  // generator
+  $('#gen-len').addEventListener('input', () => $('#gen-len-v').textContent = $('#gen-len').value);
+  $('#gen-btn').addEventListener('click', () => {
+    const n = +$('#gen-len').value, sym = $('#gen-sym').checked;
+    const sets = ['abcdefghijkmnopqrstuvwxyz', 'ABCDEFGHJKLMNPQRSTUVWXYZ', '23456789'].concat(sym ? ['!@#$%&*+-=?_'] : []);
+    const all = sets.join(''); const out = [];
+    sets.forEach(s => out.push(s[rnd(1)[0] % s.length]));
+    while (out.length < n) out.push(all[rnd(1)[0] % all.length]);
+    for (let i = out.length - 1; i > 0; i--) { const j = rnd(1)[0] % (i + 1); [out[i], out[j]] = [out[j], out[i]]; }
+    $('#ed-pass').value = out.join(''); $('#ed-pass').type = 'text';
+  });
+
+  // export / import
+  $('#m-export').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'ps-export-' + new Date().toISOString().slice(0, 10) + '.json'; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000); toast('Exportado (arquivo em claro, cuidado)');
+  });
+  $('#m-import').addEventListener('click', () => $('#file-import').click());
+  $('#file-import').addEventListener('change', async e => {
+    const f = e.target.files[0]; if (!f) return;
+    try {
+      const j = JSON.parse(await f.text());
+      const items = Array.isArray(j) ? j : (j.items || []);
+      let n = 0;
+      items.forEach(it => { if (!it || !it.name) return; const id = it.id && !byId(it.id) ? it.id : uid(); data.items.push({ id, name: String(it.name), user: String(it.user || it.username || ''), pass: String(it.pass || it.password || ''), url: String(it.url || ''), notes: String(it.notes || ''), created: Date.now(), updated: Date.now() }); n++; });
+      render(); await persist(true); toast(n + ' importados');
+    } catch (err) { toast('Arquivo inválido'); }
+    e.target.value = '';
+  });
+
+  // change master
+  $('#m-master').addEventListener('click', () => { $('#nm1').value = ''; $('#nm2').value = ''; setMsg('#master-msg', ''); $('#ov-master').classList.remove('hide'); setTimeout(() => $('#nm1').focus(), 60); });
+  $('#master-cancel').addEventListener('click', () => $('#ov-master').classList.add('hide'));
+  $('#f-master').addEventListener('submit', async e => {
+    e.preventDefault();
+    const a = $('#nm1').value, b = $('#nm2').value;
+    if (a.length < 8) return setMsg('#master-msg', 'Mínimo 8 caracteres.', 'err');
+    if (a !== b) return setMsg('#master-msg', 'Não conferem.', 'err');
+    setMsg('#master-msg', 'Recriptografando...');
+    salt = rnd(16); key = await derive(a, salt); await cacheKey(); await persist(true);
+    $('#ov-master').classList.add('hide'); toast('Senha-mestra trocada');
+  });
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeEditor(); $('#ov-master').classList.add('hide'); $('#menu').classList.add('hide'); } });
+  window.addEventListener('beforeunload', e => { if (dirty || saving) { e.preventDefault(); e.returnValue = ''; } });
+
+  boot();
+})();
+</script>
+</body>
+</html>
