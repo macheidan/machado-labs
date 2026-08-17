@@ -82,6 +82,13 @@
   .item .qa button:hover{background:var(--bg-3);color:var(--fg)}
   .item .qa svg{width:16px;height:16px}
   .empty{color:var(--fg-3);text-align:center;padding:60px 20px;font-size:14px}
+  .chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:none;padding:6px 12px;border-radius:999px;border:1px solid var(--line-2);background:var(--bg-2);color:var(--fg-2);font-size:13px;font-weight:500;white-space:nowrap}
+  .chip:hover{border-color:var(--fg-3);color:var(--fg)}
+  .chip.on{background:var(--acc);border-color:var(--acc);color:#1a1405}
+  .chip small{opacity:.7;margin-left:4px;font-weight:400}
+  .item .ct{display:inline-block;font-size:11px;color:var(--acc);background:rgba(232,185,90,.1);border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:1px;font-weight:500}
   .stat{color:var(--fg-3);font-size:12px;margin:0 2px 8px;display:flex;justify-content:space-between}
 
   .fab{position:fixed;right:20px;bottom:24px;width:56px;height:56px;border-radius:18px;background:var(--acc);color:#1a1405;display:grid;place-items:center;box-shadow:0 10px 30px rgba(232,185,90,.3);z-index:5}
@@ -156,6 +163,7 @@
     <hr />
     <button id="m-logout">Sair da conta Google</button>
   </div>
+  <div class="chips" id="chips"></div>
   <div class="stat"><span id="st-count"></span><span id="st-sync"></span></div>
   <div class="list" id="list"></div>
   <button class="fab" id="b-add" title="Novo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></button>
@@ -168,6 +176,7 @@
     <h2><span id="ed-title">Novo item</span><button type="button" class="ib icon-b" id="ed-close" style="width:34px;height:34px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button></h2>
     <input type="hidden" id="ed-id" />
     <div class="field"><label>Nome</label><div class="inp"><input id="ed-name" required placeholder="Ex.: iFood, Itaú, Gmail" /></div></div>
+    <div class="field"><label>Categoria</label><div class="inp"><input id="ed-cat" list="cat-list" placeholder="dame, lov, ifood, email, site, wifi..." autocomplete="off" /></div><datalist id="cat-list"></datalist></div>
     <div class="field"><label>Usuário / e-mail</label><div class="inp"><input id="ed-user" autocomplete="off" />
       <button type="button" class="ib" data-copy="ed-user" title="copiar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button></div></div>
     <div class="field"><label>Senha</label><div class="inp"><input id="ed-pass" type="password" class="mono" autocomplete="new-password" />
@@ -204,6 +213,8 @@
   const IDLE_MS = 10 * 60 * 1000;
   const enc = new TextEncoder(), dec = new TextDecoder();
 
+  let curCat = '';
+  const CAT_SUGGEST = ['dame', 'lov', 'ifood', 'email', 'site', 'wifi', 'banco', 'pessoal', 'servidor', 'api'];
   let clientId = null, key = null, salt = null, rev = 0, data = { items: [] }, dirty = false, saving = false, idleT = null;
 
   // ---------- utils ----------
@@ -312,6 +323,7 @@
         const r = await decrypt(vaultBlob, k);
         key = k; salt = r.salt; data = r.data || { items: [] };
       }
+      if (migrate()) await persist(true);
       await cacheKey(); openApp();
     } catch (err) {
       setMsg('#unlock-msg', first ? 'Erro ao criar: ' + err.message : 'Senha incorreta.', 'err');
@@ -323,6 +335,7 @@
     rev = v.rev || 0;
     if (!v.blob) { data = { items: [] }; }
     else { const r = await decrypt(v.blob, key); data = r.data || { items: [] }; }
+    if (migrate()) await persist(true);
     openApp();
   }
   function lock() { key = null; cacheKey(); data = { items: [] }; $('#list').innerHTML = ''; showUnlock(); }
@@ -345,16 +358,42 @@
   function touchIdle() { clearTimeout(idleT); idleT = setTimeout(() => { if (key) lock(); }, IDLE_MS); }
   ['click', 'keydown', 'touchstart', 'mousemove'].forEach(ev => document.addEventListener(ev, () => { if (key) touchIdle(); }, { passive: true }));
 
+  const normCat = c => String(c || '').trim().toLowerCase().replace(/\s+/g, ' ').slice(0, 30);
+  function migrate() {
+    let ch = false;
+    data.items.forEach(it => {
+      if (it.cat !== undefined) return;
+      let cat = '', name = it.name || '';
+      const m = name.match(/^([^·]+?)\s*·\s*(.+)$/);
+      if (m) { const p = m[1].trim().toLowerCase(); cat = p.startsWith('dáme') || p.startsWith('dame') ? 'dame' : p.startsWith('lov') ? 'lov' : normCat(p); name = m[2].trim(); }
+      else if (/wi-?fi/i.test(name)) cat = 'wifi';
+      it.cat = cat; it.name = name; ch = true;
+    });
+    return ch;
+  }
+  function cats() {
+    const m = {}; data.items.forEach(it => { const c = normCat(it.cat); if (c) m[c] = (m[c] || 0) + 1; });
+    return Object.keys(m).sort().map(c => ({ c, n: m[c] }));
+  }
+  function renderChips() {
+    const cs = cats();
+    if (curCat && !cs.some(x => x.c === curCat)) curCat = '';
+    $('#chips').innerHTML = `<button class="chip ${curCat ? '' : 'on'}" data-cat="">Todos<small>${data.items.length}</small></button>` +
+      cs.map(x => `<button class="chip ${curCat === x.c ? 'on' : ''}" data-cat="${esc(x.c)}">${esc(x.c)}<small>${x.n}</small></button>`).join('');
+    $('#cat-list').innerHTML = [...new Set([...cs.map(x => x.c), ...CAT_SUGGEST])].map(c => `<option value="${esc(c)}">`).join('');
+  }
+  $('#chips').addEventListener('click', e => { const b = e.target.closest('.chip'); if (!b) return; curCat = b.dataset.cat; render(); });
   function sorted() { return [...data.items].sort((a, b) => a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' })); }
   function render() {
     const q = $('#q').value.trim().toLowerCase();
-    const items = sorted().filter(it => !q || [it.name, it.user, it.url, it.notes].some(f => (f || '').toLowerCase().includes(q)));
+    renderChips();
+    const items = sorted().filter(it => (!curCat || normCat(it.cat) === curCat) && (!q || [it.name, it.user, it.url, it.notes, it.cat].some(f => (f || '').toLowerCase().includes(q))));
     $('#st-count').textContent = items.length + (data.items.length !== items.length ? ' de ' + data.items.length : '') + ' ite' + (data.items.length === 1 ? 'm' : 'ns');
     if (!items.length) { $('#list').innerHTML = '<div class="empty">' + (data.items.length ? 'Nada encontrado.' : 'Cofre vazio. Toque em + para adicionar.') + '</div>'; return; }
     $('#list').innerHTML = items.map(it => `
       <div class="item" data-id="${it.id}">
         <div class="av">${esc((it.name || '?').trim()[0].toUpperCase())}</div>
-        <button class="tx" data-open="${it.id}"><div class="nm">${esc(it.name)}</div><div class="us">${esc(it.user || (it.url || '').replace(/^https?:\/\//, '') || '')}</div></button>
+        <button class="tx" data-open="${it.id}"><div class="nm">${esc(it.name)}${it.cat && !curCat ? `<span class="ct">${esc(it.cat)}</span>` : ''}</div><div class="us">${esc(it.user || (it.url || '').replace(/^https?:\/\//, '') || '')}</div></button>
         <div class="qa">
           ${it.user ? `<button data-cu="${it.id}" title="copiar usuário"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></button>` : ''}
           <button data-cp="${it.id}" title="copiar senha"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 7a4 4 0 1 1-4 4l-7 7v3h3l1-1v-2h2v-2h2l1-1"/></svg></button>
@@ -384,6 +423,7 @@
     $('#ed-title').textContent = it ? 'Editar' : 'Novo item';
     $('#ed-id').value = it ? it.id : '';
     $('#ed-name').value = it ? it.name : '';
+    $('#ed-cat').value = it ? it.cat || '' : (curCat || '');
     $('#ed-user').value = it ? it.user || '' : '';
     $('#ed-pass').value = it ? it.pass || '' : ''; $('#ed-pass').type = 'password';
     $('#ed-url').value = it ? it.url || '' : '';
@@ -400,7 +440,7 @@
   $('#f-edit').addEventListener('submit', async e => {
     e.preventDefault();
     const id = $('#ed-id').value;
-    const obj = { id: id || uid(), name: $('#ed-name').value.trim(), user: $('#ed-user').value.trim(), pass: $('#ed-pass').value, url: $('#ed-url').value.trim(), notes: $('#ed-notes').value.trim(), updated: Date.now() };
+    const obj = { id: id || uid(), name: $('#ed-name').value.trim(), cat: normCat($('#ed-cat').value), user: $('#ed-user').value.trim(), pass: $('#ed-pass').value, url: $('#ed-url').value.trim(), notes: $('#ed-notes').value.trim(), updated: Date.now() };
     if (!obj.name) return;
     const i = data.items.findIndex(x => x.id === obj.id);
     if (i >= 0) { obj.created = data.items[i].created || obj.updated; data.items[i] = obj; } else { obj.created = obj.updated; data.items.push(obj); }
@@ -440,7 +480,7 @@
       const j = JSON.parse(await f.text());
       const items = Array.isArray(j) ? j : (j.items || []);
       let n = 0;
-      items.forEach(it => { if (!it || !it.name) return; const id = it.id && !byId(it.id) ? it.id : uid(); data.items.push({ id, name: String(it.name), user: String(it.user || it.username || ''), pass: String(it.pass || it.password || ''), url: String(it.url || ''), notes: String(it.notes || ''), created: Date.now(), updated: Date.now() }); n++; });
+      items.forEach(it => { if (!it || !it.name) return; const id = it.id && !byId(it.id) ? it.id : uid(); data.items.push({ id, name: String(it.name), cat: normCat(it.cat || it.category || ''), user: String(it.user || it.username || ''), pass: String(it.pass || it.password || ''), url: String(it.url || ''), notes: String(it.notes || ''), created: Date.now(), updated: Date.now() }); n++; });
       render(); await persist(true); toast(n + ' importados');
     } catch (err) { toast('Arquivo inválido'); }
     e.target.value = '';
