@@ -176,7 +176,7 @@
     <h2><span id="ed-title">Novo item</span><button type="button" class="ib icon-b" id="ed-close" style="width:34px;height:34px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button></h2>
     <input type="hidden" id="ed-id" />
     <div class="field"><label>Nome</label><div class="inp"><input id="ed-name" required placeholder="Ex.: iFood, Itaú, Gmail" /></div></div>
-    <div class="field"><label>Categoria</label><div class="inp"><input id="ed-cat" list="cat-list" placeholder="dame, lov, ifood, email, site, wifi..." autocomplete="off" /></div><datalist id="cat-list"></datalist></div>
+    <div class="field"><label>Categoria</label><div class="inp"><input id="ed-cat" list="cat-list" placeholder="uma ou mais, separadas por vírgula: dame, wifi" autocomplete="off" /></div><datalist id="cat-list"></datalist></div>
     <div class="field"><label>Usuário / e-mail</label><div class="inp"><input id="ed-user" autocomplete="off" />
       <button type="button" class="ib" data-copy="ed-user" title="copiar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button></div></div>
     <div class="field"><label>Senha</label><div class="inp"><input id="ed-pass" type="password" class="mono" autocomplete="new-password" />
@@ -358,7 +358,8 @@
   function touchIdle() { clearTimeout(idleT); idleT = setTimeout(() => { if (key) lock(); }, IDLE_MS); }
   ['click', 'keydown', 'touchstart', 'mousemove'].forEach(ev => document.addEventListener(ev, () => { if (key) touchIdle(); }, { passive: true }));
 
-  const normCat = c => String(c || '').trim().toLowerCase().replace(/\s+/g, ' ').slice(0, 30);
+  const tagsOf = c => [...new Set(String(c || '').toLowerCase().split(/[,;]/).map(x => x.trim().replace(/\s+/g, ' ').slice(0, 30)).filter(Boolean))];
+  const normCat = c => tagsOf(c).join(', ');
   function migrate() {
     let ch = false;
     data.items.forEach(it => {
@@ -372,7 +373,7 @@
     return ch;
   }
   function cats() {
-    const m = {}; data.items.forEach(it => { const c = normCat(it.cat); if (c) m[c] = (m[c] || 0) + 1; });
+    const m = {}; data.items.forEach(it => tagsOf(it.cat).forEach(c => { m[c] = (m[c] || 0) + 1; }));
     return Object.keys(m).sort().map(c => ({ c, n: m[c] }));
   }
   function renderChips() {
@@ -387,13 +388,13 @@
   function render() {
     const q = $('#q').value.trim().toLowerCase();
     renderChips();
-    const items = sorted().filter(it => (!curCat || normCat(it.cat) === curCat) && (!q || [it.name, it.user, it.url, it.notes, it.cat].some(f => (f || '').toLowerCase().includes(q))));
+    const items = sorted().filter(it => (!curCat || tagsOf(it.cat).includes(curCat)) && (!q || [it.name, it.user, it.url, it.notes, it.cat].some(f => (f || '').toLowerCase().includes(q))));
     $('#st-count').textContent = items.length + (data.items.length !== items.length ? ' de ' + data.items.length : '') + ' ite' + (data.items.length === 1 ? 'm' : 'ns');
     if (!items.length) { $('#list').innerHTML = '<div class="empty">' + (data.items.length ? 'Nada encontrado.' : 'Cofre vazio. Toque em + para adicionar.') + '</div>'; return; }
     $('#list').innerHTML = items.map(it => `
       <div class="item" data-id="${it.id}">
         <div class="av">${esc((it.name || '?').trim()[0].toUpperCase())}</div>
-        <button class="tx" data-open="${it.id}"><div class="nm">${esc(it.name)}${it.cat && !curCat ? `<span class="ct">${esc(it.cat)}</span>` : ''}</div><div class="us">${esc(it.user || (it.url || '').replace(/^https?:\/\//, '') || '')}</div></button>
+        <button class="tx" data-open="${it.id}"><div class="nm">${esc(it.name)}${tagsOf(it.cat).filter(c => c !== curCat).map(c => `<span class="ct">${esc(c)}</span>`).join('')}</div><div class="us">${esc(it.user || (it.url || '').replace(/^https?:\/\//, '') || '')}</div></button>
         <div class="qa">
           ${it.user ? `<button data-cu="${it.id}" title="copiar usuário"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></button>` : ''}
           <button data-cp="${it.id}" title="copiar senha"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 7a4 4 0 1 1-4 4l-7 7v3h3l1-1v-2h2v-2h2l1-1"/></svg></button>
@@ -480,8 +481,24 @@
       const j = JSON.parse(await f.text());
       const items = Array.isArray(j) ? j : (j.items || []);
       let n = 0;
-      items.forEach(it => { if (!it || !it.name) return; const id = it.id && !byId(it.id) ? it.id : uid(); data.items.push({ id, name: String(it.name), cat: normCat(it.cat || it.category || ''), user: String(it.user || it.username || ''), pass: String(it.pass || it.password || ''), url: String(it.url || ''), notes: String(it.notes || ''), created: Date.now(), updated: Date.now() }); n++; });
-      render(); await persist(true); toast(n + ' importados');
+      let up = 0;
+      items.forEach(it => {
+        if (!it || !it.name) return;
+        const nm = String(it.name).trim();
+        const ex = (it.id && byId(it.id)) || data.items.find(x => x.name.trim().toLowerCase() === nm.toLowerCase());
+        const has = k => it[k] !== undefined && it[k] !== null;
+        if (ex) {
+          if (has('cat') || has('category')) ex.cat = normCat(it.cat || it.category);
+          if (has('user') || has('username')) ex.user = String(it.user ?? it.username);
+          if (has('pass') || has('password')) ex.pass = String(it.pass ?? it.password);
+          if (has('url')) ex.url = String(it.url);
+          if (has('notes')) ex.notes = String(it.notes);
+          if (has('rename')) ex.name = String(it.rename).trim() || ex.name;
+          ex.updated = Date.now(); up++; return;
+        }
+        data.items.push({ id: it.id && !byId(it.id) ? it.id : uid(), name: nm, cat: normCat(it.cat || it.category || ''), user: String(it.user || it.username || ''), pass: String(it.pass || it.password || ''), url: String(it.url || ''), notes: String(it.notes || ''), created: Date.now(), updated: Date.now() }); n++;
+      });
+      render(); await persist(true); toast(n + ' novos, ' + up + ' atualizados');
     } catch (err) { toast('Arquivo inválido'); }
     e.target.value = '';
   });
