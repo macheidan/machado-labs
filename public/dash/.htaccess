@@ -1,0 +1,18 @@
+DirectoryIndex index.php
+Options -Indexes
+
+# sessoes e qualquer dado ficam fora do alcance do navegador
+<FilesMatch "\.(dat|log|json)$">
+  Require all denied
+</FilesMatch>
+
+# lib.php so existe para ser incluido pelos outros
+<Files "lib.php">
+  Require all denied
+</Files>
+
+<IfModule mod_headers.c>
+  Header set X-Robots-Tag "noindex, nofollow"
+  Header set Referrer-Policy "no-referrer"
+  Header set X-Frame-Options "DENY"
+</IfModule>
