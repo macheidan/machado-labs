@@ -37,7 +37,7 @@ $GRUPOS = array(
     array(
         'titulo' => 'Maquina',
         'itens'  => array(
-            array('sigla' => 'RT', 'nome' => 'Rotinas', 'desc' => 'Painel do que roda sozinho: agendamentos, status e ultima rodada.', 'url' => null, 'alvo' => 'painel local', 'estado' => 'Ainda so na maquina (painel.html). Falta publicar.'),
+            array('sigla' => 'RT', 'nome' => 'Rotinas', 'desc' => 'Painel do que roda sozinho: revisao de Ads e cada rodada com sinal e ultima data.', 'url' => '/rotinas/', 'alvo' => 'fabiomachado.com.br/rotinas'),
         ),
     ),
 );

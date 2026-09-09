@@ -6,5 +6,6 @@ Disallow: /v4/
 Disallow: /v5/
 Disallow: /dash/
 Disallow: /ps/
+Disallow: /rotinas/
 
 Sitemap: https://fabiomachado.com.br/sitemap-index.xml

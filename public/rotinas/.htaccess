@@ -1,0 +1,23 @@
+DirectoryIndex index.php
+Options -Indexes
+
+# sessoes e qualquer dado ficam fora do alcance do navegador
+<FilesMatch "\.(dat|log|json)$">
+  Require all denied
+</FilesMatch>
+
+# lib.php so existe para ser incluido pelos outros
+<Files "lib.php">
+  Require all denied
+</Files>
+
+# o painel gerado na maquina (e o .tmp do upload) so sai pelo index.php, depois do login
+<FilesMatch "^_painel\.html">
+  Require all denied
+</FilesMatch>
+
+<IfModule mod_headers.c>
+  Header set X-Robots-Tag "noindex, nofollow"
+  Header set Referrer-Policy "no-referrer"
+  Header set X-Frame-Options "DENY"
+</IfModule>
