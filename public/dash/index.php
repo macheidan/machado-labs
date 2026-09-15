@@ -21,7 +21,7 @@ $GRUPOS = array(
         'titulo' => 'Dia a dia',
         'itens'  => array(
             array('sigla' => 'PS', 'nome' => 'Cofre de senhas', 'desc' => 'Senhas e notas com criptografia no navegador.', 'url' => '/ps/', 'alvo' => 'fabiomachado.com.br/ps'),
-            array('sigla' => 'CC', 'nome' => 'Comer Certo', 'desc' => 'Diario de calorias com atalhos e estimativa por IA.', 'url' => '/comer/', 'alvo' => 'fabiomachado.com.br/comer'),
+            array('sigla' => 'CC', 'nome' => 'Comer Certo', 'desc' => 'Diario de calorias com atalhos e estimativa por IA.', 'url' => 'https://comer-certo.machadofabio.workers.dev/', 'alvo' => 'comer-certo.machadofabio.workers.dev', 'ext' => true),
             array('sigla' => 'IN', 'nome' => 'Investimentos', 'desc' => 'Patrimonio, alocacao e evolucao mensal.', 'url' => 'https://investimentos.fabiomachado.com.br', 'alvo' => 'investimentos.fabiomachado.com.br', 'ext' => true),
             array('sigla' => 'VG', 'nome' => 'Viagem EUA 2026', 'desc' => 'Roteiro, voos, orcamento e compras da familia.', 'url' => 'https://viagem-2026-8a398.web.app', 'alvo' => 'viagem-2026-8a398.web.app', 'ext' => true),
         ),
