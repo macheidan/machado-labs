@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Macheidan Labs Publisher</title>
+<meta name="robots" content="noindex">
+<style>
+body{font-family:system-ui,Segoe UI,Arial,sans-serif;max-width:720px;margin:40px auto;padding:0 16px;line-height:1.6;color:#111827;background:#fff}
+h1{font-size:1.6rem}h2{font-size:1.1rem;margin-top:2em}hr{margin:3em 0;border:0;border-top:1px solid #e5e7eb}
+small{color:#6b7280}.links a{margin-right:1.2em}
+</style>
+</head>
+<body>
+<h1>Macheidan Labs Publisher</h1>
+<p>Internal publishing tool of Macheidan Labs. It uploads our own finished videos to the YouTube channels and TikTok accounts we own and operate, using the official <strong>YouTube Data API v3</strong> (YouTube API Services) and the TikTok Content Posting API.</p>
+<h2>What it does on YouTube</h2>
+<ul>
+<li>The channel owner signs in with Google and authorizes the app (OAuth 2.0, scopes <code>youtube.upload</code> and <code>youtube</code>).</li>
+<li>Uploads the finished video (<code>videos.insert</code>), sets title, description, privacy status and publish time, and the custom thumbnail (<code>thumbnails.set</code>).</li>
+<li>Lists the channel's own uploads to confirm the result (<code>videos.list</code>, <code>channels.list</code>).</li>
+</ul>
+<p>No data from viewers or other users is collected. The tool is not available to the public.</p>
+<p>By using this tool with YouTube you agree to be bound by the <a href="https://www.youtube.com/t/terms">YouTube Terms of Service</a>. Google data is handled according to the <a href="https://policies.google.com/privacy">Google Privacy Policy</a>. Access can be revoked at any time at <a href="https://security.google.com/settings/security/permissions">security.google.com/settings/security/permissions</a>.</p>
+<p class="links"><a href="privacidade.html">Privacy Policy / Política de Privacidade</a><a href="termos.html">Terms of Service / Termos de Uso</a></p>
+<hr>
+<small>Macheidan Labs · <a href="https://fabiomachado.com.br">fabiomachado.com.br</a> · Contact: machadofabio@gmail.com</small>
+</body>
+</html>
