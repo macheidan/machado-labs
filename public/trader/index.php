@@ -77,6 +77,13 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
   .bar i{display:block;height:100%;background:var(--acc)}
   .aviso{background:#2a2110;border:1px solid #5a4416;color:var(--warn);border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:14px}
   svg{display:block;width:100%;height:140px}
+  .status{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:14px}
+  .status .card{display:flex;gap:12px;align-items:flex-start;padding:14px 16px}
+  .dot{width:12px;height:12px;border-radius:50%;margin-top:5px;flex:none}
+  .dot.ok{background:var(--ok);box-shadow:0 0 0 0 rgba(76,195,138,.6);animation:pulsa 2s infinite}
+  .dot.warn{background:var(--warn)} .dot.err{background:var(--err)} .dot.off{background:#4a4a56}
+  @keyframes pulsa{0%{box-shadow:0 0 0 0 rgba(76,195,138,.55)}70%{box-shadow:0 0 0 10px rgba(76,195,138,0)}100%{box-shadow:0 0 0 0 rgba(76,195,138,0)}}
+  .status .t{font-weight:600} .status .d{color:var(--fg-2);font-size:13px}
   @media(max-width:600px){form .row{grid-template-columns:1fr 110px}.kpi .v{font-size:20px}}
 </style>
 </head>
@@ -132,8 +139,15 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     <button data-t="operacoes">Operacoes</button>
     <button data-t="config">Configuracoes</button>
   </nav>
+  <div id="status"></div>
   <div id="conteudo"></div>
+  <div id="vivo" class="card" style="margin-bottom:14px">
+    <h2>XAUUSD ao vivo <span class="mut" style="text-transform:none;letter-spacing:0;font-weight:400">· TradingView, preco a vista (OANDA)</span></h2>
+    <div class="tradingview-widget-container" style="min-height:480px"><div class="tradingview-widget-container__widget"></div></div>
+  </div>
+  <div id="conteudo2"></div>
 </div>
+<script src="https://unpkg.com/lightweight-charts@4.2.3/dist/lightweight-charts.standalone.production.js"></script>
 <script>
 (function () {
   var E = null, aba = 'painel';
@@ -170,7 +184,6 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     if (!E || !E.estado) return '<div class="aviso">A maquina ainda nao publicou nenhum estado. Ele sobe a cada rodada de 15 min (Hub/trader/web.py).</div>';
     var min = (Date.now() - new Date(E.estado.atualizado)) / 60000;
     $('upd').textContent = 'atualizado ' + dt(E.estado.atualizado);
-    if (min > 40) return '<div class="aviso">Ultima rodada ha ' + Math.round(min) + ' min. A simulacao pode estar parada (fim de semana, pausa do mercado ou PC desligado).</div>';
     return '';
   }
 
@@ -187,10 +200,118 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     h += '<div class="card" style="margin-bottom:14px"><h2>Posicao</h2>' + (p
       ? '<table><tr><th>Lado</th><th class="r">Lotes</th><th class="r">Entrada</th><th class="r">Stop</th><th class="r">Alvo</th><th class="r">Flutuante</th></tr><tr><td>' + tagRating(p.lado === 'COMPRA' ? 'Buy' : 'Sell').replace(/Buy|Sell/, esc(p.lado)) + '</td><td class="r">' + p.lotes + '</td><td class="r">' + p.entrada.toFixed(2) + '</td><td class="r">' + p.stop.toFixed(2) + '</td><td class="r">' + p.alvo.toFixed(2) + '</td><td class="r ' + cls(c.flutuante) + '">' + usd(c.flutuante, true) + '</td></tr></table><p class="mut" style="margin-top:8px;font-size:13px">Aberta ' + dt(p.aberta_em) + ' · ' + esc(p.motivo) + '</p>'
       : '<p class="mut">Sem posicao aberta.</p>') + '</div>';
+    return h;
+  }
+
+  // ---------- esta operando? ----------
+  function horaNY() {
+    var p = {}; new Intl.DateTimeFormat('en-US', {timeZone: 'America/New_York', weekday: 'short', hour: 'numeric', minute: 'numeric', hour12: false})
+      .formatToParts(new Date()).forEach(function (x) { p[x.type] = x.value; });
+    return {dia: p.weekday, h: (+p.hour % 24) + (+p.minute) / 60};
+  }
+  function mercadoAberto() {
+    // ouro: domingo 18h a sexta 17h (NY), com pausa diaria 17h-18h
+    var n = horaNY();
+    if (n.dia === 'Sat') return false;
+    if (n.dia === 'Sun') return n.h >= 18;
+    if (n.dia === 'Fri') return n.h < 17;
+    return !(n.h >= 17 && n.h < 18);
+  }
+  function statusBox() {
+    if (!E || !E.estado) return '';
+    var s = E.estado, c = s.carteira, cfg = s.config, min = (Date.now() - new Date(s.atualizado)) / 60000;
+    var aberto = mercadoAberto(), ult = (s.analises || [])[s.analises.length - 1] || {}, ver = ult.veredito || '';
+    var mesa = (s.mesas || [])[0];
+    // 1. o robo (processo no PC) esta vivo?
+    var robo = min <= 20 ? ['ok', 'Robo online', 'ultima rodada ha ' + Math.max(0, Math.round(min)) + ' min · roda a cada 15 min']
+      : min <= 40 ? ['warn', 'Robo atrasado', 'ultima rodada ha ' + Math.round(min) + ' min']
+      : ['err', 'Robo parado', 'sem rodada ha ' + (min > 120 ? Math.round(min / 60) + ' h' : Math.round(min) + ' min') + ' · PC desligado ou pm2 caiu'];
+    // 2. mercado
+    var merc = aberto ? ['ok', 'Mercado aberto', 'ouro negocia dom 18h a sex 17h (NY)'] : ['off', 'Mercado fechado', 'volta dom 18h NY (20h/19h em Brasilia); pausa diaria 17h-18h NY'];
+    // 3. o que a simulacao esta fazendo
+    var sit;
+    if (c.posicao) sit = ['ok', 'Em operacao: ' + c.posicao.lado + ' ' + c.posicao.lotes + ' lote', 'entrada ' + c.posicao.entrada.toFixed(2) + ' · flutuante ' + usd(c.flutuante, true)];
+    else if (cfg.PAUSADO) sit = ['warn', 'Pausado pelo site', 'nao abre posicao nova (Configuracoes > Pausar)'];
+    else if (c.travado_dia) sit = [c.travado_dia === 'META' ? 'ok' : 'err', 'Dia encerrado: ' + (c.travado_dia === 'META' ? 'meta +' + cfg.META_DIA : 'stop ' + cfg.STOP_DIA), 'volta a operar no proximo dia (18h NY)'];
+    else if (!aberto) sit = ['off', 'Aguardando o mercado abrir', ''];
+    else if (min > 40) sit = ['err', 'Nao esta operando', 'o robo nao roda ha ' + Math.round(min) + ' min'];
+    else if (cfg.USAR_MESA && mesa && mesa.vies === 0) sit = ['warn', 'Mesa em Hold: nao opera hoje', 'a mesa de agentes nao viu vantagem (' + esc(mesa.data) + ')'];
+    else if (/BLOQUEADO/.test(ver)) sit = ['warn', 'Bloqueado por noticia', esc((ver.match(/BLOQUEADO: ([^;|]+)/) || [])[1] || '')];
+    else sit = ['ok', 'Procurando entrada', 'ultimo veredito: ' + esc(ver.split('|')[0] || '-') + (mesa ? ' · mesa ' + esc(mesa.rating) : '')];
+    function bloco(x) { return '<div class="card"><span class="dot ' + x[0] + '"></span><div><div class="t">' + x[1] + '</div><div class="d">' + x[2] + '</div></div></div>'; }
+    return '<div class="status">' + bloco(robo) + bloco(merc) + bloco(sit) + '</div>';
+  }
+
+  function painelBaixo() {
+    var s = E.estado, c = s.carteira, g = s.gasto || {};
+    var h = '<div class="card" style="margin-bottom:14px"><h2>Simulacao · candles de 15 min <span class="mut" style="text-transform:none;letter-spacing:0;font-weight:400">· futuro GC=F, o que o analista ve</span></h2>'
+      + '<div id="graf" style="height:400px"></div>'
+      + '<p class="mut" style="font-size:12px;margin-top:6px"><span style="color:#e8b95a">EMA20</span> · <span style="color:#7aa2ff">EMA50</span> · setas = entradas e saidas da simulacao · linhas = entrada, stop e alvo da posicao aberta · atualiza a cada rodada (15 min)</p></div>';
     h += '<div class="card" style="margin-bottom:14px"><h2>Curva do saldo</h2>' + curva(s.operacoes, c.capital_inicial) + '</div>';
     var pct = g.teto ? Math.min(100, (g.usd || 0) / g.teto * 100) : 0;
     h += '<div class="card"><h2>API Anthropic (' + esc(g.mes) + ')</h2><div>' + usd(g.usd || 0) + ' de ' + usd(g.teto) + ' · ' + (g.chamadas || 0) + ' chamadas · acima do teto vai para o claude -p do servidor</div><div class="bar"><i style="width:' + pct + '%"></i></div></div>';
     return h;
+  }
+
+  // ---------- grafico ao vivo (TradingView), criado uma vez so ----------
+  var tvCriado = false;
+  function criarTV() {
+    if (tvCriado) return; tvCriado = true;
+    var box = document.querySelector('#vivo .tradingview-widget-container');
+    var sc = document.createElement('script');
+    sc.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
+    sc.async = true;
+    sc.innerHTML = JSON.stringify({
+      autosize: false, width: '100%', height: 480, symbol: 'OANDA:XAUUSD', interval: '15', timezone: 'America/Sao_Paulo',
+      theme: 'dark', style: '1', locale: 'br', backgroundColor: '#111117', gridColor: 'rgba(35,35,45,0.6)',
+      hide_side_toolbar: false, allow_symbol_change: false, withdateranges: true, save_image: false,
+      studies: ['STD;EMA', 'STD;RSI'], support_host: 'https://www.tradingview.com'
+    });
+    box.appendChild(sc);
+  }
+
+  // ---------- grafico da simulacao (lightweight-charts) ----------
+  var graf = null;
+  function desenharGrafico() {
+    var el = $('graf'), cs = E.estado.candles || [];
+    if (graf) { graf.remove(); graf = null; }
+    if (!el) return;
+    if (!window.LightweightCharts || !cs.length) { el.innerHTML = '<p class="mut">' + (cs.length ? 'Biblioteca do grafico nao carregou.' : 'Os candles aparecem depois da proxima rodada da maquina.') + '</p>'; el.style.height = 'auto'; return; }
+    var off = -new Date().getTimezoneOffset() * 60;   // eixo no horario local
+    graf = LightweightCharts.createChart(el, {
+      autoSize: true,
+      layout: {background: {type: 'solid', color: '#111117'}, textColor: '#b4b4c0', fontSize: 12},
+      grid: {vertLines: {color: '#1c1c24'}, horzLines: {color: '#1c1c24'}},
+      timeScale: {timeVisible: true, secondsVisible: false, borderColor: '#23232d'},
+      rightPriceScale: {borderColor: '#23232d'},
+      crosshair: {mode: 0}
+    });
+    var serie = graf.addCandlestickSeries({upColor: '#4cc38a', downColor: '#ff6b6b', borderVisible: false, wickUpColor: '#4cc38a', wickDownColor: '#ff6b6b'});
+    serie.setData(cs.map(function (k) { return {time: k[0] + off, open: k[1], high: k[2], low: k[3], close: k[4]}; }));
+    graf.addLineSeries({color: '#e8b95a', lineWidth: 1, priceLineVisible: false, lastValueVisible: false})
+      .setData(cs.map(function (k) { return {time: k[0] + off, value: k[5]}; }));
+    graf.addLineSeries({color: '#7aa2ff', lineWidth: 1, priceLineVisible: false, lastValueVisible: false})
+      .setData(cs.map(function (k) { return {time: k[0] + off, value: k[6]}; }));
+
+    var ini = cs[0][0], fim = cs[cs.length - 1][0];
+    function barra(iso) { var t = Math.floor(Date.parse(iso) / 1000 / 900) * 900; return (t >= ini && t <= fim + 900) ? Math.min(t, fim) + off : null; }
+    var mk = [];
+    (E.estado.operacoes || []).forEach(function (o) {
+      var compra = o.lado === 'COMPRA', ta = barra(o.aberta_em), tf = barra(o.fechada_em);
+      if (ta) mk.push({time: ta, position: compra ? 'belowBar' : 'aboveBar', color: compra ? '#4cc38a' : '#ff6b6b', shape: compra ? 'arrowUp' : 'arrowDown', text: (compra ? 'C ' : 'V ') + o.lotes});
+      if (tf) mk.push({time: tf, position: compra ? 'aboveBar' : 'belowBar', color: o.resultado >= 0 ? '#4cc38a' : '#ff6b6b', shape: 'circle', text: (o.resultado >= 0 ? '+' : '') + Math.round(o.resultado)});
+    });
+    var p = E.estado.carteira.posicao;
+    if (p) {
+      var compra = p.lado === 'COMPRA', ta = barra(p.aberta_em);
+      if (ta) mk.push({time: ta, position: compra ? 'belowBar' : 'aboveBar', color: compra ? '#4cc38a' : '#ff6b6b', shape: compra ? 'arrowUp' : 'arrowDown', text: (compra ? 'C ' : 'V ') + p.lotes + ' (aberta)'});
+      serie.createPriceLine({price: p.entrada, color: '#b4b4c0', lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: 'entrada'});
+      serie.createPriceLine({price: p.stop, color: '#ff6b6b', lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: 'stop'});
+      serie.createPriceLine({price: p.alvo, color: '#4cc38a', lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: 'alvo'});
+    }
+    mk.sort(function (a, b) { return a.time - b.time; });
+    serie.setMarkers(mk);
+    graf.timeScale().setVisibleLogicalRange({from: cs.length - 120, to: cs.length + 3});
   }
 
   function curva(ops, ini) {
@@ -246,7 +367,7 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     Object.keys(ed).forEach(function (k) {
       var m = ed[k], v = salva[k] !== undefined ? salva[k] : cfg[k], campo;
       if (m.tipo === 'bool') campo = '<input type="checkbox" name="' + k + '"' + (v ? ' checked' : '') + '>';
-      else if (k === 'MODELO_API') campo = '<select name="' + k + '">' + (s.modelos || []).map(function (o) { return '<option' + (o === v ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select>';
+      else if (m.opcoes || k === 'MODELO_API') campo = '<select name="' + k + '">' + (m.opcoes || s.modelos || []).map(function (o) { return '<option' + (o === v ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select>';
       else campo = '<input type="number" step="any" name="' + k + '" value="' + esc(v) + '" min="' + m.min + '" max="' + m.max + '">';
       h += '<div class="row"><label>' + esc(m.desc) + '<small>' + esc(k) + (m.min != null ? ' · ' + m.min + ' a ' + m.max : '') + '</small></label>' + campo + '</div>';
     });
@@ -268,14 +389,19 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
   }
 
   function render() {
-    var h = idade();
+    var h = idade(), ehPainel = aba === 'painel' && E && E.estado;
     if (E && E.estado) h += ({painel: painel, mesa: mesa, analises: analises, operacoes: operacoes, config: configuracoes})[aba]();
+    $('status').innerHTML = statusBox();
     $('conteudo').innerHTML = h;
+    $('conteudo2').innerHTML = ehPainel ? painelBaixo() : '';
+    $('vivo').style.display = aba === 'painel' ? '' : 'none';
+    if (aba === 'painel') criarTV();
+    if (ehPainel) desenharGrafico(); else if (graf) { graf.remove(); graf = null; }
     var f = $('fcfg');
     if (f) f.addEventListener('submit', function (ev) {
       ev.preventDefault();
       var body = {}, ed = E.estado.editaveis;
-      Object.keys(ed).forEach(function (k) { var el = f.elements[k]; if (!el) return; body[k] = ed[k].tipo === 'bool' ? el.checked : (k === 'MODELO_API' ? el.value : Number(el.value)); });
+      Object.keys(ed).forEach(function (k) { var el = f.elements[k]; if (!el) return; body[k] = ed[k].tipo === 'bool' ? el.checked : (ed[k].tipo === 'str' ? el.value : Number(el.value)); });
       $('cmsg').textContent = 'Salvando...';
       post('api.php?a=config', body).then(function (j) {
         if (j.ok) { E.config_salva = j.config; $('cmsg').textContent = 'Salvo. A maquina aplica na proxima rodada.'; }
