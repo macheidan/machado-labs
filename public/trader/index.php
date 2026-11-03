@@ -194,11 +194,19 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     var h = controle() + '<div class="grid">'
       + '<div class="card kpi"><div class="l">Saldo</div><div class="v">' + usd(c.saldo) + '</div><div class="s ' + cls(tot) + '">' + usd(tot, true) + ' desde o inicio</div></div>'
       + '<div class="card kpi"><div class="l">Hoje (' + esc(c.dia) + ')</div><div class="v ' + cls(c.resultado_dia) + '">' + usd(c.resultado_dia, true) + trava + '</div><div class="s">' + (travaPausada() ? '<span class="neg">travas pausadas</span>' : 'trava ' + usd(s.config.STOP_DIA) + ' / ' + usd(s.config.META_DIA, true)) + '</div></div>'
-      + '<div class="card kpi"><div class="l">XAUUSD</div><div class="v">' + (s.preco ? s.preco.toFixed(2) : '-') + '</div><div class="s">' + (s.config.PAUSADO ? '<span class="neg">entradas pausadas</span>' : 'operando') + '</div></div>'
+      + '<div class="card kpi"><div class="l">Ouro (GC=F, ao vivo)</div><div class="v" id="pxKpi">' + (s.preco ? s.preco.toFixed(2) : '-') + '</div><div class="s">' + (s.config.PAUSADO ? '<span class="neg">entradas pausadas</span>' : 'operando') + '</div></div>'
       + '<div class="card kpi"><div class="l">Mesa de hoje</div><div class="v">' + (m ? tagRating(m.rating) : '-') + '</div><div class="s">' + (m ? esc(m.data) + ' via ' + esc(m.via) : 'sem mesa') + '</div></div>'
       + '</div>';
-    h += '<div class="card" style="margin-bottom:14px"><h2>Posicao</h2>' + (p
-      ? '<table><tr><th>Lado</th><th class="r">Lotes</th><th class="r">Entrada</th><th class="r">Stop</th><th class="r">Alvo</th><th class="r">Flutuante</th></tr><tr><td>' + tagRating(p.lado === 'COMPRA' ? 'Buy' : 'Sell').replace(/Buy|Sell/, esc(p.lado)) + '</td><td class="r">' + p.lotes + '</td><td class="r">' + p.entrada.toFixed(2) + '</td><td class="r">' + p.stop.toFixed(2) + '</td><td class="r">' + p.alvo.toFixed(2) + '</td><td class="r ' + cls(c.flutuante) + '">' + usd(c.flutuante, true) + '</td></tr></table><p class="mut" style="margin-top:8px;font-size:13px">Aberta ' + dt(p.aberta_em) + ' · ' + esc(p.motivo) + '</p>'
+    h += '<div class="card" style="margin-bottom:14px"><h2>Posicao <span class="mut" style="text-transform:none;letter-spacing:0;font-weight:400" id="pxIdade"></span></h2>' + (p
+      ? '<div style="display:flex;gap:28px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px">'
+        + '<div><div class="mut" style="font-size:12px">RESULTADO AGORA</div><div id="pnlVivo" class="' + cls(c.flutuante) + '" style="font-size:34px;font-weight:700;font-variant-numeric:tabular-nums">' + usd(c.flutuante, true) + '</div>'
+        + '<div id="pnlPts" class="mut" style="font-size:13px"></div></div>'
+        + '<div><div class="mut" style="font-size:12px">PRECO AGORA</div><div id="pxPos" style="font-size:22px;font-weight:600">' + (s.preco ? s.preco.toFixed(2) : '-') + '</div></div>'
+        + '<div><div class="mut" style="font-size:12px">DIA COM A ABERTA</div><div id="diaVivo" style="font-size:22px;font-weight:600">' + usd(c.resultado_dia + c.flutuante, true) + '</div></div>'
+        + '</div>'
+        + '<div style="position:relative;height:10px;border-radius:99px;background:linear-gradient(90deg,#5e2323,#23232d 50%,#1f5a3c);margin:4px 0 6px"><i id="pnlCursor" style="position:absolute;top:-4px;width:4px;height:18px;border-radius:2px;background:#f1f1f5;left:50%"></i></div>'
+        + '<div style="display:flex;justify-content:space-between;font-size:12px" class="mut"><span>stop ' + p.stop.toFixed(2) + ' (<span class="neg">' + usd(-Math.abs(p.entrada - p.stop) * p.lotes * 100) + '</span>)</span><span>entrada ' + p.entrada.toFixed(2) + '</span><span>alvo ' + p.alvo.toFixed(2) + ' (<span class="pos">' + usd(Math.abs(p.alvo - p.entrada) * p.lotes * 100, true) + '</span>)</span></div>'
+        + '<p class="mut" style="margin-top:10px;font-size:13px">' + tagRating(p.lado === 'COMPRA' ? 'Buy' : 'Sell').replace(/Buy|Sell/, esc(p.lado)) + ' ' + p.lotes + ' lote · cada US$1 no ouro = ' + usd(p.lotes * 100) + ' · aberta ' + dt(p.aberta_em) + ' · ' + esc(p.motivo) + '</p>'
       : '<p class="mut">Sem posicao aberta.</p>') + '</div>';
     return h;
   }
@@ -230,7 +238,7 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     var merc = aberto ? ['ok', 'Mercado aberto', 'ouro negocia dom 18h a sex 17h (NY)'] : ['off', 'Mercado fechado', 'volta dom 18h NY (20h/19h em Brasilia); pausa diaria 17h-18h NY'];
     // 3. o que a simulacao esta fazendo
     var sit;
-    if (c.posicao) sit = ['ok', 'Em operacao: ' + c.posicao.lado + ' ' + c.posicao.lotes + ' lote', 'entrada ' + c.posicao.entrada.toFixed(2) + ' · flutuante ' + usd(c.flutuante, true)];
+    if (c.posicao) sit = ['ok', 'Em operacao: ' + c.posicao.lado + ' ' + c.posicao.lotes + ' lote', 'entrada ' + c.posicao.entrada.toFixed(2) + ' · agora <b id="sFlut" class="' + cls(c.flutuante) + '">' + usd(c.flutuante, true) + '</b>'];
     else if (pausadoEfetivo()) sit = ['warn', 'Robo pausado', 'nao abre posicao nova (Configuracoes > Pausar)'];
     else if (c.travado_dia) sit = [c.travado_dia === 'META' ? 'ok' : 'err', 'Dia encerrado: ' + (c.travado_dia === 'META' ? 'meta +' + cfg.META_DIA : 'stop ' + cfg.STOP_DIA), 'volta a operar no proximo dia (18h NY)'];
     else if (!aberto) sit = ['off', 'Aguardando o mercado abrir', ''];
@@ -242,6 +250,35 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     function bloco(x) { return '<div class="card"><span class="dot ' + x[0] + '"></span><div><div class="t">' + x[1] + '</div><div class="d">' + x[2] + '</div></div></div>'; }
     return '<div class="status">' + bloco(robo) + bloco(merc) + bloco(sit) + '</div>';
   }
+
+  // ---------- resultado ao vivo (preco a cada 10 s) ----------
+  var ultPreco = null;
+  function aplicarPreco() {
+    if (!E || !E.estado || ultPreco == null) return;
+    var c = E.estado.carteira, p = c.posicao, set = function (id, html, k) { var el = $(id); if (el) { el.innerHTML = html; if (k !== undefined) el.className = k; } };
+    set('pxKpi', ultPreco.toFixed(2)); set('pxPos', ultPreco.toFixed(2));
+    if (!p) return;
+    var sinal = p.lado === 'COMPRA' ? 1 : -1, pts = sinal * (ultPreco - p.entrada), r = pts * p.lotes * 100;
+    set('pnlVivo', usd(r, true), cls(r)); set('sFlut', usd(r, true), cls(r));
+    set('pnlPts', (pts >= 0 ? '+' : '') + pts.toFixed(2) + ' pontos (US$/oz) desde a entrada');
+    var dia = c.resultado_dia + r; set('diaVivo', usd(dia, true)); var dv = $('diaVivo'); if (dv) dv.className = cls(dia);
+    // cursor: 0% = stop, 50% = entrada, 100% = alvo
+    var cur = $('pnlCursor');
+    if (cur) {
+      var f = pts >= 0 ? 50 + 50 * pts / Math.abs(p.alvo - p.entrada) : 50 - 50 * (-pts) / Math.abs(p.entrada - p.stop);
+      cur.style.left = 'calc(' + Math.max(0, Math.min(100, f)) + '% - 2px)';
+    }
+  }
+  function puxarPreco() {
+    if (aba !== 'painel' || document.hidden || !mercadoAberto()) return;
+    fetch('api.php?a=preco', {credentials: 'same-origin'}).then(function (r) { return r.json(); }).then(function (j) {
+      if (!j || !j.ok) return;
+      ultPreco = j.preco;
+      var el = $('pxIdade'); if (el) el.textContent = '· preco de ' + new Date(j.ts * 1000).toLocaleTimeString('pt-BR') + ', atualiza a cada 10 s';
+      aplicarPreco();
+    }).catch(function () {});
+  }
+  setInterval(puxarPreco, 10000);
 
   // ---------- controle: robo e ordens manuais ----------
   function pausadoEfetivo() {
@@ -463,7 +500,7 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     $('conteudo2').innerHTML = ehPainel ? painelBaixo() : '';
     $('vivo').style.display = aba === 'painel' ? '' : 'none';
     if (aba === 'painel') criarTV();
-    if (ehPainel) { desenharGrafico(); ligarControle(); } else if (graf) { graf.remove(); graf = null; }
+    if (ehPainel) { desenharGrafico(); ligarControle(); aplicarPreco(); if (ultPreco == null) puxarPreco(); } else if (graf) { graf.remove(); graf = null; }
     var f = $('fcfg');
     if (f) f.addEventListener('submit', function (ev) {
       ev.preventDefault();

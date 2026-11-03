@@ -66,6 +66,31 @@ if ($a === 'estado' && $method === 'GET') {
     ));
 }
 
+// preco ao vivo do mesmo ativo da simulacao (futuro GC=F), com cache de 10 s no servidor
+if ($a === 'preco' && $method === 'GET') {
+    $cache = __DIR__ . '/preco.cache.json';
+    $c = ler_json('preco.cache.json', null);
+    if (!$c || !isset($c['lido']) || time() - $c['lido'] >= 10) {
+        $url = 'https://query1.finance.yahoo.com/v8/finance/chart/GC%3DF?interval=1m&range=1d';
+        $resp = false; $code = 0;
+        if (function_exists('curl_init')) {
+            $ch = curl_init($url);
+            curl_setopt_array($ch, array(CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 8,
+                CURLOPT_SSL_VERIFYPEER => true, CURLOPT_USERAGENT => 'Mozilla/5.0 (trader-fabio)'));
+            $resp = curl_exec($ch); $code = curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
+        }
+        $j = $code === 200 ? json_decode((string)$resp, true) : null;
+        $m = isset($j['chart']['result'][0]['meta']) ? $j['chart']['result'][0]['meta'] : null;
+        if ($m && isset($m['regularMarketPrice'])) {
+            $c = array('preco' => (float)$m['regularMarketPrice'], 'ts' => (int)$m['regularMarketTime'], 'lido' => time());
+            @file_put_contents($cache, json_encode($c), LOCK_EX);
+        } elseif (!$c) {
+            out(502, array('ok' => false, 'err' => 'sem_preco'));
+        }
+    }
+    out(200, array('ok' => true, 'preco' => $c['preco'], 'ts' => $c['ts'], 'idade' => time() - $c['lido']));
+}
+
 if ($a === 'config' && $method === 'POST') {
     require_header();
     $raw = file_get_contents('php://input');
