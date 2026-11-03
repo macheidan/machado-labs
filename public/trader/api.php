@@ -24,10 +24,19 @@ function ler_json($nome, $padrao) {
     return is_array($d) ? $d : $padrao;
 }
 
-if (!current_session()) out(401, array('ok' => false, 'err' => 'unauthorized'));
-
 $method = $_SERVER['REQUEST_METHOD'];
 $a = isset($_GET['a']) ? $_GET['a'] : '';
+
+// fila rapida: a maquina do Fabio consulta a cada 20 s com o token (token.dat, negado no .htaccess)
+if ($a === 'fila' && $method === 'GET') {
+    $tok = (string)@file_get_contents(__DIR__ . '/token.dat');
+    $env = isset($_SERVER['HTTP_X_TRADER_TOKEN']) ? (string)$_SERVER['HTTP_X_TRADER_TOKEN'] : '';
+    if (strlen($tok) < 32 || !hash_equals(trim($tok), $env)) out(401, array('ok' => false, 'err' => 'token'));
+    out(200, array('ok' => true, 'config' => ler_json('config.json', new stdClass()),
+                   'comandos' => ler_json('comandos.json', array())));
+}
+
+if (!current_session()) out(401, array('ok' => false, 'err' => 'unauthorized'));
 
 // faixa aceita por campo; a maquina valida de novo ao baixar (config.validar)
 $CAMPOS = array(
@@ -41,8 +50,9 @@ $CAMPOS = array(
     'TETO_MES_USD' => array('n', 0, 1000),
     'MODELO_API' => array('m', array('claude-opus-5-5', 'claude-sonnet-5-5', 'claude-haiku-5-5')),
     'USAR_MESA' => array('b'), 'MANCHETES_CLAUDE' => array('b'), 'PAUSADO' => array('b'),
+    'TRAVA_PAUSADA' => array('b'),
 );
-$COMANDOS = array('mesa_agora', 'fechar_posicao', 'zerar_carteira');
+$COMANDOS = array('mesa_agora', 'fechar_posicao', 'zerar_carteira', 'comprar', 'vender');
 
 if ($a === 'estado' && $method === 'GET') {
     $f = __DIR__ . '/_estado.json';
@@ -86,11 +96,16 @@ if ($a === 'comando' && $method === 'POST') {
     $d = json_decode((string)file_get_contents('php://input'), true);
     $cmd = is_array($d) && isset($d['cmd']) ? (string)$d['cmd'] : '';
     if (!in_array($cmd, $COMANDOS, true)) out(400, array('ok' => false, 'err' => 'comando'));
+    $novo = array('id' => bin2hex(random_bytes(8)), 'cmd' => $cmd, 'ts' => date('c'));
+    if (($cmd === 'comprar' || $cmd === 'vender') && isset($d['lotes']) && $d['lotes'] !== '' && $d['lotes'] !== null) {
+        if (!is_numeric($d['lotes']) || (float)$d['lotes'] < 0.01 || (float)$d['lotes'] > 10) out(422, array('ok' => false, 'err' => 'lotes'));
+        $novo['lotes'] = round((float)$d['lotes'], 2);
+    }
     $lista = ler_json('comandos.json', array());
-    $lista[] = array('id' => bin2hex(random_bytes(8)), 'cmd' => $cmd, 'ts' => date('c'));
+    $lista[] = $novo;
     $lista = array_slice($lista, -30);
     @file_put_contents(__DIR__ . '/comandos.json', json_encode($lista), LOCK_EX);
-    out(200, array('ok' => true));
+    out(200, array('ok' => true, 'id' => $novo['id']));
 }
 
 out(404, array('ok' => false, 'err' => 'not_found'));

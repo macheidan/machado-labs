@@ -191,9 +191,9 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     var s = E.estado, c = s.carteira, p = c.posicao, g = s.gasto || {}, m = (s.mesas || [])[0];
     var tot = c.saldo - c.capital_inicial;
     var trava = c.travado_dia ? ' <span class="tag ' + (c.travado_dia === 'META' ? 'buy' : 'sell') + '">' + esc(c.travado_dia) + '</span>' : '';
-    var h = '<div class="grid">'
+    var h = controle() + '<div class="grid">'
       + '<div class="card kpi"><div class="l">Saldo</div><div class="v">' + usd(c.saldo) + '</div><div class="s ' + cls(tot) + '">' + usd(tot, true) + ' desde o inicio</div></div>'
-      + '<div class="card kpi"><div class="l">Hoje (' + esc(c.dia) + ')</div><div class="v ' + cls(c.resultado_dia) + '">' + usd(c.resultado_dia, true) + trava + '</div><div class="s">trava ' + usd(s.config.STOP_DIA) + ' / ' + usd(s.config.META_DIA, true) + '</div></div>'
+      + '<div class="card kpi"><div class="l">Hoje (' + esc(c.dia) + ')</div><div class="v ' + cls(c.resultado_dia) + '">' + usd(c.resultado_dia, true) + trava + '</div><div class="s">' + (travaPausada() ? '<span class="neg">travas pausadas</span>' : 'trava ' + usd(s.config.STOP_DIA) + ' / ' + usd(s.config.META_DIA, true)) + '</div></div>'
       + '<div class="card kpi"><div class="l">XAUUSD</div><div class="v">' + (s.preco ? s.preco.toFixed(2) : '-') + '</div><div class="s">' + (s.config.PAUSADO ? '<span class="neg">entradas pausadas</span>' : 'operando') + '</div></div>'
       + '<div class="card kpi"><div class="l">Mesa de hoje</div><div class="v">' + (m ? tagRating(m.rating) : '-') + '</div><div class="s">' + (m ? esc(m.data) + ' via ' + esc(m.via) : 'sem mesa') + '</div></div>'
       + '</div>';
@@ -231,15 +231,82 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     // 3. o que a simulacao esta fazendo
     var sit;
     if (c.posicao) sit = ['ok', 'Em operacao: ' + c.posicao.lado + ' ' + c.posicao.lotes + ' lote', 'entrada ' + c.posicao.entrada.toFixed(2) + ' · flutuante ' + usd(c.flutuante, true)];
-    else if (cfg.PAUSADO) sit = ['warn', 'Pausado pelo site', 'nao abre posicao nova (Configuracoes > Pausar)'];
+    else if (pausadoEfetivo()) sit = ['warn', 'Robo pausado', 'nao abre posicao nova (Configuracoes > Pausar)'];
     else if (c.travado_dia) sit = [c.travado_dia === 'META' ? 'ok' : 'err', 'Dia encerrado: ' + (c.travado_dia === 'META' ? 'meta +' + cfg.META_DIA : 'stop ' + cfg.STOP_DIA), 'volta a operar no proximo dia (18h NY)'];
     else if (!aberto) sit = ['off', 'Aguardando o mercado abrir', ''];
     else if (min > 40) sit = ['err', 'Nao esta operando', 'o robo nao roda ha ' + Math.round(min) + ' min'];
     else if (cfg.USAR_MESA && mesa && mesa.vies === 0) sit = ['warn', 'Mesa em Hold: nao opera hoje', 'a mesa de agentes nao viu vantagem (' + esc(mesa.data) + ')'];
     else if (/BLOQUEADO/.test(ver)) sit = ['warn', 'Bloqueado por noticia', esc((ver.match(/BLOQUEADO: ([^;|]+)/) || [])[1] || '')];
     else sit = ['ok', 'Procurando entrada', 'ultimo veredito: ' + esc(ver.split('|')[0] || '-') + (mesa ? ' · mesa ' + esc(mesa.rating) : '')];
+    if (travaPausada()) sit[2] = (sit[2] ? sit[2] + ' · ' : '') + '<span class="neg">trava diaria pausada</span>';
     function bloco(x) { return '<div class="card"><span class="dot ' + x[0] + '"></span><div><div class="t">' + x[1] + '</div><div class="d">' + x[2] + '</div></div></div>'; }
     return '<div class="status">' + bloco(robo) + bloco(merc) + bloco(sit) + '</div>';
+  }
+
+  // ---------- controle: robo e ordens manuais ----------
+  function pausadoEfetivo() {
+    var sv = E.config_salva || {};
+    return sv.PAUSADO !== undefined ? !!sv.PAUSADO : !!E.estado.config.PAUSADO;
+  }
+  function travaPausada() {
+    var sv = E.config_salva || {};
+    return sv.TRAVA_PAUSADA !== undefined ? !!sv.TRAVA_PAUSADA : !!E.estado.config.TRAVA_PAUSADA;
+  }
+  function controle() {
+    var s = E.estado, c = s.carteira, pausa = pausadoEfetivo(), p = c.posicao, tp = travaPausada();
+    var lotePadrao = s.config.LOTE_FIXO > 0 ? 'fixo ' + s.config.LOTE_FIXO : 'auto (risco ' + usd(s.config.RISCO_POR_TRADE) + ')';
+    var h = '<div class="card" style="margin-bottom:14px"><h2>Controle</h2>'
+      + '<div style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-end">'
+      + '<div><div class="mut" style="font-size:12px;margin-bottom:6px">ROBO</div>'
+      + (pausa ? '<button class="btn" id="bIniciar">Iniciar robo</button>' : '<button class="btn sec" id="bPausar">Pausar robo</button>')
+      + '<div class="mut" style="font-size:12px;margin-top:4px">' + (pausa ? 'pausado: nao abre posicao sozinho' : 'ligado: abre e fecha sozinho') + '</div></div>'
+      + '<div><div class="mut" style="font-size:12px;margin-bottom:6px">TRAVA DIARIA</div>'
+      + (tp ? '<button class="btn" id="bTravaOn">Reativar travas</button>' : '<button class="btn sec" id="bTravaOff">Pausar travas</button>')
+      + '<div class="' + (tp ? 'neg' : 'mut') + '" style="font-size:12px;margin-top:4px">' + (tp ? 'PAUSADA: sem limite de ' + usd(s.config.STOP_DIA) + '/' + usd(s.config.META_DIA, true) + ' no robo e no manual' : 'ativa: ' + usd(s.config.STOP_DIA) + ' / ' + usd(s.config.META_DIA, true) + ' por dia') + '</div></div>'
+      + '<div style="flex:1;min-width:280px"><div class="mut" style="font-size:12px;margin-bottom:6px">ORDEM MANUAL (preco de agora)</div>'
+      + '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'
+      + '<input id="mLote" type="number" step="0.01" min="0.01" max="10" placeholder="lote: ' + esc(lotePadrao) + '" style="width:190px">'
+      + '<button class="btn" id="bComprar" style="background:#4cc38a;color:#06140d">Comprar</button>'
+      + '<button class="btn" id="bVender" style="background:#ff6b6b;color:#1a0606">Vender</button>'
+      + (p ? '<button class="btn sec" id="bFechar">Fechar ' + esc(p.lado) + '</button>' : '')
+      + '</div><div class="mut" style="font-size:12px;margin-top:4px">stop/alvo pelo modo das Configuracoes (' + esc(s.config.SL_TP_MODO) + ') · respeita a trava de ' + usd(s.config.STOP_DIA) + '/' + usd(s.config.META_DIA, true) + ' · comprar com venda aberta inverte a posicao</div></div>'
+      + '</div><div id="ctlMsg" class="msg" style="margin-top:10px">' + ((s.log_comandos || []).length ? 'Ultimo: ' + s.log_comandos.map(esc).join(' · ') : '') + '</div></div>';
+    return h;
+  }
+  function ligarControle() {
+    function msg(t, err) { var m = $('ctlMsg'); if (m) { m.textContent = t; m.className = 'msg' + (err ? ' err' : ''); } }
+    function acompanhar() { [8000, 20000, 35000, 50000].forEach(function (ms) { setTimeout(carregar, ms); }); }
+    function salvar(campo, v, texto) {
+      msg('Enviando...');
+      var b = {}; b[campo] = v;
+      post('api.php?a=config', b).then(function (j) {
+        if (!j.ok) { msg('Erro: ' + j.err, true); return; }
+        E.config_salva = j.config; render(); msg(texto + ' O PC aplica em ate 20 s.');
+      });
+    }
+    function pausar(v) { salvar('PAUSADO', v, v ? 'Robo pausado.' : 'Robo iniciado.'); }
+    function travas(pausa) {
+      if (pausa && !window.confirm('Pausar a trava diaria? O robo e as ordens manuais deixam de parar em ' + usd(E.estado.config.STOP_DIA) + ' / ' + usd(E.estado.config.META_DIA, true) + '.')) return;
+      salvar('TRAVA_PAUSADA', pausa, pausa ? 'Travas pausadas.' : 'Travas reativadas.');
+    }
+    if ($('bTravaOff')) $('bTravaOff').onclick = function () { travas(true); };
+    if ($('bTravaOn')) $('bTravaOn').onclick = function () { travas(false); };
+    function ordem(cmd) {
+      var l = $('mLote').value, body = {cmd: cmd};
+      if (l !== '') { body.lotes = Number(l); if (!(body.lotes >= 0.01 && body.lotes <= 10)) { msg('Lote entre 0,01 e 10.', true); return; } }
+      var nome = cmd === 'comprar' ? 'COMPRA' : (cmd === 'vender' ? 'VENDA' : 'fechamento');
+      if (!window.confirm('Enviar ' + nome + (body.lotes ? ' de ' + body.lotes + ' lote' : '') + ' no preco de agora (simulado)?')) return;
+      ['bComprar', 'bVender', 'bFechar'].forEach(function (id) { if ($(id)) $(id).disabled = true; });
+      post('api.php?a=comando', body).then(function (j) {
+        if (!j.ok) { msg('Erro: ' + j.err, true); return; }
+        msg(nome + ' enviada. O PC executa em ate 20 s; o painel atualiza sozinho.'); acompanhar();
+      });
+    }
+    if ($('bPausar')) $('bPausar').onclick = function () { pausar(true); };
+    if ($('bIniciar')) $('bIniciar').onclick = function () { pausar(false); };
+    if ($('bComprar')) $('bComprar').onclick = function () { ordem('comprar'); };
+    if ($('bVender')) $('bVender').onclick = function () { ordem('vender'); };
+    if ($('bFechar')) $('bFechar').onclick = function () { ordem('fechar_posicao'); };
   }
 
   function painelBaixo() {
@@ -396,7 +463,7 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     $('conteudo2').innerHTML = ehPainel ? painelBaixo() : '';
     $('vivo').style.display = aba === 'painel' ? '' : 'none';
     if (aba === 'painel') criarTV();
-    if (ehPainel) desenharGrafico(); else if (graf) { graf.remove(); graf = null; }
+    if (ehPainel) { desenharGrafico(); ligarControle(); } else if (graf) { graf.remove(); graf = null; }
     var f = $('fcfg');
     if (f) f.addEventListener('submit', function (ev) {
       ev.preventDefault();
