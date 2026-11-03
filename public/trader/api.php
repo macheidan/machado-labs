@@ -65,6 +65,8 @@ $CAMPOS = array(
     'MODELO_MANCHETES' => array('m', array('claude-opus-5-5', 'claude-sonnet-5-5', 'claude-haiku-5-5')),
     'RADAR_ATIVO' => array('b'), 'RADAR_FORCA' => array('n', 0.2, 1), 'RADAR_CONFIRMAR_OPUS' => array('b'),
     'SAIR_ANTES_NOTICIA' => array('b'), 'SAIR_ANTES_MIN' => array('i', 1, 120),
+    'MTF_ATIVO' => array('b'), 'MTF_VETO' => array('b'), 'GATILHO_5M' => array('b'),
+    'GATILHO_JANELA' => array('i', 1, 6),
 );
 // o teto da API e o orcamento do Fabio: so ele muda
 if ($usuario !== 'fabio') unset($CAMPOS['TETO_MES_USD']);

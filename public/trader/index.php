@@ -259,6 +259,7 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     // 3. o que a simulacao esta fazendo
     var sit;
     if (c.posicao) sit = ['ok', 'Em operacao: ' + c.posicao.lado + ' ' + c.posicao.lotes + ' ' + K().unidade, 'entrada ' + c.posicao.entrada.toFixed(2) + ' · agora <b id="sFlut" class="' + cls(c.flutuante) + '">' + usd(c.flutuante, true) + '</b>'];
+    else if (c.pendente && !pausadoEfetivo()) sit = ['warn', 'Sinal de ' + (c.pendente.lado > 0 ? 'COMPRA' : 'VENDA') + ': esperando o gatilho de 5 min', 'entra se um candle de 5 min confirmar ate ' + dt(c.pendente.ate) + ' · senao cancela'];
     else if (pausadoEfetivo()) sit = ['warn', 'Robo pausado', 'nao abre posicao nova (Configuracoes > Pausar)'];
     else if (c.travado_dia) sit = [c.travado_dia === 'META' ? 'ok' : 'err', 'Dia encerrado: ' + (c.travado_dia === 'META' ? 'meta +' + cfg.META_DIA : 'stop ' + cfg.STOP_DIA), 'volta a operar no proximo dia (18h NY)'];
     else if (!aberto) sit = ['off', 'Aguardando o mercado abrir', ''];
