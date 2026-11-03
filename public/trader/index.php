@@ -1,5 +1,5 @@
 <?php
-// /trader: mesa e configuracoes da simulacao de XAUUSD que roda na maquina do Fabio
+// /trader: mesa e configuracoes das contas simuladas (XAUUSD, MNQ) que rodam na maquina do Fabio
 // (C:\claude_project\Hub\trader). Login Google restrito ao e-mail dele (lib.php).
 define('TRADER', 1);
 require __DIR__ . '/lib.php';
@@ -127,7 +127,7 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 <?php else: ?>
 <div class="wrap">
   <header class="top">
-    <div class="brand"><b>T</b><span>trader · XAUUSD simulado</span></div>
+    <div class="brand"><b>T</b><span>trader · simulado</span></div><nav class="tabs" id="ativos" style="margin:0"></nav>
     <span class="upd" id="upd">carregando...</span>
     <span class="mut" style="font-size:13px"><?= e($auth['email']) ?></span>
     <button class="btn sec" id="sair" style="padding:4px 10px">Sair</button>
@@ -142,7 +142,7 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
   <div id="status"></div>
   <div id="conteudo"></div>
   <div id="vivo" class="card" style="margin-bottom:14px">
-    <h2>XAUUSD ao vivo <span class="mut" style="text-transform:none;letter-spacing:0;font-weight:400">· TradingView, preco a vista (OANDA)</span></h2>
+    <h2><span id="tvTitulo">ao vivo</span> <span class="mut" style="text-transform:none;letter-spacing:0;font-weight:400">· TradingView</span></h2>
     <div class="tradingview-widget-container" style="min-height:480px"><div class="tradingview-widget-container__widget"></div></div>
   </div>
   <div id="conteudo2"></div>
@@ -151,6 +151,26 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 <script>
 (function () {
   var E = null, aba = 'painel';
+  // ticker escolhido no topo (cada ticker e uma conta simulada propria)
+  var ATIVO = (function () { try { return localStorage.getItem('trader_ativo') || 'XAUUSD'; } catch (e) { return 'XAUUSD'; } })();
+  var FICHA = {XAUUSD: {nome: 'Ouro (XAUUSD)', simbolo: 'GC=F', mult: 100, lote_min: 0.01, unidade: 'lote', tv: 'OANDA:XAUUSD'},
+               MNQ: {nome: 'Micro Nasdaq-100 (MNQ)', simbolo: 'MNQ=F', mult: 2, lote_min: 1, unidade: 'contrato', tv: 'CME_MINI:MNQ1!'}};
+  function K() { return (E && E.estado && E.estado.conta && E.estado.conta.ativo === ATIVO) ? E.estado.conta : FICHA[ATIVO]; }
+  function pintarAtivos() {
+    var lista = (E && E.ativos) || ['XAUUSD', 'MNQ'];
+    document.getElementById('ativos').innerHTML = lista.map(function (a) {
+      return '<button data-a="' + a + '" class="' + (a === ATIVO ? 'on' : '') + '">' + a + '</button>';
+    }).join('');
+  }
+  function trocarAtivo(a) {
+    if (a === ATIVO) return;
+    ATIVO = a; try { localStorage.setItem('trader_ativo', a); } catch (e) {}
+    E = null; ultPreco = null; tvSimbolo = null;
+    pintarAtivos();
+    document.getElementById('conteudo').innerHTML = '<p class="mut">Carregando ' + esc(a) + '...</p>';
+    document.getElementById('conteudo2').innerHTML = ''; document.getElementById('status').innerHTML = '';
+    carregar();
+  }
   var $ = function (id) { return document.getElementById(id); };
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
   function usd(v, sinal) { if (v == null || isNaN(v)) return '-'; var s = Math.abs(v).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}); return (v < 0 ? '-' : (sinal ? '+' : '')) + 'US$ ' + s; }
@@ -175,9 +195,9 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
   }
 
   function carregar() {
-    fetch('api.php?a=estado', {credentials:'same-origin'}).then(function (r) {
+    fetch('api.php?a=estado&ativo=' + ATIVO, {credentials:'same-origin'}).then(function (r) {
       if (r.status === 401) { location.reload(); return null; } return r.json();
-    }).then(function (j) { if (!j) return; E = j; render(); }).catch(function () { $('upd').textContent = 'sem conexao'; });
+    }).then(function (j) { if (!j || (j.ativo && j.ativo !== ATIVO)) return; E = j; pintarAtivos(); render(); }).catch(function () { $('upd').textContent = 'sem conexao'; });
   }
 
   function idade() {
@@ -194,7 +214,7 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     var h = controle() + '<div class="grid">'
       + '<div class="card kpi"><div class="l">Saldo</div><div class="v">' + usd(c.saldo) + '</div><div class="s ' + cls(tot) + '">' + usd(tot, true) + ' desde o inicio</div></div>'
       + '<div class="card kpi"><div class="l">Hoje (' + esc(c.dia) + ')</div><div class="v ' + cls(c.resultado_dia) + '">' + usd(c.resultado_dia, true) + trava + '</div><div class="s">' + (travaPausada() ? '<span class="neg">travas pausadas</span>' : 'trava ' + usd(s.config.STOP_DIA) + ' / ' + usd(s.config.META_DIA, true)) + '</div></div>'
-      + '<div class="card kpi"><div class="l">Ouro (GC=F, ao vivo)</div><div class="v" id="pxKpi">' + (s.preco ? s.preco.toFixed(2) : '-') + '</div><div class="s">' + (s.config.PAUSADO ? '<span class="neg">entradas pausadas</span>' : 'operando') + '</div></div>'
+      + '<div class="card kpi"><div class="l">' + esc(K().nome) + ' (' + esc(K().simbolo) + ', ao vivo)</div><div class="v" id="pxKpi">' + (s.preco ? s.preco.toFixed(2) : '-') + '</div><div class="s">' + (s.config.PAUSADO ? '<span class="neg">entradas pausadas</span>' : 'operando') + '</div></div>'
       + '<div class="card kpi"><div class="l">Mesa de hoje</div><div class="v">' + (m ? tagRating(m.rating) : '-') + '</div><div class="s">' + (m ? esc(m.data) + ' via ' + esc(m.via) : 'sem mesa') + '</div></div>'
       + '</div>';
     h += '<div class="card" style="margin-bottom:14px"><h2>Posicao <span class="mut" style="text-transform:none;letter-spacing:0;font-weight:400" id="pxIdade"></span></h2>' + (p
@@ -205,8 +225,8 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
         + '<div><div class="mut" style="font-size:12px">DIA COM A ABERTA</div><div id="diaVivo" style="font-size:22px;font-weight:600">' + usd(c.resultado_dia + c.flutuante, true) + '</div></div>'
         + '</div>'
         + '<div style="position:relative;height:10px;border-radius:99px;background:linear-gradient(90deg,#5e2323,#23232d 50%,#1f5a3c);margin:4px 0 6px"><i id="pnlCursor" style="position:absolute;top:-4px;width:4px;height:18px;border-radius:2px;background:#f1f1f5;left:50%"></i></div>'
-        + '<div style="display:flex;justify-content:space-between;font-size:12px" class="mut"><span>stop ' + p.stop.toFixed(2) + ' (<span class="neg">' + usd(-Math.abs(p.entrada - p.stop) * p.lotes * 100) + '</span>)</span><span>entrada ' + p.entrada.toFixed(2) + '</span><span>alvo ' + p.alvo.toFixed(2) + ' (<span class="pos">' + usd(Math.abs(p.alvo - p.entrada) * p.lotes * 100, true) + '</span>)</span></div>'
-        + '<p class="mut" style="margin-top:10px;font-size:13px">' + tagRating(p.lado === 'COMPRA' ? 'Buy' : 'Sell').replace(/Buy|Sell/, esc(p.lado)) + ' ' + p.lotes + ' lote · cada US$1 no ouro = ' + usd(p.lotes * 100) + ' · aberta ' + dt(p.aberta_em) + ' · ' + esc(p.motivo) + '</p>'
+        + '<div style="display:flex;justify-content:space-between;font-size:12px" class="mut"><span>stop ' + p.stop.toFixed(2) + ' (<span class="neg">' + usd(-Math.abs(p.entrada - p.stop) * p.lotes * K().mult) + '</span>)</span><span>entrada ' + p.entrada.toFixed(2) + '</span><span>alvo ' + p.alvo.toFixed(2) + ' (<span class="pos">' + usd(Math.abs(p.alvo - p.entrada) * p.lotes * K().mult, true) + '</span>)</span></div>'
+        + '<p class="mut" style="margin-top:10px;font-size:13px">' + tagRating(p.lado === 'COMPRA' ? 'Buy' : 'Sell').replace(/Buy|Sell/, esc(p.lado)) + ' ' + p.lotes + ' ' + esc(K().unidade) + ' · cada 1,00 de movimento = ' + usd(p.lotes * K().mult) + ' · aberta ' + dt(p.aberta_em) + ' · ' + esc(p.motivo) + '</p>'
       : '<p class="mut">Sem posicao aberta.</p>') + '</div>';
     return h;
   }
@@ -235,10 +255,10 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
       : min <= 40 ? ['warn', 'Robo atrasado', 'ultima rodada ha ' + Math.round(min) + ' min']
       : ['err', 'Robo parado', 'sem rodada ha ' + (min > 120 ? Math.round(min / 60) + ' h' : Math.round(min) + ' min') + ' · PC desligado ou pm2 caiu'];
     // 2. mercado
-    var merc = aberto ? ['ok', 'Mercado aberto', 'ouro negocia dom 18h a sex 17h (NY)'] : ['off', 'Mercado fechado', 'volta dom 18h NY (20h/19h em Brasilia); pausa diaria 17h-18h NY'];
+    var merc = aberto ? ['ok', 'Mercado aberto', 'negocia dom 18h a sex 17h (NY)'] : ['off', 'Mercado fechado', 'volta dom 18h NY (20h/19h em Brasilia); pausa diaria 17h-18h NY'];
     // 3. o que a simulacao esta fazendo
     var sit;
-    if (c.posicao) sit = ['ok', 'Em operacao: ' + c.posicao.lado + ' ' + c.posicao.lotes + ' lote', 'entrada ' + c.posicao.entrada.toFixed(2) + ' · agora <b id="sFlut" class="' + cls(c.flutuante) + '">' + usd(c.flutuante, true) + '</b>'];
+    if (c.posicao) sit = ['ok', 'Em operacao: ' + c.posicao.lado + ' ' + c.posicao.lotes + ' ' + K().unidade, 'entrada ' + c.posicao.entrada.toFixed(2) + ' · agora <b id="sFlut" class="' + cls(c.flutuante) + '">' + usd(c.flutuante, true) + '</b>'];
     else if (pausadoEfetivo()) sit = ['warn', 'Robo pausado', 'nao abre posicao nova (Configuracoes > Pausar)'];
     else if (c.travado_dia) sit = [c.travado_dia === 'META' ? 'ok' : 'err', 'Dia encerrado: ' + (c.travado_dia === 'META' ? 'meta +' + cfg.META_DIA : 'stop ' + cfg.STOP_DIA), 'volta a operar no proximo dia (18h NY)'];
     else if (!aberto) sit = ['off', 'Aguardando o mercado abrir', ''];
@@ -258,7 +278,7 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     var c = E.estado.carteira, p = c.posicao, set = function (id, html, k) { var el = $(id); if (el) { el.innerHTML = html; if (k !== undefined) el.className = k; } };
     set('pxKpi', ultPreco.toFixed(2)); set('pxPos', ultPreco.toFixed(2));
     if (!p) return;
-    var sinal = p.lado === 'COMPRA' ? 1 : -1, pts = sinal * (ultPreco - p.entrada), r = pts * p.lotes * 100;
+    var sinal = p.lado === 'COMPRA' ? 1 : -1, pts = sinal * (ultPreco - p.entrada), r = pts * p.lotes * K().mult;
     set('pnlVivo', usd(r, true), cls(r)); set('sFlut', usd(r, true), cls(r));
     set('pnlPts', (pts >= 0 ? '+' : '') + pts.toFixed(2) + ' pontos (US$/oz) desde a entrada');
     var dia = c.resultado_dia + r; set('diaVivo', usd(dia, true)); var dv = $('diaVivo'); if (dv) dv.className = cls(dia);
@@ -271,7 +291,7 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
   }
   function puxarPreco() {
     if (aba !== 'painel' || document.hidden || !mercadoAberto()) return;
-    fetch('api.php?a=preco', {credentials: 'same-origin'}).then(function (r) { return r.json(); }).then(function (j) {
+    fetch('api.php?a=preco&ativo=' + ATIVO, {credentials: 'same-origin'}).then(function (r) { return r.json(); }).then(function (j) {
       if (!j || !j.ok) return;
       ultPreco = j.preco;
       var el = $('pxIdade'); if (el) el.textContent = '· preco de ' + new Date(j.ts * 1000).toLocaleTimeString('pt-BR') + ', atualiza a cada 10 s';
@@ -302,7 +322,7 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
       + '<div class="' + (tp ? 'neg' : 'mut') + '" style="font-size:12px;margin-top:4px">' + (tp ? 'PAUSADA: sem limite de ' + usd(s.config.STOP_DIA) + '/' + usd(s.config.META_DIA, true) + ' no robo e no manual' : 'ativa: ' + usd(s.config.STOP_DIA) + ' / ' + usd(s.config.META_DIA, true) + ' por dia') + '</div></div>'
       + '<div style="flex:1;min-width:280px"><div class="mut" style="font-size:12px;margin-bottom:6px">ORDEM MANUAL (preco de agora)</div>'
       + '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">'
-      + '<input id="mLote" type="number" step="0.01" min="0.01" max="10" placeholder="lote: ' + esc(lotePadrao) + '" style="width:190px">'
+      + '<input id="mLote" type="number" step="' + K().lote_min + '" min="' + K().lote_min + '" max="50" placeholder="' + esc(K().unidade) + ': ' + esc(lotePadrao) + '" style="width:190px">'
       + '<button class="btn" id="bComprar" style="background:#4cc38a;color:#06140d">Comprar</button>'
       + '<button class="btn" id="bVender" style="background:#ff6b6b;color:#1a0606">Vender</button>'
       + (p ? '<button class="btn sec" id="bFechar">Fechar ' + esc(p.lado) + '</button>' : '')
@@ -316,7 +336,7 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     function salvar(campo, v, texto) {
       msg('Enviando...');
       var b = {}; b[campo] = v;
-      post('api.php?a=config', b).then(function (j) {
+      post('api.php?a=config&ativo=' + ATIVO, b).then(function (j) {
         if (!j.ok) { msg('Erro: ' + j.err, true); return; }
         E.config_salva = j.config; render(); msg(texto + ' O PC aplica em ate 20 s.');
       });
@@ -330,11 +350,11 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     if ($('bTravaOn')) $('bTravaOn').onclick = function () { travas(false); };
     function ordem(cmd) {
       var l = $('mLote').value, body = {cmd: cmd};
-      if (l !== '') { body.lotes = Number(l); if (!(body.lotes >= 0.01 && body.lotes <= 10)) { msg('Lote entre 0,01 e 10.', true); return; } }
+      if (l !== '') { body.lotes = Number(l); if (!(body.lotes >= K().lote_min && body.lotes <= 50)) { msg('Entre ' + K().lote_min + ' e 50 ' + K().unidade + '.', true); return; } }
       var nome = cmd === 'comprar' ? 'COMPRA' : (cmd === 'vender' ? 'VENDA' : 'fechamento');
-      if (!window.confirm('Enviar ' + nome + (body.lotes ? ' de ' + body.lotes + ' lote' : '') + ' no preco de agora (simulado)?')) return;
+      if (!window.confirm('Enviar ' + nome + (body.lotes ? ' de ' + body.lotes + ' ' + K().unidade : '') + ' de ' + ATIVO + ' no preco de agora (simulado)?')) return;
       ['bComprar', 'bVender', 'bFechar'].forEach(function (id) { if ($(id)) $(id).disabled = true; });
-      post('api.php?a=comando', body).then(function (j) {
+      post('api.php?a=comando&ativo=' + ATIVO, body).then(function (j) {
         if (!j.ok) { msg('Erro: ' + j.err, true); return; }
         msg(nome + ' enviada. O PC executa em ate 20 s; o painel atualiza sozinho.'); acompanhar();
       });
@@ -348,7 +368,7 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 
   function painelBaixo() {
     var s = E.estado, c = s.carteira, g = s.gasto || {};
-    var h = '<div class="card" style="margin-bottom:14px"><h2>Simulacao · candles de 15 min <span class="mut" style="text-transform:none;letter-spacing:0;font-weight:400">· futuro GC=F, o que o analista ve</span></h2>'
+    var h = '<div class="card" style="margin-bottom:14px"><h2>Simulacao · candles de 15 min <span class="mut" style="text-transform:none;letter-spacing:0;font-weight:400">· ' + esc(K().simbolo) + ', o que o analista ve</span></h2>'
       + '<div id="graf" style="height:400px"></div>'
       + '<p class="mut" style="font-size:12px;margin-top:6px"><span style="color:#e8b95a">EMA20</span> · <span style="color:#7aa2ff">EMA50</span> · setas = entradas e saidas da simulacao · linhas = entrada, stop e alvo da posicao aberta · atualiza a cada rodada (15 min)</p></div>';
     h += '<div class="card" style="margin-bottom:14px"><h2>Curva do saldo</h2>' + curva(s.operacoes, c.capital_inicial) + '</div>';
@@ -358,15 +378,18 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
   }
 
   // ---------- grafico ao vivo (TradingView), criado uma vez so ----------
-  var tvCriado = false;
+  var tvSimbolo = null;
   function criarTV() {
-    if (tvCriado) return; tvCriado = true;
+    var simb = K().tv;
+    if (tvSimbolo === simb) return; tvSimbolo = simb;
+    $('tvTitulo').textContent = ATIVO + ' ao vivo';
     var box = document.querySelector('#vivo .tradingview-widget-container');
+    box.innerHTML = '<div class="tradingview-widget-container__widget"></div>';
     var sc = document.createElement('script');
     sc.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
     sc.async = true;
     sc.innerHTML = JSON.stringify({
-      autosize: false, width: '100%', height: 480, symbol: 'OANDA:XAUUSD', interval: '15', timezone: 'America/Sao_Paulo',
+      autosize: false, width: '100%', height: 480, symbol: simb, interval: '15', timezone: 'America/Sao_Paulo',
       theme: 'dark', style: '1', locale: 'br', backgroundColor: '#111117', gridColor: 'rgba(35,35,45,0.6)',
       hide_side_toolbar: false, allow_symbol_change: false, withdateranges: true, save_image: false,
       studies: ['STD;EMA', 'STD;RSI'], support_host: 'https://www.tradingview.com'
@@ -469,6 +492,7 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     var h = pend ? '<div class="aviso">Ha configuracao salva que a maquina ainda nao aplicou. Ela baixa na proxima rodada (ate 15 min).</div>' : '';
     h += '<form id="fcfg" class="card"><h2>Configuracoes</h2>';
     Object.keys(ed).forEach(function (k) {
+      if (k === 'TETO_MES_USD' && !E.editavel_teto) return;   // orcamento da API e do Fabio
       var m = ed[k], v = salva[k] !== undefined ? salva[k] : cfg[k], campo;
       if (m.tipo === 'bool') campo = '<input type="checkbox" name="' + k + '"' + (v ? ' checked' : '') + '>';
       else if (m.opcoes || k === 'MODELO_API') campo = '<select name="' + k + '">' + (m.opcoes || s.modelos || []).map(function (o) { return '<option' + (o === v ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select>';
@@ -505,9 +529,9 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     if (f) f.addEventListener('submit', function (ev) {
       ev.preventDefault();
       var body = {}, ed = E.estado.editaveis;
-      Object.keys(ed).forEach(function (k) { var el = f.elements[k]; if (!el) return; body[k] = ed[k].tipo === 'bool' ? el.checked : (ed[k].tipo === 'str' ? el.value : Number(el.value)); });
+      Object.keys(ed).forEach(function (k) { var el = f.elements[k]; if (!el || (k === 'TETO_MES_USD' && !E.editavel_teto)) return; body[k] = ed[k].tipo === 'bool' ? el.checked : (ed[k].tipo === 'str' ? el.value : Number(el.value)); });
       $('cmsg').textContent = 'Salvando...';
-      post('api.php?a=config', body).then(function (j) {
+      post('api.php?a=config&ativo=' + ATIVO, body).then(function (j) {
         if (j.ok) { E.config_salva = j.config; $('cmsg').textContent = 'Salvo. A maquina aplica na proxima rodada.'; }
         else $('cmsg').textContent = 'Erro: ' + (j.campos ? 'fora da faixa em ' + j.campos.join(', ') : j.err);
       });
@@ -516,11 +540,15 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
       b.addEventListener('click', function () {
         if (b.dataset.confirma && !window.confirm('Zerar a carteira simulada e voltar para US$25 mil?')) return;
         b.disabled = true;
-        post('api.php?a=comando', {cmd: b.dataset.cmd}).then(function (j) { b.textContent = j.ok ? 'Pedido enviado' : 'Erro'; carregar(); });
+        post('api.php?a=comando&ativo=' + ATIVO, {cmd: b.dataset.cmd}).then(function (j) { b.textContent = j.ok ? 'Pedido enviado' : 'Erro'; carregar(); });
       });
     });
   }
 
+  $('ativos').addEventListener('click', function (ev) {
+    var b = ev.target.closest('button'); if (b) trocarAtivo(b.dataset.a);
+  });
+  pintarAtivos();
   $('tabs').addEventListener('click', function (ev) {
     var b = ev.target.closest('button'); if (!b) return;
     aba = b.dataset.t;

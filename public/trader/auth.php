@@ -42,7 +42,8 @@ if ($action === 'login' && $method === 'POST') {
     $okAud   = isset($info['aud']) && hash_equals(CLIENT_ID, (string)$info['aud']);
     $okIss   = isset($info['iss']) && in_array($info['iss'], array('accounts.google.com', 'https://accounts.google.com'), true);
     $okExp   = isset($info['exp']) && (int)$info['exp'] > time();
-    $okMail  = isset($info['email']) && strtolower($info['email']) === ALLOWED_EMAIL;
+    $email   = isset($info['email']) ? strtolower($info['email']) : '';
+    $okMail  = isset(USUARIOS[$email]);
     $okVerif = isset($info['email_verified']) && ($info['email_verified'] === 'true' || $info['email_verified'] === true);
 
     if (!$okAud || !$okIss || !$okExp) out(401, array('ok' => false, 'err' => 'token_invalid'));
@@ -51,14 +52,14 @@ if ($action === 'login' && $method === 'POST') {
     $tok = bin2hex(random_bytes(32));
     $s   = load_sessions();
     $s[hash('sha256', $tok)] = array(
-        'email' => ALLOWED_EMAIL,
+        'email' => $email,
         'exp'   => time() + SESSION_TTL,
         'ua'    => substr(isset($_SERVER['HTTP_USER_AGENT']) ? (string)$_SERVER['HTTP_USER_AGENT'] : '', 0, 120),
         'at'    => date('c'),
     );
     save_sessions($s);
     set_session_cookie($tok, time() + SESSION_TTL);
-    out(200, array('ok' => true, 'email' => ALLOWED_EMAIL));
+    out(200, array('ok' => true, 'email' => $email));
 }
 
 if ($action === 'logout' && $method === 'POST') {

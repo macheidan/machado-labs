@@ -4,7 +4,10 @@
 if (!defined('TRADER')) { http_response_code(404); exit; }
 
 const CLIENT_ID     = '431718871014-ot8oobfkds0v0hgh4j85d4g3o21fkva1.apps.googleusercontent.com';
-const ALLOWED_EMAIL = 'machadofabio@gmail.com';
+// e-mail Google -> usuario (cada um tem as proprias contas simuladas em u/<usuario>/<ativo>/)
+const USUARIOS = array('machadofabio@gmail.com' => 'fabio', 'vbnitz.trader@gmail.com' => 'vbnitz');
+const ATIVOS = array('XAUUSD' => 'GC=F', 'MNQ' => 'MNQ=F');
+const ALLOWED_EMAIL = 'machadofabio@gmail.com'; // legado
 const SESSION_TTL   = 2592000; // 30 dias
 const COOKIE        = 'trd_s';
 
@@ -67,6 +70,19 @@ function current_session() {
     $s = load_sessions();
     $h = hash('sha256', $tok);
     if (!isset($s[$h])) return null;
-    if ($s[$h]['email'] !== ALLOWED_EMAIL) return null;
+    if (!isset(USUARIOS[$s[$h]['email']])) return null;
+    $s[$h]['usuario'] = USUARIOS[$s[$h]['email']];
     return $s[$h];
+}
+
+
+// Pasta da conta (usuario, ativo) da sessao. Ativo vem de ?ativo=, so os conhecidos.
+function ativo_pedido() {
+    $a = isset($_GET['ativo']) ? strtoupper((string)$_GET['ativo']) : 'XAUUSD';
+    return isset(ATIVOS[$a]) ? $a : 'XAUUSD';
+}
+function pasta_conta($usuario, $ativo) {
+    $p = __DIR__ . '/u/' . $usuario . '/' . $ativo;
+    if (!is_dir($p)) @mkdir($p, 0755, true);
+    return $p;
 }
