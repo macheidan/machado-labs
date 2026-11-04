@@ -72,6 +72,17 @@ $CAMPOS = array(
 if ($usuario !== 'fabio') unset($CAMPOS['TETO_MES_USD']);
 $COMANDOS = array('mesa_agora', 'fechar_posicao', 'zerar_carteira', 'comprar', 'vender');
 
+// testes de performance (10 versoes x com/sem trava), iguais para todos os usuarios
+if ($a === 'testes' && $method === 'GET') {
+    $f = __DIR__ . '/testes/' . $ativo . '.json';
+    if (!is_file($f)) out(200, array('ok' => true, 'testes' => null));
+    header('Content-Type: application/json; charset=utf-8');
+    echo '{"ok":true,"arquivo_em":"' . date('c', filemtime($f)) . '","testes":';
+    readfile($f);
+    echo '}';
+    exit;
+}
+
 if ($a === 'estado' && $method === 'GET') {
     $f = $dir . '/_estado.json';
     $estado = is_file($f) ? json_decode((string)file_get_contents($f), true) : null;

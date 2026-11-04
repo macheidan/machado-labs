@@ -65,6 +65,21 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
   details summary{cursor:pointer;color:var(--acc)}
   .mesa{margin-bottom:12px}
   .mesa .cab{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+  .tp-h,.tp-l{display:grid;grid-template-columns:190px 92px 1fr 52px 62px 62px 1fr 74px 74px;gap:8px;align-items:center;font-variant-numeric:tabular-nums;font-size:13px}
+  .tp-h{color:var(--fg-3);font-size:11px;text-transform:uppercase;padding:0 10px 6px 26px}
+  .tp-h .r,.tp-l .r{text-align:right}
+  details.tp{border:1px solid var(--line);border-radius:10px;margin-bottom:8px;padding:0;background:var(--bg-2)}
+  details.tp>summary{list-style:none;padding:8px 10px 8px 26px;position:relative;color:var(--fg)}
+  details.tp>summary::-webkit-details-marker{display:none}
+  details.tp>summary:before{content:"\25B8";position:absolute;left:10px;top:9px;color:var(--acc)}
+  details.tp[open]>summary:before{content:"\25BE"}
+  .tp-l+.tp-l{border-top:1px dashed var(--line);margin-top:4px;padding-top:4px}
+  .tp-l .nm b{display:block} .tp-l .nm small{color:var(--fg-3)}
+  .tp-corpo{padding:4px 12px 12px}
+  .tp-corpo h3{font-size:14px;margin:14px 0 6px}
+  .nivel{display:inline-block;width:46px;height:6px;border-radius:3px;background:var(--bg-3);vertical-align:middle;margin-left:6px;overflow:hidden}
+  .nivel i{display:block;height:100%;background:linear-gradient(90deg,#3fae6a,#e0b341,#e05a4f)}
+  @media(max-width:820px){.tp-h{display:none}.tp-l{grid-template-columns:1fr 1fr 1fr}.tp-l .nm{grid-column:1/-1}}
   form .row{display:grid;grid-template-columns:1fr 160px;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
   form .row small{display:block;color:var(--fg-3);font-size:12px}
   input,select{font:inherit;background:var(--bg-3);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:6px 8px;width:100%}
@@ -137,6 +152,7 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     <button data-t="mesa">Mesa</button>
     <button data-t="analises">Analises</button>
     <button data-t="operacoes">Operacoes</button>
+    <button data-t="testes">Testes Performance</button>
     <button data-t="config">Configuracoes</button>
   </nav>
   <div id="status"></div>
@@ -487,6 +503,66 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     return h + '</table></div>';
   }
 
+  // ---------- testes de performance ----------
+  var TST = {}, TSTcarregando = {};
+  function carregarTestes() {
+    if (TSTcarregando[ATIVO]) return;
+    var a = ATIVO; TSTcarregando[a] = true;
+    fetch('api.php?a=testes&ativo=' + a, {credentials:'same-origin'}).then(function (r) { return r.json(); })
+      .then(function (j) { TST[a] = j; TSTcarregando[a] = false; if (aba === 'testes' && ATIVO === a) render(); })
+      .catch(function () { TSTcarregando[a] = false; TST[a] = {ok:false}; if (aba === 'testes') render(); });
+  }
+  function linhaTeste(v, modo, primeira) {
+    var x = v[modo].resumo, fl = x.fator_lucro == null ? '-' : x.fator_lucro.toFixed(2);
+    return '<div class="tp-l">'
+      + (primeira ? '<div class="nm"><b>' + esc(v.id.toUpperCase()) + ' · ' + esc(v.nome) + '</b><small>arrojo <span class="nivel"><i style="width:' + (v.nivel * 10) + '%"></i></span></small></div>' : '<div class="nm"></div>')
+      + '<div>' + (modo === 'com_trava' ? '<span class="tag hold">com trava</span>' : '<span class="tag">sem trava</span>') + '</div>'
+      + '<div class="r ' + cls(x.resultado) + '" style="font-weight:600">' + usd(x.resultado, true) + '</div>'
+      + '<div class="r">' + x.ops + '</div>'
+      + '<div class="r">' + (x.ops ? x.acerto.toFixed(0) + '%' : '-') + '</div>'
+      + '<div class="r">' + fl + '</div>'
+      + '<div class="r neg">' + (x.drawdown ? usd(x.drawdown) : '-') + '</div>'
+      + '<div class="r"><span class="pos">' + x.dias_pos + '</span>/<span class="neg">' + x.dias_neg + '</span></div>'
+      + '<div class="r">' + (modo === 'com_trava' ? '<span class="pos">' + x.dias_meta + '</span>/<span class="neg">' + x.dias_stop + '</span>' : '-') + '</div>'
+      + '</div>';
+  }
+  function tabelaOps(m, titulo) {
+    var x = m.resumo, ops = (m.operacoes || []).slice().reverse();
+    var h = '<h3>' + titulo + ' <span class="mut" style="font-weight:400;font-size:13px">' + x.ops + ' operacoes · saldo final ' + usd(x.saldo)
+      + ' · ganho medio ' + usd(x.ganho_medio, true) + ' · perda media ' + usd(x.perda_media, true)
+      + ' · maior ganho ' + usd(x.maior_ganho, true) + ' · maior perda ' + usd(x.maior_perda, true) + '</span></h3>';
+    if (!ops.length) return h + '<p class="mut">Nenhuma operacao: com essa configuracao o robo nao achou entrada no periodo.</p>';
+    h += '<div class="scroll" style="max-height:460px;overflow-y:auto"><table><tr><th>Dia</th><th>Aberta</th><th>Fechada</th><th>Lado</th><th class="r">Lotes</th><th class="r">Entrada</th><th class="r">Saida</th><th class="r">Resultado</th><th>Saida por</th><th class="r">Saldo</th></tr>';
+    ops.forEach(function (o) {
+      h += '<tr><td>' + esc(o.dia) + '</td><td>' + dt(o.aberta_em) + '</td><td>' + dt(o.fechada_em) + '</td><td>' + esc(o.lado) + '</td><td class="r">' + o.lotes
+        + '</td><td class="r">' + o.entrada + '</td><td class="r">' + o.saida + '</td><td class="r ' + cls(o.resultado) + '">' + usd(o.resultado, true)
+        + '</td><td>' + esc(o.saida_por) + '</td><td class="r">' + usd(o.saldo) + '</td></tr>';
+    });
+    return h + '</table></div>';
+  }
+  function corpoTeste(v) {
+    var c = v.cfg, k = K();
+    var p = '<p class="mut" style="font-size:13px;margin:6px 0">' + esc(v.desc) + '. Risco ' + usd(c.RISCO_POR_TRADE) + ' por operacao'
+      + (c.LOTE_FIXO ? ' (' + c.LOTE_FIXO + ' ' + esc(k.unidade || 'contrato') + ' fixo)' : '') + ' · entra com pontuacao &ge; ' + c.LIMIAR_ENTRADA
+      + ' · stop ' + c.STOP_ATR + ' ATR · alvo ' + c.ALVO_ATR + ' ATR · gatilho 5 min ' + (c.GATILHO_5M ? 'sim' : 'nao')
+      + ' · 30/60 min ' + (c.MTF_ATIVO ? (c.MTF_VETO ? 'com veto' : 'pontuando') : 'nao') + '</p>';
+    return p + tabelaOps(v.com_trava, 'Com trava (+/-US$200 por dia)') + tabelaOps(v.sem_trava, 'Sem trava (opera o dia inteiro)');
+  }
+  function testes() {
+    var j = TST[ATIVO];
+    if (!j) { carregarTestes(); return '<div class="card"><p class="mut">Carregando os testes de ' + esc(ATIVO) + '...</p></div>'; }
+    if (!j.ok || !j.testes) return '<div class="card"><p class="mut">Ainda nao ha testes publicados para ' + esc(ATIVO) + '. A maquina roda os testes uma vez por dia.</p></div>';
+    var t = j.testes, pe = t.periodo;
+    var h = '<div class="card" style="margin-bottom:14px"><h2>Testes Performance · ' + esc(t.nome || t.ativo) + '</h2>'
+      + '<p class="mut" style="font-size:13px;margin:4px 0 0">10 versoes, da mais arrojada para a mais conservadora, cada uma em duas linhas: <b>com trava</b> (para no dia ao bater ' + usd(t.meta_dia, true) + ' ou ' + usd(t.stop_dia) + ') e <b>sem trava</b> (opera o dia inteiro, sem limite). '
+      + 'Historico de ' + dt(pe.inicio) + ' a ' + dt(pe.fim) + ' (' + pe.dias + ' dias, todo o historico de 5 e 15 min que o Yahoo libera), com uma carteira nova de ' + usd(t.capital) + ' em cada linha, so candles e macro (sem mesa e sem noticias). Atualizado em ' + dt(t.atualizado) + '. Clique numa versao para ver todas as operacoes.</p></div>';
+    h += '<div class="tp-h"><div>Versao</div><div>Modo</div><div class="r">Resultado</div><div class="r">Ops</div><div class="r">Acerto</div><div class="r">F. lucro</div><div class="r">Pior queda</div><div class="r">Dias +/-</div><div class="r">Meta/Stop</div></div>';
+    t.versoes.forEach(function (v, i) {
+      h += '<details class="tp" data-i="' + i + '"><summary>' + linhaTeste(v, 'com_trava', true) + linhaTeste(v, 'sem_trava', false) + '</summary><div class="tp-corpo"></div></details>';
+    });
+    return h;
+  }
+
   function configuracoes() {
     var s = E.estado, cfg = s.config, ed = s.editaveis || {}, salva = E.config_salva || {};
     var pend = Object.keys(salva).some(function (k) { return k[0] !== '_' && cfg[k] !== undefined && String(cfg[k]) !== String(salva[k]); });
@@ -519,13 +595,19 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 
   function render() {
     var h = idade(), ehPainel = aba === 'painel' && E && E.estado;
-    if (E && E.estado) h += ({painel: painel, mesa: mesa, analises: analises, operacoes: operacoes, config: configuracoes})[aba]();
+    if (E && E.estado) h += ({painel: painel, mesa: mesa, analises: analises, operacoes: operacoes, testes: testes, config: configuracoes})[aba]();
     $('status').innerHTML = statusBox();
     $('conteudo').innerHTML = h;
     $('conteudo2').innerHTML = ehPainel ? painelBaixo() : '';
     $('vivo').style.display = aba === 'painel' ? '' : 'none';
     if (aba === 'painel') criarTV();
     if (ehPainel) { desenharGrafico(); ligarControle(); aplicarPreco(); if (ultPreco == null) puxarPreco(); } else if (graf) { graf.remove(); graf = null; }
+    document.querySelectorAll('details.tp').forEach(function (d) {
+      d.addEventListener('toggle', function () {
+        var corpo = d.querySelector('.tp-corpo'), j = TST[ATIVO];
+        if (d.open && !corpo.innerHTML && j && j.testes) corpo.innerHTML = corpoTeste(j.testes.versoes[+d.dataset.i]);
+      });
+    });
     var f = $('fcfg');
     if (f) f.addEventListener('submit', function (ev) {
       ev.preventDefault();
@@ -560,7 +642,7 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     fetch('auth.php?a=logout', {method:'POST', credentials:'same-origin', headers:{'X-Dash':'1'}}).then(function () { location.reload(); });
   });
   carregar();
-  setInterval(function () { if (aba !== 'config') carregar(); }, 60000);
+  setInterval(function () { if (aba !== 'config' && aba !== 'testes') carregar(); }, 60000);
 })();
 </script>
 <?php endif; ?>
