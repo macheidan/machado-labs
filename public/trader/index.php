@@ -569,7 +569,7 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
       + (c.LOTE_FIXO ? ' (' + c.LOTE_FIXO + ' ' + esc(k.unidade || 'contrato') + ' fixo)' : '') + ' · entra com pontuacao &ge; ' + c.LIMIAR_ENTRADA
       + ' · stop ' + c.STOP_ATR + ' ATR · alvo ' + c.ALVO_ATR + ' ATR · gatilho 5 min ' + (c.GATILHO_5M ? 'sim' : 'nao')
       + ' · 30/60 min ' + (c.MTF_ATIVO ? (c.MTF_VETO ? 'com veto' : 'pontuando') : 'nao') + '</p>';
-    return p + tabelaOps(v.com_trava, 'Com trava (+/-US$200 por dia)') + tabelaOps(v.sem_trava, 'Sem trava (opera o dia inteiro)');
+    return diasTeste(v) + p + tabelaOps(v.com_trava, 'Com trava (+/-US$200 por dia)') + tabelaOps(v.sem_trava, 'Sem trava (opera o dia inteiro)');
   }
   function testes() {
     var j = TST[ATIVO];
@@ -581,7 +581,7 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
       + 'Historico de ' + dt(pe.inicio) + ' a ' + dt(pe.fim) + ' (' + pe.dias + ' dias). Comecou com os 58 dias que o Yahoo libera em 5 e 15 min e segue rodando todo dia, continuando a mesma carteira (comecou com ' + usd(t.capital) + ' em cada linha), so candles e macro (sem mesa e sem noticias). Atualizado em ' + dt(t.atualizado) + '. Clique numa versao para ver todas as operacoes.</p></div>';
     h += '<div class="tp-h"><div>Versao</div><div>Modo</div><div class="r">Resultado</div><div class="r">Ops</div><div class="r">Acerto</div><div class="r">F. lucro</div><div class="r">Pior queda</div><div class="r">Dias +/-</div><div class="r">Meta/Stop</div></div>';
     t.versoes.forEach(function (v, i) {
-      h += '<details class="tp" data-i="' + i + '"><summary>' + linhaTeste(v, 'com_trava', true) + linhaTeste(v, 'sem_trava', false) + diasTeste(v) + '</summary><div class="tp-corpo"></div></details>';
+      h += '<details class="tp" data-i="' + i + '"><summary>' + linhaTeste(v, 'com_trava', true) + linhaTeste(v, 'sem_trava', false) + '</summary><div class="tp-corpo"></div></details>';
     });
     return h;
   }
