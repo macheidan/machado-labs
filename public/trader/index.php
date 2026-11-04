@@ -76,6 +76,14 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
   .tp-l+.tp-l{border-top:1px dashed var(--line);margin-top:4px;padding-top:4px}
   .tp-l .nm b{display:block} .tp-l .nm small{color:var(--fg-3)}
   .tp-corpo{padding:4px 12px 12px}
+  .tp-dias{display:grid;grid-template-columns:120px 1fr;gap:8px;border-top:1px dashed var(--line);margin-top:4px;padding-top:6px;font-size:11px}
+  .tp-dias .lb{color:var(--fg-3);line-height:1.3}
+  .tp-dias .cx{display:grid;grid-template-columns:repeat(auto-fill,minmax(50px,1fr));gap:3px}
+  .tp-dias .d{background:var(--bg-3);border-radius:5px;padding:2px 3px;text-align:center;font-variant-numeric:tabular-nums;line-height:1.25}
+  .tp-dias .d.p{background:#123524} .tp-dias .d.n{background:#3a1616} .tp-dias .d.hj{outline:1px solid var(--acc)}
+  .tp-dias .d .dt{color:var(--fg-3);display:block}
+  .tp-dias .d .s{color:var(--fg-3);display:block}
+  @media(max-width:820px){.tp-dias{grid-template-columns:1fr}}
   .tp-corpo h3{font-size:14px;margin:14px 0 6px}
   .nivel{display:inline-block;width:46px;height:6px;border-radius:3px;background:var(--bg-3);vertical-align:middle;margin-left:6px;overflow:hidden}
   .nivel i{display:block;height:100%;background:linear-gradient(90deg,#3fae6a,#e0b341,#e05a4f)}
@@ -526,11 +534,26 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
       + '<div class="r">' + (modo === 'com_trava' ? '<span class="pos">' + x.dias_meta + '</span>/<span class="neg">' + x.dias_stop + '</span>' : '-') + '</div>'
       + '</div>';
   }
+  function num(v) { if (!v) return '0'; var a = Math.abs(v); return (v < 0 ? '-' : '+') + (a >= 1000 ? (a / 1000).toFixed(1).replace('.', ',') + 'k' : Math.round(a)); }
+  function diasTeste(v) {
+    var c = v.com_trava.dias || {}, s = v.sem_trava.dias || {};
+    var ks = Object.keys(c).concat(Object.keys(s)).filter(function (k, i, a) { return a.indexOf(k) === i; }).sort().slice(-30);
+    var h = '<div class="tp-dias"><div class="lb">Por dia, ultimos ' + ks.length + '<br><b style="color:var(--fg)">com trava</b> / sem trava</div><div class="cx">';
+    ks.forEach(function (k) {
+      var a = c[k] || {resultado: 0, ops: 0}, b = s[k] || {resultado: 0, ops: 0};
+      h += '<div class="d ' + (a.resultado > 0 ? 'p' : (a.resultado < 0 ? 'n' : '')) + (a.em_andamento ? ' hj' : '') + '" title="' + esc(k)
+        + (a.em_andamento ? ' (em andamento)' : '') + '\ncom trava: ' + usd(a.resultado, true) + ' em ' + a.ops + ' ops' + (a.trava ? ' (' + a.trava + ')' : '')
+        + '\nsem trava: ' + usd(b.resultado, true) + ' em ' + b.ops + ' ops"><span class="dt">' + k.slice(8, 10) + '/' + k.slice(5, 7) + '</span><b class="' + cls(a.resultado) + '">' + num(a.resultado)
+        + '</b><span class="s">' + num(b.resultado) + '</span></div>';
+    });
+    return h + '</div></div>';
+  }
   function tabelaOps(m, titulo) {
     var x = m.resumo, ops = (m.operacoes || []).slice().reverse();
     var h = '<h3>' + titulo + ' <span class="mut" style="font-weight:400;font-size:13px">' + x.ops + ' operacoes · saldo final ' + usd(x.saldo)
       + ' · ganho medio ' + usd(x.ganho_medio, true) + ' · perda media ' + usd(x.perda_media, true)
       + ' · maior ganho ' + usd(x.maior_ganho, true) + ' · maior perda ' + usd(x.maior_perda, true) + '</span></h3>';
+    if (m.posicao) h += '<p style="font-size:13px;margin:4px 0">Posicao aberta agora: ' + esc(m.posicao.lado) + ' ' + m.posicao.lotes + ' @ ' + m.posicao.entrada + ' desde ' + dt(m.posicao.aberta_em) + '</p>';
     if (!ops.length) return h + '<p class="mut">Nenhuma operacao: com essa configuracao o robo nao achou entrada no periodo.</p>';
     h += '<div class="scroll" style="max-height:460px;overflow-y:auto"><table><tr><th>Dia</th><th>Aberta</th><th>Fechada</th><th>Lado</th><th class="r">Lotes</th><th class="r">Entrada</th><th class="r">Saida</th><th class="r">Resultado</th><th>Saida por</th><th class="r">Saldo</th></tr>';
     ops.forEach(function (o) {
@@ -555,10 +578,10 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     var t = j.testes, pe = t.periodo;
     var h = '<div class="card" style="margin-bottom:14px"><h2>Testes Performance · ' + esc(t.nome || t.ativo) + '</h2>'
       + '<p class="mut" style="font-size:13px;margin:4px 0 0">10 versoes, da mais arrojada para a mais conservadora, cada uma em duas linhas: <b>com trava</b> (para no dia ao bater ' + usd(t.meta_dia, true) + ' ou ' + usd(t.stop_dia) + ') e <b>sem trava</b> (opera o dia inteiro, sem limite). '
-      + 'Historico de ' + dt(pe.inicio) + ' a ' + dt(pe.fim) + ' (' + pe.dias + ' dias, todo o historico de 5 e 15 min que o Yahoo libera), com uma carteira nova de ' + usd(t.capital) + ' em cada linha, so candles e macro (sem mesa e sem noticias). Atualizado em ' + dt(t.atualizado) + '. Clique numa versao para ver todas as operacoes.</p></div>';
+      + 'Historico de ' + dt(pe.inicio) + ' a ' + dt(pe.fim) + ' (' + pe.dias + ' dias). Comecou com os 58 dias que o Yahoo libera em 5 e 15 min e segue rodando todo dia, continuando a mesma carteira (comecou com ' + usd(t.capital) + ' em cada linha), so candles e macro (sem mesa e sem noticias). Atualizado em ' + dt(t.atualizado) + '. Clique numa versao para ver todas as operacoes.</p></div>';
     h += '<div class="tp-h"><div>Versao</div><div>Modo</div><div class="r">Resultado</div><div class="r">Ops</div><div class="r">Acerto</div><div class="r">F. lucro</div><div class="r">Pior queda</div><div class="r">Dias +/-</div><div class="r">Meta/Stop</div></div>';
     t.versoes.forEach(function (v, i) {
-      h += '<details class="tp" data-i="' + i + '"><summary>' + linhaTeste(v, 'com_trava', true) + linhaTeste(v, 'sem_trava', false) + '</summary><div class="tp-corpo"></div></details>';
+      h += '<details class="tp" data-i="' + i + '"><summary>' + linhaTeste(v, 'com_trava', true) + linhaTeste(v, 'sem_trava', false) + diasTeste(v) + '</summary><div class="tp-corpo"></div></details>';
     });
     return h;
   }
