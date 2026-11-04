@@ -577,10 +577,11 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     if (!j.ok || !j.testes) return '<div class="card"><p class="mut">Ainda nao ha testes publicados para ' + esc(ATIVO) + '. A maquina roda os testes uma vez por dia.</p></div>';
     var t = j.testes, pe = t.periodo;
     var h = '<div class="card" style="margin-bottom:14px"><h2>Testes Performance · ' + esc(t.nome || t.ativo) + '</h2>'
-      + '<p class="mut" style="font-size:13px;margin:4px 0 0">10 versoes, da mais arrojada para a mais conservadora, cada uma em duas linhas: <b>com trava</b> (para no dia ao bater ' + usd(t.meta_dia, true) + ' ou ' + usd(t.stop_dia) + ') e <b>sem trava</b> (opera o dia inteiro, sem limite). '
+      + '<p class="mut" style="font-size:13px;margin:4px 0 0">10 versoes, da mais arrojada para a mais conservadora, e no fim 2 que comparam a regra da mesa de agentes (desde 03/11, com a mesa que o robo rodou no dia). Cada uma em duas linhas: <b>com trava</b> (para no dia ao bater ' + usd(t.meta_dia, true) + ' ou ' + usd(t.stop_dia) + ') e <b>sem trava</b> (opera o dia inteiro, sem limite). '
       + 'Historico de ' + dt(pe.inicio) + ' a ' + dt(pe.fim) + ' (' + pe.dias + ' dias). Comecou com os 58 dias que o Yahoo libera em 5 e 15 min e segue rodando todo dia, continuando a mesma carteira (comecou com ' + usd(t.capital) + ' em cada linha), so candles e macro (sem mesa e sem noticias). Atualizado em ' + dt(t.atualizado) + '. Clique numa versao para ver todas as operacoes.</p></div>';
     h += '<div class="tp-h"><div>Versao</div><div>Modo</div><div class="r">Resultado</div><div class="r">Ops</div><div class="r">Acerto</div><div class="r">F. lucro</div><div class="r">Pior queda</div><div class="r">Dias +/-</div><div class="r">Meta/Stop</div></div>';
     t.versoes.forEach(function (v, i) {
+      if (v.id === 'm1') h += '<h3 style="margin:18px 0 4px">Regra da mesa de agentes</h3><p class="mut" style="font-size:13px;margin:0 0 8px">Mesma config Padrao, com a mesa do dia. <b>Mesa manda</b>: com mesa vendedora so vende (regra do robo hoje). <b>Mesa so pontua</b>: a mesa so soma de -1 a +1 ponto e o robo pode comprar se o sinal for forte.</p>';
       h += '<details class="tp" data-i="' + i + '"><summary>' + linhaTeste(v, 'com_trava', true) + linhaTeste(v, 'sem_trava', false) + '</summary><div class="tp-corpo"></div></details>';
     });
     return h;
