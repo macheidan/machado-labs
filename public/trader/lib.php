@@ -6,7 +6,7 @@ if (!defined('TRADER')) { http_response_code(404); exit; }
 const CLIENT_ID     = '431718871014-ot8oobfkds0v0hgh4j85d4g3o21fkva1.apps.googleusercontent.com';
 // e-mail Google -> usuario (cada um tem as proprias contas simuladas em u/<usuario>/<ativo>/)
 const USUARIOS = array('machadofabio@gmail.com' => 'fabio', 'vbnitz.trader@gmail.com' => 'vbnitz');
-const ATIVOS = array('XAUUSD' => 'GC=F', 'MNQ' => 'MNQ=F');
+const ATIVOS = array('XAUUSD' => 'GC=F', 'MNQ' => 'MNQ=F', 'EURUSD' => 'EURUSD=X');
 const ALLOWED_EMAIL = 'machadofabio@gmail.com'; // legado
 const SESSION_TTL   = 2592000; // 30 dias
 const COOKIE        = 'trd_s';

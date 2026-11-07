@@ -178,10 +178,13 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
   // ticker escolhido no topo (cada ticker e uma conta simulada propria)
   var ATIVO = (function () { try { return localStorage.getItem('trader_ativo') || 'XAUUSD'; } catch (e) { return 'XAUUSD'; } })();
   var FICHA = {XAUUSD: {nome: 'Ouro (XAUUSD)', simbolo: 'GC=F', mult: 100, lote_min: 0.01, unidade: 'lote', tv: 'OANDA:XAUUSD'},
-               MNQ: {nome: 'Micro Nasdaq-100 (MNQ)', simbolo: 'MNQ=F', mult: 2, lote_min: 1, unidade: 'contrato', tv: 'CME_MINI:MNQ1!'}};
-  function K() { return (E && E.estado && E.estado.conta && E.estado.conta.ativo === ATIVO) ? E.estado.conta : FICHA[ATIVO]; }
+               MNQ: {nome: 'Micro Nasdaq-100 (MNQ)', simbolo: 'MNQ=F', mult: 2, lote_min: 1, unidade: 'contrato', tv: 'CME_MINI:MNQ1!'},
+               EURUSD: {nome: 'Euro/Dolar (EURUSD)', simbolo: 'EURUSD=X', mult: 100000, lote_min: 0.01, unidade: 'lote', tv: 'FX:EURUSD', casas: 5}};
+  function K() { return (E && E.estado && E.estado.conta && E.estado.conta.ativo === ATIVO) ? E.estado.conta : (FICHA[ATIVO] || FICHA.XAUUSD); }
+  // preco com as casas do ativo (EURUSD = 5)
+  function px(v) { return v == null ? '-' : Number(v).toFixed(K().casas || (FICHA[ATIVO] || {}).casas || 2); }
   function pintarAtivos() {
-    var lista = (E && E.ativos) || ['XAUUSD', 'MNQ'];
+    var lista = (E && E.ativos) || ['XAUUSD', 'MNQ', 'EURUSD'];
     document.getElementById('ativos').innerHTML = lista.map(function (a) {
       return '<button data-a="' + a + '" class="' + (a === ATIVO ? 'on' : '') + '">' + a + '</button>';
     }).join('');
@@ -238,18 +241,18 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     var h = controle() + '<div class="grid">'
       + '<div class="card kpi"><div class="l">Saldo</div><div class="v">' + usd(c.saldo) + '</div><div class="s ' + cls(tot) + '">' + usd(tot, true) + ' desde o inicio</div></div>'
       + '<div class="card kpi"><div class="l">Hoje (' + esc(c.dia) + ')</div><div class="v ' + cls(c.resultado_dia) + '">' + usd(c.resultado_dia, true) + trava + '</div><div class="s">' + (travaPausada() ? '<span class="neg">travas pausadas</span>' : 'trava ' + usd(s.config.STOP_DIA) + ' / ' + usd(s.config.META_DIA, true)) + '</div></div>'
-      + '<div class="card kpi"><div class="l">' + esc(K().nome) + ' (' + esc(K().simbolo) + ', ao vivo)</div><div class="v" id="pxKpi">' + (s.preco ? s.preco.toFixed(2) : '-') + '</div><div class="s">' + (s.config.PAUSADO ? '<span class="neg">entradas pausadas</span>' : 'operando') + '</div></div>'
+      + '<div class="card kpi"><div class="l">' + esc(K().nome) + ' (' + esc(K().simbolo) + ', ao vivo)</div><div class="v" id="pxKpi">' + (s.preco ? px(s.preco) : '-') + '</div><div class="s">' + (s.config.PAUSADO ? '<span class="neg">entradas pausadas</span>' : 'operando') + '</div></div>'
       + '<div class="card kpi"><div class="l">Mesa de hoje</div><div class="v">' + (m ? tagRating(m.rating) : '-') + '</div><div class="s">' + (m ? esc(m.data) + ' via ' + esc(m.via) : 'sem mesa') + '</div></div>'
       + '</div>';
     h += '<div class="card" style="margin-bottom:14px"><h2>Posicao <span class="mut" style="text-transform:none;letter-spacing:0;font-weight:400" id="pxIdade"></span></h2>' + (p
       ? '<div style="display:flex;gap:28px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px">'
         + '<div><div class="mut" style="font-size:12px">RESULTADO AGORA</div><div id="pnlVivo" class="' + cls(c.flutuante) + '" style="font-size:34px;font-weight:700;font-variant-numeric:tabular-nums">' + usd(c.flutuante, true) + '</div>'
         + '<div id="pnlPts" class="mut" style="font-size:13px"></div></div>'
-        + '<div><div class="mut" style="font-size:12px">PRECO AGORA</div><div id="pxPos" style="font-size:22px;font-weight:600">' + (s.preco ? s.preco.toFixed(2) : '-') + '</div></div>'
+        + '<div><div class="mut" style="font-size:12px">PRECO AGORA</div><div id="pxPos" style="font-size:22px;font-weight:600">' + (s.preco ? px(s.preco) : '-') + '</div></div>'
         + '<div><div class="mut" style="font-size:12px">DIA COM A ABERTA</div><div id="diaVivo" style="font-size:22px;font-weight:600">' + usd(c.resultado_dia + c.flutuante, true) + '</div></div>'
         + '</div>'
         + '<div style="position:relative;height:10px;border-radius:99px;background:linear-gradient(90deg,#5e2323,#23232d 50%,#1f5a3c);margin:4px 0 6px"><i id="pnlCursor" style="position:absolute;top:-4px;width:4px;height:18px;border-radius:2px;background:#f1f1f5;left:50%"></i></div>'
-        + '<div style="display:flex;justify-content:space-between;font-size:12px" class="mut"><span>stop ' + p.stop.toFixed(2) + ' (<span class="neg">' + usd(-Math.abs(p.entrada - p.stop) * p.lotes * K().mult) + '</span>)</span><span>entrada ' + p.entrada.toFixed(2) + '</span><span>alvo ' + p.alvo.toFixed(2) + ' (<span class="pos">' + usd(Math.abs(p.alvo - p.entrada) * p.lotes * K().mult, true) + '</span>)</span></div>'
+        + '<div style="display:flex;justify-content:space-between;font-size:12px" class="mut"><span>stop ' + px(p.stop) + ' (<span class="neg">' + usd(-Math.abs(p.entrada - p.stop) * p.lotes * K().mult) + '</span>)</span><span>entrada ' + px(p.entrada) + '</span><span>alvo ' + px(p.alvo) + ' (<span class="pos">' + usd(Math.abs(p.alvo - p.entrada) * p.lotes * K().mult, true) + '</span>)</span></div>'
         + '<p class="mut" style="margin-top:10px;font-size:13px">' + tagRating(p.lado === 'COMPRA' ? 'Buy' : 'Sell').replace(/Buy|Sell/, esc(p.lado)) + ' ' + p.lotes + ' ' + esc(K().unidade) + ' · cada 1,00 de movimento = ' + usd(p.lotes * K().mult) + ' · aberta ' + dt(p.aberta_em) + ' · ' + esc(p.motivo) + '</p>'
       : '<p class="mut">Sem posicao aberta.</p>') + '</div>';
     return h;
@@ -282,7 +285,7 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     var merc = aberto ? ['ok', 'Mercado aberto', 'negocia dom 18h a sex 17h (NY)'] : ['off', 'Mercado fechado', 'volta dom 18h NY (20h/19h em Brasilia); pausa diaria 17h-18h NY'];
     // 3. o que a simulacao esta fazendo
     var sit;
-    if (c.posicao) sit = ['ok', 'Em operacao: ' + c.posicao.lado + ' ' + c.posicao.lotes + ' ' + K().unidade, 'entrada ' + c.posicao.entrada.toFixed(2) + ' · agora <b id="sFlut" class="' + cls(c.flutuante) + '">' + usd(c.flutuante, true) + '</b>'];
+    if (c.posicao) sit = ['ok', 'Em operacao: ' + c.posicao.lado + ' ' + c.posicao.lotes + ' ' + K().unidade, 'entrada ' + px(c.posicao.entrada) + ' · agora <b id="sFlut" class="' + cls(c.flutuante) + '">' + usd(c.flutuante, true) + '</b>'];
     else if (c.pendente && !pausadoEfetivo()) sit = ['warn', 'Sinal de ' + (c.pendente.lado > 0 ? 'COMPRA' : 'VENDA') + ': esperando o gatilho de 5 min', 'entra se um candle de 5 min confirmar ate ' + dt(c.pendente.ate) + ' · senao cancela'];
     else if (pausadoEfetivo()) sit = ['warn', 'Robo pausado', 'nao abre posicao nova (Configuracoes > Pausar)'];
     else if (c.travado_dia) sit = [c.travado_dia === 'META' ? 'ok' : 'err', 'Dia encerrado: ' + (c.travado_dia === 'META' ? 'meta +' + cfg.META_DIA : 'stop ' + cfg.STOP_DIA), 'volta a operar no proximo dia (18h NY)'];
@@ -301,11 +304,11 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
   function aplicarPreco() {
     if (!E || !E.estado || ultPreco == null) return;
     var c = E.estado.carteira, p = c.posicao, set = function (id, html, k) { var el = $(id); if (el) { el.innerHTML = html; if (k !== undefined) el.className = k; } };
-    set('pxKpi', ultPreco.toFixed(2)); set('pxPos', ultPreco.toFixed(2));
+    set('pxKpi', px(ultPreco)); set('pxPos', px(ultPreco));
     if (!p) return;
     var sinal = p.lado === 'COMPRA' ? 1 : -1, pts = sinal * (ultPreco - p.entrada), r = pts * p.lotes * K().mult;
     set('pnlVivo', usd(r, true), cls(r)); set('sFlut', usd(r, true), cls(r));
-    set('pnlPts', (pts >= 0 ? '+' : '') + pts.toFixed(2) + ' pontos (US$/oz) desde a entrada');
+    set('pnlPts', (pts >= 0 ? '+' : '') + px(pts) + ' pontos desde a entrada');
     var dia = c.resultado_dia + r; set('diaVivo', usd(dia, true)); var dv = $('diaVivo'); if (dv) dv.className = cls(dia);
     // cursor: 0% = stop, 50% = entrada, 100% = alvo
     var cur = $('pnlCursor');
@@ -438,7 +441,7 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
       rightPriceScale: {borderColor: '#23232d'},
       crosshair: {mode: 0}
     });
-    var serie = graf.addCandlestickSeries({upColor: '#4cc38a', downColor: '#ff6b6b', borderVisible: false, wickUpColor: '#4cc38a', wickDownColor: '#ff6b6b'});
+    var cz = K().casas || 2, serie = graf.addCandlestickSeries({priceFormat: {type: 'price', precision: cz, minMove: Math.pow(10, -cz)}, upColor: '#4cc38a', downColor: '#ff6b6b', borderVisible: false, wickUpColor: '#4cc38a', wickDownColor: '#ff6b6b'});
     serie.setData(cs.map(function (k) { return {time: k[0] + off, open: k[1], high: k[2], low: k[3], close: k[4]}; }));
     graf.addLineSeries({color: '#e8b95a', lineWidth: 1, priceLineVisible: false, lastValueVisible: false})
       .setData(cs.map(function (k) { return {time: k[0] + off, value: k[5]}; }));
@@ -495,7 +498,7 @@ function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
     var h = '<div class="card scroll"><table><tr><th>Quando</th><th class="r">Preco</th><th>Veredito</th><th>Mesa</th><th>Manchetes</th><th class="r">Dia</th></tr>';
     a.forEach(function (x) {
       var n = x.noticias || {};
-      h += '<tr><td>' + dt(x.ts) + '</td><td class="r">' + (x.preco ? x.preco.toFixed(2) : '-') + '</td><td>' + esc(x.veredito) + '</td><td>' + (x.mesa ? tagRating(x.mesa.rating) : '-') + '</td><td><span class="' + cls(n.score) + '">' + (n.score != null ? (n.score > 0 ? '+' : '') + Number(n.score).toFixed(2) : '-') + '</span> <span class="mut">' + esc((n.motivos || [])[0] || '') + '</span></td><td class="r ' + cls(x.dia) + '">' + usd(x.dia, true) + '</td></tr>';
+      h += '<tr><td>' + dt(x.ts) + '</td><td class="r">' + (x.preco ? px(x.preco) : '-') + '</td><td>' + esc(x.veredito) + '</td><td>' + (x.mesa ? tagRating(x.mesa.rating) : '-') + '</td><td><span class="' + cls(n.score) + '">' + (n.score != null ? (n.score > 0 ? '+' : '') + Number(n.score).toFixed(2) : '-') + '</span> <span class="mut">' + esc((n.motivos || [])[0] || '') + '</span></td><td class="r ' + cls(x.dia) + '">' + usd(x.dia, true) + '</td></tr>';
     });
     return h + '</table></div>';
   }
