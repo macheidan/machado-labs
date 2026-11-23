@@ -1408,7 +1408,7 @@
   // Tela que fica aberta na loja: alertas de interacao (cliente esperando atendente, reclamacao,
   // pedido para aprovar...) na primeira coluna e os pedidos da Izza andando por Novos -> Em preparo
   // -> Saiu/Pronto -> Concluidos. A coluna e da loja (quadro_mover, guardada no painel); o bot nao
-  // le. Pedido recusado ou que nao entrou vai direto para Concluidos. Mostra as ultimas 16 h.
+  // le. Pedido recusado, que nao entrou ou parado ha 4 h vai direto para Concluidos. Mostra as ultimas 16 h.
   var COLS_Q = [
     { id: 'novo', nome: 'Novos' },
     { id: 'preparo', nome: 'Em preparo' },
@@ -1436,6 +1436,8 @@
     var q = VIVO.quadro[p.id];
     if (q && q.col) return q.col;
     if (p.status === 'recusado' || p.status === 'expirado') return 'concluido';
+    // ninguem mexeu em 4 h: ja foi (nao deixa pedido de ontem parado em Novos)
+    if (p.em && Date.now() - new Date(p.em).getTime() > 4 * 3600e3) return 'concluido';
     return 'novo';
   }
   function minutos(iso) { return Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000)); }
