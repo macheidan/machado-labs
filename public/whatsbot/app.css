@@ -280,3 +280,11 @@ table.clientes tr.cli.aberto td { background: var(--accent-light); }
 /* icones das formas de pagamento (folha do Delivery Direto, 24x16 por icone, mostrada a 1,5x) */
 .fp-ic.sc { width: 36px; height: 24px; border-radius: 3px; background: url(img/pag-sprite.png) 0 0 / 432px 48px repeat; }
 .fp-ic.sc[data-gen] { background: url(img/pag-generico.png) 0 0 / 36px 24px no-repeat; }
+
+/* pagamento por categoria */
+.fp-cat .fp-sec { margin: 22px 0 0; display: flex; align-items: baseline; gap: 8px; }
+.fp-cat .fp-sec .small { font-weight: 400; }
+.fp-cat .fp-grid { margin-top: 10px; }
+.fp-nova { grid-column: span 2; }
+.fp-sel { flex: none; width: auto; padding: 6px 8px; font-size: 13px; }
+@media (max-width: 900px) { .fp-nova { grid-column: 1 / -1; } }

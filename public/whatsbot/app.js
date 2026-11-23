@@ -541,6 +541,7 @@
     { id: 'vr', nome: 'VR', sig: 'VR', tipo: 'ref', pos: [-96, 0] },
     { id: 'pixmaquina', nome: 'Pix na Máquina', sig: 'PIX', tipo: 'pix', on: 1 },
   ];
+  var CAT_PAG = [['deb', 'Débito'], ['cred', 'Crédito'], ['din', 'Dinheiro'], ['pix', 'Pix'], ['ref', 'Vale-refeição'], ['outro', 'Outras']];
   function pagamentoPadrao(v) {
     var fo = {};
     FORMAS_PAG.forEach(function (x) { if (x.on) fo[x.id] = true; });
@@ -646,7 +647,7 @@
       var v = f.valores;
       return '<div class="card"><div class="cab-card"><div><h2>Pagamento na entrega</h2><p class="desc">Marque as formas que a loja aceita na entrega ou no balcão.</p></div>' +
         (pode ? '<button class="btn link" id="add-fp">+ Nova forma de pagamento</button>' : '') + '</div>' +
-        '<div class="fp-grid" id="fp-grid"></div>' +
+        '<div id="fp-grid"></div>' +
         '<h3 class="fp-sec">CPF ou CNPJ na nota</h3><div class="stack fp-radios">' + itemPorId.cpfNota.op.map(function (o) {
           return '<label class="fp-radio"><input type="radio" name="r-cpfNota" value="' + o[0] + '"' + (v.cpfNota === o[0] ? ' checked' : '') + dis + '>' + esc(o[1]) + '</label>';
         }).join('') + '</div>' +
@@ -661,19 +662,41 @@
     function desenhaFormas() {
       var box = $('#fp-grid', el); if (!box) return;
       var fo = f.pagamento.formas;
-      box.innerHTML = FORMAS_PAG.map(function (x) {
+      var cel = function (x) {
         return '<label class="fp"><input type="checkbox" data-fp="' + x.id + '"' + (fo[x.id] ? ' checked' : '') + dis + '><span class="fp-ic sc"' + (x.pos ? ' style="background-position:' + x.pos[0] * 1.5 + 'px ' + x.pos[1] * 1.5 + 'px"' : ' data-gen') + '></span><span class="fp-nome">' + esc(x.nome) + '</span></label>';
-      }).join('') + f.pagamento.outras.map(function (o, i) {
-        return '<div class="fp"><input type="checkbox" data-fo="' + i + '"' + (o.ativo !== false ? ' checked' : '') + dis + '><span class="fp-ic t-outro">+</span>' +
-          (pode ? '<input type="text" class="fp-txt" data-fon="' + i + '" value="' + esc(o.nome) + '" maxlength="60" placeholder="Nome da forma">' : '<span class="fp-nome">' + esc(o.nome) + '</span>') +
-          (pode ? '<button class="btn link perigo fp-rm" data-rm-fo="' + i + '" title="Tirar">✕</button>' : '') + '</div>';
+      };
+      // forma criada pela loja: nome livre e categoria escolhida
+      var celOutra = function (o, i) {
+        return '<div class="fp fp-nova"><input type="checkbox" data-fo="' + i + '"' + (o.ativo !== false ? ' checked' : '') + dis + '><span class="fp-ic t-outro">+</span>' +
+          (pode ? '<input type="text" class="fp-txt" data-fon="' + i + '" value="' + esc(o.nome) + '" maxlength="60" placeholder="Nome da forma">' +
+            '<select class="fp-sel" data-fot="' + i + '" title="Categoria">' + CAT_PAG.map(function (c) { return '<option value="' + c[0] + '"' + ((o.tipo || 'outro') === c[0] ? ' selected' : '') + '>' + c[1] + '</option>'; }).join('') + '</select>' +
+            '<button class="btn link perigo fp-rm" data-rm-fo="' + i + '" title="Tirar">✕</button>'
+          : '<span class="fp-nome">' + esc(o.nome) + '</span>') + '</div>';
+      };
+      box.innerHTML = CAT_PAG.map(function (c) {
+        var fixas = FORMAS_PAG.filter(function (x) { return x.tipo === c[0]; });
+        var novas = f.pagamento.outras.map(function (o, i) { return [o, i]; }).filter(function (p) { return (p[0].tipo || 'outro') === c[0]; });
+        if (!fixas.length && !novas.length) return '';
+        var n = fixas.filter(function (x) { return fo[x.id]; }).length + novas.filter(function (p) { return p[0].ativo !== false; }).length;
+        return '<div class="fp-cat"><h3 class="fp-sec">' + c[1] + ' <span class="muted small">' + n + ' de ' + (fixas.length + novas.length) + '</span></h3>' +
+          '<div class="fp-grid">' + fixas.map(cel).join('') + novas.map(function (p) { return celOutra(p[0], p[1]); }).join('') + '</div></div>';
       }).join('');
       el.querySelectorAll('[data-rm-fo]').forEach(function (b) { b.onclick = function () { f.pagamento.outras.splice(+b.getAttribute('data-rm-fo'), 1); desenhaFormas(); }; });
     }
-    // dinheiro / cartao / vale da ficha acompanham as formas marcadas
+    // "n de m" de cada categoria, sem redesenhar (o foco fica onde estava)
+    function contaCats() {
+      el.querySelectorAll('#fp-grid .fp-cat').forEach(function (cat) {
+        var cb = cat.querySelectorAll('.fp-grid > .fp > input[type=checkbox]');
+        cat.querySelector('.fp-sec .small').textContent = Array.prototype.filter.call(cb, function (x) { return x.checked; }).length + ' de ' + cb.length;
+      });
+    }
+    // dinheiro / cartao / vale da ficha acompanham as formas marcadas (inclusive as criadas pela loja)
     function sincPag() {
-      var fo = f.pagamento.formas, tem = function (t) { return FORMAS_PAG.some(function (x) { return x.tipo === t && fo[x.id]; }); };
-      f.valores.dinheiro = fo.dinheiro ? 'sim' : 'nao';
+      var fo = f.pagamento.formas, tem = function (t) {
+        return FORMAS_PAG.some(function (x) { return x.tipo === t && fo[x.id]; }) ||
+          f.pagamento.outras.some(function (o) { return o.tipo === t && o.ativo !== false && String(o.nome || '').trim(); });
+      };
+      f.valores.dinheiro = tem('din') ? 'sim' : 'nao';
       f.valores.vale = tem('ref') ? 'sim' : 'nao';
     }
     var grupos = FICHA_GRUPOS.filter(function (g) { return (FICHA_PAG[g.titulo] || 'regras') === modo; });
@@ -910,8 +933,9 @@
         if (k === 'nome' || k === 'ativo' || k === 'preco') desenhaCardapio();
       }
       else if (t.hasAttribute('data-o')) f.outras[+t.getAttribute('data-o')][k] = val;
-      else if (t.hasAttribute('data-fp')) { if (t.checked) f.pagamento.formas[t.getAttribute('data-fp')] = true; else delete f.pagamento.formas[t.getAttribute('data-fp')]; sincPag(); }
-      else if (t.hasAttribute('data-fo')) f.pagamento.outras[+t.getAttribute('data-fo')].ativo = t.checked;
+      else if (t.hasAttribute('data-fp')) { if (t.checked) f.pagamento.formas[t.getAttribute('data-fp')] = true; else delete f.pagamento.formas[t.getAttribute('data-fp')]; sincPag(); contaCats(); }
+      else if (t.hasAttribute('data-fo')) { f.pagamento.outras[+t.getAttribute('data-fo')].ativo = t.checked; contaCats(); }
+      else if (t.hasAttribute('data-fot')) { f.pagamento.outras[+t.getAttribute('data-fot')].tipo = t.value; desenhaFormas(); }
       else if (t.hasAttribute('data-fon')) f.pagamento.outras[+t.getAttribute('data-fon')].nome = t.value;
       else if (t.hasAttribute('data-cb')) f.valores[t.getAttribute('data-cb')] = t.checked ? 'sim' : 'nao';
       else if (t.hasAttribute('data-in')) f.valores[t.getAttribute('data-in')] = t.type === 'number' ? (t.value === '' ? '' : +t.value) : t.value;
@@ -935,7 +959,7 @@
     });
     if ($('#add-tam', el)) $('#add-tam', el).onclick = function () { f.tamanhos.push({ id: 't' + Date.now().toString(36), nome: '', cm: '', preco: '', min: 1, max: 2, fatias: '', serve: '', ativo: true }); desenhaTam(); var ins = el.querySelectorAll('#tb-tam [data-k=nome]'); if (ins.length) ins[ins.length - 1].focus(); };
     desenhaFormas();
-    if ($('#add-fp', el)) $('#add-fp', el).onclick = function () { f.pagamento.outras.push({ nome: '', ativo: true }); desenhaFormas(); var ins = el.querySelectorAll('#fp-grid .fp-txt'); if (ins.length) ins[ins.length - 1].focus(); };
+    if ($('#add-fp', el)) $('#add-fp', el).onclick = function () { f.pagamento.outras.push({ nome: '', tipo: 'outro', ativo: true }); desenhaFormas(); var ins = el.querySelectorAll('#fp-grid .fp-txt'); if (ins.length) ins[ins.length - 1].focus(); };
     if ($('#add-outra', el)) $('#add-outra', el).onclick = function () { f.outras.push({ texto: '', ativa: true }); desenhaOutras(); var ins = el.querySelectorAll('#outras input[type=text]'); if (ins.length) ins[ins.length - 1].focus(); };
     $('#sv-ficha', el).onclick = function () {
       f.outras = f.outras.filter(function (o) { return (o.texto || '').trim(); });
