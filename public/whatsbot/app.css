@@ -223,7 +223,9 @@ input[type=checkbox] { accent-color: var(--accent); width: 16px; height: 16px; }
 .balao { white-space: pre-wrap; word-break: break-word; background: var(--accent-light); border-radius: 12px 12px 12px 4px; padding: 8px 12px; font-size: 14px; line-height: 1.45; }
 .balao.var { background: var(--border-2); margin-top: 6px; }
 .filtros-frase { display: grid; grid-template-columns: 1fr 220px 200px; gap: 8px; }
-@media (max-width: 720px) { .filtros-frase { grid-template-columns: 1fr; } }
+.filtros-frase.f2 { grid-template-columns: 1fr 240px; }
+.filtros-frase.f3 { grid-template-columns: 1fr auto auto; align-items: center; margin-bottom: 12px; }
+@media (max-width: 720px) { .filtros-frase, .filtros-frase.f2, .filtros-frase.f3 { grid-template-columns: 1fr; } }
 .cab-card { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
 .cab-card .btn { flex-shrink: 0; }
 .bairros-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 6px; max-height: 520px; overflow-y: auto; padding: 2px; }
@@ -232,3 +234,22 @@ input[type=checkbox] { accent-color: var(--accent); width: 16px; height: 16px; }
 .bairro label { display: flex; align-items: center; gap: 8px; flex: 1; cursor: pointer; font-size: 14px; }
 .bairro input[type=number] { width: 84px; padding: 4px 8px; }
 @media (max-width: 720px) { .cab-card { flex-direction: column; } }
+/* historico de pedidos e clientes */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.stat { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; }
+.stat span { color: var(--muted); font-size: 13px; }
+.stat b { font-size: 22px; }
+.pedido { border: 1px solid var(--border); border-radius: 12px; }
+.pedido.aberto { border-color: var(--accent); }
+.pedido-top { display: grid; grid-template-columns: minmax(150px, 1.2fr) 2fr auto; gap: 10px; align-items: center; padding: 10px 14px; cursor: pointer; }
+.pedido-quem { display: flex; flex-direction: column; gap: 2px; font-size: 14px; }
+.pedido-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.pedido-total { font-weight: 600; white-space: nowrap; }
+.pedido-det { padding: 0 14px 14px; }
+.pedido-info { display: flex; gap: 24px; flex-wrap: wrap; margin-top: 10px; font-size: 14px; }
+.pedido-info > div { display: flex; flex-direction: column; gap: 2px; }
+table.clientes tr.cli { cursor: pointer; }
+table.clientes tr.cli.aberto td { background: var(--accent-light); }
+.cli-box { padding: 6px 4px 10px; }
+.nowrap { white-space: nowrap; }
+@media (max-width: 720px) { .pedido-top { grid-template-columns: 1fr auto; } .pedido-tags { grid-column: 1 / -1; grid-row: 2; } }

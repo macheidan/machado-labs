@@ -99,7 +99,7 @@ function bot_auth($db, $loja) {
     if ($hash === '' || !hash_equals($hash, hash('sha256', $m[1]))) falha(401, 'token invalido');
 }
 
-if ($action === 'bot' || $action === 'bot_status' || $action === 'bot_padroes') {
+if ($action === 'bot' || $action === 'bot_status' || $action === 'bot_padroes' || $action === 'bot_pedidos' || $action === 'bot_clientes') {
     $loja = isset($_GET['loja']) ? preg_replace('/[^a-z0-9_-]/', '', $_GET['loja']) : '';
     $db = db_load();
     if ($loja === '' || !isset($db['lojas'][$loja])) falha(404, 'loja');
@@ -116,6 +116,33 @@ if ($action === 'bot' || $action === 'bot_status' || $action === 'bot_padroes') 
         $p['recebidoEm'] = date('c');
         json_write(data_dir() . '/padroes-' . $loja . '.json', $p);
         out(200, array('ok' => true));
+    }
+    // pedidos do WhatsApp (historico.js do bot): upsert por id, guarda os 5000 mais novos
+    if ($action === 'bot_pedidos' && $method === 'POST') {
+        $p = corpo();
+        $novos = isset($p['pedidos']) && is_array($p['pedidos']) ? $p['pedidos'] : array();
+        $arq = data_dir() . '/pedidos-' . $loja . '.json';
+        $lk = fopen($arq . '.lock', 'c'); flock($lk, LOCK_EX);
+        $todos = json_read($arq, array());
+        $idx = array();
+        foreach ($todos as $i => $x) if (isset($x['id'])) $idx[$x['id']] = $i;
+        foreach ($novos as $x) {
+            if (!is_array($x) || empty($x['id'])) continue;
+            $x['id'] = substr((string)$x['id'], 0, 80);
+            if (isset($idx[$x['id']])) $todos[$idx[$x['id']]] = $x; else { $idx[$x['id']] = count($todos); $todos[] = $x; }
+        }
+        usort($todos, function ($a, $b) { return strcmp(isset($a['em']) ? $a['em'] : '', isset($b['em']) ? $b['em'] : ''); });
+        if (count($todos) > 5000) $todos = array_slice($todos, -5000);
+        json_write($arq, $todos);
+        flock($lk, LOCK_UN); fclose($lk);
+        out(200, array('ok' => true, 'total' => count($todos)));
+    }
+    // clientes que ja pediram pelo WhatsApp, com o cadastro da base da loja: substitui a lista
+    if ($action === 'bot_clientes' && $method === 'POST') {
+        $p = corpo();
+        $cl = isset($p['clientes']) && is_array($p['clientes']) ? $p['clientes'] : array();
+        json_write(data_dir() . '/clientes-' . $loja . '.json', array('clientes' => $cl, 'recebidoEm' => date('c')));
+        out(200, array('ok' => true, 'total' => count($cl)));
     }
     if ($action === 'bot_status' && $method === 'POST') {
         $st = corpo();
@@ -149,7 +176,7 @@ if ($action === 'estado' && $method === 'GET') {
                 'pausar' => pode($eu, $id, 'pausar'), 'numeros' => pode($eu, $id, 'numeros'),
                 'regras' => pode($eu, $id, 'regras'), 'horario' => pode($eu, $id, 'horario'),
                 'escopo' => pode($eu, $id, 'escopo'), 'equipe' => pode($eu, $id, 'equipe'),
-                'instrucoes' => pode($eu, $id, 'instrucoes'),
+                'instrucoes' => pode($eu, $id, 'instrucoes'), 'clientes' => pode($eu, $id, 'clientes'),
             ),
             'config' => isset($l['config']) ? $l['config'] : config_padrao(),
             'status' => $st,
@@ -232,6 +259,15 @@ if ($action === 'bairros' && $method === 'GET') {
     $res = array('cidade' => $cid, 'uf' => $uf, 'bairros' => $nomes, 'fonte' => 'OpenStreetMap', 'em' => date('c'));
     json_write($arq, $res);
     out(200, array('ok' => true) + $res);
+}
+
+// Historico de pedidos e clientes (o bot manda; o painel so mostra)
+if (($action === 'pedidos' || $action === 'clientes') && $method === 'GET') {
+    $loja = isset($_GET['loja']) ? (string)$_GET['loja'] : '';
+    exige($eu, $db, $loja, $action === 'pedidos' ? 'ver' : 'clientes');
+    if ($action === 'pedidos') out(200, array('ok' => true, 'pedidos' => json_read(data_dir() . '/pedidos-' . $loja . '.json', array())));
+    $c = json_read(data_dir() . '/clientes-' . $loja . '.json', array('clientes' => array(), 'recebidoEm' => null));
+    out(200, array('ok' => true) + $c);
 }
 
 if ($method !== 'POST') falha(404, 'not_found');

@@ -157,7 +157,7 @@ function pode($u, $loja, $o_que) {
     $n = nivel($u, $loja);
     switch ($o_que) {
         case 'ver': case 'pausar': case 'numeros': return $n >= 1;
-        case 'horario':                             return $n >= 2;
+        case 'horario': case 'clientes':            return $n >= 2;
         case 'escopo': case 'equipe':               return $n >= 3;
         // Regras, instrucoes e ferramentas: SO VISUALIZACAO (Fabio, 22/11/2026: "nao quero
         // que mude o bot"). Nem o superadmin edita; o bot tambem ignora esses campos.

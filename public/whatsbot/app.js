@@ -86,6 +86,7 @@
   function paginas() {
     var l = loja(), p = [
       { id: 'geral', ic: '◉', nome: 'Visão geral' },
+      { id: 'pedidos', ic: '▤', nome: 'Histórico de pedidos' },
       { id: 'numeros', ic: '☎', nome: 'Números', cont: l ? l.config.numeros.length : 0 },
       { id: 'funcionamento', ic: '◷', nome: 'Funcionamento' },
       { id: 'fluxo', ic: '➜', nome: 'Fluxo de atendimento' },
@@ -94,8 +95,9 @@
       { id: 'instrucoes', ic: '¶', nome: 'Instruções e regras' },
       { id: 'ferramentas', ic: '⚙', nome: 'Ferramentas' },
     ];
+    if (l && l.pode.clientes) p.splice(2, 0, { id: 'clientes', ic: '☻', nome: 'Clientes' });
     if (l && l.pode.equipe) p.push({ id: 'equipe', ic: '☺', nome: 'Equipe' });
-    p.push({ id: 'historico', ic: '≡', nome: 'Histórico' });
+    p.push({ id: 'historico', ic: '≡', nome: 'Log' });
     if (S.dados.eu.superadmin) p.push({ id: 'lojas', ic: '⌂', nome: 'Lojas' });
     return p;
   }
@@ -119,7 +121,7 @@
 
     var c = $('#content');
     if (!l && S.pagina !== 'lojas') { c.innerHTML = '<div class="card vazio">Nenhuma loja ainda.' + (eu.superadmin ? ' Cadastre a primeira em <b>Lojas</b>.' : '') + '</div>'; return; }
-    ({ geral: pgGeral, numeros: pgNumeros, regras: pgRegras, funcionamento: pgFuncionamento, fluxo: pgFluxo, frases: pgFrases, ficha: pgFicha, instrucoes: pgInstrucoes, ferramentas: pgFerramentas, equipe: pgEquipe, historico: pgHistorico, lojas: pgLojas })[S.pagina](c, l);
+    ({ geral: pgGeral, numeros: pgNumeros, regras: pgRegras, funcionamento: pgFuncionamento, fluxo: pgFluxo, frases: pgFrases, pedidos: pgPedidos, clientes: pgClientes, ficha: pgFicha, instrucoes: pgInstrucoes, ferramentas: pgFerramentas, equipe: pgEquipe, historico: pgHistorico, lojas: pgLojas })[S.pagina](c, l);
   }
 
   function ir(p) {
@@ -520,7 +522,7 @@
   // fatias que a Izza informa hoje (persona.js do whatsbot)
   var FATIAS = { pequena: 4, media: 6, grande: 8, super: 16 };
   function chaveTam(nome) { return String(nome || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').split(/\s/)[0]; }
-  function brl(v) { return v == null || v === '' ? '' : 'R$ ' + Number(v).toFixed(2).replace('.', ','); }
+  function brl(v) { return v == null || v === '' ? '' : 'R$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 
   function fichaPadrao(l) {
     var c = l.padroes && l.padroes.cardapio, v = {};
@@ -757,7 +759,7 @@
       }
       if (BAI.carregando) { box.innerHTML = '<div class="vazio">Buscando os bairros de ' + esc(cu.cidade + ' / ' + cu.uf) + '…</div>'; return; }
       box.innerHTML = (BAI.erro ? '<div class="aviso err" style="margin-bottom:12px">' + esc(BAI.erro) + ' <button class="btn sm" id="bai-rt">Tentar de novo</button></div>' : '') +
-        '<div class="filtros-frase" style="grid-template-columns:1fr auto auto;align-items:center;margin-bottom:12px">' +
+        '<div class="filtros-frase f3">' +
         '<input type="search" id="bai-q" placeholder="Buscar bairro de ' + esc(cu.cidade) + '…" value="' + esc(BAI.q) + '">' +
         '<span class="muted small" id="bai-cont"></span>' +
         (pode ? '<span class="linha" style="gap:6px;flex-wrap:nowrap"><button class="btn sm" id="bai-todos">Marcar todos</button><button class="btn sm" id="bai-nenhum">Desmarcar</button></span>' : '<span></span>') +
@@ -988,8 +990,145 @@
   }
   function pgHistorico(el) {
     var log = S.dados.log;
-    el.innerHTML = '<div class="page-head"><div><h1>Histórico</h1><p>As últimas 200 mudanças nas lojas que você vê.</p></div></div>' +
+    el.innerHTML = '<div class="page-head"><div><h1>Log</h1><p>As últimas 200 mudanças feitas no painel, nas lojas que você vê.</p></div></div>' +
       '<div class="card">' + (log.length ? log.map(itemLog).join('') : '<div class="vazio">Nada ainda.</div>') + '</div>';
+  }
+
+  // ------------------------------------------------------------- Histórico de pedidos e Clientes
+  // O bot manda (src/pedidos/historico.js): cada pedido fechado pela Izza com o resumo que o
+  // cliente viu, e os clientes que ja pediram pelo WhatsApp com o cadastro da base da loja.
+  var ST_PED = { enviado: ['Aguardando a loja', 'warn'], agendado: ['Agendado', 'acc'], lancado: ['Confirmado', 'ok'], recusado: ['Recusado pela loja', 'err'], expirado: ['Não entrou', 'err'] };
+  function fmtTel(t) {
+    var d = String(t || '').replace(/\D/g, ''); if (d.length >= 12 && d.indexOf('55') === 0) d = d.slice(2);
+    if (d.length === 11) return '(' + d.slice(0, 2) + ') ' + d.slice(2, 7) + '-' + d.slice(7);
+    if (d.length === 10) return '(' + d.slice(0, 2) + ') ' + d.slice(2, 6) + '-' + d.slice(6);
+    return t || '';
+  }
+  function fmtEnd(e) { return e && e.rua ? e.rua + (e.numero ? ', ' + e.numero : '') + (e.complemento ? ' (' + e.complemento + ')' : '') + (e.bairro ? ' - ' + e.bairro : '') : ''; }
+  function dataCurta(iso) { if (!iso) return ''; var d = new Date(iso.length === 10 ? iso + 'T12:00:00' : iso); return isNaN(d) ? iso : d.toLocaleDateString('pt-BR'); }
+  function nPed(n) { return n + (n === 1 ? ' pedido' : ' pedidos'); }
+  function valePed(p) { return p.status !== 'recusado' && p.status !== 'expirado'; }
+  function pedidoHtml(p, comNome) {
+    var st = ST_PED[p.status] || [p.status, ''];
+    return '<div class="pedido"><div class="pedido-top">' +
+      '<div class="pedido-quem"><b>' + esc(dataHora(p.em)) + '</b>' + (comNome ? (p.nome ? '<span>' + esc(p.nome) + '</span>' : '') + '<span class="muted small">' + esc(fmtTel(p.telefone)) + '</span>' : '') + '</div>' +
+      '<div class="pedido-tags"><span class="badge ' + st[1] + '">' + esc(st[0]) + '</span>' + (p.retirada != null ? '<span class="badge">' + (p.retirada ? 'Retirada' : 'Entrega') + '</span>' : '') + (p.codigo ? '<span class="badge">nº ' + esc(p.codigo) + '</span>' : '') + '</div>' +
+      '<div class="pedido-total">' + (p.total != null ? brl(p.total) : '') + '</div></div>' +
+      '<div class="pedido-det" hidden>' +
+        (p.resumo ? '<div class="balao">' + esc(p.resumo) + '</div>' : '<div class="muted small">Resumo não guardado: pedido de antes de 23/11, quando o painel passou a registrar.</div>') +
+        '<div class="pedido-info">' +
+          (p.endereco ? '<div><span class="muted small">Endereço</span><div>' + esc(fmtEnd(p.endereco)) + '</div></div>' : '') +
+          (p.pagamento ? '<div><span class="muted small">Pagamento</span><div>' + esc(p.pagamento) + '</div></div>' : '') +
+          (p.agendadoPara ? '<div><span class="muted small">Agendado para</span><div>' + esc(p.agendadoPara) + '</div></div>' : '') +
+          (p.atualizadoEm ? '<div><span class="muted small">Último status</span><div>' + esc(dataHora(p.atualizadoEm)) + '</div></div>' : '') +
+        '</div></div></div>';
+  }
+  function ligaPedidos(box) {
+    box.querySelectorAll('.pedido-top').forEach(function (t) {
+      t.onclick = function () { var d = t.parentNode.querySelector('.pedido-det'); d.hidden = !d.hidden; t.parentNode.classList.toggle('aberto', !d.hidden); };
+    });
+  }
+
+  function pgPedidos(el, l) {
+    var pag = document.createElement('div'); pag.className = 'pagina'; el.innerHTML = ''; el.appendChild(pag);
+    var head = '<div class="page-head"><div><h1>Histórico de pedidos</h1><p>Pedidos que a Izza fechou pelo WhatsApp na ' + esc(l.nome) + ', com o resumo que o cliente recebeu. Clique num pedido para ver o resumo.</p></div></div>';
+    pag.innerHTML = head + '<div class="card vazio">Carregando…</div>';
+    Promise.all([api('pedidos&loja=' + encodeURIComponent(l.id)), l.pode.clientes ? api('clientes&loja=' + encodeURIComponent(l.id)).catch(function () { return {}; }) : {}]).then(function (rs) {
+      var j = rs[0], nomes = {};
+      (rs[1].clientes || []).forEach(function (c) { if (c.nome) nomes[c.telefone] = c.nome; });
+      // pedido de antes de 23/11 nao tem o nome: vem do cadastro do cliente
+      (j.pedidos || []).forEach(function (p) { if (!p.nome && nomes[p.telefone]) p.nome = nomes[p.telefone]; });
+      var todos = (j.pedidos || []).slice().reverse(), filtro = { q: '', st: '', dias: 30 }, mostra = 100;
+      pag.innerHTML = head + '<div class="stats" id="ped-kpi"></div>' +
+        '<div class="card"><div class="filtros-frase"><input type="search" id="pq" placeholder="Buscar por nome, telefone, número ou item…">' +
+        '<select id="pd"><option value="1">Hoje</option><option value="7">Últimos 7 dias</option><option value="30" selected>Últimos 30 dias</option><option value="0">Tudo</option></select>' +
+        '<select id="ps"><option value="">Todos os status</option>' + Object.keys(ST_PED).map(function (k) { return '<option value="' + k + '">' + ST_PED[k][0] + '</option>'; }).join('') + '</select></div></div>' +
+        '<div class="card"><div class="stack" id="plista"></div></div>';
+      function desenha() {
+        var q = filtro.q.toLowerCase(), qd = q.replace(/\D/g, '');
+        var desde = filtro.dias ? (filtro.dias === 1 ? new Date(new Date().setHours(0, 0, 0, 0)) : new Date(Date.now() - filtro.dias * 864e5)).toISOString() : '';
+        var fs = todos.filter(function (p) {
+          if (desde && p.em < desde) return false;
+          if (filtro.st && p.status !== filtro.st) return false;
+          if (!q) return true;
+          return [p.nome, p.codigo, p.resumo].join(' ').toLowerCase().indexOf(q) >= 0 || (qd.length >= 4 && String(p.telefone).indexOf(qd) >= 0);
+        });
+        var ok = fs.filter(valePed), soma = ok.reduce(function (a, p) { return a + (Number(p.total) || 0); }, 0);
+        $('#ped-kpi', pag).innerHTML =
+          '<div class="stat"><span>Pedidos</span><b>' + ok.length + '</b></div>' +
+          '<div class="stat"><span>Faturamento</span><b>' + (brl(soma) || 'R$ 0,00') + '</b></div>' +
+          '<div class="stat"><span>Ticket médio</span><b>' + (ok.length ? brl(soma / ok.length) : '—') + '</b></div>' +
+          '<div class="stat"><span>Não entraram</span><b>' + (fs.length - ok.length) + '</b></div>';
+        $('#plista', pag).innerHTML = fs.length ? fs.slice(0, mostra).map(function (p) { return pedidoHtml(p, true); }).join('') +
+          (fs.length > mostra ? '<button class="btn sm" id="pmais">Mostrar mais (' + (fs.length - mostra) + ')</button>' : '') : '<div class="vazio">Nenhum pedido nesse filtro.</div>';
+        ligaPedidos($('#plista', pag));
+        if ($('#pmais', pag)) $('#pmais', pag).onclick = function () { mostra += 100; desenha(); };
+      }
+      $('#pq', pag).oninput = function () { filtro.q = this.value; mostra = 100; desenha(); };
+      $('#pd', pag).onchange = function () { filtro.dias = +this.value; mostra = 100; desenha(); };
+      $('#ps', pag).onchange = function () { filtro.st = this.value; mostra = 100; desenha(); };
+      desenha();
+    }).catch(function (e) { pag.innerHTML = head + '<div class="card vazio">' + esc(e.message) + '</div>'; });
+  }
+
+  function pgClientes(el, l) {
+    var pag = document.createElement('div'); pag.className = 'pagina'; el.innerHTML = ''; el.appendChild(pag);
+    var head = '<div class="page-head"><div><h1>Clientes</h1><p>Quem já pediu pela Izza no WhatsApp da ' + esc(l.nome) + '. O cadastro (nome, endereços, compras na loja) vem da base de clientes atual da loja. Somente visualização.</p></div></div>';
+    pag.innerHTML = head + '<div class="card vazio">Carregando…</div>';
+    Promise.all([api('clientes&loja=' + encodeURIComponent(l.id)), api('pedidos&loja=' + encodeURIComponent(l.id))]).then(function (rs) {
+      var cs = rs[0].clientes || [], peds = (rs[1].pedidos || []).slice().reverse(), filtro = { q: '', ord: 'ultimo' };
+      if (!cs.length) { pag.innerHTML = head + '<div class="card vazio">O bot desta loja ainda não mandou os clientes. Eles chegam logo depois de ele reiniciar com a versão nova.</div>'; return; }
+      var naBase = cs.filter(function (c) { return c.fonte === 'base'; }).length;
+      pag.innerHTML = head +
+        '<div class="stats"><div class="stat"><span>Clientes pelo WhatsApp</span><b>' + cs.length + '</b></div>' +
+        '<div class="stat"><span>Achados na base da loja</span><b>' + naBase + '</b></div>' +
+        '<div class="stat"><span>Gasto pelo WhatsApp</span><b>' + brl(cs.reduce(function (a, c) { return a + (c.totalWhats || 0); }, 0)) + '</b></div></div>' +
+        '<div class="card"><div class="filtros-frase f2"><input type="search" id="cq" placeholder="Buscar por nome, telefone ou endereço…">' +
+        '<select id="co"><option value="ultimo">Pedido mais recente</option><option value="pedidos">Mais pedidos pelo WhatsApp</option><option value="gasto">Maior gasto pelo WhatsApp</option><option value="nome">Nome</option></select></div>' +
+        '<p class="muted small" style="margin:10px 0 0">Atualizado pelo bot em ' + esc(dataHora(rs[0].recebidoEm)) + '. Clique num cliente para ver endereços e pedidos.</p></div>' +
+        '<div class="card"><div class="tabela-wrap"><table class="clientes"><thead><tr><th>Cliente</th><th>Telefone</th><th>Pedidos (Whats)</th><th>Gasto (Whats)</th><th>Último pelo Whats</th><th class="hide-m">Na loja (todos os canais)</th></tr></thead><tbody id="clista"></tbody></table></div></div>';
+      function ends(c) { return c.base && c.base.enderecos && c.base.enderecos.length ? c.base.enderecos : c.enderecosWhats || []; }
+      function desenha() {
+        var q = filtro.q.toLowerCase(), qd = q.replace(/\D/g, '');
+        var fs = cs.filter(function (c) {
+          if (!q) return true;
+          return [c.nome, c.nomeNoPedido, ends(c).map(fmtEnd).join(' ')].join(' ').toLowerCase().indexOf(q) >= 0 || (qd.length >= 4 && String(c.telefone).indexOf(qd) >= 0);
+        });
+        var ord = {
+          ultimo: function (a, b) { return a.ultimoWhats < b.ultimoWhats ? 1 : -1; },
+          pedidos: function (a, b) { return b.pedidosWhats - a.pedidosWhats; },
+          gasto: function (a, b) { return b.totalWhats - a.totalWhats; },
+          nome: function (a, b) { return String(a.nome).localeCompare(String(b.nome), 'pt-BR'); },
+        }[filtro.ord];
+        fs.sort(ord);
+        $('#clista', pag).innerHTML = fs.length ? fs.map(function (c, i) {
+          var b = c.base;
+          return '<tr class="cli" data-ci="' + i + '"><td><b>' + esc(c.nome || '(sem nome)') + '</b>' + (c.fonte === 'base' ? '' : ' <span class="badge" title="Não achado na base de clientes da loja">só WhatsApp</span>') + '</td>' +
+            '<td class="nowrap">' + esc(fmtTel(c.telefone)) + '</td><td class="num">' + c.pedidosWhats + '</td><td class="num">' + (brl(c.totalWhats) || '—') + '</td><td>' + esc(dataCurta(c.ultimoWhats)) + '</td>' +
+            '<td class="hide-m muted small">' + (b ? nPed(b.pedidos || 0) + ' · ' + brl(b.valorTotal || 0) : '—') + '</td></tr>' +
+            '<tr class="cli-det" hidden><td colspan="6"></td></tr>';
+        }).join('') : '<tr><td colspan="6"><div class="vazio">Nenhum cliente com essa busca.</div></td></tr>';
+        $('#clista', pag).querySelectorAll('tr.cli').forEach(function (tr) {
+          tr.onclick = function () {
+            var det = tr.nextElementSibling, c = fs[+tr.getAttribute('data-ci')], b = c.base;
+            if (!det.hidden) { det.hidden = true; tr.classList.remove('aberto'); return; }
+            var meus = peds.filter(function (p) { return p.telefone === c.telefone; });
+            var e = ends(c);
+            det.firstChild.innerHTML = '<div class="cli-box"><div class="pedido-info">' +
+              '<div><span class="muted small">Endereços' + (b ? ' (cadastro da loja)' : ' (dos pedidos)') + '</span>' + (e.length ? e.map(function (x) { return '<div>' + esc(fmtEnd(x)) + '</div>'; }).join('') : '<div class="muted">nenhum</div>') + '</div>' +
+              (b ? '<div><span class="muted small">Na loja, todos os canais</span><div>' + nPed(b.pedidos || 0) + ' · ' + brl(b.valorTotal || 0) + '</div><div class="muted small">primeira ' + esc(dataCurta(b.primeiraCompra)) + ' · última ' + esc(dataCurta(b.ultimaCompra)) + '</div></div>' : '') +
+              (b && b.aniversario ? '<div><span class="muted small">Aniversário</span><div>' + esc(b.aniversario) + '</div></div>' : '') +
+              (c.nomeNoPedido && c.nomeNoPedido !== c.nome ? '<div><span class="muted small">Nome dito no WhatsApp</span><div>' + esc(c.nomeNoPedido) + '</div></div>' : '') +
+              '</div><h3 class="small" style="margin:14px 0 6px">Pedidos pelo WhatsApp (' + meus.length + ')</h3><div class="stack">' + meus.map(function (p) { return pedidoHtml(p, false); }).join('') + '</div></div>';
+            ligaPedidos(det);
+            det.hidden = false; tr.classList.add('aberto');
+          };
+        });
+      }
+      $('#cq', pag).oninput = function () { filtro.q = this.value; desenha(); };
+      $('#co', pag).onchange = function () { filtro.ord = this.value; desenha(); };
+      desenha();
+    }).catch(function (e) { pag.innerHTML = head + '<div class="card vazio">' + esc(e.message) + '</div>'; });
   }
 
   // ------------------------------------------------------------- Lojas (admin geral)
