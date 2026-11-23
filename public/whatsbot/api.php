@@ -17,11 +17,8 @@
 // Bot (Authorization: Bearer <token da loja>):
 //   GET  ?a=bot&loja=dame               config da loja
 //   POST ?a=bot_status&loja=dame        status (online, pausa local, conexao...)
-//
-// Izza Impressora (programa do Windows): ver impressao.php (imp_parear, imp_poll, imp_resultado).
 define('WB', 1);
 require __DIR__ . '/lib.php';
-require __DIR__ . '/impressao.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
@@ -102,8 +99,6 @@ function bot_auth($db, $loja) {
     if ($hash === '' || !hash_equals($hash, hash('sha256', $m[1]))) falha(401, 'token invalido');
 }
 
-if ($action === 'imp_parear' || $action === 'imp_poll' || $action === 'imp_resultado') imp_rotas_programa($action, $method);
-
 if ($action === 'bot' || $action === 'bot_status' || $action === 'bot_padroes' || $action === 'bot_pedidos' || $action === 'bot_clientes' || $action === 'bot_alertas') {
     $loja = isset($_GET['loja']) ? preg_replace('/[^a-z0-9_-]/', '', $_GET['loja']) : '';
     $db = db_load();
@@ -130,18 +125,16 @@ if ($action === 'bot' || $action === 'bot_status' || $action === 'bot_padroes' |
         $lk = fopen($arq . '.lock', 'c'); flock($lk, LOCK_EX);
         $todos = json_read($arq, array());
         $idx = array();
-        $chegaram = array(); // pedidos que ainda nao existiam: podem imprimir sozinhos
         foreach ($todos as $i => $x) if (isset($x['id'])) $idx[$x['id']] = $i;
         foreach ($novos as $x) {
             if (!is_array($x) || empty($x['id'])) continue;
             $x['id'] = substr((string)$x['id'], 0, 80);
-            if (isset($idx[$x['id']])) $todos[$idx[$x['id']]] = $x; else { $idx[$x['id']] = count($todos); $todos[] = $x; $chegaram[] = $x; }
+            if (isset($idx[$x['id']])) $todos[$idx[$x['id']]] = $x; else { $idx[$x['id']] = count($todos); $todos[] = $x; }
         }
         usort($todos, function ($a, $b) { return strcmp(isset($a['em']) ? $a['em'] : '', isset($b['em']) ? $b['em'] : ''); });
         if (count($todos) > 5000) $todos = array_slice($todos, -5000);
         json_write($arq, $todos);
         flock($lk, LOCK_UN); fclose($lk);
-        if ($chegaram) imp_auto($db, $loja, $chegaram);
         out(200, array('ok' => true, 'total' => count($todos)));
     }
     // alertas da tela da loja (monitor do bot): upsert por id; o mesmo id volta com resolvido=true
@@ -197,9 +190,6 @@ $eu = current_user($db);
 if (!$eu) falha(401, 'unauthorized');
 
 if ($method === 'POST' && (empty($_SERVER['HTTP_X_WB']) || $_SERVER['HTTP_X_WB'] !== '1')) falha(403, 'csrf');
-
-// impressoras e fila de impressao (impressao.php)
-if (in_array($action, array('impressao', 'imp_codigo', 'imp_remover', 'imp_config', 'imprimir'), true)) imp_rotas_painel($action, $method, $eu, $db);
 
 if ($action === 'estado' && $method === 'GET') {
     $lojas = array();
@@ -316,7 +306,6 @@ if ($action === 'bairros' && $method === 'GET') {
 if ($action === 'ao_vivo' && $method === 'GET') {
     $loja = isset($_GET['loja']) ? (string)$_GET['loja'] : '';
     exige($eu, $db, $loja, 'ver');
-    imp_vigia($loja);
     $al = json_read(data_dir() . '/alertas-' . $loja . '.json', array());
     $al = array_slice($al, -300);
     $parq = data_dir() . '/pedidos-' . $loja . '.json';
