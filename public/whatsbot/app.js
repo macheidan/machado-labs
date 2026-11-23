@@ -102,6 +102,7 @@
       { g: 'Loja', id: 'pagamento', ic: '$', nome: 'Pagamento', ve: po.horario },
       { g: 'Loja', id: 'regrasloja', ic: '☑', nome: 'Regras da loja', ve: po.horario },
       { g: 'Loja', id: 'comanda', ic: '⎙', nome: 'Comanda', ve: po.horario },
+      { g: 'Loja', id: 'impressoras', ic: '⎘', nome: 'Impressoras', ve: po.horario },
       { g: 'Conta', id: 'integracoes', ic: '⇄', nome: 'Integrações', ve: po.integracoes },
       { g: 'Conta', id: 'equipe', ic: '☺', nome: 'Equipe', ve: po.equipe },
       { g: 'Conta', id: 'historico', ic: '≡', nome: 'Log', ve: true },
@@ -137,7 +138,7 @@
 
     var c = $('#content');
     if (!l && S.pagina !== 'lojas') { c.innerHTML = '<div class="card vazio">Nenhuma loja ainda.' + (eu.superadmin ? ' Cadastre a primeira em <b>Lojas</b>.' : '') + '</div>'; return; }
-    ({ geral: pgGeral, numeros: pgNumeros, regras: pgRegras, funcionamento: pgFuncionamento, fluxo: pgFluxo, frases: pgFrases, pedidos: pgPedidos, quadro: pgQuadro, clientes: pgClientes, alertas: pgAlertas, comanda: pgComanda, integracoes: pgIntegracoes, entrega: function (c, l) { pgFicha(c, l, 'entrega'); }, pagamento: function (c, l) { pgFicha(c, l, 'pagamento'); }, regrasloja: function (c, l) { pgFicha(c, l, 'regras'); }, tamanhos: function (c, l) { pgFicha(c, l, 'tamanhos'); }, instrucoes: pgInstrucoes, ferramentas: pgFerramentas, equipe: pgEquipe, historico: pgHistorico, lojas: pgLojas })[S.pagina](c, l);
+    ({ geral: pgGeral, numeros: pgNumeros, regras: pgRegras, funcionamento: pgFuncionamento, fluxo: pgFluxo, frases: pgFrases, pedidos: pgPedidos, quadro: pgQuadro, clientes: pgClientes, alertas: pgAlertas, comanda: pgComanda, impressoras: pgImpressoras, integracoes: pgIntegracoes, entrega: function (c, l) { pgFicha(c, l, 'entrega'); }, pagamento: function (c, l) { pgFicha(c, l, 'pagamento'); }, regrasloja: function (c, l) { pgFicha(c, l, 'regras'); }, tamanhos: function (c, l) { pgFicha(c, l, 'tamanhos'); }, instrucoes: pgInstrucoes, ferramentas: pgFerramentas, equipe: pgEquipe, historico: pgHistorico, lojas: pgLojas })[S.pagina](c, l);
   }
 
   function ir(p) {
@@ -1626,7 +1627,7 @@
         t.onclick = function () { var box = t.parentNode, d = box.querySelector('.pedido-det'); d.hidden = !d.hidden; box.classList.toggle('aberto', !d.hidden); abertos[box.getAttribute('data-pid')] = !d.hidden; };
       });
       $('#plista', pag).querySelectorAll('[data-imprime]').forEach(function (b) {
-        b.onclick = function (ev) { ev.stopPropagation(); var p = porId[b.getAttribute('data-imprime')]; if (p) imprimeComanda(pedidoParaComanda(p, l), l); };
+        b.onclick = function (ev) { ev.stopPropagation(); var p = porId[b.getAttribute('data-imprime')]; if (p) imprimeNaFila({ loja: l.id, pedido: p.id }, function () { imprimeComanda(pedidoParaComanda(p, l), l); }); };
       });
       if ($('#pmais', pag)) $('#pmais', pag).onclick = function () { mostra += 100; desenha(); };
     }
@@ -1784,7 +1785,7 @@
     var cfg = cfgComanda(l), pode = l.pode.horario, dis = pode ? '' : ' disabled', pedidos = [], fonte = 'exemplo';
     pag.innerHTML = '<div class="page-head"><div><h1>Comanda</h1><p>Como sai a comanda que a Izza imprime quando a ' + esc(l.nome) + ' aprova o pedido pelo painel.</p></div>' +
       (pode ? '<button class="btn pri" id="cm-salvar">Salvar comanda</button>' : '') + '</div>' +
-      '<div class="aviso">Vale para a loja que trabalha só com a Izza: aprova no painel e imprime pelo navegador, na impressora térmica ligada ao computador. ' +
+      '<div class="aviso">Vale para a loja que trabalha só com a Izza. A comanda sai pela <b>Izza Impressora</b> (Loja &gt; Impressoras); sem ela, pela janela de impressão do navegador. ' +
       'Com o Titan ou a Saipos, quem imprime é o sistema da loja, com o modelo dele (ver <b>Integrações</b>).</div>' +
       '<div class="cm-grid">' +
         '<div class="stack">' +
@@ -1824,7 +1825,7 @@
     pag.querySelectorAll('[data-cmo]').forEach(function (i) { i.onchange = function () { cfg[i.getAttribute('data-cmo')] = i.checked; prev(); }; });
     pag.querySelectorAll('[data-cmt]').forEach(function (i) { i.oninput = function () { cfg[i.getAttribute('data-cmt')] = i.value; prev(); }; });
     $('#cm-fonte', pag).onchange = function () { fonte = this.value; prev(); };
-    $('#cm-imprimir', pag).onclick = function () { imprimeComanda(pedidoAtual(), l, cfg); };
+    $('#cm-imprimir', pag).onclick = function () { imprimeNaFila({ loja: l.id, teste: fonte === 'exemplo', pedido: fonte === 'exemplo' ? null : fonte, comanda: cfg }, function () { imprimeComanda(pedidoAtual(), l, cfg); }); };
     if ($('#cm-salvar', pag)) $('#cm-salvar', pag).onclick = function () { salvar('comanda', { loja: l.id, comanda: cfg }, 'Comanda salva.'); };
     marcaSegs(); prev();
     api('pedidos&loja=' + encodeURIComponent(l.id)).then(function (j) {
@@ -1834,6 +1835,144 @@
         return '<option value="' + esc(p.id) + '">' + esc(dataHora(p.em) + ' · ' + (p.nome || fmtTel(p.telefone)) + (p.total != null ? ' · ' + brl(p.total) : '')) + '</option>';
       }).join('');
     }).catch(function () {});
+  }
+
+  // ------------------------------------------------------------- Impressoras (Izza Impressora)
+  // O programa do Windows pareia com a loja por codigo, pergunta a cada 3 s se ha comanda
+  // e imprime direto na impressora (termica ou comum). Servidor: impressao.php.
+  // nome que parece de impressora de comanda (o resto comeca como comum; a loja troca na lista)
+  var TERMICA_RE = /(t[eé]rmica|thermal|pos[- ]?\d|\bpos\b|tm-?t|tm-?m|bematech|elgin|daruma|sweda|tanca|jetway|knup|gertec|i9|mp-?\d{4}|80 ?mm|58 ?mm|receipt|generic.*text|gen[eé]rica)/i;
+  var ST_IMP = { pendente: ['Na fila', 'warn'], enviado: ['Imprimindo', 'acc'], impresso: ['Impresso', 'ok'], erro: ['Falhou', 'err'] };
+  // manda imprimir pela fila; sem impressora configurada, cai na impressao do navegador
+  function imprimeNaFila(corpo, plano) {
+    return api('imprimir', corpo).then(function (j) {
+      toast(j.trabalhos === 1 ? 'Enviado para a impressora.' : 'Enviado para ' + j.trabalhos + ' impressoras.');
+    }).catch(function (e) {
+      if (e.message === 'sem_impressora') { if (plano) plano(); else toast('Nenhuma impressora ligada. Veja em Loja > Impressoras.', true); }
+      else toast(e.message, true);
+    });
+  }
+  function pgImpressoras(el, l) {
+    var pag = document.createElement('div'); pag.className = 'pagina'; el.innerHTML = ''; el.appendChild(pag);
+    var pode = l.pode.horario, dis = pode ? '' : ' disabled', dados = null, linhas = [], auto = false, sujo = false, timer = null, codigo = null;
+    pag.innerHTML = '<div class="page-head"><div><h1>Impressoras</h1><p>A comanda sai sozinha na impressora da ' + esc(l.nome) + ', sem abrir a janela de impressão do navegador.</p></div>' +
+      (pode ? '<button class="btn pri" id="imp-salvar" disabled>Salvar impressoras</button>' : '') + '</div><div class="card vazio">Carregando…</div>';
+    function chave(d, n) { return d + '|' + n; }
+    // uma linha por impressora que cada computador enxerga (e as configuradas que sumiram dele)
+    function montaLinhas() {
+      var cfg = {}; (dados.config.impressoras || []).forEach(function (i) { cfg[chave(i.disp, i.nome)] = i; });
+      var r = [], visto = {};
+      dados.dispositivos.forEach(function (d) {
+        (d.impressoras || []).forEach(function (w) {
+          var k = chave(d.id, w.nome), c = cfg[k] || {};
+          visto[k] = 1;
+          r.push({ id: c.id || '', disp: d.id, nomeDisp: d.nome, nome: w.nome, padrao: w.padrao, ativa: !!c.ativa, tipo: c.tipo || (TERMICA_RE.test(w.nome) ? 'termica' : 'comum'), modelo: c.modelo || 'completa', vias: c.vias || 1, papel: c.papel || 80, existe: true });
+        });
+      });
+      (dados.config.impressoras || []).forEach(function (c) {
+        var k = chave(c.disp, c.nome); if (visto[k]) return;
+        var d = dados.dispositivos.filter(function (x) { return x.id === c.disp; })[0];
+        if (d) r.push(Object.assign({}, c, { nomeDisp: d.nome, existe: false }));
+      });
+      linhas = r; auto = !!dados.config.auto;
+    }
+    function dispHtml() {
+      var ds = dados.dispositivos;
+      var app = dados.app;
+      return '<div class="card"><div class="cab-card"><div><h2>Computadores</h2><p class="muted small" style="margin:4px 0 0">Onde a Izza Impressora está instalada. Ela abre com o Windows e fica perto do relógio.</p></div>' +
+        (pode ? '<button class="btn sm pri" id="imp-parear">+ Conectar um computador</button>' : '') + '</div>' +
+        codigoHtml() +
+        (ds.length ? '<div class="stack" style="margin-top:12px">' + ds.map(function (d) {
+          return '<div class="linha-item" style="display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap">' +
+            '<div><b>' + esc(d.nome) + '</b> ' + (d.online ? '<span class="badge ok"><span class="dot"></span>ligado</span>' : '<span class="badge err">desligado</span>') +
+            '<div class="muted small">' + esc((d.impressoras || []).length + ' impressora(s) no Windows · versão ' + (d.versao || '?') + (d.online ? '' : ' · visto ' + (d.vistoEm ? dataHora(d.vistoEm) : 'nunca'))) +
+            (app && d.versao && d.versao !== app.versao ? ' · atualiza sozinho para a ' + esc(app.versao) : '') + '</div></div>' +
+            (pode ? '<button class="btn sm" data-remover="' + esc(d.id) + '">Remover</button>' : '') + '</div>';
+        }).join('') + '</div>' : '<div class="vazio" style="margin-top:12px">Nenhum computador conectado ainda. Instale a Izza Impressora no computador da impressora e conecte com o código.</div>') +
+        (app ? '<p class="small" style="margin:14px 0 0"><a href="impressora/IzzaImpressora.exe" download>⬇ Baixar a Izza Impressora para Windows</a> <span class="muted">(versão ' + esc(app.versao) + ', Windows 10 ou 11)</span></p>' : '') +
+        '</div>';
+    }
+    function codigoHtml() {
+      if (!codigo || new Date(codigo.expiraEm) < new Date() || dados.dispositivos.length > codigo.antes) { codigo = null; return ''; }
+      return '<div class="aviso" style="margin-top:12px;text-align:center">No computador da impressora, abra a <b>Izza Impressora</b> e digite o código:' +
+        '<div style="font:700 34px/1.2 Consolas,monospace;letter-spacing:6px;margin:8px 0;color:var(--text)">' + esc(codigo.codigo.slice(0, 3) + ' ' + codigo.codigo.slice(3)) + '</div>' +
+        '<span class="small">Vale por 10 minutos e para um computador só. Ainda não instalou? <a href="impressora/IzzaImpressora.exe" download>Baixe aqui</a>, abra o arquivo e clique em Instalar.</span></div>';
+    }
+    function impHtml() {
+      if (!dados.dispositivos.length) return '';
+      return '<div class="card"><h2>O que cada impressora imprime</h2>' +
+        '<label class="fp-radio" style="margin:12px 0"><input type="checkbox" id="imp-auto"' + (auto ? ' checked' : '') + dis + '> <span><b>Imprimir sozinho cada pedido novo</b> que a Izza fechar, nas impressoras ligadas abaixo.</span></label>' +
+        (linhas.length ? '<div class="tabela-wrap"><table><thead><tr><th>Usar</th><th>Impressora</th><th>Tipo</th><th>Comanda</th><th>Papel</th><th>Vias</th><th></th></tr></thead><tbody>' + linhas.map(function (r, i) {
+          var sel = function (k, ops) { return '<select data-k="' + k + '" data-i="' + i + '"' + dis + '>' + ops.map(function (o) { return '<option value="' + o[0] + '"' + (String(r[k]) === String(o[0]) ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select>'; };
+          return '<tr' + (r.existe ? '' : ' class="muted"') + '><td><input type="checkbox" data-k="ativa" data-i="' + i + '"' + (r.ativa ? ' checked' : '') + dis + '></td>' +
+            '<td><b>' + esc(r.nome) + '</b>' + (r.padrao ? ' <span class="badge">padrão</span>' : '') + '<div class="muted small">' + esc(r.nomeDisp) + (r.existe ? '' : ' · não aparece mais no Windows') + '</div></td>' +
+            '<td>' + sel('tipo', [['termica', 'Térmica'], ['comum', 'Comum']]) + '</td>' +
+            '<td>' + sel('modelo', [['completa', 'Completa'], ['cozinha', 'Cozinha (sem valores)']]) + '</td>' +
+            '<td>' + sel('papel', [[80, '80 mm'], [58, '58 mm']]) + '</td>' +
+            '<td>' + sel('vias', [[1, '1'], [2, '2'], [3, '3']]) + '</td>' +
+            '<td>' + (r.id && r.ativa ? '<button class="btn sm" data-teste="' + esc(r.id) + '">Teste</button>' : '') + '</td></tr>';
+        }).join('') + '</tbody></table></div>' : '<div class="vazio">O computador ainda não mandou a lista de impressoras. Ele manda assim que a Izza Impressora abre.</div>') +
+        '<p class="muted small" style="margin:12px 0 0"><b>Térmica</b>: impressora de comanda (Epson, Bematech, Elgin, Daruma…), com corte do papel. <b>Comum</b>: qualquer outra, pelo Windows. ' +
+        'O desenho da comanda é o da página <b>Comanda</b>. A de <b>cozinha</b> sai sem telefone, endereço, valores e canhoto.</p></div>';
+    }
+    function filaHtml() {
+      var f = dados.fila || [];
+      return '<div class="card"><h2>Últimas impressões</h2>' + (f.length ? '<div class="stack" style="margin-top:12px">' + f.slice(0, 20).map(function (j) {
+        var st = ST_IMP[j.status] || [j.status, ''];
+        return '<div style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap"><div><span class="badge ' + st[1] + '">' + st[0] + '</span> <b>' + esc(j.titulo) + '</b> <span class="muted small">' + esc(dataHora(j.em) + ' · ' + j.nomeImpressora + ' · ' + ({ auto: 'sozinho', painel: 'pelo painel', teste: 'teste' }[j.origem] || j.origem)) + '</span>' +
+          (j.erro ? '<div class="small" style="color:var(--danger)">' + esc(j.erro) + '</div>' : '') + '</div>' +
+          (j.status === 'impresso' || j.status === 'erro' ? '<button class="btn sm" data-reimprime="' + esc(j.id) + '">Imprimir de novo</button>' : '') + '</div>';
+      }).join('') + '</div>' : '<div class="vazio" style="margin-top:12px">Nada impresso ainda.</div>') + '</div>';
+    }
+    function desenha() {
+      var head = pag.querySelector('.page-head').outerHTML;
+      pag.innerHTML = head + '<div class="aviso">A <b>Izza Impressora</b> é um programa pequeno para Windows. Ela só conversa com o painel pela internet: não precisa abrir porta no roteador nem de outro programa.</div>' +
+        '<div id="imp-disp">' + dispHtml() + '</div><div id="imp-imp">' + impHtml() + '</div><div id="imp-fila">' + filaHtml() + '</div>';
+      liga();
+    }
+    function atualizaParcial() {
+      $('#imp-disp', pag).innerHTML = dispHtml();
+      $('#imp-fila', pag).innerHTML = filaHtml();
+      if (!sujo) { montaLinhas(); $('#imp-imp', pag).innerHTML = impHtml(); }
+      liga();
+    }
+    function marcaSujo() { sujo = true; var b = $('#imp-salvar', pag); if (b) b.disabled = false; }
+    function liga() {
+      var b = $('#imp-salvar', pag); if (b) { b.disabled = !sujo; b.onclick = salva; }
+      if ($('#imp-parear', pag)) $('#imp-parear', pag).onclick = function () {
+        api('imp_codigo', { loja: l.id }).then(function (j) {
+          codigo = { codigo: j.codigo, expiraEm: j.expiraEm, antes: dados.dispositivos.length };
+          $('#imp-disp', pag).innerHTML = dispHtml(); liga();
+        }).catch(function (e) { toast(e.message, true); });
+      };
+      pag.querySelectorAll('[data-remover]').forEach(function (x) {
+        x.onclick = function () {
+          var d = dados.dispositivos.filter(function (y) { return y.id === x.getAttribute('data-remover'); })[0];
+          confirma('Remover o computador ' + (d ? d.nome : '') + '? As comandas param de sair nas impressoras dele até conectar de novo.', 'Remover', function () {
+            return api('imp_remover', { loja: l.id, id: x.getAttribute('data-remover') }).then(function () { toast('Computador removido.'); sujo = false; return recarrega(); });
+          });
+        };
+      });
+      pag.querySelectorAll('#imp-imp [data-k]').forEach(function (x) {
+        x.onchange = function () { var r = linhas[+x.getAttribute('data-i')], k = x.getAttribute('data-k'); r[k] = k === 'ativa' ? x.checked : (k === 'vias' || k === 'papel' ? +x.value : x.value); marcaSujo(); };
+      });
+      if ($('#imp-auto', pag)) $('#imp-auto', pag).onchange = function () { auto = this.checked; marcaSujo(); };
+      pag.querySelectorAll('[data-teste]').forEach(function (x) { x.onclick = function () { imprimeNaFila({ loja: l.id, teste: true, impressora: x.getAttribute('data-teste') }).then(recarrega); }; });
+      pag.querySelectorAll('[data-reimprime]').forEach(function (x) { x.onclick = function () { imprimeNaFila({ loja: l.id, reimprimir: x.getAttribute('data-reimprime') }).then(recarrega); }; });
+    }
+    function salva() {
+      var lista = linhas.filter(function (r) { return r.ativa || r.id; }).map(function (r) { return { id: r.id, disp: r.disp, nome: r.nome, ativa: r.ativa, tipo: r.tipo, modelo: r.modelo, vias: r.vias, papel: r.papel }; });
+      api('imp_config', { loja: l.id, auto: auto, impressoras: lista }).then(function () { toast('Impressoras salvas.'); sujo = false; return recarrega(); }).catch(function (e) { toast(e.message, true); });
+    }
+    function recarrega() {
+      return api('impressao&loja=' + encodeURIComponent(l.id)).then(function (j) {
+        var primeira = !dados; dados = j;
+        if (primeira) { montaLinhas(); desenha(); } else atualizaParcial();
+      });
+    }
+    recarrega().catch(function (e) { pag.innerHTML = '<div class="card vazio">' + esc(e.message) + '</div>'; });
+    // enquanto a pagina esta aberta: estado dos computadores e da fila a cada 5 s
+    timer = setInterval(function () { if (!pag.isConnected) { clearInterval(timer); return; } recarrega().catch(function () {}); }, 5000);
   }
 
   // ------------------------------------------------------------- Integrações

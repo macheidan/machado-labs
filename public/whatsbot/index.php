@@ -12,7 +12,7 @@ header('Referrer-Policy: no-referrer');
 
 $db = db_load();
 $eu = current_user($db);
-$v = '20261123r';
+$v = '20261123s';
 ?><!doctype html>
 <html lang="pt-BR">
 <head>
