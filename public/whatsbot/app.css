@@ -117,7 +117,7 @@ a { color: var(--accent); }
 .btn.link { border: 0; background: none; color: var(--accent); padding: 4px 6px; }
 .btn.link.perigo { color: var(--danger); background: none; }
 .btn:disabled { opacity: .5; cursor: default; }
-input[type=text], input[type=email], input[type=tel], input[type=time], input[type=number], select, textarea {
+input[type=text], input[type=email], input[type=tel], input[type=time], input[type=number], input[type=search], select, textarea {
   border: 1px solid var(--input-border); background: var(--card); border-radius: 8px; padding: 9px 12px; font-size: 14px; width: 100%; outline: none; }
 input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
 textarea { resize: vertical; min-height: 80px; }
@@ -216,3 +216,11 @@ ol.fluxo .n { width: 28px; height: 28px; border-radius: 99px; background: var(--
 input[type=checkbox] { accent-color: var(--accent); width: 16px; height: 16px; }
 .pagina { display: flex; flex-direction: column; gap: 20px; }
 .toast { visibility: hidden; } .toast.on { visibility: visible; }
+
+/* frases fixas */
+.frase { border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
+.frase-top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; margin-bottom: 8px; }
+.balao { white-space: pre-wrap; word-break: break-word; background: var(--accent-light); border-radius: 12px 12px 12px 4px; padding: 8px 12px; font-size: 14px; line-height: 1.45; }
+.balao.var { background: var(--border-2); margin-top: 6px; }
+.filtros-frase { display: grid; grid-template-columns: 1fr 220px 200px; gap: 8px; }
+@media (max-width: 720px) { .filtros-frase { grid-template-columns: 1fr; } }

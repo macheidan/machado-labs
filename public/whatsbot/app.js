@@ -89,6 +89,7 @@
       { id: 'numeros', ic: '☎', nome: 'Números', cont: l ? l.config.numeros.length : 0 },
       { id: 'funcionamento', ic: '◷', nome: 'Funcionamento' },
       { id: 'fluxo', ic: '➜', nome: 'Fluxo de atendimento' },
+      { id: 'frases', ic: '❝', nome: 'Frases fixas' },
       { id: 'ficha', ic: '☑', nome: 'Particularidades' },
       { id: 'instrucoes', ic: '¶', nome: 'Instruções e regras' },
       { id: 'ferramentas', ic: '⚙', nome: 'Ferramentas' },
@@ -118,7 +119,7 @@
 
     var c = $('#content');
     if (!l && S.pagina !== 'lojas') { c.innerHTML = '<div class="card vazio">Nenhuma loja ainda.' + (eu.superadmin ? ' Cadastre a primeira em <b>Lojas</b>.' : '') + '</div>'; return; }
-    ({ geral: pgGeral, numeros: pgNumeros, regras: pgRegras, funcionamento: pgFuncionamento, fluxo: pgFluxo, ficha: pgFicha, instrucoes: pgInstrucoes, ferramentas: pgFerramentas, equipe: pgEquipe, historico: pgHistorico, lojas: pgLojas })[S.pagina](c, l);
+    ({ geral: pgGeral, numeros: pgNumeros, regras: pgRegras, funcionamento: pgFuncionamento, fluxo: pgFluxo, frases: pgFrases, ficha: pgFicha, instrucoes: pgInstrucoes, ferramentas: pgFerramentas, equipe: pgEquipe, historico: pgHistorico, lojas: pgLojas })[S.pagina](c, l);
   }
 
   function ir(p) {
@@ -397,6 +398,54 @@
       '</ol></div><div class="card"><h2>Desvios</h2><p class="desc">O que muda o caminho.</p><div class="stack">' +
       FLUXO_DESVIOS.map(function (p) { return '<div class="regra off"><div><b>' + esc(p[0]) + '</b><div class="muted small" style="margin-top:2px">' + esc(p[1]) + '</div></div></div>'; }).join('') +
       '</div></div></div>';
+  }
+
+  // ------------------------------------------------------------- Frases fixas
+  // Catalogo que o bot manda (src/frases.js, junto dos textos padrao): o que ele diz em cada
+  // etapa, montado das constantes do codigo, entao acompanha o que esta no ar. Somente visualizacao.
+  function pgFrases(el, l) {
+    var cat = l.padroes && l.padroes.frases;
+    var head = '<div class="page-head"><div><h1>Frases fixas</h1><p>O que a Izza responde em cada etapa, com as variações. Somente visualização.</p></div></div>';
+    if (!cat || !cat.frases || !cat.frases.length) { el.innerHTML = head + '<div class="card vazio">O bot desta loja ainda não mandou as frases. Elas chegam quando ele reinicia com a versão nova.</div>'; return; }
+    var pag = document.createElement('div'); pag.className = 'pagina'; el.innerHTML = ''; el.appendChild(pag);
+    var etapas = cat.etapas || [];
+    cat.frases.forEach(function (f) { if (etapas.indexOf(f.etapa) < 0) etapas.push(f.etapa); });
+    var filtro = { etapa: '', tipo: '', q: '' };
+    var TIPO = { fixa: ['Fixa', 'ok', 'Sai exatamente assim, escrita pelo código.'], prompt: ['Orientada', 'warn', 'O modelo é instruído a usar esta frase; pode variar um pouco.'], dinamica: ['Montada', 'acc', 'Texto fixo com partes que vêm do sistema (nome, preço, cardápio).'] };
+    var nT = function (t) { return cat.frases.filter(function (f) { return f.tipo === t; }).length; };
+    pag.innerHTML = head +
+      '<div class="aviso">Partes entre chaves, como <code>{nome}</code> ou <code>{preco}</code>, são preenchidas na hora com o dado do cliente ou do sistema da loja. ' +
+      (l.padroes.recebidoEm ? 'Atualizado pelo bot em ' + esc(dataHora(l.padroes.recebidoEm)) + '.' : '') + '</div>' +
+      '<div class="card"><div class="filtros-frase">' +
+      '<input id="fq" type="search" placeholder="Buscar frase…">' +
+      '<select id="fe"><option value="">Todas as etapas</option>' + etapas.map(function (e) { return '<option>' + esc(e) + '</option>'; }).join('') + '</select>' +
+      '<select id="ft"><option value="">Todos os tipos</option>' + Object.keys(TIPO).filter(nT).map(function (k) { return '<option value="' + k + '">' + TIPO[k][0] + ' (' + nT(k) + ')</option>'; }).join('') + '</select>' +
+      '</div><p class="muted small" style="margin:10px 0 0">' + Object.keys(TIPO).filter(nT).map(function (k) { return '<span class="badge ' + TIPO[k][1] + '">' + TIPO[k][0] + '</span> ' + esc(TIPO[k][2]); }).join(' &nbsp; ') + '</p></div>' +
+      '<div id="flist"></div>';
+    function desenha() {
+      var q = filtro.q.toLowerCase(), html = '';
+      etapas.forEach(function (e, i) {
+        if (filtro.etapa && filtro.etapa !== e) return;
+        var fs = cat.frases.filter(function (f) {
+          if (f.etapa !== e || (filtro.tipo && f.tipo !== filtro.tipo)) return false;
+          return !q || [f.texto, f.quando].concat(f.variacoes || []).join(' ').toLowerCase().indexOf(q) >= 0;
+        });
+        if (!fs.length) return;
+        html += '<div class="card"><h2><span class="muted">' + (i + 1) + '.</span> ' + esc(e) + ' <span class="badge">' + fs.length + '</span></h2><div class="stack">' +
+          fs.map(function (f) {
+            var t = TIPO[f.tipo] || TIPO.fixa;
+            return '<div class="frase"><div class="frase-top"><span class="muted small">' + esc(f.quando || '') + '</span><span class="badge ' + t[1] + '">' + t[0] + '</span></div>' +
+              '<div class="balao">' + esc(f.texto) + '</div>' +
+              ((f.variacoes || []).length ? '<div class="muted small" style="margin:8px 0 4px">Variações</div>' + f.variacoes.map(function (v) { return '<div class="balao var">' + esc(v) + '</div>'; }).join('') : '') +
+              '</div>';
+          }).join('') + '</div></div>';
+      });
+      $('#flist', pag).innerHTML = html || '<div class="card vazio">Nenhuma frase com esse filtro.</div>';
+    }
+    $('#fq', pag).addEventListener('input', function () { filtro.q = this.value; desenha(); });
+    $('#fe', pag).addEventListener('change', function () { filtro.etapa = this.value; desenha(); });
+    $('#ft', pag).addEventListener('change', function () { filtro.tipo = this.value; desenha(); });
+    desenha();
   }
 
   // ------------------------------------------------------------- Particularidades (ficha da loja)
