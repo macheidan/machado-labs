@@ -485,7 +485,6 @@
     ] },
     { titulo: 'Pizza', itens: [
       { id: 'fatiada', rot: 'Fatiada', t: 'radio', op: [['sim', 'Vem fatiada'], ['sePedir', 'Não vem; fatia se pedir'], ['nao', 'Não fatia']], p: 'sePedir' },
-      { id: 'fatias', rot: 'Fatias por tamanho', t: 'txt', p: 'Pequena 4 · Média 6 · Grande 8 · Super 16' },
     ] },
     { titulo: 'Pagamento', itens: [
       { id: 'dinheiro', rot: 'Dinheiro (pergunta o troco)', t: 'sn', p: 'sim' },
@@ -499,6 +498,9 @@
   ];
   var PIX_LOJA = { dame: 'pix@damepizza.com.br', lov: 'pix@lovpizza.com.br' };
   var SERVE = { pequena: '1 pessoa', media: '2 pessoas', grande: '2 a 3 pessoas', super: '3 a 4 pessoas' };
+  // fatias que a Izza informa hoje (persona.js do whatsbot)
+  var FATIAS = { pequena: 4, media: 6, grande: 8, super: 16 };
+  function chaveTam(nome) { return String(nome || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').split(/\s/)[0]; }
   function brl(v) { return v == null || v === '' ? '' : 'R$ ' + Number(v).toFixed(2).replace('.', ','); }
 
   function fichaPadrao(l) {
@@ -518,7 +520,7 @@
       // variante de preco (ex.: Grande 35cm (2), meio a meio) conta como o mesmo tamanho
       var vars = c.tamanhos.filter(function (v) { return v.variante && v.nome.indexOf(t.nome) === 0; });
       var min = Math.min.apply(null, [t.min].concat(vars.map(function (v) { return v.min; })));
-      return { nome: t.nome.replace(/\s*\d+\s*cm.*/, ''), cm: cm, preco: t.preco, min: min, max: t.max, serve: SERVE[t.id] || '', ativo: true };
+      return { nome: t.nome.replace(/\s*\d+\s*cm.*/, ''), cm: cm, preco: t.preco, min: min, max: t.max, serve: SERVE[t.id] || '', fatias: FATIAS[t.id] || '', ativo: true };
     }) : [];
     return { valores: v, tamanhos: tam, outras: [] };
   }
@@ -529,14 +531,16 @@
     var salva = l.config.ficha, f = JSON.parse(JSON.stringify(salva || fichaPadrao(l))), pode = l.pode.horario;
     var c = l.padroes && l.padroes.cardapio;
     f.valores = f.valores || {}; f.tamanhos = f.tamanhos || []; f.outras = f.outras || [];
+    // ficha salva antes da coluna de fatias: preenche com o que a Izza informa hoje
+    f.tamanhos.forEach(function (t) { if (t.fatias == null) t.fatias = FATIAS[chaveTam(t.nome)] || ''; });
     var dis = pode ? '' : ' disabled';
     el.innerHTML = '<div class="page-head"><div><h1>Particularidades</h1><p>A ficha da ' + esc(l.nome) + ': o que é próprio desta pizzaria.</p></div>' +
       (pode ? '<button class="btn pri" id="sv-ficha">Salvar ficha</button>' : '') + '</div>' +
       '<div class="aviso">Ficha de referência: o que se marca aqui fica registrado no painel e <b>ainda não muda o bot</b>. ' +
       (salva ? 'Última edição: ' + esc(quem(l.config.fichaPor)) + ' · ' + esc(dataHora(l.config.fichaEm)) + '.' : 'Veio pré-preenchida com o que a Izza faz hoje (código e cardápio do sistema). Confira e salve.') + '</div>' +
       // tamanhos
-      '<div class="card"><h2>Tamanhos</h2><p class="desc">Quais tamanhos a loja vende e quantos sabores cabem em cada um.</p>' +
-      '<div class="tabela-wrap"><table><thead><tr><th>Vende</th><th>Tamanho</th><th>cm</th><th>Preço base</th><th>Sabores (mín–máx)</th><th class="hide-m">Serve</th><th></th></tr></thead><tbody id="tb-tam"></tbody></table></div>' +
+      '<div class="card"><h2>Tamanhos</h2><p class="desc">Quais tamanhos a loja vende e quantos sabores e fatias tem cada um.</p>' +
+      '<div class="tabela-wrap"><table><thead><tr><th>Vende</th><th>Tamanho</th><th>cm</th><th>Preço base</th><th>Sabores (mín–máx)</th><th>Fatias</th><th class="hide-m">Serve</th><th></th></tr></thead><tbody id="tb-tam"></tbody></table></div>' +
       (pode ? '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" id="add-tam">+ Tamanho</button></div>' : '') + '</div>' +
       // checklist
       '<div class="grid-2">' + FICHA_GRUPOS.map(function (g) {
@@ -564,9 +568,10 @@
           '<td><input type="number" data-t="' + i + '" data-k="cm" value="' + esc(t.cm) + '"' + dis + ' style="width:70px"></td>' +
           '<td><input type="number" step="0.01" data-t="' + i + '" data-k="preco" value="' + esc(t.preco) + '"' + dis + ' style="width:100px"></td>' +
           '<td><div class="linha" style="gap:6px;flex-wrap:nowrap"><input type="number" min="1" data-t="' + i + '" data-k="min" value="' + esc(t.min) + '"' + dis + ' style="width:60px">–<input type="number" min="1" data-t="' + i + '" data-k="max" value="' + esc(t.max) + '"' + dis + ' style="width:60px"></div></td>' +
+          '<td><input type="number" min="1" data-t="' + i + '" data-k="fatias" value="' + esc(t.fatias) + '"' + dis + ' style="width:64px"></td>' +
           '<td class="hide-m"><input type="text" data-t="' + i + '" data-k="serve" value="' + esc(t.serve) + '"' + dis + ' style="min-width:110px"></td>' +
           '<td class="fim">' + (pode ? '<button class="btn link perigo" data-rm-t="' + i + '">Tirar</button>' : '') + '</td></tr>';
-      }).join('') : '<tr><td colspan="7"><div class="vazio">Nenhum tamanho.</div></td></tr>';
+      }).join('') : '<tr><td colspan="8"><div class="vazio">Nenhum tamanho.</div></td></tr>';
       el.querySelectorAll('[data-rm-t]').forEach(function (b) { b.onclick = function () { f.tamanhos.splice(+b.getAttribute('data-rm-t'), 1); desenhaTam(); }; });
     }
     function desenhaOutras() {
@@ -601,7 +606,7 @@
         seg.querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); });
       });
     });
-    $('#add-tam', el).onclick = function () { f.tamanhos.push({ nome: '', cm: '', preco: '', min: 1, max: 2, serve: '', ativo: true }); desenhaTam(); };
+    $('#add-tam', el).onclick = function () { f.tamanhos.push({ nome: '', cm: '', preco: '', min: 1, max: 2, fatias: '', serve: '', ativo: true }); desenhaTam(); };
     $('#add-outra', el).onclick = function () { f.outras.push({ texto: '', ativa: true }); desenhaOutras(); var ins = el.querySelectorAll('#outras input[type=text]'); if (ins.length) ins[ins.length - 1].focus(); };
     $('#sv-ficha', el).onclick = function () {
       f.outras = f.outras.filter(function (o) { return (o.texto || '').trim(); });
