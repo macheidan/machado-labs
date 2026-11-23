@@ -127,20 +127,23 @@
     var ps = paginas();
     if (S.pagina === 'ficha') S.pagina = 'regrasloja'; // pagina antiga "Particularidades"
     if (!ps.some(function (p) { return p.id === S.pagina; })) S.pagina = 'geral';
-    // Dia a dia fica solto; Loja, Conta e Plataforma moram dentro de "Configurações", que abre
-    // em acordeão. Clicar em Configurações vai para a primeira página de Loja (pedido do Fábio, 23/11).
-    var botao = function (p, sub) {
-      return '<button class="nav-item' + (sub ? ' sub' : '') + (p.id === S.pagina ? ' ativo' : '') + '" data-p="' + p.id + '"><span class="ic">' + p.ic + '</span>' + esc(p.nome) + (p.cont ? '<span class="cont' + (p.id === 'alertas' ? ' cont-alerta' : '') + '">' + p.cont + '</span>' : '') + '</button>';
+    // Dia a dia fica solto; Loja, Conta e Plataforma moram dentro de "Configurações", que abre em
+    // acordeão só com as categorias. As páginas de cada categoria viram abas no topo do conteúdo,
+    // como a intranet ("Escala | Escala 5x2 | ..."). Clicar em Configurações abre Loja na primeira
+    // aba; clicar numa categoria abre a primeira aba dela (pedido do Fábio, 23/11).
+    var botao = function (p) {
+      return '<button class="nav-item' + (p.id === S.pagina ? ' ativo' : '') + '" data-p="' + p.id + '"><span class="ic">' + p.ic + '</span>' + esc(p.nome) + (p.cont ? '<span class="cont' + (p.id === 'alertas' ? ' cont-alerta' : '') + '">' + p.cont + '</span>' : '') + '</button>';
     };
     var dia = ps.filter(function (p) { return p.g === 'Dia a dia'; }), cfg = ps.filter(function (p) { return p.g !== 'Dia a dia'; });
-    var naCfg = cfg.some(function (p) { return p.id === S.pagina; });
-    var cfgAberto = naCfg && !S.cfgFechado;
-    var gAnt = '';
-    $('#nav').innerHTML = '<div class="nav-grupo">Dia a dia</div>' + dia.map(function (p) { return botao(p); }).join('') +
-      (cfg.length ? '<button class="nav-item nav-cfg' + (naCfg ? ' dentro' : '') + '" data-cfg="1" aria-expanded="' + (cfgAberto ? 'true' : 'false') + '"><span class="ic">⚙</span>Configurações<span class="seta">' + (cfgAberto ? '▾' : '▸') + '</span></button>' +
-        (cfgAberto ? '<div class="nav-sub">' + cfg.map(function (p) {
-          var cab = p.g !== gAnt ? '<div class="nav-grupo sub">' + esc(p.g) + '</div>' : ''; gAnt = p.g;
-          return cab + botao(p, true);
+    var atual = cfg.filter(function (p) { return p.id === S.pagina; })[0];
+    var cfgAberto = atual ? !S.cfgFechado : !!S.cfgAberto;
+    var cats = [];
+    cfg.forEach(function (p) { if (cats.indexOf(p.g) < 0) cats.push(p.g); });
+    var ICS = { Loja: '⌂', Conta: '☺', Plataforma: '◈' };
+    $('#nav').innerHTML = '<div class="nav-grupo">Dia a dia</div>' + dia.map(botao).join('') +
+      (cfg.length ? '<button class="nav-item nav-cfg' + (atual ? ' dentro' : '') + '" data-cfg="1" aria-expanded="' + (cfgAberto ? 'true' : 'false') + '"><span class="ic">⚙</span>Configurações<span class="seta">' + (cfgAberto ? '▾' : '▸') + '</span></button>' +
+        (cfgAberto ? '<div class="nav-sub">' + cats.map(function (g) {
+          return '<button class="nav-item sub' + (atual && atual.g === g ? ' ativo' : '') + '" data-cat="' + esc(g) + '"><span class="ic">' + (ICS[g] || '•') + '</span>' + esc(g) + '</button>';
         }).join('') + '</div>' : '') : '');
     poePausaTopo(loja());
     if (typeof marcaContadores === 'function') marcaContadores();
@@ -148,6 +151,17 @@
     $('#side-foot').innerHTML = l ? 'Seu papel aqui: <b>' + esc(eu.superadmin ? 'Administrador geral' : PAPEIS[l.papel]) + '</b>' : '';
 
     var c = $('#content');
+    // pagina de Configuracoes: cabecalho da categoria com as abas, e a pagina embaixo
+    if (atual && (l || S.pagina === 'lojas')) {
+      var abas = cfg.filter(function (p) { return p.g === atual.g; });
+      c.innerHTML = '<div class="sub-bar"><div class="sub-titulo"><span class="ic">' + (ICS[atual.g] || '⚙') + '</span>' + esc(atual.g) + '</div>' +
+        '<div class="sub-abas" role="tablist">' + abas.map(function (p) {
+          return '<button type="button" role="tab" class="' + (p.id === S.pagina ? 'on' : '') + '" aria-selected="' + (p.id === S.pagina) + '" data-p="' + p.id + '">' + esc(p.nome) + '</button>';
+        }).join('') + '</div></div><div class="sub-conteudo" id="sub-conteudo"></div>';
+      c.querySelectorAll('.sub-abas [data-p]').forEach(function (b) { b.onclick = function () { ir(b.getAttribute('data-p')); }; });
+      var on = c.querySelector('.sub-abas .on'); if (on && on.scrollIntoView) try { on.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) {}
+      c = $('#sub-conteudo');
+    }
     if (!l && S.pagina !== 'lojas') { c.innerHTML = '<div class="card vazio">Nenhuma loja ainda.' + (eu.superadmin ? ' Cadastre a primeira em <b>Lojas</b>.' : '') + '</div>'; return; }
     ({ geral: pgGeral, numeros: pgNumeros, regras: pgRegras, funcionamento: pgFuncionamento, fluxo: pgFluxo, frases: pgFrases, pedidos: pgPedidos, quadro: pgQuadro, clientes: pgClientes, alertas: pgAlertas, comanda: pgComanda, impressoras: pgImpressoras, integracoes: pgIntegracoes, entrega: function (c, l) { pgFicha(c, l, 'entrega'); }, pagamento: function (c, l) { pgFicha(c, l, 'pagamento'); }, regrasloja: function (c, l) { pgFicha(c, l, 'regras'); }, tamanhos: function (c, l) { pgFicha(c, l, 'tamanhos'); }, instrucoes: pgInstrucoes, ferramentas: pgFerramentas, equipe: pgEquipe, historico: pgHistorico, lojas: pgLojas })[S.pagina](c, l);
   }
@@ -2138,11 +2152,18 @@
   $('#overlay').onclick = fecharMenu;
   $('#nav').addEventListener('click', function (ev) {
     var c = ev.target.closest('[data-cfg]');
+    var cfg = paginas().filter(function (p) { return p.g !== 'Dia a dia'; });
     if (c) {
-      var cfg = paginas().filter(function (p) { return p.g !== 'Dia a dia'; });
       var naCfg = cfg.some(function (p) { return p.id === S.pagina; });
       if (naCfg) { S.cfgFechado = !S.cfgFechado; desenhar(); return; } // ja esta dentro: so recolhe/abre
       if (cfg.length) ir(cfg[0].id);
+      return;
+    }
+    var cat = ev.target.closest('[data-cat]');
+    if (cat) {
+      var g = cat.getAttribute('data-cat');
+      var pri = cfg.filter(function (p) { return p.g === g; })[0];
+      if (pri && pri.g !== ((cfg.filter(function (p) { return p.id === S.pagina; })[0] || {}).g)) ir(pri.id);
       return;
     }
     var b = ev.target.closest('[data-p]'); if (b) ir(b.getAttribute('data-p'));
