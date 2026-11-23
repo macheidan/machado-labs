@@ -165,6 +165,13 @@ if ($action === 'estado' && $method === 'GET') {
     foreach ($db['lojas'] as $id => $l) {
         if (!papel_em($eu, $id)) continue;
         $st = json_read(data_dir() . '/status-' . $id . '.json', null);
+        $pad = pode($eu, $id, 'ver') ? json_read(data_dir() . '/padroes-' . $id . '.json', null) : null;
+        $cfg = isset($l['config']) ? $l['config'] : config_padrao();
+        // o prompt (instrucoes e ferramentas) e do produto: so o administrador geral ve
+        if (!$eu['superadmin']) {
+            if (is_array($pad)) unset($pad['instrucoes'], $pad['ferramentas']);
+            unset($cfg['instrucoes'], $cfg['ferramentas']);
+        }
         $lojas[] = array(
             'id' => $id,
             'nome' => isset($l['nome']) ? $l['nome'] : $id,
@@ -178,9 +185,9 @@ if ($action === 'estado' && $method === 'GET') {
                 'escopo' => pode($eu, $id, 'escopo'), 'equipe' => pode($eu, $id, 'equipe'),
                 'instrucoes' => pode($eu, $id, 'instrucoes'), 'clientes' => pode($eu, $id, 'clientes'),
             ),
-            'config' => isset($l['config']) ? $l['config'] : config_padrao(),
+            'config' => $cfg,
             'status' => $st,
-            'padroes' => pode($eu, $id, 'ver') ? json_read(data_dir() . '/padroes-' . $id . '.json', null) : null,
+            'padroes' => $pad,
         );
     }
     // equipe: quem tem papel em alguma loja que eu administro

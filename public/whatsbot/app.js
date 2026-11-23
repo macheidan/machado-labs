@@ -83,24 +83,30 @@
   }
 
   // ------------------------------------------------------------- casca
+  // Menu em grupos. Cada item aparece só para quem tem o papel: operador (dia a dia e números),
+  // gerente (+ cardápio, loja e clientes), dono (+ atendente virtual e equipe). Instruções e
+  // ferramentas (o prompt) ficam só para o administrador geral.
   function paginas() {
-    var l = loja(), p = [
-      { id: 'geral', ic: '◉', nome: 'Visão geral' },
-      { id: 'pedidos', ic: '▤', nome: 'Histórico de pedidos' },
-      { id: 'numeros', ic: '☎', nome: 'Números', cont: l ? l.config.numeros.length : 0 },
-      { id: 'funcionamento', ic: '◷', nome: 'Funcionamento' },
-      { id: 'fluxo', ic: '➜', nome: 'Fluxo de atendimento' },
-      { id: 'frases', ic: '❝', nome: 'Frases fixas' },
-      { id: 'tamanhos', ic: '◔', nome: 'Tamanhos e sabores' },
-      { id: 'ficha', ic: '☑', nome: 'Particularidades' },
-      { id: 'instrucoes', ic: '¶', nome: 'Instruções e regras' },
-      { id: 'ferramentas', ic: '⚙', nome: 'Ferramentas' },
+    var l = loja(), po = l ? l.pode : {}, adm = S.dados.eu.superadmin;
+    var p = [
+      { g: 'Dia a dia', id: 'geral', ic: '◉', nome: 'Visão geral', ve: true },
+      { g: 'Dia a dia', id: 'pedidos', ic: '▤', nome: 'Pedidos', ve: true },
+      { g: 'Dia a dia', id: 'clientes', ic: '☻', nome: 'Clientes', ve: po.clientes },
+      { g: 'Cardápio', id: 'tamanhos', ic: '◔', nome: 'Tamanhos e sabores', ve: po.horario },
+      { g: 'Loja', id: 'funcionamento', ic: '◷', nome: 'Horários', ve: po.horario },
+      { g: 'Loja', id: 'entrega', ic: '⛟', nome: 'Entrega', ve: po.horario },
+      { g: 'Loja', id: 'pagamento', ic: '$', nome: 'Pagamento', ve: po.horario },
+      { g: 'Loja', id: 'regrasloja', ic: '☑', nome: 'Regras da loja', ve: po.horario },
+      { g: 'Atendente virtual', id: 'frases', ic: '❝', nome: 'Frases fixas', ve: po.escopo },
+      { g: 'Atendente virtual', id: 'fluxo', ic: '➜', nome: 'Fluxo de atendimento', ve: po.escopo },
+      { g: 'Atendente virtual', id: 'numeros', ic: '☎', nome: 'Números', cont: l ? l.config.numeros.length : 0, ve: po.numeros },
+      { g: 'Conta', id: 'equipe', ic: '☺', nome: 'Equipe', ve: po.equipe },
+      { g: 'Conta', id: 'historico', ic: '≡', nome: 'Log', ve: true },
+      { g: 'Plataforma', id: 'instrucoes', ic: '¶', nome: 'Instruções e regras', ve: adm },
+      { g: 'Plataforma', id: 'ferramentas', ic: '⚙', nome: 'Ferramentas', ve: adm },
+      { g: 'Plataforma', id: 'lojas', ic: '⌂', nome: 'Lojas', ve: adm },
     ];
-    if (l && l.pode.clientes) p.splice(2, 0, { id: 'clientes', ic: '☻', nome: 'Clientes' });
-    if (l && l.pode.equipe) p.push({ id: 'equipe', ic: '☺', nome: 'Equipe' });
-    p.push({ id: 'historico', ic: '≡', nome: 'Log' });
-    if (S.dados.eu.superadmin) p.push({ id: 'lojas', ic: '⌂', nome: 'Lojas' });
-    return p;
+    return p.filter(function (x) { return x.ve; });
   }
 
   function desenhar() {
@@ -113,16 +119,19 @@
     $('#sair').onclick = sair;
 
     var ps = paginas();
+    if (S.pagina === 'ficha') S.pagina = 'regrasloja'; // pagina antiga "Particularidades"
     if (!ps.some(function (p) { return p.id === S.pagina; })) S.pagina = 'geral';
+    var gAnt = '';
     $('#nav').innerHTML = ps.map(function (p) {
-      return '<button class="nav-item' + (p.id === S.pagina ? ' ativo' : '') + '" data-p="' + p.id + '"><span class="ic">' + p.ic + '</span>' + esc(p.nome) + (p.cont ? '<span class="cont">' + p.cont + '</span>' : '') + '</button>';
+      var cab = p.g !== gAnt ? '<div class="nav-grupo">' + esc(p.g) + '</div>' : ''; gAnt = p.g;
+      return cab + '<button class="nav-item' + (p.id === S.pagina ? ' ativo' : '') + '" data-p="' + p.id + '"><span class="ic">' + p.ic + '</span>' + esc(p.nome) + (p.cont ? '<span class="cont">' + p.cont + '</span>' : '') + '</button>';
     }).join('');
     var l = loja();
     $('#side-foot').innerHTML = l ? 'Seu papel aqui: <b>' + esc(eu.superadmin ? 'Administrador geral' : PAPEIS[l.papel]) + '</b>' : '';
 
     var c = $('#content');
     if (!l && S.pagina !== 'lojas') { c.innerHTML = '<div class="card vazio">Nenhuma loja ainda.' + (eu.superadmin ? ' Cadastre a primeira em <b>Lojas</b>.' : '') + '</div>'; return; }
-    ({ geral: pgGeral, numeros: pgNumeros, regras: pgRegras, funcionamento: pgFuncionamento, fluxo: pgFluxo, frases: pgFrases, pedidos: pgPedidos, clientes: pgClientes, ficha: function (c, l) { pgFicha(c, l, 'ficha'); }, tamanhos: function (c, l) { pgFicha(c, l, 'tamanhos'); }, instrucoes: pgInstrucoes, ferramentas: pgFerramentas, equipe: pgEquipe, historico: pgHistorico, lojas: pgLojas })[S.pagina](c, l);
+    ({ geral: pgGeral, numeros: pgNumeros, regras: pgRegras, funcionamento: pgFuncionamento, fluxo: pgFluxo, frases: pgFrases, pedidos: pgPedidos, clientes: pgClientes, entrega: function (c, l) { pgFicha(c, l, 'entrega'); }, pagamento: function (c, l) { pgFicha(c, l, 'pagamento'); }, regrasloja: function (c, l) { pgFicha(c, l, 'regras'); }, tamanhos: function (c, l) { pgFicha(c, l, 'tamanhos'); }, instrucoes: pgInstrucoes, ferramentas: pgFerramentas, equipe: pgEquipe, historico: pgHistorico, lojas: pgLojas })[S.pagina](c, l);
   }
 
   function ir(p) {
@@ -179,8 +188,9 @@
       '<div class="grid-2">' +
         '<div class="card"><h2>Atalhos</h2><p class="desc">O que mais se faz por aqui.</p><div class="stack">' +
           (l.pode.numeros ? '<button class="btn" data-ir="numeros" data-novo="bloqueado">+ Bloquear um número</button>' : '') +
-          '<button class="btn" data-ir="instrucoes">Ver instruções e regras da Izza</button>' +
-          '<button class="btn" data-ir="funcionamento">Horário e faixa de atendimento</button>' +
+          '<button class="btn" data-ir="pedidos">Ver os pedidos</button>' +
+          (l.pode.horario ? '<button class="btn" data-ir="tamanhos">Tamanhos, sabores e preços</button>' : '') +
+          (l.pode.horario ? '<button class="btn" data-ir="funcionamento">Horário e faixa de atendimento</button>' : '') +
         '</div></div>' +
         '<div class="card"><h2>Últimas mudanças</h2><p class="desc">Quem mexeu em quê nesta loja.</p>' +
           (logs.length ? logs.map(itemLog).join('') : '<div class="vazio">Nada ainda.</div>') +
@@ -551,7 +561,14 @@
 
   // Uma ficha so (config.ficha), mostrada em duas paginas: "Tamanhos e sabores" (tamanhos,
   // regra de preco e o cardapio editavel) e "Particularidades" (o resto). Cada uma salva a ficha inteira.
-  var GRUPO_SABORES = 'Regra de preço';
+  // Em que pagina fica cada bloco da ficha. Todas salvam a ficha inteira.
+  var FICHA_PAG = { 'Atendimento': 'regras', 'Entrega': 'entrega', 'Regra de preço': 'tamanhos', 'Borda, adicionais e bebida': 'tamanhos', 'Pizza': 'tamanhos', 'Pagamento': 'pagamento' };
+  var FICHA_CAB = {
+    tamanhos: ['Tamanhos e sabores', function (n) { return 'Tamanhos, sabores, preços, bordas e bebidas da ' + n + '.'; }],
+    entrega: ['Entrega', function (n) { return 'De onde a ' + n + ' entrega, até onde e quanto cobra.'; }],
+    pagamento: ['Pagamento', function (n) { return 'Como o cliente da ' + n + ' pode pagar.'; }],
+    regras: ['Regras da loja', function (n) { return 'Como a ' + n + ' atende e as regras próprias da casa.'; }],
+  };
   function pgFicha(el, l, modo) {
     var tam = modo === 'tamanhos';
     // conteiner proprio: os ouvintes de evento morrem junto quando a pagina troca
@@ -574,9 +591,9 @@
     if (!f.cardapio) f.cardapio = pad.cardapio;
     f.bairros = f.bairros || [];
     var dis = pode ? '' : ' disabled';
-    var grupos = FICHA_GRUPOS.filter(function (g) { return (g.titulo === GRUPO_SABORES) === tam; });
-    el.innerHTML = '<div class="page-head"><div><h1>' + (tam ? 'Tamanhos e sabores' : 'Particularidades') + '</h1><p>' +
-      (tam ? 'Tamanhos, sabores e preços da ' + esc(l.nome) + '.' : 'A ficha da ' + esc(l.nome) + ': o que é próprio desta pizzaria.') + '</p></div>' +
+    var grupos = FICHA_GRUPOS.filter(function (g) { return (FICHA_PAG[g.titulo] || 'regras') === modo; });
+    var cab = FICHA_CAB[modo] || FICHA_CAB.regras;
+    el.innerHTML = '<div class="page-head"><div><h1>' + cab[0] + '</h1><p>' + esc(cab[1](l.nome)) + '</p></div>' +
       (pode ? '<button class="btn pri" id="sv-ficha">Salvar ficha</button>' : '') + '</div>' +
       '<div class="aviso">Ficha de referência: o que se marca aqui fica registrado no painel e <b>ainda não muda o bot</b>. ' +
       (salva ? 'Última edição: ' + esc(quem(l.config.fichaPor)) + ' · ' + esc(dataHora(l.config.fichaEm)) + '.' : 'Veio pré-preenchida com o que a Izza faz hoje (código e cardápio do sistema). Confira e salve.') + '</div>' +
@@ -585,7 +602,7 @@
       '<div class="tabela-wrap"><table><thead><tr><th>Vende</th><th>Tamanho</th><th>cm</th><th>Preço base</th><th>Sabores (mín–máx)</th><th>Fatias</th><th class="hide-m">Serve</th><th></th></tr></thead><tbody id="tb-tam"></tbody></table></div>' +
       (pode ? '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" id="add-tam">+ Tamanho</button></div>' : '') + '</div>') +
       // checklist
-      '<div class="' + (tam ? '' : 'grid-2') + '">' + grupos.map(function (g) {
+      '<div class="' + (grupos.length > 1 ? 'grid-2' : '') + '">' + grupos.map(function (g) {
         return '<div class="card"><h2>' + esc(g.titulo) + '</h2><div class="stack" style="margin-top:12px">' + g.itens.map(function (it) {
           var v = f.valores[it.id] == null ? '' : f.valores[it.id];
           if (it.t === 'sn') return '<div class="item-ficha"><span>' + esc(it.rot) + '</span><div class="seg" data-sn="' + it.id + '">' +
@@ -597,10 +614,10 @@
         }).join('') + '</div></div>';
       }).join('') + '</div>' +
       // bairros (so com taxa por bairro)
-      (tam ? '' : '<div class="card" id="card-bairros"' + (f.valores.taxaModelo === 'bairro' ? '' : ' hidden') + '><h2>Bairros atendidos</h2>' +
+      (modo !== 'entrega' ? '' : '<div class="card" id="card-bairros"' + (f.valores.taxaModelo === 'bairro' ? '' : ' hidden') + '><h2>Bairros atendidos</h2>' +
       '<p class="desc">Entrega por bairro: marque onde a loja entrega e, se quiser, a taxa de cada bairro. A lista vem do mapa (OpenStreetMap) pela cidade do bloco Entrega.</p><div id="bairros-ed"></div></div>') +
       // outras
-      (tam ? '' : '<div class="card"><h2>Outras particularidades</h2><p class="desc">O que não coube acima: regra da casa, exceção, combinado com o cliente.</p><div class="stack" id="outras"></div>' +
+      (modo !== 'regras' ? '' : '<div class="card"><h2>Outras regras</h2><p class="desc">O que não coube nas outras páginas: regra da casa, exceção, combinado com o cliente.</p><div class="stack" id="outras"></div>' +
       (pode ? '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" id="add-outra">+ Particularidade</button></div>' : '') + '</div>') +
       // cardapio do sistema
       (!tam ? '' : '<div class="card"><div class="cab-card"><div><h2>Sabores e preços</h2><p class="desc">Começa igual ao cardápio do sistema da loja (planilha CARDAPIO). O que se muda aqui fica na ficha: <b>não muda a comanda nem o bot</b>. ' +

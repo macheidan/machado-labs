@@ -12,7 +12,7 @@ header('Referrer-Policy: no-referrer');
 
 $db = db_load();
 $eu = current_user($db);
-$v = '20261123e';
+$v = '20261123f';
 ?><!doctype html>
 <html lang="pt-BR">
 <head>
@@ -74,7 +74,6 @@ $v = '20261123e';
 <div id="app" class="layout">
   <aside class="sidebar" id="sidebar">
     <div class="marca"><span class="logo">iz</span><span>Izza · painel</span></div>
-    <div class="side-label">Menu</div>
     <nav id="nav"></nav>
     <div class="side-foot muted" id="side-foot"></div>
   </aside>
