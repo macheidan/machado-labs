@@ -1,0 +1,25 @@
+DirectoryIndex index.php
+Options -Indexes
+
+# banco, sessoes e status do bot so saem pelo api.php
+<FilesMatch "\.(dat|log|json|lock|tmp.*)$">
+  Require all denied
+</FilesMatch>
+
+# lib.php so existe para ser incluido pelos outros
+<Files "lib.php">
+  Require all denied
+</Files>
+
+# o Authorization do bot chega ao PHP (Apache/CGI costuma engolir)
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTP:Authorization} .
+  RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header set X-Robots-Tag "noindex, nofollow"
+  Header set Referrer-Policy "no-referrer"
+  Header set X-Frame-Options "DENY"
+</IfModule>
