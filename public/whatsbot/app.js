@@ -1259,18 +1259,27 @@
   };
   var VIVO = { timer: null, loja: null, alertas: [], conhecidos: null, pedConhecidos: null, versao: '', recarregaPedidos: null };
   function somLigado() { try { return localStorage.getItem('wb_som') !== '0'; } catch (e) { return true; } }
-  var audioCtx = null;
-  function bip(vezes) {
-    if (!somLigado()) return;
+  // Os mesmos sons do Titan (pedidos dame lov/public/index.html): harpa para pedido e mensagem
+  // chegando (escolhida pelo Fábio em 08/10/2026) e bipe quadrado so para impressao que falhou.
+  var audioCtx = null, harpa = null;
+  function tocaHarpa() {
+    try { harpa = harpa || new Audio('sons/alerta-harpa.wav'); harpa.currentTime = 0; harpa.play().catch(function () {}); } catch (e) {}
+  }
+  function tocaBipe(hz) {
     try {
       audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-      for (var i = 0; i < vezes; i++) {
-        var o = audioCtx.createOscillator(), g = audioCtx.createGain(), t = audioCtx.currentTime + i * 0.3;
-        o.frequency.value = 880; o.connect(g); g.connect(audioCtx.destination);
-        g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.3, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.24);
-        o.start(t); o.stop(t + 0.26);
-      }
+      var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.connect(g); g.connect(audioCtx.destination);
+      o.frequency.value = hz || 880; o.type = 'square';
+      g.gain.setValueAtTime(0.18, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+      o.start(); o.stop(audioCtx.currentTime + 0.4);
     } catch (e) {}
+  }
+  // tipo 'impressao' = bipe; o resto (pedido, atendente, aprovacao, reclamacao) = harpa
+  function som(tipo) {
+    if (!somLigado()) return;
+    if (tipo === 'impressao') tocaBipe(880); else tocaHarpa();
   }
   function notifica(titulo, corpo, tag) {
     try { if (window.Notification && Notification.permission === 'granted') new Notification(titulo, { body: corpo || '', tag: tag || titulo }); } catch (e) {}
@@ -1311,7 +1320,7 @@
       marcaContadores();
       if (novos.length) {
         var urg = novos.some(function (a) { return a.nivel === 'urgente'; });
-        bip(urg ? 3 : 1);
+        som(novos.every(function (a) { return a.tipo === 'impressao'; }) ? 'impressao' : 'harpa');
         novos.forEach(function (a) { notifica(a.titulo || 'Alerta da Izza', [a.nome, fmtTel(a.telefone), a.texto].filter(Boolean).join(' · '), a.id); });
         toast((novos.length === 1 ? novos[0].titulo : novos.length + ' alertas novos') + (novos[0].nome ? ' · ' + novos[0].nome : ''), urg);
       }
@@ -1322,7 +1331,7 @@
         var mudou = VIVO.versao && VIVO.versao !== j.pedidosVersao;
         VIVO.versao = j.pedidosVersao;
         if (pedNovos.length) {
-          if (!novos.length) bip(1);
+          if (!novos.length) som('harpa');
           pedNovos.forEach(function (p) { notifica('Pedido novo pelo WhatsApp', [p.nome, p.total != null ? brl(p.total) : ''].filter(Boolean).join(' · '), 'ped-' + p.id); });
           if (!novos.length) toast('Pedido novo' + (pedNovos[0].nome ? ' · ' + pedNovos[0].nome : ''));
         }
@@ -1361,7 +1370,7 @@
       pag.querySelectorAll('#al-ver button').forEach(function (b) { b.onclick = function () { ver = b.getAttribute('data-v'); desenha(); }; });
       if ($('#al-notif', pag)) $('#al-notif', pag).onclick = function () { Notification.requestPermission().then(desenha); };
       $('#al-som', pag).onchange = function () { try { localStorage.setItem('wb_som', this.checked ? '1' : '0'); } catch (e) {} };
-      $('#al-tocar', pag).onclick = function () { var s = somLigado(); try { localStorage.setItem('wb_som', '1'); } catch (e) {} bip(3); if (!s) try { localStorage.setItem('wb_som', '0'); } catch (e) {} };
+      $('#al-tocar', pag).onclick = function () { var s = somLigado(); try { localStorage.setItem('wb_som', '1'); } catch (e) {} som('harpa'); if (!s) try { localStorage.setItem('wb_som', '0'); } catch (e) {} };
       pag.querySelectorAll('[data-resolve]').forEach(function (b) {
         b.onclick = function () { resolve({ loja: l.id, id: b.getAttribute('data-resolve') }); };
       });
