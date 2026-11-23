@@ -502,15 +502,50 @@
       { id: 'fatiada', rot: 'Fatiada', t: 'radio', op: [['sim', 'Vem fatiada'], ['sePedir', 'Não vem; fatia se pedir'], ['nao', 'Não fatia']], p: 'sePedir' },
     ] },
     { titulo: 'Pagamento', itens: [
-      { id: 'dinheiro', rot: 'Dinheiro (pergunta o troco)', t: 'sn', p: 'sim' },
-      { id: 'cartao', rot: 'Cartão na entrega', t: 'sn', p: 'sim' },
+      { id: 'dinheiro', rot: 'Aceita dinheiro', t: 'sn', p: 'sim' },
+      { id: 'trocoPergunta', rot: 'Pergunta o troco', t: 'sn', p: 'sim' },
+      { id: 'cartao', rot: 'Oferecer pagamento com cartão de crédito na entrega', t: 'sn', p: 'sim' },
       { id: 'cartaoBandeira', rot: 'Pergunta a bandeira do cartão', t: 'sn', p: 'nao' },
       { id: 'pix', rot: 'Pix antecipado', t: 'sn', p: 'sim' },
       { id: 'pixChave', rot: 'Chave Pix', t: 'txt', p: 'loja:pix' },
       { id: 'pixHumano', rot: 'Comprovante conferido por uma pessoa (a Izza nunca confirma)', t: 'sn', p: 'sim' },
       { id: 'vale', rot: 'Vale-refeição', t: 'sn', p: '' },
+      { id: 'cpfNota', rot: 'CPF ou CNPJ na nota', t: 'radio', op: [['nao', 'Não solicitar CPF ou CNPJ na nota'], ['permite', 'Permitir que o cliente peça CPF ou CNPJ na nota'], ['obriga', 'CPF ou CNPJ na nota é obrigatório']], p: '' },
+      { id: 'descontoDinheiro', rot: 'Desconto para pagamento em dinheiro (%)', t: 'num', p: '' },
     ] },
   ];
+  // Formas de pagamento na entrega. tipo dá a cor da etiqueta; sig é a sigla (sem logo de marca).
+  // Vem marcado o que está ligado no sistema de delivery da loja (print do Fábio, 23/11/2026).
+  var FORMAS_PAG = [
+    { id: 'alelo', nome: 'Alelo Refeição', sig: 'ALELO', tipo: 'ref' },
+    { id: 'amex', nome: 'American Express', sig: 'AMEX', tipo: 'cred', on: 1 },
+    { id: 'aura', nome: 'Aura', sig: 'AURA', tipo: 'cred' },
+    { id: 'banrisul', nome: 'Banrisul', sig: 'BANRI', tipo: 'deb', on: 1 },
+    { id: 'diners', nome: 'Diners', sig: 'DINERS', tipo: 'cred' },
+    { id: 'dinersclub', nome: 'Diners Club', sig: 'DINERS', tipo: 'cred' },
+    { id: 'dinheiro', nome: 'Dinheiro', sig: 'R$', tipo: 'din', on: 1 },
+    { id: 'discover', nome: 'Discover', sig: 'DISC', tipo: 'cred' },
+    { id: 'elo', nome: 'Elo', sig: 'ELO', tipo: 'cred', on: 1 },
+    { id: 'greencard', nome: 'Green Card Refeição', sig: 'GREEN', tipo: 'ref' },
+    { id: 'hiper', nome: 'Hiper', sig: 'HIPER', tipo: 'cred' },
+    { id: 'hipercard', nome: 'Hipercard', sig: 'HIPER', tipo: 'cred', on: 1 },
+    { id: 'jcb', nome: 'JCB', sig: 'JCB', tipo: 'cred' },
+    { id: 'maestro', nome: 'M. Maestro (débito)', sig: 'MAEST', tipo: 'deb', on: 1 },
+    { id: 'mastercard', nome: 'Mastercard (crédito)', sig: 'MC', tipo: 'cred', on: 1 },
+    { id: 'redeshop', nome: 'Redeshop', sig: 'REDE', tipo: 'deb' },
+    { id: 'sodexo', nome: 'Sodexo Refeição', sig: 'SODEXO', tipo: 'ref', on: 1 },
+    { id: 'ticket', nome: 'Ticket Restaurante', sig: 'TICKET', tipo: 'ref', on: 1 },
+    { id: 'visa', nome: 'Visa (crédito)', sig: 'VISA', tipo: 'cred', on: 1 },
+    { id: 'visaelectron', nome: 'Visa Electron (débito)', sig: 'ELECT', tipo: 'deb', on: 1 },
+    { id: 'vr', nome: 'VR', sig: 'VR', tipo: 'ref' },
+    { id: 'pixmaquina', nome: 'Pix na Máquina', sig: 'PIX', tipo: 'pix', on: 1 },
+  ];
+  function pagamentoPadrao(v) {
+    var fo = {};
+    FORMAS_PAG.forEach(function (x) { if (x.on) fo[x.id] = true; });
+    if (v && v.dinheiro === 'nao') delete fo.dinheiro;
+    return { formas: fo, outras: [] };
+  }
   var PIX_LOJA = { dame: 'pix@damepizza.com.br', lov: 'pix@lovpizza.com.br' };
   // mesmo endereco que a Izza informa (src/roteiro/textos.js do whatsbot)
   var END_LOJA = { dame: 'Rua Carazinho, 443 - Petrópolis', lov: 'Av. Anita Garibaldi, 1593 - Boa Vista' };
@@ -556,7 +591,7 @@
       var min = Math.min.apply(null, [t.min].concat(vars.map(function (v) { return v.min; })));
       return { id: t.id, nome: t.nome.replace(/\s*\d+\s*cm.*/, ''), cm: cm, preco: t.preco, min: min, max: t.max, serve: SERVE[t.id] || '', fatias: FATIAS[t.id] || '', ativo: true };
     }) : [];
-    return { valores: v, tamanhos: tam, outras: [], cardapio: copiaCardapio(c), bairros: [] };
+    return { valores: v, tamanhos: tam, outras: [], cardapio: copiaCardapio(c), bairros: [], pagamento: pagamentoPadrao(v) };
   }
 
   // Uma ficha so (config.ficha), mostrada em duas paginas: "Tamanhos e sabores" (tamanhos,
@@ -590,7 +625,56 @@
     Object.keys(pad.valores).forEach(function (k) { if (f.valores[k] === undefined) f.valores[k] = pad.valores[k]; });
     if (!f.cardapio) f.cardapio = pad.cardapio;
     f.bairros = f.bairros || [];
+    if (!f.pagamento) f.pagamento = pagamentoPadrao(f.valores);
+    f.pagamento.outras = f.pagamento.outras || [];
     var dis = pode ? '' : ' disabled';
+    function itemFicha(it) {
+      var v = f.valores[it.id] == null ? '' : f.valores[it.id];
+      if (it.t === 'sn') return '<div class="item-ficha"><span>' + esc(it.rot) + '</span><div class="seg" data-sn="' + it.id + '">' +
+        SIM_NAO.map(function (o) { return '<button type="button" data-v="' + o[0] + '" class="' + (v === o[0] ? 'on' : '') + '"' + dis + '>' + o[1] + '</button>'; }).join('') + '</div></div>';
+      if (it.t === 'radio') return '<div class="campo"><span>' + esc(it.rot) + '</span><div class="stack">' + it.op.map(function (o) {
+        return '<label class="radio-card' + (v === o[0] ? ' on' : '') + '" style="padding:8px 12px"><input type="radio" name="r-' + it.id + '" value="' + o[0] + '"' + (v === o[0] ? ' checked' : '') + dis + '><span><b>' + esc(o[1]) + '</b></span></label>';
+      }).join('') + '</div></div>';
+      return '<label class="campo"><span>' + esc(it.rot) + '</span><input type="' + (it.t === 'num' ? 'number' : 'text') + '" data-in="' + it.id + '" value="' + esc(v) + '"' + dis + (it.t === 'num' ? ' min="0" step="0.5"' : '') + '></label>';
+    }
+    var itemPorId = {};
+    FICHA_GRUPOS.forEach(function (g) { g.itens.forEach(function (it) { itemPorId[it.id] = it; }); });
+    var itens = function (ids) { return ids.map(function (id) { return itemFicha(itemPorId[id]); }).join(''); };
+    // pagina de pagamento: formas aceitas na entrega (estilo sistema de delivery) + pix + conversa
+    function pagHtml() {
+      var v = f.valores;
+      return '<div class="card"><div class="cab-card"><div><h2>Pagamento na entrega</h2><p class="desc">Marque as formas que a loja aceita na entrega ou no balcão.</p></div>' +
+        (pode ? '<button class="btn link" id="add-fp">+ Nova forma de pagamento</button>' : '') + '</div>' +
+        '<div class="fp-grid" id="fp-grid"></div>' +
+        '<h3 class="fp-sec">CPF ou CNPJ na nota</h3><div class="stack fp-radios">' + itemPorId.cpfNota.op.map(function (o) {
+          return '<label class="fp-radio"><input type="radio" name="r-cpfNota" value="' + o[0] + '"' + (v.cpfNota === o[0] ? ' checked' : '') + dis + '>' + esc(o[1]) + '</label>';
+        }).join('') + '</div>' +
+        '<h3 class="fp-sec">Cartão de crédito na entrega</h3><label class="fp-radio"><input type="checkbox" data-cb="cartao"' + (v.cartao === 'sim' ? ' checked' : '') + dis + '>Oferecer pagamento com cartão de crédito na entrega</label>' +
+        '<h3 class="fp-sec">Desconto para pagamento em dinheiro</h3><div class="fp-desc">Clientes que pagarem com dinheiro ganham <span class="fp-pct"><input type="number" min="0" max="100" step="1" data-in="descontoDinheiro" value="' + esc(v.descontoDinheiro == null ? '' : v.descontoDinheiro) + '" placeholder="0"' + dis + '><span>%</span></span> de desconto</div>' +
+        '</div>' +
+        '<div class="grid-2">' +
+          '<div class="card"><h2>Pix antecipado</h2><div class="stack" style="margin-top:12px">' + itens(['pix', 'pixChave', 'pixHumano']) + '</div></div>' +
+          '<div class="card"><h2>Na conversa</h2><p class="desc">O que a atendente virtual pergunta na hora de fechar.</p><div class="stack" style="margin-top:12px">' + itens(['trocoPergunta', 'cartaoBandeira']) + '</div></div>' +
+        '</div>';
+    }
+    function desenhaFormas() {
+      var box = $('#fp-grid', el); if (!box) return;
+      var fo = f.pagamento.formas;
+      box.innerHTML = FORMAS_PAG.map(function (x) {
+        return '<label class="fp"><input type="checkbox" data-fp="' + x.id + '"' + (fo[x.id] ? ' checked' : '') + dis + '><span class="fp-ic t-' + x.tipo + '">' + esc(x.sig) + '</span><span class="fp-nome">' + esc(x.nome) + '</span></label>';
+      }).join('') + f.pagamento.outras.map(function (o, i) {
+        return '<div class="fp"><input type="checkbox" data-fo="' + i + '"' + (o.ativo !== false ? ' checked' : '') + dis + '><span class="fp-ic t-outro">+</span>' +
+          (pode ? '<input type="text" class="fp-txt" data-fon="' + i + '" value="' + esc(o.nome) + '" maxlength="60" placeholder="Nome da forma">' : '<span class="fp-nome">' + esc(o.nome) + '</span>') +
+          (pode ? '<button class="btn link perigo fp-rm" data-rm-fo="' + i + '" title="Tirar">✕</button>' : '') + '</div>';
+      }).join('');
+      el.querySelectorAll('[data-rm-fo]').forEach(function (b) { b.onclick = function () { f.pagamento.outras.splice(+b.getAttribute('data-rm-fo'), 1); desenhaFormas(); }; });
+    }
+    // dinheiro / cartao / vale da ficha acompanham as formas marcadas
+    function sincPag() {
+      var fo = f.pagamento.formas, tem = function (t) { return FORMAS_PAG.some(function (x) { return x.tipo === t && fo[x.id]; }); };
+      f.valores.dinheiro = fo.dinheiro ? 'sim' : 'nao';
+      f.valores.vale = tem('ref') ? 'sim' : 'nao';
+    }
     var grupos = FICHA_GRUPOS.filter(function (g) { return (FICHA_PAG[g.titulo] || 'regras') === modo; });
     var cab = FICHA_CAB[modo] || FICHA_CAB.regras;
     el.innerHTML = '<div class="page-head"><div><h1>' + cab[0] + '</h1><p>' + esc(cab[1](l.nome)) + '</p></div>' +
@@ -602,17 +686,9 @@
       '<div class="tabela-wrap"><table><thead><tr><th>Vende</th><th>Tamanho</th><th>cm</th><th>Preço base</th><th>Sabores (mín–máx)</th><th>Fatias</th><th class="hide-m">Serve</th><th></th></tr></thead><tbody id="tb-tam"></tbody></table></div>' +
       (pode ? '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" id="add-tam">+ Tamanho</button></div>' : '') + '</div>') +
       // checklist
-      '<div class="' + (grupos.length > 1 ? 'grid-2' : '') + '">' + grupos.map(function (g) {
-        return '<div class="card"><h2>' + esc(g.titulo) + '</h2><div class="stack" style="margin-top:12px">' + g.itens.map(function (it) {
-          var v = f.valores[it.id] == null ? '' : f.valores[it.id];
-          if (it.t === 'sn') return '<div class="item-ficha"><span>' + esc(it.rot) + '</span><div class="seg" data-sn="' + it.id + '">' +
-            SIM_NAO.map(function (o) { return '<button type="button" data-v="' + o[0] + '" class="' + (v === o[0] ? 'on' : '') + '"' + dis + '>' + o[1] + '</button>'; }).join('') + '</div></div>';
-          if (it.t === 'radio') return '<div class="campo"><span>' + esc(it.rot) + '</span><div class="stack">' + it.op.map(function (o) {
-            return '<label class="radio-card' + (v === o[0] ? ' on' : '') + '" style="padding:8px 12px"><input type="radio" name="r-' + it.id + '" value="' + o[0] + '"' + (v === o[0] ? ' checked' : '') + dis + '><span><b>' + esc(o[1]) + '</b></span></label>';
-          }).join('') + '</div></div>';
-          return '<label class="campo"><span>' + esc(it.rot) + '</span><input type="' + (it.t === 'num' ? 'number' : 'text') + '" data-in="' + it.id + '" value="' + esc(v) + '"' + dis + (it.t === 'num' ? ' min="0" step="0.5"' : '') + '></label>';
-        }).join('') + '</div></div>';
-      }).join('') + '</div>' +
+      (modo === 'pagamento' ? pagHtml() : '<div class="' + (grupos.length > 1 ? 'grid-2' : '') + '">' + grupos.map(function (g) {
+        return '<div class="card"><h2>' + esc(g.titulo) + '</h2><div class="stack" style="margin-top:12px">' + g.itens.map(itemFicha).join('') + '</div></div>';
+      }).join('') + '</div>') +
       // bairros (so com taxa por bairro)
       (modo !== 'entrega' ? '' : '<div class="card" id="card-bairros"' + (f.valores.taxaModelo === 'bairro' ? '' : ' hidden') + '><h2>Bairros atendidos</h2>' +
       '<p class="desc">Entrega por bairro: marque onde a loja entrega e, se quiser, a taxa de cada bairro. A lista vem do mapa (OpenStreetMap) pela cidade do bloco Entrega.</p><div id="bairros-ed"></div></div>') +
@@ -833,13 +909,17 @@
         if (k === 'nome' || k === 'ativo' || k === 'preco') desenhaCardapio();
       }
       else if (t.hasAttribute('data-o')) f.outras[+t.getAttribute('data-o')][k] = val;
+      else if (t.hasAttribute('data-fp')) { if (t.checked) f.pagamento.formas[t.getAttribute('data-fp')] = true; else delete f.pagamento.formas[t.getAttribute('data-fp')]; sincPag(); }
+      else if (t.hasAttribute('data-fo')) f.pagamento.outras[+t.getAttribute('data-fo')].ativo = t.checked;
+      else if (t.hasAttribute('data-fon')) f.pagamento.outras[+t.getAttribute('data-fon')].nome = t.value;
+      else if (t.hasAttribute('data-cb')) f.valores[t.getAttribute('data-cb')] = t.checked ? 'sim' : 'nao';
       else if (t.hasAttribute('data-in')) f.valores[t.getAttribute('data-in')] = t.type === 'number' ? (t.value === '' ? '' : +t.value) : t.value;
     });
     el.addEventListener('change', function (ev) {
       var t = ev.target;
       if (t.type === 'radio' && t.name.indexOf('r-') === 0) {
         f.valores[t.name.slice(2)] = t.value;
-        t.closest('.stack').querySelectorAll('.radio-card').forEach(function (rc) { rc.classList.toggle('on', rc.querySelector('input').checked); });
+        (t.closest('.stack') || el).querySelectorAll('.radio-card').forEach(function (rc) { rc.classList.toggle('on', rc.querySelector('input').checked); });
         if (t.name === 'r-taxaModelo' && $('#card-bairros', el)) { $('#card-bairros', el).hidden = t.value !== 'bairro'; if (t.value === 'bairro') desenhaBairros(); }
         if (t.name === 'r-regraPreco') desenhaCardapio();
       }
@@ -853,10 +933,14 @@
       });
     });
     if ($('#add-tam', el)) $('#add-tam', el).onclick = function () { f.tamanhos.push({ id: 't' + Date.now().toString(36), nome: '', cm: '', preco: '', min: 1, max: 2, fatias: '', serve: '', ativo: true }); desenhaTam(); var ins = el.querySelectorAll('#tb-tam [data-k=nome]'); if (ins.length) ins[ins.length - 1].focus(); };
+    desenhaFormas();
+    if ($('#add-fp', el)) $('#add-fp', el).onclick = function () { f.pagamento.outras.push({ nome: '', ativo: true }); desenhaFormas(); var ins = el.querySelectorAll('#fp-grid .fp-txt'); if (ins.length) ins[ins.length - 1].focus(); };
     if ($('#add-outra', el)) $('#add-outra', el).onclick = function () { f.outras.push({ texto: '', ativa: true }); desenhaOutras(); var ins = el.querySelectorAll('#outras input[type=text]'); if (ins.length) ins[ins.length - 1].focus(); };
     $('#sv-ficha', el).onclick = function () {
       f.outras = f.outras.filter(function (o) { return (o.texto || '').trim(); });
       f.tamanhos = f.tamanhos.filter(function (t) { return (t.nome || '').trim(); });
+      f.pagamento.outras = f.pagamento.outras.filter(function (o) { return (o.nome || '').trim(); });
+      sincPag();
       if (f.cardapio) Object.keys(ROT_LISTA).forEach(function (k) { f.cardapio[k] = (f.cardapio[k] || []).filter(function (x) { return String(x.nome || '').trim(); }); });
       salvar('ficha', { loja: l.id, ficha: f }, 'Ficha salva (não muda o bot).');
     };
