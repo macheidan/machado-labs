@@ -88,6 +88,8 @@
       { id: 'geral', ic: '◉', nome: 'Visão geral' },
       { id: 'numeros', ic: '☎', nome: 'Números', cont: l ? l.config.numeros.length : 0 },
       { id: 'funcionamento', ic: '◷', nome: 'Funcionamento' },
+      { id: 'fluxo', ic: '➜', nome: 'Fluxo de atendimento' },
+      { id: 'ficha', ic: '☑', nome: 'Particularidades' },
       { id: 'instrucoes', ic: '¶', nome: 'Instruções e regras' },
       { id: 'ferramentas', ic: '⚙', nome: 'Ferramentas' },
     ];
@@ -116,7 +118,7 @@
 
     var c = $('#content');
     if (!l && S.pagina !== 'lojas') { c.innerHTML = '<div class="card vazio">Nenhuma loja ainda.' + (eu.superadmin ? ' Cadastre a primeira em <b>Lojas</b>.' : '') + '</div>'; return; }
-    ({ geral: pgGeral, numeros: pgNumeros, regras: pgRegras, funcionamento: pgFuncionamento, instrucoes: pgInstrucoes, ferramentas: pgFerramentas, equipe: pgEquipe, historico: pgHistorico, lojas: pgLojas })[S.pagina](c, l);
+    ({ geral: pgGeral, numeros: pgNumeros, regras: pgRegras, funcionamento: pgFuncionamento, fluxo: pgFluxo, ficha: pgFicha, instrucoes: pgInstrucoes, ferramentas: pgFerramentas, equipe: pgEquipe, historico: pgHistorico, lojas: pgLojas })[S.pagina](c, l);
   }
 
   function ir(p) {
@@ -363,6 +365,229 @@
       }, 'Horário salvo. Vale em até 1 min.');
     };
   }
+
+  // ------------------------------------------------------------- Fluxo de atendimento (so leitura)
+  // O que o bot faz hoje (ESTADO.md do whatsbot, "Fluxo do pedido"). O cliente nunca
+  // responde na ordem: a ordem e o que a Izza pergunta quando ainda falta tudo.
+  var FLUXO = [
+    ['Saudação e menu', 'Primeira mensagem: “Aqui é a Izza …, vou começar teu atendimento.” e o menu de 3 opções: fazer um pedido, ver o cardápio, falar com um atendente.'],
+    ['Nome', 'Só se o sistema não trouxer o cadastro do cliente.'],
+    ['Entrega ou retirada', 'Retirada no balcão dispensa endereço e taxa.'],
+    ['Endereço', 'Logo depois, antes de tudo. Volta sempre no bloco Rua / Número / Complemento / Bairro pedindo confirmação. Sem endereço confirmado não há resumo.'],
+    ['Tamanho', 'Em mensagem própria, só com os tamanhos que a loja tem.'],
+    ['Sabores', 'Diz quantos cabem no tamanho. Um sabor por vez, pergunta se vai mais.'],
+    ['Borda ou bebida', 'Uma vez: “borda de catupiry ou uma Coca 2L?”. Na Super vira “Fruki normal, zero ou sem bebida?” (cortesia).'],
+    ['Observação', 'Uma vez, vale para a pizza e para a entrega (fatiada, sem cebola, avisar quando sair…).'],
+    ['Resumo', 'Itens, taxa e total, todos calculados pelo sistema da loja. A taxa não é anunciada antes, só aparece no total.'],
+    ['Pagamento', 'Dinheiro pergunta o troco; cartão não pergunta bandeira; Pix manda a chave e a Izza nunca confirma o pagamento.'],
+    ['Confirmação', 'O pedido vai para a tela de aprovação da loja; aprovado, entra no sistema, imprime e a Izza informa o tempo.'],
+  ];
+  var FLUXO_DESVIOS = [
+    ['Pedido que já existe', 'Atraso, cupom, item faltando, pedido do app ou site: vai para um atendente com o resumo.'],
+    ['Atendente respondeu', 'Se alguém da loja escreveu no celular, a Izza fica muda naquela conversa.'],
+    ['Comprovante de Pix', 'Imagem depois da chave fecha o pedido com “PIX A CONFERIR” na comanda; uma pessoa confere no banco.'],
+    ['Loja fechada', 'Ela segue conversando; o pedido fica agendado e entra sozinho na abertura (se a loja não estiver em 24 h).'],
+    ['Agendamento', 'Aceita horário marcado: “AGENDADO PARA 19:30” sai destacado na comanda.'],
+  ];
+  function pgFluxo(el) {
+    el.innerHTML = '<div class="page-head"><div><h1>Fluxo de atendimento</h1><p>Como a Izza conduz um pedido hoje. Somente visualização.</p></div></div>' +
+      '<div class="aviso">O cliente quase nunca responde na ordem: manda tamanho, sabor e endereço juntos. A ordem abaixo é o que a Izza pergunta quando ainda falta tudo, não um roteiro fixo.</div>' +
+      '<div class="grid-2"><div class="card"><h2>Passo a passo</h2><p class="desc">Do “oi” ao pedido na tela da loja.</p><ol class="fluxo">' +
+      FLUXO.map(function (p, i) { return '<li><span class="n">' + (i + 1) + '</span><div><b>' + esc(p[0]) + '</b><div class="muted small">' + esc(p[1]) + '</div></div></li>'; }).join('') +
+      '</ol></div><div class="card"><h2>Desvios</h2><p class="desc">O que muda o caminho.</p><div class="stack">' +
+      FLUXO_DESVIOS.map(function (p) { return '<div class="regra off"><div><b>' + esc(p[0]) + '</b><div class="muted small" style="margin-top:2px">' + esc(p[1]) + '</div></div></div>'; }).join('') +
+      '</div></div></div>';
+  }
+
+  // ------------------------------------------------------------- Particularidades (ficha da loja)
+  // Ficha do negocio, por loja. Nasce preenchida com o que o bot faz HOJE (codigo + cardapio
+  // do sistema); o que se marca aqui fica registrado no painel e ainda NAO muda o bot.
+  var SIM_NAO = [['sim', 'Sim'], ['nao', 'Não'], ['', 'Não definido']];
+  var FICHA_GRUPOS = [
+    { titulo: 'Atendimento', itens: [
+      { id: 'entrega', rot: 'Faz entrega', t: 'sn', p: 'sim' },
+      { id: 'retirada', rot: 'Aceita retirada no balcão', t: 'sn', p: 'sim' },
+      { id: 'agendamento', rot: 'Aceita pedido agendado para mais tarde', t: 'sn', p: 'sim' },
+      { id: 'nomeAntes', rot: 'Pergunta o nome quando não há cadastro', t: 'sn', p: 'sim' },
+      { id: 'enderecoCedo', rot: 'Pede o endereço logo depois de entrega/retirada', t: 'sn', p: 'sim' },
+      { id: 'aprovacaoLoja', rot: 'Pedido passa pela aprovação da loja antes de entrar', t: 'sn', p: 'sim' },
+      { id: 'pedidoExistente', rot: 'Assunto de pedido já feito vai para um atendente', t: 'sn', p: 'sim' },
+    ] },
+    { titulo: 'Entrega', itens: [
+      { id: 'taxaModelo', rot: 'Como se calcula a taxa', t: 'radio', op: [['distancia', 'Por distância'], ['bairro', 'Por bairro'], ['fixa', 'Fixa'], ['gratis', 'Grátis']], p: 'distancia' },
+      { id: 'taxaAnuncia', rot: 'Anuncia a taxa antes do resumo', t: 'sn', p: 'nao' },
+      { id: 'pedidoMinimo', rot: 'Pedido mínimo (R$)', t: 'num', p: '' },
+      { id: 'raioMax', rot: 'Raio máximo de entrega (km)', t: 'num', p: '' },
+    ] },
+    { titulo: 'Sabores e preço', itens: [
+      { id: 'regraPreco', rot: 'Preço da pizza com mais de um sabor', t: 'radio', op: [['soma', 'Soma o adicional de cada sabor'], ['maior', 'Cobra o sabor mais caro'], ['medio', 'Média dos adicionais']], p: 'cardapio:regraSabores' },
+      { id: 'pequenaRateio', rot: 'Pequena com 2 sabores cobra a média dos dois', t: 'sn', p: 'sim' },
+      { id: 'grandeMeio', rot: 'Grande meio a meio tem preço próprio (adicional × 1,5)', t: 'sn', p: 'sim' },
+      { id: 'superQuatro', rot: 'Super com 3 sabores cobra os 4 espaços', t: 'sn', p: 'sim' },
+      { id: 'doceSalgado', rot: 'Permite meio a meio doce + salgado', t: 'sn', p: '' },
+      { id: 'sobPedido', rot: 'Tem sabores feitos só sob pedido', t: 'sn', p: 'cardapio:sobPedido' },
+    ] },
+    { titulo: 'Borda, adicionais e bebida', itens: [
+      { id: 'borda', rot: 'Tem borda recheada', t: 'sn', p: 'cardapio:bordas' },
+      { id: 'ofereceBorda', rot: 'Oferece borda ou bebida uma vez no pedido', t: 'sn', p: 'sim' },
+      { id: 'adicionalSoPedido', rot: 'Adicional (ex.: mussarela em dobro) só se o cliente pedir', t: 'sn', p: 'sim' },
+      { id: 'cortesiaSuper', rot: 'Super ganha refrigerante 2L de cortesia', t: 'sn', p: 'sim' },
+      { id: 'cortesiaQual', rot: 'Qual cortesia', t: 'txt', p: 'Fruki 2L ou Fruki Zero 2L (Coca na Super é cobrada)' },
+    ] },
+    { titulo: 'Pizza', itens: [
+      { id: 'fatiada', rot: 'Fatiada', t: 'radio', op: [['sim', 'Vem fatiada'], ['sePedir', 'Não vem; fatia se pedir'], ['nao', 'Não fatia']], p: 'sePedir' },
+      { id: 'fatias', rot: 'Fatias por tamanho', t: 'txt', p: 'Pequena 4 · Média 6 · Grande 8 · Super 16' },
+    ] },
+    { titulo: 'Pagamento', itens: [
+      { id: 'dinheiro', rot: 'Dinheiro (pergunta o troco)', t: 'sn', p: 'sim' },
+      { id: 'cartao', rot: 'Cartão na entrega', t: 'sn', p: 'sim' },
+      { id: 'cartaoBandeira', rot: 'Pergunta a bandeira do cartão', t: 'sn', p: 'nao' },
+      { id: 'pix', rot: 'Pix antecipado', t: 'sn', p: 'sim' },
+      { id: 'pixChave', rot: 'Chave Pix', t: 'txt', p: 'loja:pix' },
+      { id: 'pixHumano', rot: 'Comprovante conferido por uma pessoa (a Izza nunca confirma)', t: 'sn', p: 'sim' },
+      { id: 'vale', rot: 'Vale-refeição', t: 'sn', p: '' },
+    ] },
+  ];
+  var PIX_LOJA = { dame: 'pix@damepizza.com.br', lov: 'pix@lovpizza.com.br' };
+  var SERVE = { pequena: '1 pessoa', media: '2 pessoas', grande: '2 a 3 pessoas', super: '3 a 4 pessoas' };
+  function brl(v) { return v == null || v === '' ? '' : 'R$ ' + Number(v).toFixed(2).replace('.', ','); }
+
+  function fichaPadrao(l) {
+    var c = l.padroes && l.padroes.cardapio, v = {};
+    FICHA_GRUPOS.forEach(function (g) {
+      g.itens.forEach(function (it) {
+        var p = it.p;
+        if (p === 'cardapio:regraSabores') p = c ? c.regraSabores : '';
+        else if (p === 'cardapio:sobPedido') p = c ? (c.sabores.some(function (s) { return s.sobPedido; }) ? 'sim' : 'nao') : '';
+        else if (p === 'cardapio:bordas') p = c ? (c.bordas.length ? 'sim' : 'nao') : '';
+        else if (p === 'loja:pix') p = PIX_LOJA[l.id] || '';
+        v[it.id] = p;
+      });
+    });
+    var tam = c ? c.tamanhos.filter(function (t) { return !t.variante; }).map(function (t) {
+      var cm = (t.nome.match(/(\d+)\s*cm/) || [])[1] || '';
+      // variante de preco (ex.: Grande 35cm (2), meio a meio) conta como o mesmo tamanho
+      var vars = c.tamanhos.filter(function (v) { return v.variante && v.nome.indexOf(t.nome) === 0; });
+      var min = Math.min.apply(null, [t.min].concat(vars.map(function (v) { return v.min; })));
+      return { nome: t.nome.replace(/\s*\d+\s*cm.*/, ''), cm: cm, preco: t.preco, min: min, max: t.max, serve: SERVE[t.id] || '', ativo: true };
+    }) : [];
+    return { valores: v, tamanhos: tam, outras: [] };
+  }
+
+  function pgFicha(el, l) {
+    // conteiner proprio: os ouvintes de evento morrem junto quando a pagina troca
+    var raiz = el; raiz.innerHTML = ''; el = document.createElement('div'); el.className = 'pagina'; raiz.appendChild(el);
+    var salva = l.config.ficha, f = JSON.parse(JSON.stringify(salva || fichaPadrao(l))), pode = l.pode.horario;
+    var c = l.padroes && l.padroes.cardapio;
+    f.valores = f.valores || {}; f.tamanhos = f.tamanhos || []; f.outras = f.outras || [];
+    var dis = pode ? '' : ' disabled';
+    el.innerHTML = '<div class="page-head"><div><h1>Particularidades</h1><p>A ficha da ' + esc(l.nome) + ': o que é próprio desta pizzaria.</p></div>' +
+      (pode ? '<button class="btn pri" id="sv-ficha">Salvar ficha</button>' : '') + '</div>' +
+      '<div class="aviso">Ficha de referência: o que se marca aqui fica registrado no painel e <b>ainda não muda o bot</b>. ' +
+      (salva ? 'Última edição: ' + esc(quem(l.config.fichaPor)) + ' · ' + esc(dataHora(l.config.fichaEm)) + '.' : 'Veio pré-preenchida com o que a Izza faz hoje (código e cardápio do sistema). Confira e salve.') + '</div>' +
+      // tamanhos
+      '<div class="card"><h2>Tamanhos</h2><p class="desc">Quais tamanhos a loja vende e quantos sabores cabem em cada um.</p>' +
+      '<div class="tabela-wrap"><table><thead><tr><th>Vende</th><th>Tamanho</th><th>cm</th><th>Preço base</th><th>Sabores (mín–máx)</th><th class="hide-m">Serve</th><th></th></tr></thead><tbody id="tb-tam"></tbody></table></div>' +
+      (pode ? '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" id="add-tam">+ Tamanho</button></div>' : '') + '</div>' +
+      // checklist
+      '<div class="grid-2">' + FICHA_GRUPOS.map(function (g) {
+        return '<div class="card"><h2>' + esc(g.titulo) + '</h2><div class="stack" style="margin-top:12px">' + g.itens.map(function (it) {
+          var v = f.valores[it.id] == null ? '' : f.valores[it.id];
+          if (it.t === 'sn') return '<div class="item-ficha"><span>' + esc(it.rot) + '</span><div class="seg" data-sn="' + it.id + '">' +
+            SIM_NAO.map(function (o) { return '<button type="button" data-v="' + o[0] + '" class="' + (v === o[0] ? 'on' : '') + '"' + dis + '>' + o[1] + '</button>'; }).join('') + '</div></div>';
+          if (it.t === 'radio') return '<div class="campo"><span>' + esc(it.rot) + '</span><div class="stack">' + it.op.map(function (o) {
+            return '<label class="radio-card' + (v === o[0] ? ' on' : '') + '" style="padding:8px 12px"><input type="radio" name="r-' + it.id + '" value="' + o[0] + '"' + (v === o[0] ? ' checked' : '') + dis + '><span><b>' + esc(o[1]) + '</b></span></label>';
+          }).join('') + '</div></div>';
+          return '<label class="campo"><span>' + esc(it.rot) + '</span><input type="' + (it.t === 'num' ? 'number' : 'text') + '" data-in="' + it.id + '" value="' + esc(v) + '"' + dis + (it.t === 'num' ? ' min="0" step="0.5"' : '') + '></label>';
+        }).join('') + '</div></div>';
+      }).join('') + '</div>' +
+      // outras
+      '<div class="card"><h2>Outras particularidades</h2><p class="desc">O que não coube acima: regra da casa, exceção, combinado com o cliente.</p><div class="stack" id="outras"></div>' +
+      (pode ? '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" id="add-outra">+ Particularidade</button></div>' : '') + '</div>' +
+      // cardapio do sistema
+      '<div class="card"><h2>Cardápio no sistema</h2><p class="desc">O que o sistema da loja usa para calcular a comanda (planilha CARDAPIO). Somente visualização.</p>' +
+      (c ? cardapioHtml(c) : '<div class="vazio">O bot desta loja ainda não mandou o cardápio.</div>') + '</div>';
+
+    function desenhaTam() {
+      $('#tb-tam', el).innerHTML = f.tamanhos.length ? f.tamanhos.map(function (t, i) {
+        return '<tr><td><input type="checkbox" data-t="' + i + '" data-k="ativo"' + (t.ativo ? ' checked' : '') + dis + '></td>' +
+          '<td><input type="text" data-t="' + i + '" data-k="nome" value="' + esc(t.nome) + '"' + dis + ' style="min-width:110px"></td>' +
+          '<td><input type="number" data-t="' + i + '" data-k="cm" value="' + esc(t.cm) + '"' + dis + ' style="width:70px"></td>' +
+          '<td><input type="number" step="0.01" data-t="' + i + '" data-k="preco" value="' + esc(t.preco) + '"' + dis + ' style="width:100px"></td>' +
+          '<td><div class="linha" style="gap:6px;flex-wrap:nowrap"><input type="number" min="1" data-t="' + i + '" data-k="min" value="' + esc(t.min) + '"' + dis + ' style="width:60px">–<input type="number" min="1" data-t="' + i + '" data-k="max" value="' + esc(t.max) + '"' + dis + ' style="width:60px"></div></td>' +
+          '<td class="hide-m"><input type="text" data-t="' + i + '" data-k="serve" value="' + esc(t.serve) + '"' + dis + ' style="min-width:110px"></td>' +
+          '<td class="fim">' + (pode ? '<button class="btn link perigo" data-rm-t="' + i + '">Tirar</button>' : '') + '</td></tr>';
+      }).join('') : '<tr><td colspan="7"><div class="vazio">Nenhum tamanho.</div></td></tr>';
+      el.querySelectorAll('[data-rm-t]').forEach(function (b) { b.onclick = function () { f.tamanhos.splice(+b.getAttribute('data-rm-t'), 1); desenhaTam(); }; });
+    }
+    function desenhaOutras() {
+      $('#outras', el).innerHTML = f.outras.length ? f.outras.map(function (o, i) {
+        return '<div class="linha" style="flex-wrap:nowrap"><input type="checkbox" data-o="' + i + '" data-k="ativa"' + (o.ativa !== false ? ' checked' : '') + dis + ' title="Vale">' +
+          '<input type="text" data-o="' + i + '" data-k="texto" value="' + esc(o.texto) + '" maxlength="300"' + dis + ' placeholder="Ex.: não entregamos no Centro depois das 23h">' +
+          (pode ? '<button class="btn link perigo" data-rm-o="' + i + '">Tirar</button>' : '') + '</div>';
+      }).join('') : '<div class="muted small">Nenhuma.</div>';
+      el.querySelectorAll('[data-rm-o]').forEach(function (b) { b.onclick = function () { f.outras.splice(+b.getAttribute('data-rm-o'), 1); desenhaOutras(); }; });
+    }
+    desenhaTam(); desenhaOutras();
+    if (!pode) return;
+
+    el.addEventListener('input', function (ev) {
+      var t = ev.target, k = t.getAttribute('data-k');
+      var val = t.type === 'checkbox' ? t.checked : t.type === 'number' ? (t.value === '' ? '' : +t.value) : t.value;
+      if (t.hasAttribute('data-t')) f.tamanhos[+t.getAttribute('data-t')][k] = val;
+      else if (t.hasAttribute('data-o')) f.outras[+t.getAttribute('data-o')][k] = val;
+      else if (t.hasAttribute('data-in')) f.valores[t.getAttribute('data-in')] = t.type === 'number' ? (t.value === '' ? '' : +t.value) : t.value;
+    });
+    el.addEventListener('change', function (ev) {
+      var t = ev.target;
+      if (t.type === 'radio' && t.name.indexOf('r-') === 0) {
+        f.valores[t.name.slice(2)] = t.value;
+        t.closest('.stack').querySelectorAll('.radio-card').forEach(function (rc) { rc.classList.toggle('on', rc.querySelector('input').checked); });
+      }
+    });
+    el.querySelectorAll('[data-sn]').forEach(function (seg) {
+      seg.addEventListener('click', function (ev) {
+        var b = ev.target.closest('button'); if (!b) return;
+        f.valores[seg.getAttribute('data-sn')] = b.getAttribute('data-v');
+        seg.querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); });
+      });
+    });
+    $('#add-tam', el).onclick = function () { f.tamanhos.push({ nome: '', cm: '', preco: '', min: 1, max: 2, serve: '', ativo: true }); desenhaTam(); };
+    $('#add-outra', el).onclick = function () { f.outras.push({ texto: '', ativa: true }); desenhaOutras(); var ins = el.querySelectorAll('#outras input[type=text]'); if (ins.length) ins[ins.length - 1].focus(); };
+    $('#sv-ficha', el).onclick = function () {
+      f.outras = f.outras.filter(function (o) { return (o.texto || '').trim(); });
+      f.tamanhos = f.tamanhos.filter(function (t) { return (t.nome || '').trim(); });
+      salvar('ficha', { loja: l.id, ficha: f }, 'Ficha salva (não muda o bot).');
+    };
+  }
+
+  function cardapioHtml(c) {
+    var tams = c.tamanhos.filter(function (t) { return !t.variante; });
+    var cols = tams.map(function (t) { return t.id; });
+    var cab = '<tr><th>Item</th>' + tams.map(function (t) { return '<th>' + esc(t.nome.replace(/\s*\d+\s*cm.*/, '')) + '</th>'; }).join('') + '</tr>';
+    var linha = function (x) { return '<tr><td>' + esc(x.nome) + '</td>' + cols.map(function (k) { return '<td class="num">' + brl(x.precos[k]) + '</td>'; }).join('') + '</tr>'; };
+    var cats = {}; c.sabores.forEach(function (s) { (cats[s.categoria || 'outros'] = cats[s.categoria || 'outros'] || []).push(s); });
+    var regra = { soma: 'soma o adicional de cada sabor', maior: 'cobra o sabor mais caro', medio: 'média dos adicionais' }[c.regraSabores] || c.regraSabores;
+    return '<div class="tabs" id="tabs-card">' + ['Sabores', 'Bordas e adicionais', 'Bebidas e combos', 'Promoções'].map(function (n, i) { return '<button data-tc="' + i + '" class="' + (i ? '' : 'on') + '">' + n + '</button>'; }).join('') + '</div>' +
+      '<div data-pc="0"><p class="muted small" style="margin-bottom:8px">' + c.sabores.length + ' sabores · preço = base do tamanho + adicional do sabor; com mais de um sabor, ' + esc(regra) + '.</p>' +
+        Object.keys(cats).map(function (k) {
+          return '<h3 class="small" style="margin:12px 0 4px;text-transform:capitalize">' + esc(k) + ' (' + cats[k].length + ')</h3><div class="tabela-wrap"><table><thead><tr><th>Sabor</th><th>Adicional</th><th class="hide-m">Descrição</th></tr></thead><tbody>' +
+            cats[k].map(function (s) { return '<tr><td>' + esc(s.nome) + (s.sobPedido ? ' <span class="badge">sob pedido</span>' : '') + '</td><td class="num">' + (s.adicional ? '+ ' + brl(s.adicional) : '—') + '</td><td class="hide-m muted small">' + esc(s.desc) + '</td></tr>'; }).join('') + '</tbody></table></div>';
+        }).join('') + '</div>' +
+      '<div data-pc="1" hidden><div class="tabela-wrap"><table><thead>' + cab + '</thead><tbody>' + c.bordas.map(linha).join('') + c.extras.map(linha).join('') + '</tbody></table></div></div>' +
+      '<div data-pc="2" hidden><div class="tabela-wrap"><table><thead><tr><th>Item</th><th>Preço</th></tr></thead><tbody>' +
+        c.bebidas.concat(c.combos).map(function (b) { return '<tr><td>' + esc(b.nome) + '</td><td class="num">' + brl(b.preco) + '</td></tr>'; }).join('') + '</tbody></table></div></div>' +
+      '<div data-pc="3" hidden><div class="stack">' + (c.promocoes.length ? c.promocoes.map(function (p) {
+        return '<div class="regra off"><div style="flex:1"><b>' + esc(p.nome) + '</b> ' + (p.preco != null ? '<span class="badge acc">' + brl(p.preco) + '</span>' : '') + (p.soRetirada ? ' <span class="badge">só retirada</span>' : '') +
+          (p.desc ? '<div class="muted small" style="margin-top:4px">' + esc(p.desc) + '</div>' : '') + '</div></div>';
+      }).join('') : '<div class="vazio">Nenhuma promoção.</div>') + '</div></div>';
+  }
+  document.addEventListener('click', function (ev) {
+    var b = ev.target.closest('[data-tc]'); if (!b) return;
+    var card = b.closest('.card');
+    card.querySelectorAll('[data-tc]').forEach(function (x) { x.classList.toggle('on', x === b); });
+    card.querySelectorAll('[data-pc]').forEach(function (p) { p.hidden = p.getAttribute('data-pc') !== b.getAttribute('data-tc'); });
+  });
 
   // ------------------------------------------------------------- Instruções e ferramentas
   // O texto padrao vem do codigo do bot (ele manda ao subir, api bot_padroes). Editar aqui

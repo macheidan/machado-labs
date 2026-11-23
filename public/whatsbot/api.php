@@ -369,6 +369,22 @@ case 'usuario_del':
     });
     out(200, array('ok' => true));
 
+// Ficha de particularidades da loja (22/11/2026): referencia do negocio, o bot NAO le.
+case 'ficha':
+    exige($eu, $db, $loja, 'horario');
+    $f = isset($d['ficha']) && is_array($d['ficha']) ? $d['ficha'] : null;
+    if (!$f) falha(400, 'ficha');
+    $bruto = json_encode($f, JSON_UNESCAPED_UNICODE);
+    if (strlen($bruto) > 60000) falha(413, 'Ficha grande demais.');
+    db_tx(function (&$db) use ($eu, $loja, $f) {
+        $c = &cfg_de($db, $loja);
+        $c['ficha'] = $f;
+        $c['fichaPor'] = $eu['email'];
+        $c['fichaEm'] = date('c');
+        db_log($db, $eu['email'], $loja, 'atualizou as particularidades da loja', '');
+    });
+    out(200, array('ok' => true));
+
 case 'instrucao':
 case 'ferramenta':
     exige($eu, $db, $loja, 'instrucoes');
