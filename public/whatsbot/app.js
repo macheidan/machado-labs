@@ -514,30 +514,31 @@
       { id: 'descontoDinheiro', rot: 'Desconto para pagamento em dinheiro (%)', t: 'num', p: '' },
     ] },
   ];
-  // Formas de pagamento na entrega. tipo dá a cor da etiqueta; sig é a sigla (sem logo de marca).
-  // Vem marcado o que está ligado no sistema de delivery da loja (print do Fábio, 23/11/2026).
+  // Formas de pagamento na entrega. Ícones: folha img/pag-sprite.png do Delivery Direto (24x16 cada,
+  // pos = posição na folha); sem pos usa img/pag-generico.png. Vem marcado o que está ligado no
+  // Delivery Direto da Dáme em 23/11/2026.
   var FORMAS_PAG = [
-    { id: 'alelo', nome: 'Alelo Refeição', sig: 'ALELO', tipo: 'ref' },
-    { id: 'amex', nome: 'American Express', sig: 'AMEX', tipo: 'cred', on: 1 },
-    { id: 'aura', nome: 'Aura', sig: 'AURA', tipo: 'cred' },
-    { id: 'banrisul', nome: 'Banrisul', sig: 'BANRI', tipo: 'deb', on: 1 },
-    { id: 'diners', nome: 'Diners', sig: 'DINERS', tipo: 'cred' },
-    { id: 'dinersclub', nome: 'Diners Club', sig: 'DINERS', tipo: 'cred' },
-    { id: 'dinheiro', nome: 'Dinheiro', sig: 'R$', tipo: 'din', on: 1 },
-    { id: 'discover', nome: 'Discover', sig: 'DISC', tipo: 'cred' },
-    { id: 'elo', nome: 'Elo', sig: 'ELO', tipo: 'cred', on: 1 },
-    { id: 'greencard', nome: 'Green Card Refeição', sig: 'GREEN', tipo: 'ref' },
-    { id: 'hiper', nome: 'Hiper', sig: 'HIPER', tipo: 'cred' },
-    { id: 'hipercard', nome: 'Hipercard', sig: 'HIPER', tipo: 'cred', on: 1 },
-    { id: 'jcb', nome: 'JCB', sig: 'JCB', tipo: 'cred' },
-    { id: 'maestro', nome: 'M. Maestro (débito)', sig: 'MAEST', tipo: 'deb', on: 1 },
-    { id: 'mastercard', nome: 'Mastercard (crédito)', sig: 'MC', tipo: 'cred', on: 1 },
-    { id: 'redeshop', nome: 'Redeshop', sig: 'REDE', tipo: 'deb' },
-    { id: 'sodexo', nome: 'Sodexo Refeição', sig: 'SODEXO', tipo: 'ref', on: 1 },
-    { id: 'ticket', nome: 'Ticket Restaurante', sig: 'TICKET', tipo: 'ref', on: 1 },
-    { id: 'visa', nome: 'Visa (crédito)', sig: 'VISA', tipo: 'cred', on: 1 },
-    { id: 'visaelectron', nome: 'Visa Electron (débito)', sig: 'ELECT', tipo: 'deb', on: 1 },
-    { id: 'vr', nome: 'VR', sig: 'VR', tipo: 'ref' },
+    { id: 'alelo', nome: 'Alelo Refeição', sig: 'ALELO', tipo: 'ref', pos: [-120, -16] },
+    { id: 'amex', nome: 'American Express', sig: 'AMEX', tipo: 'cred', on: 1, pos: [0, -16] },
+    { id: 'aura', nome: 'Aura', sig: 'AURA', tipo: 'cred', pos: [-240, -16] },
+    { id: 'banrisul', nome: 'Banrisul', sig: 'BANRI', tipo: 'deb', on: 1, pos: [-168, 0] },
+    { id: 'diners', nome: 'Diners', sig: 'DINERS', tipo: 'cred', pos: [-72, 0] },
+    { id: 'dinersclub', nome: 'Diners Club', sig: 'DINERS', tipo: 'cred', pos: [-72, 0] },
+    { id: 'dinheiro', nome: 'Dinheiro', sig: 'R$', tipo: 'din', on: 1, pos: [0, 0] },
+    { id: 'discover', nome: 'Discover', sig: 'DISC', tipo: 'cred', pos: [-144, 0] },
+    { id: 'elo', nome: 'Elo', sig: 'ELO', tipo: 'cred', on: 1, pos: [-144, -16] },
+    { id: 'greencard', nome: 'Green Card Refeição', sig: 'GREEN', tipo: 'ref', pos: [-168, -16] },
+    { id: 'hiper', nome: 'Hiper', sig: 'HIPER', tipo: 'cred', pos: [-264, 0] },
+    { id: 'hipercard', nome: 'Hipercard', sig: 'HIPER', tipo: 'cred', on: 1, pos: [-192, 0] },
+    { id: 'jcb', nome: 'JCB', sig: 'JCB', tipo: 'cred', pos: [-240, 0] },
+    { id: 'maestro', nome: 'M. Maestro (débito)', sig: 'MAEST', tipo: 'deb', on: 1, pos: [-48, -16] },
+    { id: 'mastercard', nome: 'Mastercard (crédito)', sig: 'MC', tipo: 'cred', on: 1, pos: [-48, 0] },
+    { id: 'redeshop', nome: 'Redeshop', sig: 'REDE', tipo: 'deb', pos: [-72, -16] },
+    { id: 'sodexo', nome: 'Sodexo Refeição', sig: 'SODEXO', tipo: 'ref', on: 1, pos: [-120, 0] },
+    { id: 'ticket', nome: 'Ticket Restaurante', sig: 'TICKET', tipo: 'ref', on: 1, pos: [-96, -16] },
+    { id: 'visa', nome: 'Visa (crédito)', sig: 'VISA', tipo: 'cred', on: 1, pos: [-24, 0] },
+    { id: 'visaelectron', nome: 'Visa Electron (débito)', sig: 'ELECT', tipo: 'deb', on: 1, pos: [-24, -16] },
+    { id: 'vr', nome: 'VR', sig: 'VR', tipo: 'ref', pos: [-96, 0] },
     { id: 'pixmaquina', nome: 'Pix na Máquina', sig: 'PIX', tipo: 'pix', on: 1 },
   ];
   function pagamentoPadrao(v) {
@@ -661,7 +662,7 @@
       var box = $('#fp-grid', el); if (!box) return;
       var fo = f.pagamento.formas;
       box.innerHTML = FORMAS_PAG.map(function (x) {
-        return '<label class="fp"><input type="checkbox" data-fp="' + x.id + '"' + (fo[x.id] ? ' checked' : '') + dis + '><span class="fp-ic t-' + x.tipo + '">' + esc(x.sig) + '</span><span class="fp-nome">' + esc(x.nome) + '</span></label>';
+        return '<label class="fp"><input type="checkbox" data-fp="' + x.id + '"' + (fo[x.id] ? ' checked' : '') + dis + '><span class="fp-ic sc"' + (x.pos ? ' style="background-position:' + x.pos[0] * 1.5 + 'px ' + x.pos[1] * 1.5 + 'px"' : ' data-gen') + '></span><span class="fp-nome">' + esc(x.nome) + '</span></label>';
       }).join('') + f.pagamento.outras.map(function (o, i) {
         return '<div class="fp"><input type="checkbox" data-fo="' + i + '"' + (o.ativo !== false ? ' checked' : '') + dis + '><span class="fp-ic t-outro">+</span>' +
           (pode ? '<input type="text" class="fp-txt" data-fon="' + i + '" value="' + esc(o.nome) + '" maxlength="60" placeholder="Nome da forma">' : '<span class="fp-nome">' + esc(o.nome) + '</span>') +
