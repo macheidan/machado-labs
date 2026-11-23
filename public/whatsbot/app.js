@@ -85,8 +85,8 @@
 
   // ------------------------------------------------------------- casca
   // Menu em grupos. Cada item aparece só para quem tem o papel: operador (dia a dia e números),
-  // gerente (+ cardápio, loja e clientes), dono (+ atendente virtual e equipe). Instruções e
-  // ferramentas (o prompt) ficam só para o administrador geral.
+  // gerente (+ cardápio, loja e clientes), dono (+ integrações e equipe). Frases fixas, fluxo,
+  // instruções e ferramentas (o funcionamento da Izza) ficam só para o administrador geral.
   function paginas() {
     var l = loja(), po = l ? l.pode : {}, adm = S.dados.eu.superadmin;
     var p = [
@@ -94,18 +94,18 @@
       { g: 'Dia a dia', id: 'pedidos', ic: '▤', nome: 'Pedidos', ve: true },
       { g: 'Dia a dia', id: 'alertas', ic: '⚑', nome: 'Alertas', cont: alertasAbertos(l), ve: true },
       { g: 'Dia a dia', id: 'clientes', ic: '☻', nome: 'Clientes', ve: po.clientes },
+      { g: 'Dia a dia', id: 'numeros', ic: '☎', nome: 'Números', cont: l ? l.config.numeros.length : 0, ve: po.numeros },
       { g: 'Cardápio', id: 'tamanhos', ic: '◔', nome: 'Tamanhos e sabores', ve: po.horario },
       { g: 'Loja', id: 'funcionamento', ic: '◷', nome: 'Horários', ve: po.horario },
       { g: 'Loja', id: 'entrega', ic: '⛟', nome: 'Entrega', ve: po.horario },
       { g: 'Loja', id: 'pagamento', ic: '$', nome: 'Pagamento', ve: po.horario },
       { g: 'Loja', id: 'regrasloja', ic: '☑', nome: 'Regras da loja', ve: po.horario },
       { g: 'Loja', id: 'comanda', ic: '⎙', nome: 'Comanda', ve: po.horario },
-      { g: 'Atendente virtual', id: 'frases', ic: '❝', nome: 'Frases fixas', ve: po.escopo },
-      { g: 'Atendente virtual', id: 'fluxo', ic: '➜', nome: 'Fluxo de atendimento', ve: po.escopo },
-      { g: 'Atendente virtual', id: 'numeros', ic: '☎', nome: 'Números', cont: l ? l.config.numeros.length : 0, ve: po.numeros },
       { g: 'Conta', id: 'integracoes', ic: '⇄', nome: 'Integrações', ve: po.integracoes },
       { g: 'Conta', id: 'equipe', ic: '☺', nome: 'Equipe', ve: po.equipe },
       { g: 'Conta', id: 'historico', ic: '≡', nome: 'Log', ve: true },
+      { g: 'Plataforma', id: 'frases', ic: '❝', nome: 'Frases fixas', ve: adm },
+      { g: 'Plataforma', id: 'fluxo', ic: '➜', nome: 'Fluxo de atendimento', ve: adm },
       { g: 'Plataforma', id: 'instrucoes', ic: '¶', nome: 'Instruções e regras', ve: adm },
       { g: 'Plataforma', id: 'ferramentas', ic: '⚙', nome: 'Ferramentas', ve: adm },
       { g: 'Plataforma', id: 'lojas', ic: '⌂', nome: 'Lojas', ve: adm },
