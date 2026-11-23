@@ -96,7 +96,7 @@
       { g: 'Dia a dia', id: 'alertas', ic: '⚑', nome: 'Alertas', cont: alertasAbertos(l), ve: true },
       { g: 'Dia a dia', id: 'clientes', ic: '☻', nome: 'Clientes', ve: po.clientes },
       { g: 'Dia a dia', id: 'numeros', ic: '☎', nome: 'Números', cont: l ? l.config.numeros.length : 0, ve: po.numeros },
-      { g: 'Cardápio', id: 'tamanhos', ic: '◔', nome: 'Tamanhos e sabores', ve: po.horario },
+      { g: 'Loja', id: 'tamanhos', ic: '◔', nome: 'Tamanhos e sabores', ve: po.horario },
       { g: 'Loja', id: 'funcionamento', ic: '◷', nome: 'Horários', ve: po.horario },
       { g: 'Loja', id: 'entrega', ic: '⛟', nome: 'Entrega', ve: po.horario },
       { g: 'Loja', id: 'pagamento', ic: '$', nome: 'Pagamento', ve: po.horario },
@@ -127,11 +127,22 @@
     var ps = paginas();
     if (S.pagina === 'ficha') S.pagina = 'regrasloja'; // pagina antiga "Particularidades"
     if (!ps.some(function (p) { return p.id === S.pagina; })) S.pagina = 'geral';
+    // Dia a dia fica solto; Loja, Conta e Plataforma moram dentro de "Configurações", que abre
+    // em acordeão. Clicar em Configurações vai para a primeira página de Loja (pedido do Fábio, 23/11).
+    var botao = function (p, sub) {
+      return '<button class="nav-item' + (sub ? ' sub' : '') + (p.id === S.pagina ? ' ativo' : '') + '" data-p="' + p.id + '"><span class="ic">' + p.ic + '</span>' + esc(p.nome) + (p.cont ? '<span class="cont' + (p.id === 'alertas' ? ' cont-alerta' : '') + '">' + p.cont + '</span>' : '') + '</button>';
+    };
+    var dia = ps.filter(function (p) { return p.g === 'Dia a dia'; }), cfg = ps.filter(function (p) { return p.g !== 'Dia a dia'; });
+    var naCfg = cfg.some(function (p) { return p.id === S.pagina; });
+    var cfgAberto = naCfg && !S.cfgFechado;
     var gAnt = '';
-    $('#nav').innerHTML = ps.map(function (p) {
-      var cab = p.g !== gAnt ? '<div class="nav-grupo">' + esc(p.g) + '</div>' : ''; gAnt = p.g;
-      return cab + '<button class="nav-item' + (p.id === S.pagina ? ' ativo' : '') + '" data-p="' + p.id + '"><span class="ic">' + p.ic + '</span>' + esc(p.nome) + (p.cont ? '<span class="cont' + (p.id === 'alertas' ? ' cont-alerta' : '') + '">' + p.cont + '</span>' : '') + '</button>';
-    }).join('');
+    $('#nav').innerHTML = '<div class="nav-grupo">Dia a dia</div>' + dia.map(function (p) { return botao(p); }).join('') +
+      (cfg.length ? '<button class="nav-item nav-cfg' + (naCfg ? ' dentro' : '') + '" data-cfg="1" aria-expanded="' + (cfgAberto ? 'true' : 'false') + '"><span class="ic">⚙</span>Configurações<span class="seta">' + (cfgAberto ? '▾' : '▸') + '</span></button>' +
+        (cfgAberto ? '<div class="nav-sub">' + cfg.map(function (p) {
+          var cab = p.g !== gAnt ? '<div class="nav-grupo sub">' + esc(p.g) + '</div>' : ''; gAnt = p.g;
+          return cab + botao(p, true);
+        }).join('') + '</div>' : '') : '');
+    poePausaTopo(loja());
     if (typeof marcaContadores === 'function') marcaContadores();
     var l = loja();
     $('#side-foot').innerHTML = l ? 'Seu papel aqui: <b>' + esc(eu.superadmin ? 'Administrador geral' : PAPEIS[l.papel]) + '</b>' : '';
@@ -143,6 +154,7 @@
 
   function ir(p) {
     if (p !== 'quadro') saiQuadro();
+    S.cfgFechado = false;
     S.pagina = p; try { localStorage.setItem('wb_pag', p); } catch (e) {}
     fecharMenu(); desenhar(); window.scrollTo(0, 0);
   }
@@ -185,7 +197,7 @@
 
     el.innerHTML =
       '<div class="page-head"><div><h1>' + esc(l.nome) + '</h1><p>' + esc(l.telefone || '') + (l.ativo ? '' : ' · <b>loja desativada</b>') + '</p></div>' +
-      (l.pode.pausar ? '<button class="btn ' + (c.pausa.ligado ? 'pri' : 'perigo') + '" id="bt-pausa">' + (c.pausa.ligado ? '▶ Religar a Izza' : '❚❚ Pausar a Izza') + '</button>' : '') + '</div>' +
+      '</div>' +
       (b.pausado ? '<div class="aviso err"><b>A Izza está pausada.</b> Ela não responde nenhum cliente. ' + pausaTxt + '</div>' : '') +
       '<div class="grid">' +
         stat('Bot', '<span class="badge ' + b.cls + '"><span class="dot"></span>' + b.rot + '</span>', b.sub) +
@@ -209,16 +221,30 @@
       (l.config.atualizadoEm ? 'Última mudança: ' + dataHora(l.config.atualizadoEm) + '.' : '') +
       (l.status && l.status.configEm ? ' Bot sincronizou ' + quando(l.status.configEm) + '.' : '') + '</p>';
 
-    var bp = $('#bt-pausa', el);
-    if (bp) bp.onclick = function () {
-      if (c.pausa.ligado) return salvar('pausa', { loja: l.id, ligado: false }, 'Izza religada. Vale em até 1 min.');
-      modal('<h3>Pausar a Izza na ' + esc(l.nome) + '?</h3><p class="muted">Ela para de responder todos os clientes até alguém religar aqui. As conversas ficam para a equipe da loja.</p>' +
-        '<label class="campo"><span>Motivo (opcional)</span><input type="text" id="m-motivo" maxlength="200" placeholder="Ex.: sistema da loja fora do ar"></label>' +
-        '<div class="acoes"><button class="btn" data-fecha>Cancelar</button><button class="btn perigo" id="m-ok">Pausar</button></div>', function (m) {
-          $('#m-ok', m).onclick = function () { salvar('pausa', { loja: l.id, ligado: true, motivo: $('#m-motivo', m).value }, 'Izza pausada. Vale em até 1 min.').then(fecharModal); };
-        });
-    };
     ligaAtalhos(el);
+  }
+  // Botao "Pausar a Izza" na barra superior (pedido do Fabio, 23/11): vale para a loja escolhida
+  function poePausaTopo(l) {
+    var b = $('#bt-pausa');
+    if (!l || !l.pode || !l.pode.pausar) { if (b) b.remove(); return; }
+    if (!b) {
+      b = document.createElement('button'); b.id = 'bt-pausa';
+      var tr = $('.top-right'); tr.insertBefore(b, tr.firstChild);
+      b.onclick = function () { pedePausa(loja()); };
+    }
+    var on = !!l.config.pausa.ligado;
+    b.className = 'btn sm ' + (on ? 'pri' : 'perigo');
+    b.innerHTML = on ? '▶ Religar a Izza' : '❚❚ Pausar a Izza';
+    b.title = on ? 'A Izza está pausada pelo painel nesta loja' : 'Para a Izza de responder os clientes desta loja';
+  }
+  function pedePausa(l) {
+    if (!l) return;
+    if (l.config.pausa.ligado) return salvar('pausa', { loja: l.id, ligado: false }, 'Izza religada. Vale em até 1 min.');
+    modal('<h3>Pausar a Izza na ' + esc(l.nome) + '?</h3><p class="muted">Ela para de responder todos os clientes até alguém religar aqui. As conversas ficam para a equipe da loja.</p>' +
+      '<label class="campo"><span>Motivo (opcional)</span><input type="text" id="m-motivo" maxlength="200" placeholder="Ex.: sistema da loja fora do ar"></label>' +
+      '<div class="acoes"><button class="btn" data-fecha>Cancelar</button><button class="btn perigo" id="m-ok">Pausar</button></div>', function (m) {
+        $('#m-ok', m).onclick = function () { salvar('pausa', { loja: l.id, ligado: true, motivo: $('#m-motivo', m).value }, 'Izza pausada. Vale em até 1 min.').then(fecharModal); };
+      });
   }
   function stat(rot, val, sub) { return '<div class="card stat"><div class="rot">' + rot + '</div><div class="val">' + val + '</div><div class="sub">' + (sub || '') + '</div></div>'; }
   function ligaAtalhos(el) {
@@ -2110,7 +2136,17 @@
   function fecharMenu() { $('#sidebar').classList.remove('aberta'); $('#overlay').classList.remove('on'); }
   $('#menu-btn').onclick = function () { $('#sidebar').classList.add('aberta'); $('#overlay').classList.add('on'); };
   $('#overlay').onclick = fecharMenu;
-  $('#nav').addEventListener('click', function (ev) { var b = ev.target.closest('[data-p]'); if (b) ir(b.getAttribute('data-p')); });
+  $('#nav').addEventListener('click', function (ev) {
+    var c = ev.target.closest('[data-cfg]');
+    if (c) {
+      var cfg = paginas().filter(function (p) { return p.g !== 'Dia a dia'; });
+      var naCfg = cfg.some(function (p) { return p.id === S.pagina; });
+      if (naCfg) { S.cfgFechado = !S.cfgFechado; desenhar(); return; } // ja esta dentro: so recolhe/abre
+      if (cfg.length) ir(cfg[0].id);
+      return;
+    }
+    var b = ev.target.closest('[data-p]'); if (b) ir(b.getAttribute('data-p'));
+  });
   $('#loja').onchange = function () { S.loja = this.value; try { localStorage.setItem('wb_loja', S.loja); } catch (e) {} desenhar(); vivo(); };
   $('#tema-btn').onclick = function () {
     var r = document.documentElement, escuro = r.getAttribute('data-theme') === 'dark' || (!r.getAttribute('data-theme') && matchMedia('(prefers-color-scheme: dark)').matches);
