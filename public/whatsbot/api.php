@@ -17,8 +17,11 @@
 // Bot (Authorization: Bearer <token da loja>):
 //   GET  ?a=bot&loja=dame               config da loja
 //   POST ?a=bot_status&loja=dame        status (online, pausa local, conexao...)
+//
+// Izza Impressora (programa do Windows): ver impressao.php (imp_parear, imp_poll, imp_resultado).
 define('WB', 1);
 require __DIR__ . '/lib.php';
+require __DIR__ . '/impressao.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
@@ -99,6 +102,8 @@ function bot_auth($db, $loja) {
     if ($hash === '' || !hash_equals($hash, hash('sha256', $m[1]))) falha(401, 'token invalido');
 }
 
+if ($action === 'imp_parear' || $action === 'imp_poll' || $action === 'imp_resultado') imp_rotas_programa($action, $method);
+
 if ($action === 'bot' || $action === 'bot_status' || $action === 'bot_padroes' || $action === 'bot_pedidos' || $action === 'bot_clientes' || $action === 'bot_alertas') {
     $loja = isset($_GET['loja']) ? preg_replace('/[^a-z0-9_-]/', '', $_GET['loja']) : '';
     $db = db_load();
@@ -125,16 +130,18 @@ if ($action === 'bot' || $action === 'bot_status' || $action === 'bot_padroes' |
         $lk = fopen($arq . '.lock', 'c'); flock($lk, LOCK_EX);
         $todos = json_read($arq, array());
         $idx = array();
+        $chegaram = array(); // pedidos que ainda nao existiam: podem imprimir sozinhos
         foreach ($todos as $i => $x) if (isset($x['id'])) $idx[$x['id']] = $i;
         foreach ($novos as $x) {
             if (!is_array($x) || empty($x['id'])) continue;
             $x['id'] = substr((string)$x['id'], 0, 80);
-            if (isset($idx[$x['id']])) $todos[$idx[$x['id']]] = $x; else { $idx[$x['id']] = count($todos); $todos[] = $x; }
+            if (isset($idx[$x['id']])) $todos[$idx[$x['id']]] = $x; else { $idx[$x['id']] = count($todos); $todos[] = $x; $chegaram[] = $x; }
         }
         usort($todos, function ($a, $b) { return strcmp(isset($a['em']) ? $a['em'] : '', isset($b['em']) ? $b['em'] : ''); });
         if (count($todos) > 5000) $todos = array_slice($todos, -5000);
         json_write($arq, $todos);
         flock($lk, LOCK_UN); fclose($lk);
+        if ($chegaram) imp_auto($db, $loja, $chegaram);
         out(200, array('ok' => true, 'total' => count($todos)));
     }
     // alertas da tela da loja (monitor do bot): upsert por id; o mesmo id volta com resolvido=true
@@ -190,6 +197,9 @@ $eu = current_user($db);
 if (!$eu) falha(401, 'unauthorized');
 
 if ($method === 'POST' && (empty($_SERVER['HTTP_X_WB']) || $_SERVER['HTTP_X_WB'] !== '1')) falha(403, 'csrf');
+
+// impressoras e fila de impressao (impressao.php)
+if (in_array($action, array('impressao', 'imp_codigo', 'imp_remover', 'imp_config', 'imprimir'), true)) imp_rotas_painel($action, $method, $eu, $db);
 
 if ($action === 'estado' && $method === 'GET') {
     $lojas = array();
@@ -306,6 +316,7 @@ if ($action === 'bairros' && $method === 'GET') {
 if ($action === 'ao_vivo' && $method === 'GET') {
     $loja = isset($_GET['loja']) ? (string)$_GET['loja'] : '';
     exige($eu, $db, $loja, 'ver');
+    imp_vigia($loja);
     $al = json_read(data_dir() . '/alertas-' . $loja . '.json', array());
     $al = array_slice($al, -300);
     $parq = data_dir() . '/pedidos-' . $loja . '.json';
@@ -313,13 +324,12 @@ if ($action === 'ao_vivo' && $method === 'GET') {
     $ver = is_file($parq) ? filemtime($parq) . '-' . filesize($parq) : '';
     $ped = null;
     if ($ver !== '' && (!isset($_GET['v']) || $_GET['v'] !== $ver)) {
-        $ped = array();
-        foreach (array_slice(json_read($parq, array()), -40) as $x) {
-            $ped[] = array('id' => isset($x['id']) ? $x['id'] : '', 'status' => isset($x['status']) ? $x['status'] : '', 'em' => isset($x['em']) ? $x['em'] : '',
-                'nome' => isset($x['nome']) ? $x['nome'] : '', 'total' => isset($x['total']) ? $x['total'] : null, 'telefone' => isset($x['telefone']) ? $x['telefone'] : '');
-        }
+        // registro inteiro (resumo, endereco, pagamento): o Quadro mostra e imprime a comanda
+        $ped = array_values(array_filter(array_slice(json_read($parq, array()), -40), 'is_array'));
     }
-    out(200, array('ok' => true, 'alertas' => $al, 'pedidosVersao' => $ver, 'pedidos' => $ped, 'agora' => date('c')));
+    // Quadro (kanban): coluna de cada pedido, movida pela loja
+    $quadro = json_read(data_dir() . '/quadro-' . $loja . '.json', array());
+    out(200, array('ok' => true, 'alertas' => $al, 'pedidosVersao' => $ver, 'pedidos' => $ped, 'quadro' => (object)$quadro, 'agora' => date('c')));
 }
 
 // Historico de pedidos e clientes (o bot manda; o painel so mostra)
@@ -519,6 +529,22 @@ case 'usuario_del':
         }
         if (empty($u['lojas'])) unset($db['usuarios'][$email]); else $db['usuarios'][$email] = $u;
     });
+    out(200, array('ok' => true));
+
+// Quadro (kanban, 23/11/2026): a loja move o pedido entre as colunas. Guarda os 500 mais novos.
+case 'quadro_mover':
+    exige($eu, $db, $loja, 'ver');
+    $id = isset($d['id']) ? substr((string)$d['id'], 0, 80) : '';
+    $col = isset($d['coluna']) ? (string)$d['coluna'] : '';
+    if ($id === '' || !in_array($col, array('novo', 'preparo', 'saiu', 'concluido'), true)) falha(400, 'coluna');
+    $arq = data_dir() . '/quadro-' . $loja . '.json';
+    $lk = fopen($arq . '.lock', 'c'); flock($lk, LOCK_EX);
+    $q = json_read($arq, array());
+    unset($q[$id]);
+    $q[$id] = array('col' => $col, 'por' => $eu['email'], 'em' => date('c'));
+    if (count($q) > 500) $q = array_slice($q, -500, null, true);
+    json_write($arq, $q);
+    flock($lk, LOCK_UN); fclose($lk);
     out(200, array('ok' => true));
 
 // Alerta resolvido por alguem da loja (um, ou todos os abertos)

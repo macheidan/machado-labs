@@ -91,6 +91,7 @@
     var l = loja(), po = l ? l.pode : {}, adm = S.dados.eu.superadmin;
     var p = [
       { g: 'Dia a dia', id: 'geral', ic: '◉', nome: 'Visão geral', ve: true },
+      { g: 'Dia a dia', id: 'quadro', ic: '▦', nome: 'Quadro', ve: true },
       { g: 'Dia a dia', id: 'pedidos', ic: '▤', nome: 'Pedidos', ve: true },
       { g: 'Dia a dia', id: 'alertas', ic: '⚑', nome: 'Alertas', cont: alertasAbertos(l), ve: true },
       { g: 'Dia a dia', id: 'clientes', ic: '☻', nome: 'Clientes', ve: po.clientes },
@@ -136,10 +137,11 @@
 
     var c = $('#content');
     if (!l && S.pagina !== 'lojas') { c.innerHTML = '<div class="card vazio">Nenhuma loja ainda.' + (eu.superadmin ? ' Cadastre a primeira em <b>Lojas</b>.' : '') + '</div>'; return; }
-    ({ geral: pgGeral, numeros: pgNumeros, regras: pgRegras, funcionamento: pgFuncionamento, fluxo: pgFluxo, frases: pgFrases, pedidos: pgPedidos, clientes: pgClientes, alertas: pgAlertas, comanda: pgComanda, integracoes: pgIntegracoes, entrega: function (c, l) { pgFicha(c, l, 'entrega'); }, pagamento: function (c, l) { pgFicha(c, l, 'pagamento'); }, regrasloja: function (c, l) { pgFicha(c, l, 'regras'); }, tamanhos: function (c, l) { pgFicha(c, l, 'tamanhos'); }, instrucoes: pgInstrucoes, ferramentas: pgFerramentas, equipe: pgEquipe, historico: pgHistorico, lojas: pgLojas })[S.pagina](c, l);
+    ({ geral: pgGeral, numeros: pgNumeros, regras: pgRegras, funcionamento: pgFuncionamento, fluxo: pgFluxo, frases: pgFrases, pedidos: pgPedidos, quadro: pgQuadro, clientes: pgClientes, alertas: pgAlertas, comanda: pgComanda, integracoes: pgIntegracoes, entrega: function (c, l) { pgFicha(c, l, 'entrega'); }, pagamento: function (c, l) { pgFicha(c, l, 'pagamento'); }, regrasloja: function (c, l) { pgFicha(c, l, 'regras'); }, tamanhos: function (c, l) { pgFicha(c, l, 'tamanhos'); }, instrucoes: pgInstrucoes, ferramentas: pgFerramentas, equipe: pgEquipe, historico: pgHistorico, lojas: pgLojas })[S.pagina](c, l);
   }
 
   function ir(p) {
+    if (p !== 'quadro') saiQuadro();
     S.pagina = p; try { localStorage.setItem('wb_pag', p); } catch (e) {}
     fecharMenu(); desenhar(); window.scrollTo(0, 0);
   }
@@ -1257,7 +1259,7 @@
     impressao: ['Impressão falhou', '⎙'],
     expirado: ['Pedido expirou', '⌛'],
   };
-  var VIVO = { timer: null, loja: null, alertas: [], conhecidos: null, pedConhecidos: null, versao: '', recarregaPedidos: null };
+  var VIVO = { timer: null, loja: null, alertas: [], conhecidos: null, pedConhecidos: null, versao: '', recarregaPedidos: null, pedidos: [], quadro: {}, redesenhaQuadro: null };
   function somLigado() { try { return localStorage.getItem('wb_som') !== '0'; } catch (e) { return true; } }
   // Os mesmos sons do Titan (pedidos dame lov/public/index.html): harpa para pedido e mensagem
   // chegando (escolhida pelo Fábio em 08/10/2026) e bipe quadrado so para impressao que falhou.
@@ -1306,7 +1308,7 @@
   }
   function vivo() {
     var l = loja(); if (!l) return;
-    if (VIVO.loja !== l.id) { VIVO.loja = l.id; VIVO.alertas = []; VIVO.conhecidos = null; VIVO.pedConhecidos = null; VIVO.versao = ''; }
+    if (VIVO.loja !== l.id) { VIVO.loja = l.id; VIVO.alertas = []; VIVO.conhecidos = null; VIVO.pedConhecidos = null; VIVO.versao = ''; VIVO.pedidos = []; VIVO.quadro = {}; }
     var pediu = l.id;
     api('ao_vivo&loja=' + encodeURIComponent(l.id) + '&v=' + encodeURIComponent(VIVO.versao)).then(function (j) {
       if (VIVO.loja !== pediu) return;
@@ -1324,7 +1326,9 @@
         novos.forEach(function (a) { notifica(a.titulo || 'Alerta da Izza', [a.nome, fmtTel(a.telefone), a.texto].filter(Boolean).join(' · '), a.id); });
         toast((novos.length === 1 ? novos[0].titulo : novos.length + ' alertas novos') + (novos[0].nome ? ' · ' + novos[0].nome : ''), urg);
       }
+      VIVO.quadro = j.quadro || {};
       if (j.pedidos) {
+        VIVO.pedidos = j.pedidos;
         var primeiraP = !VIVO.pedConhecidos, pedNovos = [];
         VIVO.pedConhecidos = VIVO.pedConhecidos || {};
         j.pedidos.forEach(function (p) { if (!primeiraP && !VIVO.pedConhecidos[p.id]) pedNovos.push(p); VIVO.pedConhecidos[p.id] = 1; });
@@ -1338,6 +1342,7 @@
         if (mudou && S.pagina === 'pedidos' && VIVO.recarregaPedidos) VIVO.recarregaPedidos();
       }
       if (S.pagina === 'alertas' && (novos.length || primeira) && VIVO.redesenhaAlertas) VIVO.redesenhaAlertas();
+      if (S.pagina === 'quadro' && VIVO.redesenhaQuadro) VIVO.redesenhaQuadro();
     }).catch(function () {});
   }
   function ligaVivo() {
@@ -1397,6 +1402,175 @@
         '<div class="muted small">' + esc(dataHora(a.em || a.recebidoEm)) + (a.resolvido ? ' · resolvido' + (a.resolvidoPor ? ' por ' + esc(a.resolvidoPor === 'loja' ? 'a loja na tela' : a.resolvidoPor === 'prazo' ? 'prazo' : quem(a.resolvidoPor)) : '') + (a.resolvidoEm ? ' ' + esc(dataHora(a.resolvidoEm)) : '') : '') + '</div>' +
       '</div>' +
       (a.resolvido ? '' : '<button class="btn sm" data-resolve="' + esc(a.id) + '">Resolvido</button>') + '</div>';
+  }
+
+  // ------------------------------------------------------------- Quadro (kanban, 23/11/2026)
+  // Tela que fica aberta na loja: alertas de interacao (cliente esperando atendente, reclamacao,
+  // pedido para aprovar...) na primeira coluna e os pedidos da Izza andando por Novos -> Em preparo
+  // -> Saiu/Pronto -> Concluidos. A coluna e da loja (quadro_mover, guardada no painel); o bot nao
+  // le. Pedido recusado ou que nao entrou vai direto para Concluidos. Mostra as ultimas 16 h.
+  var COLS_Q = [
+    { id: 'novo', nome: 'Novos' },
+    { id: 'preparo', nome: 'Em preparo' },
+    { id: 'saiu', nome: 'Saiu / pronto' },
+    { id: 'concluido', nome: 'Concluídos' },
+  ];
+  var QD = { wake: null, relogio: null };
+  function saiQuadro() {
+    document.body.classList.remove('quadro-cheio');
+    try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) {}
+    if (QD.wake) { try { QD.wake.release(); } catch (e) {} QD.wake = null; }
+    if (QD.relogio) { clearInterval(QD.relogio); QD.relogio = null; }
+    VIVO.redesenhaQuadro = null;
+  }
+  // tela da loja nao apaga enquanto o Quadro esta aberto
+  function acordado() {
+    try {
+      if (navigator.wakeLock && !QD.wake && document.visibilityState === 'visible') {
+        navigator.wakeLock.request('screen').then(function (w) { QD.wake = w; w.addEventListener('release', function () { QD.wake = null; }); }).catch(function () {});
+      }
+    } catch (e) {}
+  }
+  document.addEventListener('visibilitychange', function () { if (S.pagina === 'quadro') acordado(); });
+  function colunaDe(p) {
+    var q = VIVO.quadro[p.id];
+    if (q && q.col) return q.col;
+    if (p.status === 'recusado' || p.status === 'expirado') return 'concluido';
+    return 'novo';
+  }
+  function minutos(iso) { return Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000)); }
+  function idade(iso) { var m = minutos(iso); return m < 60 ? m + ' min' : Math.floor(m / 60) + ' h ' + (m % 60) + ' min'; }
+  function hora(iso) { return iso ? new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : ''; }
+  // linhas de item do resumo ("- 1 pizza grande..."), sem cabecalho, total e pergunta do pagamento
+  function itensDo(resumo) {
+    return String(resumo || '').split('\n').filter(function (x) { return /^\s*[-•]/.test(x); }).map(function (x) { return x.replace(/^\s*[-•]\s*/, '').replace(/\*/g, ''); });
+  }
+  function pgQuadro(el, l) {
+    el.innerHTML = '';
+    var pag = document.createElement('div'); pag.className = 'pagina quadro-pag'; el.appendChild(pag);
+    var arrastando = null;
+    function cardPedido(p, col) {
+      var st = ST_PED[p.status] || [p.status, ''];
+      var m = minutos(p.em), atrasado = (col === 'novo' && m >= 15) || (col === 'preparo' && m >= 40);
+      var itens = itensDo(p.resumo);
+      var i = COLS_Q.map(function (c) { return c.id; }).indexOf(col);
+      var morto = p.status === 'recusado' || p.status === 'expirado';
+      var lugar = [p.endereco && p.endereco.bairro ? p.endereco.bairro : '', p.pagamento || ''].filter(Boolean).join(' · ');
+      return '<div class="qcard' + (atrasado ? ' atrasado' : '') + (morto ? ' morto' : '') + '" draggable="true" data-ped="' + esc(p.id) + '">' +
+        '<div class="qcard-top"><b>' + esc(p.nome || fmtTel(p.telefone) || 'Cliente') + '</b><span class="qcard-h" title="' + esc(dataHora(p.em)) + '">' + esc(hora(p.em)) + ' · ' + esc(idade(p.em)) + '</span></div>' +
+        '<div class="qcard-tags"><span class="badge ' + st[1] + '">' + esc(st[0]) + '</span>' +
+          (p.retirada != null ? '<span class="badge">' + (p.retirada ? 'Retirada' : 'Entrega') + '</span>' : '') +
+          (p.codigo ? '<span class="badge">nº ' + esc(p.codigo) + '</span>' : '') +
+          (p.agendadoPara ? '<span class="badge acc">para ' + esc(p.agendadoPara) + '</span>' : '') + '</div>' +
+        (itens.length ? '<ul class="qcard-itens">' + itens.slice(0, 4).map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') +
+          (itens.length > 4 ? '<li class="muted">+ ' + (itens.length - 4) + (itens.length - 4 === 1 ? ' item' : ' itens') + '</li>' : '') + '</ul>' : '') +
+        '<div class="qcard-pe"><span class="muted small">' + esc(lugar) + '</span><b>' + (p.total != null ? brl(p.total) : '') + '</b></div>' +
+        '<div class="qcard-acoes">' +
+          (i > 0 ? '<button class="btn sm" data-mover="' + COLS_Q[i - 1].id + '" title="Voltar para ' + esc(COLS_Q[i - 1].nome) + '">←</button>' : '<span></span>') +
+          '<button class="btn sm" data-ver>Ver</button>' +
+          (i < COLS_Q.length - 1 ? '<button class="btn sm pri" data-mover="' + COLS_Q[i + 1].id + '">' + esc(COLS_Q[i + 1].nome) + ' →</button>' : '<span></span>') +
+        '</div></div>';
+    }
+    function cardAlerta(a) {
+      var t = TIPO_AL[a.tipo] || [a.tipo || 'Alerta', '•'];
+      var em = a.em || a.recebidoEm;
+      return '<div class="qcard qalerta' + (a.nivel === 'urgente' ? ' urgente' : '') + '">' +
+        '<div class="qcard-top"><b>' + esc(t[1] + ' ' + (a.titulo || t[0])) + '</b><span class="qcard-h">' + esc(hora(em)) + ' · ' + esc(idade(em)) + '</span></div>' +
+        (a.nome || a.telefone ? '<div>' + esc(a.nome || '') + (a.telefone ? ' <a href="https://wa.me/' + esc(String(a.telefone).replace(/\D/g, '')) + '" target="_blank" rel="noopener">' + esc(fmtTel(a.telefone)) + '</a>' : '') + '</div>' : '') +
+        (a.texto ? '<div class="muted small qalerta-txt">' + esc(a.texto) + '</div>' : '') +
+        '<div class="qcard-acoes"><span></span><span></span><button class="btn sm pri" data-resolve="' + esc(a.id) + '">Resolvido</button></div></div>';
+    }
+    function desenha() {
+      if (S.pagina !== 'quadro' || !pag.isConnected) return;
+      var desde = Date.now() - 16 * 3600e3;
+      var peds = (VIVO.loja === l.id ? VIVO.pedidos : []).filter(function (p) { return p.em && new Date(p.em).getTime() >= desde; });
+      var porCol = { novo: [], preparo: [], saiu: [], concluido: [] };
+      peds.forEach(function (p) { (porCol[colunaDe(p)] || porCol.novo).push(p); });
+      ['novo', 'preparo', 'saiu'].forEach(function (k) { porCol[k].sort(function (a, b) { return a.em < b.em ? -1 : 1; }); });
+      porCol.concluido.sort(function (a, b) { return a.em < b.em ? 1 : -1; });
+      var als = (VIVO.loja === l.id ? VIVO.alertas : []).filter(function (a) { return !a.resolvido; });
+      var cheio = document.body.classList.contains('quadro-cheio');
+      var notif = window.Notification ? Notification.permission : 'nao';
+      var rolagem = [].map.call(pag.querySelectorAll('.qcol-corpo'), function (x) { return x.scrollTop; });
+      pag.innerHTML = '<div class="quadro-head"><div class="linha" style="gap:10px;flex-wrap:wrap"><h1>Quadro · ' + esc(l.nome) + '</h1><span class="badge ok vivo-pill"><span class="dot"></span>ao vivo</span><span class="muted small">' + esc(hora(new Date().toISOString())) + '</span></div>' +
+        '<div class="linha" style="gap:8px;flex-wrap:wrap">' +
+          (notif === 'default' ? '<button class="btn sm" id="qd-notif">Ativar notificações</button>' : '') +
+          '<label class="fp-radio"><input type="checkbox" id="qd-som"' + (somLigado() ? ' checked' : '') + '>Som</label>' +
+          '<button class="btn sm" id="qd-cheio">' + (cheio ? 'Sair da tela cheia' : '⛶ Tela cheia') + '</button></div></div>' +
+        '<div class="quadro">' +
+          '<section class="qcol qcol-alerta"><header><span>Atenção</span><span class="cont' + (als.length ? ' cont-alerta' : '') + '">' + als.length + '</span></header><div class="qcol-corpo">' +
+            (als.length ? als.map(cardAlerta).join('') : '<div class="qvazio">Nenhuma interação esperando.</div>') + '</div></section>' +
+          COLS_Q.map(function (c) {
+            var lista = c.id === 'concluido' ? porCol.concluido.slice(0, 30) : porCol[c.id];
+            return '<section class="qcol" data-col="' + c.id + '"><header><span>' + esc(c.nome) + '</span><span class="cont">' + porCol[c.id].length + '</span></header><div class="qcol-corpo">' +
+              (lista.length ? lista.map(function (p) { return cardPedido(p, c.id); }).join('') : '<div class="qvazio">' + (c.id === 'novo' ? 'Pedido novo da Izza aparece aqui, com som.' : 'Arraste um pedido para cá.') + '</div>') + '</div></section>';
+          }).join('') +
+        '</div>';
+      [].forEach.call(pag.querySelectorAll('.qcol-corpo'), function (x, i) { x.scrollTop = rolagem[i] || 0; });
+      liga();
+    }
+    function mover(id, col) {
+      var ant = VIVO.quadro[id];
+      VIVO.quadro[id] = { col: col, por: S.dados.eu.email, em: new Date().toISOString() };
+      desenha();
+      api('quadro_mover', { loja: l.id, id: id, coluna: col }).catch(function (e) {
+        if (ant) VIVO.quadro[id] = ant; else delete VIVO.quadro[id];
+        desenha(); toast(e.message, true);
+      });
+    }
+    function liga() {
+      if ($('#qd-notif', pag)) $('#qd-notif', pag).onclick = function () { Notification.requestPermission().then(desenha); };
+      $('#qd-som', pag).onchange = function () { try { localStorage.setItem('wb_som', this.checked ? '1' : '0'); } catch (e) {} if (this.checked) som('harpa'); };
+      $('#qd-cheio', pag).onclick = function () {
+        var on = !document.body.classList.contains('quadro-cheio');
+        document.body.classList.toggle('quadro-cheio', on);
+        try {
+          if (on && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(function () {});
+          else if (!on && document.fullscreenElement) document.exitFullscreen();
+        } catch (e) {}
+        desenha();
+      };
+      pag.querySelectorAll('[data-resolve]').forEach(function (b) {
+        b.onclick = function () {
+          var id = b.getAttribute('data-resolve');
+          api('alerta_resolver', { loja: l.id, id: id }).then(function () {
+            VIVO.alertas.forEach(function (a) { if (a.id === id) { a.resolvido = true; a.resolvidoPor = S.dados.eu.email; a.resolvidoEm = new Date().toISOString(); } });
+            marcaContadores(); desenha();
+          }).catch(function (e) { toast(e.message, true); });
+        };
+      });
+      pag.querySelectorAll('.qcard[data-ped]').forEach(function (c) {
+        var id = c.getAttribute('data-ped');
+        c.querySelectorAll('[data-mover]').forEach(function (b) { b.onclick = function () { mover(id, b.getAttribute('data-mover')); }; });
+        c.querySelector('[data-ver]').onclick = function () { verPedido(id); };
+        c.ondragstart = function (ev) { arrastando = id; c.classList.add('arrasta'); try { ev.dataTransfer.setData('text/plain', id); ev.dataTransfer.effectAllowed = 'move'; } catch (e) {} };
+        c.ondragend = function () { arrastando = null; c.classList.remove('arrasta'); pag.querySelectorAll('.qcol.alvo').forEach(function (x) { x.classList.remove('alvo'); }); };
+      });
+      pag.querySelectorAll('.qcol[data-col]').forEach(function (col) {
+        col.ondragover = function (ev) { if (!arrastando) return; ev.preventDefault(); col.classList.add('alvo'); };
+        col.ondragleave = function (ev) { if (!col.contains(ev.relatedTarget)) col.classList.remove('alvo'); };
+        col.ondrop = function (ev) {
+          ev.preventDefault(); col.classList.remove('alvo');
+          var id = arrastando; arrastando = null;
+          var p = VIVO.pedidos.filter(function (x) { return x.id === id; })[0];
+          if (p && colunaDe(p) !== col.getAttribute('data-col')) mover(id, col.getAttribute('data-col'));
+        };
+      });
+    }
+    function verPedido(id) {
+      var p = VIVO.pedidos.filter(function (x) { return x.id === id; })[0]; if (!p) return;
+      modal('<h3>' + esc(p.nome || 'Pedido') + '</h3>' + pedidoHtml(p, true).replace('<div class="pedido-det" hidden>', '<div class="pedido-det">') +
+        '<div class="acoes"><button class="btn" data-fecha>Fechar</button></div>', function (m) {
+        var b = m.querySelector('[data-imprime]'); if (b) b.onclick = function () { imprimeComanda(p, l); };
+      });
+    }
+    VIVO.redesenhaQuadro = desenha;
+    acordado();
+    // relogio e "ha X min" dos cards andam sozinhos
+    if (!QD.relogio) QD.relogio = setInterval(function () { if (S.pagina === 'quadro' && VIVO.redesenhaQuadro) VIVO.redesenhaQuadro(); }, 60000);
+    desenha();
+    // pedidos completos vem do ao_vivo: forca a lista na primeira abertura
+    if (VIVO.loja !== l.id || !VIVO.pedidos.length) { VIVO.versao = ''; vivo(); }
   }
 
   // ------------------------------------------------------------- Pedidos (ao vivo)

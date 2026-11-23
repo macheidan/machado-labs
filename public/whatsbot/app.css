@@ -313,3 +313,43 @@ table.clientes tr.cli.aberto td { background: var(--accent-light); }
 .cm .cm-hr { overflow: hidden; white-space: nowrap; }
 @media (max-width: 900px) { .cm-grid { grid-template-columns: 1fr; } .cm-prev-card { position: static; } }
 code { background: var(--border-2); padding: 1px 5px; border-radius: 4px; font-size: .92em; }
+
+/* ---------- Quadro (kanban da loja, 23/11/2026) */
+.quadro-pag { display: flex; flex-direction: column; gap: 14px; }
+.quadro-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.quadro-head h1 { font-size: 22px; }
+.quadro { display: grid; grid-template-columns: repeat(5, minmax(220px, 1fr)); gap: 12px; overflow-x: auto; padding-bottom: 6px; }
+.qcol { background: var(--well); border: 1px solid var(--border); border-radius: 14px; display: flex; flex-direction: column; min-height: 60vh; max-height: calc(100dvh - 190px); }
+.qcol header { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; font-weight: 600; border-bottom: 1px solid var(--border); }
+.qcol header .cont { font-size: 12px; background: var(--border-2); color: var(--muted); border-radius: 99px; padding: 0 8px; }
+.qcol header .cont.cont-alerta { background: var(--danger); color: #fff; }
+.qcol-alerta { border-color: var(--warning-border); }
+.qcol-alerta header { color: var(--warning); }
+.qcol.alvo { border-color: var(--accent); background: var(--accent-light); }
+.qcol-corpo { padding: 10px; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; flex: 1; }
+.qvazio { color: var(--muted); font-size: 13px; text-align: center; padding: 24px 8px; }
+.qcard { background: var(--card); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; box-shadow: var(--shadow); font-size: 14px; cursor: grab; }
+.qcard.arrasta { opacity: .5; }
+.qcard.atrasado { border-left-color: var(--warning); }
+.qcard.morto { border-left-color: var(--danger); opacity: .75; }
+.qcard.qalerta { border-left-color: var(--warning); cursor: default; }
+.qcard.qalerta.urgente { border-left-color: var(--danger); animation: qpisca 1.6s ease-in-out infinite; }
+@keyframes qpisca { 50% { box-shadow: 0 0 0 3px var(--danger-bg); } }
+.qcard-top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.qcard-top b { overflow: hidden; text-overflow: ellipsis; }
+.qcard-h { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.qcard.atrasado .qcard-h { color: var(--warning); font-weight: 600; }
+.qcard-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+.qcard-itens { margin: 0; padding-left: 16px; font-size: 13px; color: var(--text-2); }
+.qcard-pe { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.qalerta-txt { overflow-wrap: anywhere; }
+.qcard-acoes { display: flex; justify-content: space-between; gap: 6px; }
+.qcard-acoes .btn { padding: 4px 8px; }
+body.quadro-cheio .sidebar, body.quadro-cheio .topbar { display: none; }
+body.quadro-cheio .content { max-width: none; padding: 14px; }
+body.quadro-cheio .qcol { max-height: calc(100dvh - 90px); }
+@media (max-width: 900px) {
+  .quadro { grid-template-columns: repeat(5, 82vw); scroll-snap-type: x mandatory; }
+  .qcol { scroll-snap-align: start; max-height: none; }
+}
+.content:has(.quadro-pag) { max-width: none; }
