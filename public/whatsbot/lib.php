@@ -159,6 +159,7 @@ function pode($u, $loja, $o_que) {
         case 'ver': case 'pausar': case 'numeros': return $n >= 1;
         case 'horario': case 'clientes':            return $n >= 2;
         case 'escopo': case 'equipe':               return $n >= 3;
+        case 'integracoes':                         return $n >= 3;
         // Regras, instrucoes e ferramentas: SO VISUALIZACAO (Fabio, 22/11/2026: "nao quero
         // que mude o bot"). Nem o superadmin edita; o bot tambem ignora esses campos.
         case 'regras': case 'instrucoes':           return false;
@@ -187,3 +188,13 @@ function hora_dec($s) {
 }
 
 function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
+
+// Segredo de integracao (senha do Titan, secret da Saipos, segredo do webhook) nunca vai ao
+// navegador: volta como "__definido__" quando existe. So o bot (GET api.php?a=bot) le o valor.
+function mascara_segredos($cfg) {
+    if (!isset($cfg['integracoes']) || !is_array($cfg['integracoes'])) return $cfg;
+    foreach (array(array('titan', 'senha'), array('saipos', 'secret'), array('webhook', 'segredo')) as $s) {
+        if (isset($cfg['integracoes'][$s[0]][$s[1]])) $cfg['integracoes'][$s[0]][$s[1]] = $cfg['integracoes'][$s[0]][$s[1]] !== '' ? '__definido__' : '';
+    }
+    return $cfg;
+}

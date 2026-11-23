@@ -99,7 +99,7 @@ function bot_auth($db, $loja) {
     if ($hash === '' || !hash_equals($hash, hash('sha256', $m[1]))) falha(401, 'token invalido');
 }
 
-if ($action === 'bot' || $action === 'bot_status' || $action === 'bot_padroes' || $action === 'bot_pedidos' || $action === 'bot_clientes') {
+if ($action === 'bot' || $action === 'bot_status' || $action === 'bot_padroes' || $action === 'bot_pedidos' || $action === 'bot_clientes' || $action === 'bot_alertas') {
     $loja = isset($_GET['loja']) ? preg_replace('/[^a-z0-9_-]/', '', $_GET['loja']) : '';
     $db = db_load();
     if ($loja === '' || !isset($db['lojas'][$loja])) falha(404, 'loja');
@@ -137,6 +137,37 @@ if ($action === 'bot' || $action === 'bot_status' || $action === 'bot_padroes' |
         flock($lk, LOCK_UN); fclose($lk);
         out(200, array('ok' => true, 'total' => count($todos)));
     }
+    // alertas da tela da loja (monitor do bot): upsert por id; o mesmo id volta com resolvido=true
+    if ($action === 'bot_alertas' && $method === 'POST') {
+        $p = corpo();
+        $novos = isset($p['alertas']) && is_array($p['alertas']) ? $p['alertas'] : array();
+        $arq = data_dir() . '/alertas-' . $loja . '.json';
+        $lk = fopen($arq . '.lock', 'c'); flock($lk, LOCK_EX);
+        $todos = json_read($arq, array());
+        $idx = array();
+        foreach ($todos as $i => $x) if (isset($x['id'])) $idx[$x['id']] = $i;
+        $campos = array_flip(array('id', 'tipo', 'nivel', 'titulo', 'texto', 'nome', 'telefone', 'codigo', 'em', 'resolvido', 'resolvidoPor', 'marca'));
+        foreach ($novos as $x) {
+            if (!is_array($x) || empty($x['id'])) continue;
+            $x = array_intersect_key($x, $campos);
+            $x['id'] = substr((string)$x['id'], 0, 80);
+            foreach (array('titulo', 'texto', 'nome') as $k) if (isset($x[$k])) $x[$k] = mb_substr((string)$x[$k], 0, 500);
+            if (isset($idx[$x['id']])) {
+                $i = $idx[$x['id']];
+                if (!empty($todos[$i]['resolvido']) && empty($x['resolvido'])) unset($x['resolvido']);
+                $todos[$i] = array_merge($todos[$i], $x);
+                if (!empty($x['resolvido']) && empty($todos[$i]['resolvidoEm'])) $todos[$i]['resolvidoEm'] = date('c');
+            } elseif (!empty($x['tipo'])) {
+                $x['recebidoEm'] = date('c');
+                $idx[$x['id']] = count($todos);
+                $todos[] = $x;
+            }
+        }
+        if (count($todos) > 1000) $todos = array_slice($todos, -1000);
+        json_write($arq, $todos);
+        flock($lk, LOCK_UN); fclose($lk);
+        out(200, array('ok' => true));
+    }
     // clientes que ja pediram pelo WhatsApp, com o cadastro da base da loja: substitui a lista
     if ($action === 'bot_clientes' && $method === 'POST') {
         $p = corpo();
@@ -167,6 +198,7 @@ if ($action === 'estado' && $method === 'GET') {
         $st = json_read(data_dir() . '/status-' . $id . '.json', null);
         $pad = pode($eu, $id, 'ver') ? json_read(data_dir() . '/padroes-' . $id . '.json', null) : null;
         $cfg = isset($l['config']) ? $l['config'] : config_padrao();
+        $cfg = mascara_segredos($cfg);
         // o prompt (instrucoes e ferramentas) e do produto: so o administrador geral ve
         if (!$eu['superadmin']) {
             if (is_array($pad)) unset($pad['instrucoes'], $pad['ferramentas']);
@@ -184,6 +216,7 @@ if ($action === 'estado' && $method === 'GET') {
                 'regras' => pode($eu, $id, 'regras'), 'horario' => pode($eu, $id, 'horario'),
                 'escopo' => pode($eu, $id, 'escopo'), 'equipe' => pode($eu, $id, 'equipe'),
                 'instrucoes' => pode($eu, $id, 'instrucoes'), 'clientes' => pode($eu, $id, 'clientes'),
+                'integracoes' => pode($eu, $id, 'integracoes'),
             ),
             'config' => $cfg,
             'status' => $st,
@@ -266,6 +299,27 @@ if ($action === 'bairros' && $method === 'GET') {
     $res = array('cidade' => $cid, 'uf' => $uf, 'bairros' => $nomes, 'fonte' => 'OpenStreetMap', 'em' => date('c'));
     json_write($arq, $res);
     out(200, array('ok' => true) + $res);
+}
+
+// Ao vivo (23/11/2026): alertas da loja e os pedidos mais novos. O navegador pergunta a cada 15 s;
+// `v` e a versao de pedidos que ele ja tem (so manda a lista quando mudou).
+if ($action === 'ao_vivo' && $method === 'GET') {
+    $loja = isset($_GET['loja']) ? (string)$_GET['loja'] : '';
+    exige($eu, $db, $loja, 'ver');
+    $al = json_read(data_dir() . '/alertas-' . $loja . '.json', array());
+    $al = array_slice($al, -300);
+    $parq = data_dir() . '/pedidos-' . $loja . '.json';
+    clearstatcache();
+    $ver = is_file($parq) ? filemtime($parq) . '-' . filesize($parq) : '';
+    $ped = null;
+    if ($ver !== '' && (!isset($_GET['v']) || $_GET['v'] !== $ver)) {
+        $ped = array();
+        foreach (array_slice(json_read($parq, array()), -40) as $x) {
+            $ped[] = array('id' => isset($x['id']) ? $x['id'] : '', 'status' => isset($x['status']) ? $x['status'] : '', 'em' => isset($x['em']) ? $x['em'] : '',
+                'nome' => isset($x['nome']) ? $x['nome'] : '', 'total' => isset($x['total']) ? $x['total'] : null, 'telefone' => isset($x['telefone']) ? $x['telefone'] : '');
+        }
+    }
+    out(200, array('ok' => true, 'alertas' => $al, 'pedidosVersao' => $ver, 'pedidos' => $ped, 'agora' => date('c')));
 }
 
 // Historico de pedidos e clientes (o bot manda; o painel so mostra)
@@ -464,6 +518,88 @@ case 'usuario_del':
             }
         }
         if (empty($u['lojas'])) unset($db['usuarios'][$email]); else $db['usuarios'][$email] = $u;
+    });
+    out(200, array('ok' => true));
+
+// Alerta resolvido por alguem da loja (um, ou todos os abertos)
+case 'alerta_resolver':
+    exige($eu, $db, $loja, 'ver');
+    $id = isset($d['id']) ? (string)$d['id'] : '';
+    $todosAbertos = !empty($d['todos']);
+    $arq = data_dir() . '/alertas-' . $loja . '.json';
+    $lk = fopen($arq . '.lock', 'c'); flock($lk, LOCK_EX);
+    $al = json_read($arq, array());
+    $n = 0;
+    foreach ($al as &$x) {
+        if (!empty($x['resolvido'])) continue;
+        if ($todosAbertos || (isset($x['id']) && $x['id'] === $id)) {
+            $x['resolvido'] = true; $x['resolvidoPor'] = $eu['email']; $x['resolvidoEm'] = date('c'); $n++;
+        }
+    }
+    unset($x);
+    json_write($arq, $al);
+    flock($lk, LOCK_UN); fclose($lk);
+    out(200, array('ok' => true, 'resolvidos' => $n));
+
+// Integracoes com outros sistemas (23/11/2026): configuracao por loja. Segredo nunca volta ao
+// navegador (mascara_segredos); campo de segredo vazio = manter o que ja estava.
+case 'integracoes':
+    exige($eu, $db, $loja, 'integracoes');
+    $in = isset($d['integracoes']) && is_array($d['integracoes']) ? $d['integracoes'] : null;
+    if (!$in) falha(400, 'integracoes');
+    $op = array('pedidos' => array('izza', 'titan', 'saipos', 'webhook'), 'cardapio' => array('izza', 'titan', 'saipos'), 'clientes' => array('izza', 'titan', 'saipos'));
+    $novo = array();
+    foreach ($op as $k => $vals) $novo[$k] = isset($in[$k]) && in_array($in[$k], $vals, true) ? $in[$k] : 'izza';
+    $campos = array('titan' => array('url', 'usuario', 'senha'), 'saipos' => array('idPartner', 'codStore', 'secret', 'ambiente'), 'webhook' => array('url', 'segredo'));
+    foreach ($campos as $sis => $cs) {
+        $novo[$sis] = array();
+        foreach ($cs as $c) $novo[$sis][$c] = isset($in[$sis][$c]) ? mb_substr(trim((string)$in[$sis][$c]), 0, 500) : '';
+    }
+    if ($novo['webhook']['url'] !== '' && !preg_match('#^https://#i', $novo['webhook']['url'])) falha(400, 'O endereço do webhook precisa começar com https://');
+    db_tx(function (&$db) use ($eu, $loja, $novo) {
+        $c = &cfg_de($db, $loja);
+        $velho = isset($c['integracoes']) ? $c['integracoes'] : array();
+        foreach (array(array('titan', 'senha'), array('saipos', 'secret'), array('webhook', 'segredo')) as $s) {
+            $v = $novo[$s[0]][$s[1]];
+            if ($v === '' || $v === '__definido__') $novo[$s[0]][$s[1]] = isset($velho[$s[0]][$s[1]]) ? $velho[$s[0]][$s[1]] : '';
+            if ($v === '__apagar__') $novo[$s[0]][$s[1]] = '';
+        }
+        $novo['atualizadoEm'] = date('c');
+        $novo['atualizadoPor'] = $eu['email'];
+        $c['integracoes'] = $novo;
+        db_log($db, $eu['email'], $loja, 'mudou as integrações', 'pedido: ' . $novo['pedidos'] . ', cardápio: ' . $novo['cardapio'] . ', clientes: ' . $novo['clientes']);
+    });
+    out(200, array('ok' => true));
+
+// Teste do webhook: o servidor manda um pedido de exemplo, assinado, para o endereco da loja.
+case 'integracao_teste':
+    exige($eu, $db, $loja, 'integracoes');
+    $w = isset($db['lojas'][$loja]['config']['integracoes']['webhook']) ? $db['lojas'][$loja]['config']['integracoes']['webhook'] : array();
+    $url = isset($w['url']) ? (string)$w['url'] : '';
+    if (!preg_match('#^https://#i', $url)) falha(400, 'Salve antes um endereço https:// para o webhook.');
+    $corpo = json_encode(array('evento' => 'teste', 'loja' => $loja, 'em' => date('c'), 'pedido' => array(
+        'id' => 'teste-' . time(), 'cliente' => array('nome' => 'Cliente de teste', 'telefone' => '5551900000000', 'retirada' => true),
+        'itens' => array(array('tipo' => 'pizza', 'tamanho' => 'grande', 'sabores' => array('Sabor de teste'))), 'total' => 0, 'pagamento' => 'teste')), JSON_UNESCAPED_UNICODE);
+    $ch = curl_init($url);
+    curl_setopt_array($ch, array(CURLOPT_POST => true, CURLOPT_POSTFIELDS => $corpo, CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 10, CURLOPT_CONNECTTIMEOUT => 5,
+        CURLOPT_HTTPHEADER => array('Content-Type: application/json', 'User-Agent: izza-painel/1', 'X-Izza-Evento: teste',
+            'X-Izza-Assinatura: sha256=' . hash_hmac('sha256', $corpo, isset($w['segredo']) ? (string)$w['segredo'] : ''))));
+    curl_exec($ch);
+    $http = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $erro = curl_error($ch);
+    curl_close($ch);
+    out(200, array('ok' => true, 'http' => $http, 'erro' => $erro));
+
+// Modelo da comanda que o painel imprime (pedido aprovado pela Izza, sem sistema de pedidos)
+case 'comanda':
+    exige($eu, $db, $loja, 'horario');
+    $cm = isset($d['comanda']) && is_array($d['comanda']) ? $d['comanda'] : null;
+    if (!$cm) falha(400, 'comanda');
+    if (strlen(json_encode($cm)) > 20000) falha(413, 'Comanda grande demais.');
+    db_tx(function (&$db) use ($eu, $loja, $cm) {
+        $c = &cfg_de($db, $loja);
+        $c['comanda'] = $cm;
+        db_log($db, $eu['email'], $loja, 'mudou o modelo da comanda', '');
     });
     out(200, array('ok' => true));
 
