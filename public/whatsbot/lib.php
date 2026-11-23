@@ -152,12 +152,16 @@ function nivel($u, $loja) { $p = papel_em($u, $loja); return $p ? PAPEIS[$p] : 0
 
 // operador: pausa e numeros. gerente: + regras, horario e tempos. dono: + escopo e equipe.
 function pode($u, $loja, $o_que) {
+    if ($o_que === 'regras' || $o_que === 'instrucoes') return false;
     if ($u['superadmin']) return true;
     $n = nivel($u, $loja);
     switch ($o_que) {
         case 'ver': case 'pausar': case 'numeros': return $n >= 1;
-        case 'regras': case 'horario':              return $n >= 2;
-        case 'escopo': case 'equipe': case 'instrucoes': return $n >= 3;
+        case 'horario':                             return $n >= 2;
+        case 'escopo': case 'equipe':               return $n >= 3;
+        // Regras, instrucoes e ferramentas: SO VISUALIZACAO (Fabio, 22/11/2026: "nao quero
+        // que mude o bot"). Nem o superadmin edita; o bot tambem ignora esses campos.
+        case 'regras': case 'instrucoes':           return false;
     }
     return false;
 }

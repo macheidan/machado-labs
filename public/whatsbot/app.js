@@ -13,8 +13,8 @@
   var PAPEIS = { operador: 'Operador', gerente: 'Gerente', dono: 'Dono' };
   var PAPEL_DESC = {
     operador: 'pausa o bot e mexe nos números',
-    gerente: 'tudo do operador + regras, horário e tempos',
-    dono: 'tudo do gerente + faixa de atendimento, equipe, instruções e ferramentas',
+    gerente: 'tudo do operador + horário e tempos',
+    dono: 'tudo do gerente + faixa de atendimento e equipe',
   };
 
   // ------------------------------------------------------------- utilidades
@@ -87,10 +87,9 @@
     var l = loja(), p = [
       { id: 'geral', ic: '◉', nome: 'Visão geral' },
       { id: 'numeros', ic: '☎', nome: 'Números', cont: l ? l.config.numeros.length : 0 },
-      { id: 'regras', ic: '✎', nome: 'Regras', cont: l ? l.config.regras.filter(function (r) { return r.ativa; }).length : 0 },
       { id: 'funcionamento', ic: '◷', nome: 'Funcionamento' },
-      { id: 'instrucoes', ic: '¶', nome: 'Instruções', cont: l ? Object.keys(l.config.instrucoes || {}).length : 0 },
-      { id: 'ferramentas', ic: '⚙', nome: 'Ferramentas', cont: l ? Object.keys(l.config.ferramentas || {}).length : 0 },
+      { id: 'instrucoes', ic: '¶', nome: 'Instruções e regras' },
+      { id: 'ferramentas', ic: '⚙', nome: 'Ferramentas' },
     ];
     if (l && l.pode.equipe) p.push({ id: 'equipe', ic: '☺', nome: 'Equipe' });
     p.push({ id: 'historico', ic: '≡', nome: 'Histórico' });
@@ -174,7 +173,7 @@
       '<div class="grid-2">' +
         '<div class="card"><h2>Atalhos</h2><p class="desc">O que mais se faz por aqui.</p><div class="stack">' +
           (l.pode.numeros ? '<button class="btn" data-ir="numeros" data-novo="bloqueado">+ Bloquear um número</button>' : '') +
-          (l.pode.regras ? '<button class="btn" data-ir="regras" data-novo="1">+ Nova regra para a Izza</button>' : '') +
+          '<button class="btn" data-ir="instrucoes">Ver instruções e regras da Izza</button>' +
           '<button class="btn" data-ir="funcionamento">Horário e faixa de atendimento</button>' +
         '</div></div>' +
         '<div class="card"><h2>Últimas mudanças</h2><p class="desc">Quem mexeu em quê nesta loja.</p>' +
@@ -400,12 +399,11 @@
     var k = S.abaInstr, atual = ed[k], texto = atual ? atual.texto : pad[k], pode = l.pode.instrucoes;
     var hist = historicoDe(l, 'instrucoes:' + k);
     el.innerHTML +=
-      '<div class="aviso">Isto muda o comportamento da Izza em <b>todas</b> as conversas desta loja em até 1 min, sem passar pela bancada de testes. ' +
-      'Mude pouco de cada vez e acompanhe as conversas; se algo sair errado, “Voltar ao padrão” desfaz na hora. Preço e cardápio continuam vindo do sistema, nunca daqui.' + (pode ? '' : ' <b>Só o dono edita.</b>') + '</div>' +
+      '<div class="aviso">Somente visualização: é o texto que está hoje no código do bot. Mudança nele se faz no código e passa pela bancada de testes.</div>' +
       '<div class="card"><div class="tabs">' + campos.map(function (c) {
         return '<button data-aba="' + c + '" class="' + (c === k ? 'on' : '') + '">' + CAMPOS[c].nome + (ed[c] ? ' <span class="badge acc">loja</span>' : '') + '</button>';
       }).join('') + '</div>' +
-      '<p class="desc">' + esc(CAMPOS[k].desc) + '</p><div id="desat"></div>' +
+      '<p class="desc">' + esc(CAMPOS[k].desc.replace(/ Os marcadores.*$/, ' As marcas {ASSIM} o bot troca pelo valor certo (link, tempos, Pix).')) + '</p><div id="desat"></div>' +
       '<div class="linha" style="justify-content:space-between;margin-bottom:8px">' +
         (atual ? '<span class="badge acc">Versão da loja · ' + esc(quem(atual.por)) + ' · ' + esc(dataHora(atual.em)) + '</span>' : '<span class="badge">Padrão do código</span>') +
         '<span class="muted small"><span id="cont">0</span> caracteres</span></div>' +
@@ -434,7 +432,7 @@
     var pad = l.padroes && l.padroes.ferramentas, ed = l.config.ferramentas || {}, pode = l.pode.instrucoes;
     el.innerHTML = '<div class="page-head"><div><h1>Ferramentas</h1><p>O que a Izza consegue fazer, e a descrição que ela lê para decidir quando usar cada uma.</p></div></div>';
     if (!pad) return semPadroes(el, l);
-    el.innerHTML += '<div class="aviso">Aqui se muda só a <b>descrição</b> (quando e como usar). O que a ferramenta faz, os cálculos e as travas de preço ficam no código do bot.' + (pode ? '' : ' <b>Só o dono edita.</b>') + '</div>' +
+    el.innerHTML += '<div class="aviso">Somente visualização: o nome de cada ferramenta e a descrição que a Izza lê para decidir quando usar. O que ela faz, os cálculos e as travas de preço ficam no código do bot.</div>' +
       Object.keys(GRUPOS).map(function (g) {
         var fs = pad.filter(function (f) { return f.grupo === g; });
         if (!fs.length) return '';
