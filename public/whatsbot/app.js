@@ -463,6 +463,8 @@
       { id: 'pedidoExistente', rot: 'Assunto de pedido já feito vai para um atendente', t: 'sn', p: 'sim' },
     ] },
     { titulo: 'Entrega', itens: [
+      { id: 'enderecoLoja', rot: 'Endereço da loja (de onde parte o raio)', t: 'txt', p: 'loja:endereco' },
+      { id: 'cidadeLoja', rot: 'Cidade / UF', t: 'txt', p: 'loja:cidade' },
       { id: 'taxaModelo', rot: 'Como se calcula a taxa', t: 'radio', op: [['distancia', 'Por distância'], ['bairro', 'Por bairro'], ['fixa', 'Fixa'], ['gratis', 'Grátis']], p: 'distancia' },
       { id: 'taxaAnuncia', rot: 'Anuncia a taxa antes do resumo', t: 'sn', p: 'nao' },
       { id: 'pedidoMinimo', rot: 'Pedido mínimo (R$)', t: 'num', p: '' },
@@ -497,6 +499,23 @@
     ] },
   ];
   var PIX_LOJA = { dame: 'pix@damepizza.com.br', lov: 'pix@lovpizza.com.br' };
+  // mesmo endereco que a Izza informa (src/roteiro/textos.js do whatsbot)
+  var END_LOJA = { dame: 'Rua Carazinho, 443 - Petrópolis', lov: 'Av. Anita Garibaldi, 1593 - Boa Vista' };
+  function copiaCardapio(c) {
+    if (!c) return null;
+    var pr = function (p) { return JSON.parse(JSON.stringify(p || {})); };
+    return {
+      sabores: c.sabores.map(function (s) { return { nome: s.nome, categoria: s.categoria || '', adicional: s.adicional || 0, sobPedido: !!s.sobPedido, desc: s.desc || '', ativo: true }; }),
+      bordas: c.bordas.map(function (b) { return { nome: b.nome, precos: pr(b.precos), ativo: true }; }),
+      extras: c.extras.map(function (b) { return { nome: b.nome, precos: pr(b.precos), ativo: true }; }),
+      bebidas: c.bebidas.map(function (b) { return { nome: b.nome, preco: b.preco, ativo: true }; }),
+      combos: c.combos.map(function (b) { return { nome: b.nome, preco: b.preco, ativo: true }; }),
+    };
+  }
+  function cidadeUf(txt) {
+    var m = String(txt || '').trim().match(/^(.+?)\s*[\/,\-]\s*([A-Za-z]{2})$/);
+    return m ? { cidade: m[1].trim(), uf: m[2].toUpperCase() } : null;
+  }
   var SERVE = { pequena: '1 pessoa', media: '2 pessoas', grande: '2 a 3 pessoas', super: '3 a 4 pessoas' };
   // fatias que a Izza informa hoje (persona.js do whatsbot)
   var FATIAS = { pequena: 4, media: 6, grande: 8, super: 16 };
@@ -512,6 +531,8 @@
         else if (p === 'cardapio:sobPedido') p = c ? (c.sabores.some(function (s) { return s.sobPedido; }) ? 'sim' : 'nao') : '';
         else if (p === 'cardapio:bordas') p = c ? (c.bordas.length ? 'sim' : 'nao') : '';
         else if (p === 'loja:pix') p = PIX_LOJA[l.id] || '';
+        else if (p === 'loja:endereco') p = END_LOJA[l.id] || '';
+        else if (p === 'loja:cidade') p = END_LOJA[l.id] ? 'Porto Alegre / RS' : '';
         v[it.id] = p;
       });
     });
@@ -522,7 +543,7 @@
       var min = Math.min.apply(null, [t.min].concat(vars.map(function (v) { return v.min; })));
       return { nome: t.nome.replace(/\s*\d+\s*cm.*/, ''), cm: cm, preco: t.preco, min: min, max: t.max, serve: SERVE[t.id] || '', fatias: FATIAS[t.id] || '', ativo: true };
     }) : [];
-    return { valores: v, tamanhos: tam, outras: [] };
+    return { valores: v, tamanhos: tam, outras: [], cardapio: copiaCardapio(c), bairros: [] };
   }
 
   function pgFicha(el, l) {
@@ -533,6 +554,11 @@
     f.valores = f.valores || {}; f.tamanhos = f.tamanhos || []; f.outras = f.outras || [];
     // ficha salva antes da coluna de fatias: preenche com o que a Izza informa hoje
     f.tamanhos.forEach(function (t) { if (t.fatias == null) t.fatias = FATIAS[chaveTam(t.nome)] || ''; });
+    // itens que entraram na ficha depois de ela ter sido salva nascem com o padrao
+    var pad = fichaPadrao(l);
+    Object.keys(pad.valores).forEach(function (k) { if (f.valores[k] === undefined) f.valores[k] = pad.valores[k]; });
+    if (!f.cardapio) f.cardapio = pad.cardapio;
+    f.bairros = f.bairros || [];
     var dis = pode ? '' : ' disabled';
     el.innerHTML = '<div class="page-head"><div><h1>Particularidades</h1><p>A ficha da ' + esc(l.nome) + ': o que é próprio desta pizzaria.</p></div>' +
       (pode ? '<button class="btn pri" id="sv-ficha">Salvar ficha</button>' : '') + '</div>' +
@@ -554,12 +580,17 @@
           return '<label class="campo"><span>' + esc(it.rot) + '</span><input type="' + (it.t === 'num' ? 'number' : 'text') + '" data-in="' + it.id + '" value="' + esc(v) + '"' + dis + (it.t === 'num' ? ' min="0" step="0.5"' : '') + '></label>';
         }).join('') + '</div></div>';
       }).join('') + '</div>' +
+      // bairros (so com taxa por bairro)
+      '<div class="card" id="card-bairros"' + (f.valores.taxaModelo === 'bairro' ? '' : ' hidden') + '><h2>Bairros atendidos</h2>' +
+      '<p class="desc">Entrega por bairro: marque onde a loja entrega e, se quiser, a taxa de cada bairro. A lista vem do mapa (OpenStreetMap) pela cidade do bloco Entrega.</p><div id="bairros-ed"></div></div>' +
       // outras
       '<div class="card"><h2>Outras particularidades</h2><p class="desc">O que não coube acima: regra da casa, exceção, combinado com o cliente.</p><div class="stack" id="outras"></div>' +
       (pode ? '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" id="add-outra">+ Particularidade</button></div>' : '') + '</div>' +
       // cardapio do sistema
-      '<div class="card"><h2>Cardápio no sistema</h2><p class="desc">O que o sistema da loja usa para calcular a comanda (planilha CARDAPIO). Somente visualização.</p>' +
-      (c ? cardapioHtml(c) : '<div class="vazio">O bot desta loja ainda não mandou o cardápio.</div>') + '</div>';
+      '<div class="card"><div class="cab-card"><div><h2>Sabores e preços</h2><p class="desc">Começa igual ao cardápio do sistema da loja (planilha CARDAPIO). O que se muda aqui fica na ficha: <b>não muda a comanda nem o bot</b>. ' +
+      'Linha diferente do sistema ganha a marca <span class="badge warn">mudou</span>; linha que o sistema não tem, <span class="badge acc">novo</span>.</p></div>' +
+      (pode && c ? '<button class="btn sm" id="rl-card">Recarregar do sistema</button>' : '') + '</div>' +
+      (f.cardapio ? '<div id="cardapio-ed"></div>' : '<div class="vazio">O bot desta loja ainda não mandou o cardápio.</div>') + '</div>';
 
     function desenhaTam() {
       $('#tb-tam', el).innerHTML = f.tamanhos.length ? f.tamanhos.map(function (t, i) {
@@ -582,8 +613,176 @@
       }).join('') : '<div class="muted small">Nenhuma.</div>';
       el.querySelectorAll('[data-rm-o]').forEach(function (b) { b.onclick = function () { f.outras.splice(+b.getAttribute('data-rm-o'), 1); desenhaOutras(); }; });
     }
-    desenhaTam(); desenhaOutras();
+    // ---- sabores e precos (copia editavel do cardapio do sistema)
+    var SYS = copiaCardapio(c), abaCard = 0;
+    var TAMS = c ? c.tamanhos.filter(function (t) { return !t.variante; }).map(function (t) { return { id: t.id, nome: t.nome.replace(/\s*\d+\s*cm.*/, '') }; }) : [];
+    if (!TAMS.length && f.cardapio) {
+      var ks = {}; f.cardapio.bordas.concat(f.cardapio.extras).forEach(function (b) { Object.keys(b.precos || {}).forEach(function (k) { ks[k] = 1; }); });
+      TAMS = Object.keys(ks).map(function (k) { return { id: k, nome: k.charAt(0).toUpperCase() + k.slice(1) }; });
+    }
+    var ROT_LISTA = { sabores: 'Sabor', bordas: 'Borda', extras: 'Adicional', bebidas: 'Bebida', combos: 'Combo' };
+    function norm(s) { return String(s || '').trim().toLowerCase(); }
+    function doSistema(lista, x) { return SYS ? SYS[lista].filter(function (s) { return norm(s.nome) === norm(x.nome); })[0] : null; }
+    function difere(lista, x, s) {
+      var n = function (v) { return v === '' || v == null ? 0 : +v; };
+      if (lista === 'sabores') return n(x.adicional) !== n(s.adicional) || norm(x.categoria) !== norm(s.categoria) || !!x.sobPedido !== !!s.sobPedido || String(x.desc || '') !== String(s.desc || '');
+      if (lista === 'bordas' || lista === 'extras') return TAMS.some(function (t) { return n((x.precos || {})[t.id]) !== n((s.precos || {})[t.id]); });
+      return n(x.preco) !== n(s.preco);
+    }
+    function status(lista, x) {
+      var h = x.ativo === false ? '<span class="badge">não vende</span> ' : '';
+      if (!SYS || !String(x.nome || '').trim()) return h;
+      var s = doSistema(lista, x);
+      if (!s) return h + '<span class="badge acc">novo</span>';
+      if (!difere(lista, x, s)) return h;
+      var era = lista === 'sabores' ? 'adicional ' + (s.adicional ? '+ ' + brl(s.adicional) : 'nenhum') + (s.categoria ? ', ' + s.categoria : '')
+        : (lista === 'bordas' || lista === 'extras') ? TAMS.map(function (t) { return t.nome + ' ' + brl((s.precos || {})[t.id]); }).join(' · ') : brl(s.preco);
+      return h + '<span class="badge warn" title="No sistema: ' + esc(era) + '">mudou</span>';
+    }
+    function cel(lista, i, k, v, tipo, w) {
+      var a = ' data-cl="' + lista + '" data-ci="' + i + '" data-ck="' + k + '"' + dis;
+      if (tipo === 'chk') return '<input type="checkbox"' + a + (v ? ' checked' : '') + '>';
+      if (tipo === 'num') return '<input type="number" step="0.01" min="0"' + a + ' value="' + esc(v == null ? '' : v) + '" style="width:' + (w || 90) + 'px">';
+      return '<input type="text"' + a + ' value="' + esc(v || '') + '" style="min-width:' + (w || 120) + 'px">';
+    }
+    function fimLinha(lista, i, x) {
+      return '<td class="st">' + status(lista, x) + '</td><td class="fim">' + (pode ? '<button class="btn link perigo" data-rm-c="' + lista + ':' + i + '">Tirar</button>' : '') + '</td></tr>';
+    }
+    function tabela(lista, cab, linha) {
+      var xs = f.cardapio[lista];
+      return '<div class="tabela-wrap"><table><thead><tr><th>Vende</th>' + cab + '<th></th><th></th></tr></thead><tbody>' +
+        (xs.length ? xs.map(linha).join('') : '<tr><td colspan="9"><div class="vazio">Nenhum.</div></td></tr>') + '</tbody></table></div>' +
+        (pode ? '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" data-add="' + lista + '">+ ' + ROT_LISTA[lista] + '</button></div>' : '');
+    }
+    function desenhaCardapio() {
+      var box = $('#cardapio-ed', el); if (!box || !f.cardapio) return;
+      var ca = f.cardapio;
+      var regra = { soma: 'soma o adicional de cada sabor', maior: 'cobra o sabor mais caro', medio: 'média dos adicionais' }[f.valores.regraPreco] || '';
+      var porTam = function (lista) {
+        return tabela(lista, '<th>Item</th>' + TAMS.map(function (t) { return '<th>' + esc(t.nome) + '</th>'; }).join(''), function (x, i) {
+          return '<tr><td>' + cel(lista, i, 'ativo', x.ativo !== false, 'chk') + '</td><td>' + cel(lista, i, 'nome', x.nome, 'txt', 140) + '</td>' +
+            TAMS.map(function (t) { return '<td>' + cel(lista, i, 'p:' + t.id, (x.precos || {})[t.id], 'num', 80) + '</td>'; }).join('') + fimLinha(lista, i, x);
+        });
+      };
+      var preco = function (lista) {
+        return tabela(lista, '<th>Item</th><th>Preço (R$)</th>', function (x, i) {
+          return '<tr><td>' + cel(lista, i, 'ativo', x.ativo !== false, 'chk') + '</td><td>' + cel(lista, i, 'nome', x.nome, 'txt', 180) + '</td><td>' + cel(lista, i, 'preco', x.preco, 'num') + '</td>' + fimLinha(lista, i, x);
+        });
+      };
+      var abas = ['Sabores (' + ca.sabores.length + ')', 'Bordas e adicionais', 'Bebidas e combos', 'Promoções'];
+      box.innerHTML = '<div class="tabs">' + abas.map(function (n, i) { return '<button type="button" data-ab="' + i + '" class="' + (i === abaCard ? 'on' : '') + '">' + n + '</button>'; }).join('') + '</div>' +
+        '<div data-pa="0"' + (abaCard === 0 ? '' : ' hidden') + '><p class="muted small" style="margin-bottom:8px">Preço da pizza = preço base do tamanho (tabela Tamanhos) + adicional do sabor' + (regra ? '; com mais de um sabor, ' + esc(regra) : '') + '.</p>' +
+          tabela('sabores', '<th>Sabor</th><th>Categoria</th><th>Adicional (R$)</th><th>Sob pedido</th><th class="hide-m">Descrição</th>', function (x, i) {
+            return '<tr><td>' + cel('sabores', i, 'ativo', x.ativo !== false, 'chk') + '</td><td>' + cel('sabores', i, 'nome', x.nome, 'txt', 150) + '</td>' +
+              '<td>' + cel('sabores', i, 'categoria', x.categoria, 'txt', 90) + '</td><td>' + cel('sabores', i, 'adicional', x.adicional, 'num', 80) + '</td>' +
+              '<td>' + cel('sabores', i, 'sobPedido', x.sobPedido, 'chk') + '</td><td class="hide-m">' + cel('sabores', i, 'desc', x.desc, 'txt', 220) + '</td>' + fimLinha('sabores', i, x);
+          }) + '</div>' +
+        '<div data-pa="1"' + (abaCard === 1 ? '' : ' hidden') + '><h3 class="small" style="margin:4px 0">Bordas</h3>' + porTam('bordas') + '<h3 class="small" style="margin:16px 0 4px">Adicionais</h3>' + porTam('extras') + '</div>' +
+        '<div data-pa="2"' + (abaCard === 2 ? '' : ' hidden') + '><h3 class="small" style="margin:4px 0">Bebidas</h3>' + preco('bebidas') + '<h3 class="small" style="margin:16px 0 4px">Combos</h3>' + preco('combos') + '</div>' +
+        '<div data-pa="3"' + (abaCard === 3 ? '' : ' hidden') + '><p class="muted small" style="margin-bottom:8px">Promoções do sistema da loja. Somente visualização.</p><div class="stack">' +
+          (c && c.promocoes.length ? c.promocoes.map(function (p) {
+            return '<div class="regra off"><div style="flex:1"><b>' + esc(p.nome) + '</b> ' + (p.preco != null ? '<span class="badge acc">' + brl(p.preco) + '</span>' : '') + (p.soRetirada ? ' <span class="badge">só retirada</span>' : '') +
+              (p.desc ? '<div class="muted small" style="margin-top:4px">' + esc(p.desc) + '</div>' : '') + '</div></div>';
+          }).join('') : '<div class="vazio">Nenhuma promoção.</div>') + '</div></div>';
+      box.querySelectorAll('[data-ab]').forEach(function (b) {
+        b.onclick = function () {
+          abaCard = +b.getAttribute('data-ab');
+          box.querySelectorAll('[data-ab]').forEach(function (x) { x.classList.toggle('on', x === b); });
+          box.querySelectorAll('[data-pa]').forEach(function (p) { p.hidden = +p.getAttribute('data-pa') !== abaCard; });
+        };
+      });
+      if (!pode) return;
+      box.querySelectorAll('[data-cl]').forEach(function (inp) {
+        inp.addEventListener('input', function () {
+          var lista = inp.getAttribute('data-cl'), x = f.cardapio[lista][+inp.getAttribute('data-ci')], k = inp.getAttribute('data-ck');
+          var val = inp.type === 'checkbox' ? inp.checked : inp.type === 'number' ? (inp.value === '' ? '' : +inp.value) : inp.value;
+          if (k.indexOf('p:') === 0) { x.precos = x.precos || {}; x.precos[k.slice(2)] = val; } else x[k] = val;
+          inp.closest('tr').querySelector('.st').innerHTML = status(lista, x);
+        });
+      });
+      box.querySelectorAll('[data-rm-c]').forEach(function (b) {
+        b.onclick = function () { var p = b.getAttribute('data-rm-c').split(':'); f.cardapio[p[0]].splice(+p[1], 1); desenhaCardapio(); };
+      });
+      box.querySelectorAll('[data-add]').forEach(function (b) {
+        b.onclick = function () {
+          var lista = b.getAttribute('data-add');
+          var novo = lista === 'sabores' ? { nome: '', categoria: '', adicional: 0, sobPedido: false, desc: '', ativo: true }
+            : (lista === 'bordas' || lista === 'extras') ? { nome: '', precos: {}, ativo: true } : { nome: '', preco: '', ativo: true };
+          f.cardapio[lista].push(novo); desenhaCardapio();
+          var ins = box.querySelectorAll('[data-cl="' + lista + '"][data-ck="nome"]'); if (ins.length) ins[ins.length - 1].focus();
+        };
+      });
+    }
+
+    // ---- bairros atendidos (taxa por bairro)
+    var BAI = { chave: null, nomes: null, erro: null, carregando: false, q: '' };
+    function marcado(nome) { return f.bairros.filter(function (b) { return b.nome === nome; })[0]; }
+    function listaBairros() {
+      var lst = $('#bai-lista', el); if (!lst) return;
+      var todos = (BAI.nomes || []).slice();
+      f.bairros.forEach(function (b) { if (todos.indexOf(b.nome) < 0) todos.unshift(b.nome); });
+      var q = norm(BAI.q).normalize('NFD').replace(/[̀-ͯ]/g, '');
+      var vis = todos.filter(function (n) { return !q || norm(n).normalize('NFD').replace(/[̀-ͯ]/g, '').indexOf(q) >= 0; });
+      lst.innerHTML = vis.length ? vis.map(function (n) {
+        var m = marcado(n);
+        return '<div class="bairro' + (m ? ' on' : '') + '"><label><input type="checkbox" data-bai="' + esc(n) + '"' + (m ? ' checked' : '') + dis + '><span>' + esc(n) + '</span></label>' +
+          (m ? '<input type="number" step="0.5" min="0" data-bai-taxa="' + esc(n) + '" value="' + esc(m.taxa == null ? '' : m.taxa) + '" placeholder="Taxa R$"' + dis + '>' : '') + '</div>';
+      }).join('') : '<div class="vazio">Nenhum bairro com esse nome.</div>';
+      $('#bai-cont', el).textContent = f.bairros.length + ' de ' + todos.length + ' marcados';
+      if (!pode) return;
+      lst.querySelectorAll('[data-bai]').forEach(function (cb) {
+        cb.onchange = function () {
+          var n = cb.getAttribute('data-bai');
+          if (cb.checked) { if (!marcado(n)) f.bairros.push({ nome: n, taxa: '' }); }
+          else f.bairros = f.bairros.filter(function (b) { return b.nome !== n; });
+          listaBairros();
+        };
+      });
+      lst.querySelectorAll('[data-bai-taxa]').forEach(function (inp) {
+        inp.oninput = function () { var m = marcado(inp.getAttribute('data-bai-taxa')); if (m) m.taxa = inp.value === '' ? '' : +inp.value; };
+      });
+    }
+    function desenhaBairros() {
+      var box = $('#bairros-ed', el); if (!box) return;
+      var cu = cidadeUf(f.valores.cidadeLoja);
+      if (!cu) { box.innerHTML = '<div class="vazio">Preencha <b>Cidade / UF</b> no bloco Entrega (ex.: Porto Alegre / RS).</div>'; return; }
+      var ch = norm(cu.cidade) + '/' + cu.uf;
+      if (BAI.chave !== ch) {
+        BAI.chave = ch; BAI.nomes = null; BAI.erro = null; BAI.carregando = true;
+        api('bairros&cidade=' + encodeURIComponent(cu.cidade) + '&uf=' + cu.uf).then(function (j) {
+          if (BAI.chave !== ch) return; BAI.nomes = j.bairros; BAI.carregando = false; desenhaBairros();
+        }).catch(function (e) {
+          if (BAI.chave !== ch) return; BAI.erro = e.message; BAI.carregando = false; desenhaBairros();
+        });
+      }
+      if (BAI.carregando) { box.innerHTML = '<div class="vazio">Buscando os bairros de ' + esc(cu.cidade + ' / ' + cu.uf) + '…</div>'; return; }
+      box.innerHTML = (BAI.erro ? '<div class="aviso err" style="margin-bottom:12px">' + esc(BAI.erro) + ' <button class="btn sm" id="bai-rt">Tentar de novo</button></div>' : '') +
+        '<div class="filtros-frase" style="grid-template-columns:1fr auto auto;align-items:center;margin-bottom:12px">' +
+        '<input type="search" id="bai-q" placeholder="Buscar bairro de ' + esc(cu.cidade) + '…" value="' + esc(BAI.q) + '">' +
+        '<span class="muted small" id="bai-cont"></span>' +
+        (pode ? '<span class="linha" style="gap:6px;flex-wrap:nowrap"><button class="btn sm" id="bai-todos">Marcar todos</button><button class="btn sm" id="bai-nenhum">Desmarcar</button></span>' : '<span></span>') +
+        '</div><div class="bairros-grid" id="bai-lista"></div>';
+      $('#bai-q', el).oninput = function () { BAI.q = this.value; listaBairros(); };
+      if ($('#bai-rt', el)) $('#bai-rt', el).onclick = function () { BAI.chave = null; desenhaBairros(); };
+      if (pode) {
+        $('#bai-todos', el).onclick = function () { (BAI.nomes || []).forEach(function (n) { if (!marcado(n)) f.bairros.push({ nome: n, taxa: '' }); }); listaBairros(); };
+        $('#bai-nenhum', el).onclick = function () { f.bairros = []; listaBairros(); };
+      }
+      listaBairros();
+    }
+
+    desenhaTam(); desenhaOutras(); desenhaCardapio();
+    if (f.valores.taxaModelo === 'bairro') desenhaBairros();
     if (!pode) return;
+    if ($('#rl-card', el)) {
+      var armado = 0;
+      $('#rl-card', el).onclick = function () {
+        var b = this;
+        if (Date.now() - armado > 4000) { armado = Date.now(); b.textContent = 'Confirmar: descarta as mudanças'; setTimeout(function () { b.textContent = 'Recarregar do sistema'; }, 4000); return; }
+        armado = 0; b.textContent = 'Recarregar do sistema';
+        f.cardapio = copiaCardapio(c); desenhaCardapio(); toast('Voltou ao cardápio do sistema. Salve a ficha para gravar.');
+      };
+    }
 
     el.addEventListener('input', function (ev) {
       var t = ev.target, k = t.getAttribute('data-k');
@@ -597,7 +796,10 @@
       if (t.type === 'radio' && t.name.indexOf('r-') === 0) {
         f.valores[t.name.slice(2)] = t.value;
         t.closest('.stack').querySelectorAll('.radio-card').forEach(function (rc) { rc.classList.toggle('on', rc.querySelector('input').checked); });
+        if (t.name === 'r-taxaModelo') { $('#card-bairros', el).hidden = t.value !== 'bairro'; if (t.value === 'bairro') desenhaBairros(); }
+        if (t.name === 'r-regraPreco') desenhaCardapio();
       }
+      if (t.getAttribute('data-in') === 'cidadeLoja' && !$('#card-bairros', el).hidden) desenhaBairros();
     });
     el.querySelectorAll('[data-sn]').forEach(function (seg) {
       seg.addEventListener('click', function (ev) {
@@ -611,37 +813,10 @@
     $('#sv-ficha', el).onclick = function () {
       f.outras = f.outras.filter(function (o) { return (o.texto || '').trim(); });
       f.tamanhos = f.tamanhos.filter(function (t) { return (t.nome || '').trim(); });
+      if (f.cardapio) Object.keys(ROT_LISTA).forEach(function (k) { f.cardapio[k] = (f.cardapio[k] || []).filter(function (x) { return String(x.nome || '').trim(); }); });
       salvar('ficha', { loja: l.id, ficha: f }, 'Ficha salva (não muda o bot).');
     };
   }
-
-  function cardapioHtml(c) {
-    var tams = c.tamanhos.filter(function (t) { return !t.variante; });
-    var cols = tams.map(function (t) { return t.id; });
-    var cab = '<tr><th>Item</th>' + tams.map(function (t) { return '<th>' + esc(t.nome.replace(/\s*\d+\s*cm.*/, '')) + '</th>'; }).join('') + '</tr>';
-    var linha = function (x) { return '<tr><td>' + esc(x.nome) + '</td>' + cols.map(function (k) { return '<td class="num">' + brl(x.precos[k]) + '</td>'; }).join('') + '</tr>'; };
-    var cats = {}; c.sabores.forEach(function (s) { (cats[s.categoria || 'outros'] = cats[s.categoria || 'outros'] || []).push(s); });
-    var regra = { soma: 'soma o adicional de cada sabor', maior: 'cobra o sabor mais caro', medio: 'média dos adicionais' }[c.regraSabores] || c.regraSabores;
-    return '<div class="tabs" id="tabs-card">' + ['Sabores', 'Bordas e adicionais', 'Bebidas e combos', 'Promoções'].map(function (n, i) { return '<button data-tc="' + i + '" class="' + (i ? '' : 'on') + '">' + n + '</button>'; }).join('') + '</div>' +
-      '<div data-pc="0"><p class="muted small" style="margin-bottom:8px">' + c.sabores.length + ' sabores · preço = base do tamanho + adicional do sabor; com mais de um sabor, ' + esc(regra) + '.</p>' +
-        Object.keys(cats).map(function (k) {
-          return '<h3 class="small" style="margin:12px 0 4px;text-transform:capitalize">' + esc(k) + ' (' + cats[k].length + ')</h3><div class="tabela-wrap"><table><thead><tr><th>Sabor</th><th>Adicional</th><th class="hide-m">Descrição</th></tr></thead><tbody>' +
-            cats[k].map(function (s) { return '<tr><td>' + esc(s.nome) + (s.sobPedido ? ' <span class="badge">sob pedido</span>' : '') + '</td><td class="num">' + (s.adicional ? '+ ' + brl(s.adicional) : '—') + '</td><td class="hide-m muted small">' + esc(s.desc) + '</td></tr>'; }).join('') + '</tbody></table></div>';
-        }).join('') + '</div>' +
-      '<div data-pc="1" hidden><div class="tabela-wrap"><table><thead>' + cab + '</thead><tbody>' + c.bordas.map(linha).join('') + c.extras.map(linha).join('') + '</tbody></table></div></div>' +
-      '<div data-pc="2" hidden><div class="tabela-wrap"><table><thead><tr><th>Item</th><th>Preço</th></tr></thead><tbody>' +
-        c.bebidas.concat(c.combos).map(function (b) { return '<tr><td>' + esc(b.nome) + '</td><td class="num">' + brl(b.preco) + '</td></tr>'; }).join('') + '</tbody></table></div></div>' +
-      '<div data-pc="3" hidden><div class="stack">' + (c.promocoes.length ? c.promocoes.map(function (p) {
-        return '<div class="regra off"><div style="flex:1"><b>' + esc(p.nome) + '</b> ' + (p.preco != null ? '<span class="badge acc">' + brl(p.preco) + '</span>' : '') + (p.soRetirada ? ' <span class="badge">só retirada</span>' : '') +
-          (p.desc ? '<div class="muted small" style="margin-top:4px">' + esc(p.desc) + '</div>' : '') + '</div></div>';
-      }).join('') : '<div class="vazio">Nenhuma promoção.</div>') + '</div></div>';
-  }
-  document.addEventListener('click', function (ev) {
-    var b = ev.target.closest('[data-tc]'); if (!b) return;
-    var card = b.closest('.card');
-    card.querySelectorAll('[data-tc]').forEach(function (x) { x.classList.toggle('on', x === b); });
-    card.querySelectorAll('[data-pc]').forEach(function (p) { p.hidden = p.getAttribute('data-pc') !== b.getAttribute('data-tc'); });
-  });
 
   // ------------------------------------------------------------- Instruções e ferramentas
   // O texto padrao vem do codigo do bot (ele manda ao subir, api bot_padroes). Editar aqui

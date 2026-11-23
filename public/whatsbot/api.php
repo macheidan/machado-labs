@@ -179,6 +179,61 @@ if ($action === 'estado' && $method === 'GET') {
     out(200, array('ok' => true, 'eu' => $eu, 'lojas' => $lojas, 'equipe' => $equipe, 'log' => $log, 'agora' => date('c')));
 }
 
+// Bairros de uma cidade (ficha: entrega por bairro). Vem do OpenStreetMap (limites
+// administrativos; se a cidade nao tiver, os lugares marcados como bairro) e fica em
+// cache 90 dias em data/bairros-<cidade>-<uf>.json.
+if ($action === 'bairros' && $method === 'GET') {
+    $cid = trim(isset($_GET['cidade']) ? (string)$_GET['cidade'] : '');
+    $uf = strtoupper(preg_replace('/[^A-Za-z]/', '', isset($_GET['uf']) ? (string)$_GET['uf'] : ''));
+    if ($cid === '' || strlen($uf) !== 2) falha(400, 'Preencha a cidade e a UF (ex.: Porto Alegre / RS).');
+    if (!preg_match('/^[\p{L} \'.-]{2,60}$/u', $cid)) falha(400, 'Nome de cidade inválido.');
+    $plano = function_exists('iconv') ? @iconv('UTF-8', 'ASCII//TRANSLIT', $cid) : $cid;
+    $slug = trim(preg_replace('/[^a-z0-9]+/', '-', strtolower((string)$plano)), '-') . '-' . strtolower($uf);
+    $arq = data_dir() . '/bairros-' . $slug . '.json';
+    // lista que vem junto do painel (bairros/), para nao depender do servico de mapas
+    $fixo = json_read(__DIR__ . '/bairros/' . $slug . '.json', null);
+    if ($fixo) out(200, array('ok' => true) + $fixo);
+    $cache = json_read($arq, null);
+    if ($cache && isset($cache['em']) && time() - strtotime($cache['em']) < 90 * 86400) out(200, array('ok' => true) + $cache);
+
+    $nomeRe = str_replace(array('.', '-'), array('\\\\.', '\\\\-'), $cid);
+    $area = 'area["ISO3166-2"="BR-' . $uf . '"]->.uf;rel["boundary"="administrative"]["admin_level"="8"]["name"~"^' . $nomeRe . '$",i](area.uf);map_to_area->.c;';
+    $consultas = array(
+        '[out:json][timeout:40];' . $area . 'rel["boundary"="administrative"]["admin_level"~"^(9|10)$"](area.c);out tags;',
+        '[out:json][timeout:40];' . $area . '(node["place"~"^(suburb|neighbourhood|quarter)$"](area.c);way["place"~"^(suburb|neighbourhood|quarter)$"](area.c);rel["place"~"^(suburb|neighbourhood|quarter)$"](area.c););out tags;',
+    );
+    @set_time_limit(150);
+    $nomes = array();
+    $erro = false;
+    $servidores = array('https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter');
+    foreach ($consultas as $q) foreach ($servidores as $srv) {
+        if ($nomes) break 2;
+        $url = $srv . '?data=' . rawurlencode($q);
+        if (function_exists('curl_init')) {
+            $ch = curl_init($url);
+            curl_setopt_array($ch, array(CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 35, CURLOPT_USERAGENT => 'painel-whatsbot/1.0'));
+            $r = curl_exec($ch); $code = curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
+        } else {
+            list($code, $r) = wb_http_get($url);
+        }
+        $j = $code === 200 ? json_decode((string)$r, true) : null;
+        if (!is_array($j) || !isset($j['elements'])) { $erro = true; continue; }
+        $erro = false;
+        foreach ($j['elements'] as $e) {
+            if (!empty($e['tags']['name'])) $nomes[$e['tags']['name']] = true;
+        }
+        if ($nomes) break 2;
+        break; // respondeu vazio: tenta a proxima consulta, nao outro servidor
+    }
+    $nomes = array_keys($nomes);
+    if (!$nomes) falha($erro ? 502 : 404, $erro ? 'O serviço de mapas não respondeu. Tente de novo em instantes.' : 'Não achei os bairros de ' . $cid . '/' . $uf . ' no mapa. Confira o nome da cidade.');
+    $chave = function ($s) { $p = function_exists('iconv') ? @iconv('UTF-8', 'ASCII//TRANSLIT', $s) : $s; return strtolower((string)$p); };
+    usort($nomes, function ($a, $b) use ($chave) { return strcmp($chave($a), $chave($b)); });
+    $res = array('cidade' => $cid, 'uf' => $uf, 'bairros' => $nomes, 'fonte' => 'OpenStreetMap', 'em' => date('c'));
+    json_write($arq, $res);
+    out(200, array('ok' => true) + $res);
+}
+
 if ($method !== 'POST') falha(404, 'not_found');
 $d = corpo();
 $loja = isset($d['loja']) ? (string)$d['loja'] : '';
@@ -375,7 +430,7 @@ case 'ficha':
     $f = isset($d['ficha']) && is_array($d['ficha']) ? $d['ficha'] : null;
     if (!$f) falha(400, 'ficha');
     $bruto = json_encode($f, JSON_UNESCAPED_UNICODE);
-    if (strlen($bruto) > 60000) falha(413, 'Ficha grande demais.');
+    if (strlen($bruto) > 250000) falha(413, 'Ficha grande demais.');
     db_tx(function (&$db) use ($eu, $loja, $f) {
         $c = &cfg_de($db, $loja);
         $c['ficha'] = $f;
