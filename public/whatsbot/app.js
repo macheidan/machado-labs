@@ -14,7 +14,7 @@
   var PAPEL_DESC = {
     operador: 'pausa o bot e mexe nos números',
     gerente: 'tudo do operador + regras, horário e tempos',
-    dono: 'tudo do gerente + faixa de atendimento e equipe',
+    dono: 'tudo do gerente + faixa de atendimento, equipe, instruções e ferramentas',
   };
 
   // ------------------------------------------------------------- utilidades
@@ -89,6 +89,8 @@
       { id: 'numeros', ic: '☎', nome: 'Números', cont: l ? l.config.numeros.length : 0 },
       { id: 'regras', ic: '✎', nome: 'Regras', cont: l ? l.config.regras.filter(function (r) { return r.ativa; }).length : 0 },
       { id: 'funcionamento', ic: '◷', nome: 'Funcionamento' },
+      { id: 'instrucoes', ic: '¶', nome: 'Instruções', cont: l ? Object.keys(l.config.instrucoes || {}).length : 0 },
+      { id: 'ferramentas', ic: '⚙', nome: 'Ferramentas', cont: l ? Object.keys(l.config.ferramentas || {}).length : 0 },
     ];
     if (l && l.pode.equipe) p.push({ id: 'equipe', ic: '☺', nome: 'Equipe' });
     p.push({ id: 'historico', ic: '≡', nome: 'Histórico' });
@@ -115,7 +117,7 @@
 
     var c = $('#content');
     if (!l && S.pagina !== 'lojas') { c.innerHTML = '<div class="card vazio">Nenhuma loja ainda.' + (eu.superadmin ? ' Cadastre a primeira em <b>Lojas</b>.' : '') + '</div>'; return; }
-    ({ geral: pgGeral, numeros: pgNumeros, regras: pgRegras, funcionamento: pgFuncionamento, equipe: pgEquipe, historico: pgHistorico, lojas: pgLojas })[S.pagina](c, l);
+    ({ geral: pgGeral, numeros: pgNumeros, regras: pgRegras, funcionamento: pgFuncionamento, instrucoes: pgInstrucoes, ferramentas: pgFerramentas, equipe: pgEquipe, historico: pgHistorico, lojas: pgLojas })[S.pagina](c, l);
   }
 
   function ir(p) {
@@ -361,6 +363,123 @@
         tempoEntrega: $('#t-ent', el).value, tempoRetirada: $('#t-ret', el).value,
       }, 'Horário salvo. Vale em até 1 min.');
     };
+  }
+
+  // ------------------------------------------------------------- Instruções e ferramentas
+  // O texto padrao vem do codigo do bot (ele manda ao subir, api bot_padroes). Editar aqui
+  // grava uma versao da loja por cima; "voltar ao padrao" apaga a versao e o codigo volta a valer.
+  var CAMPOS = {
+    identidade: { nome: 'Identidade', desc: 'Quem é a Izza nesta loja: nome, endereço, jeito de falar. Abre o prompt.' },
+    regrasCasa: { nome: 'Regras da casa', desc: 'O manual de atendimento inteiro: preço, pedido, endereço, pagamento, quando chamar atendente. Os marcadores {ASSIM} são trocados pelo bot e não podem sumir.' },
+    tomEquipe: { nome: 'Tom da equipe', desc: 'Como as atendentes da loja escrevem. Hoje vale só para o número do dono (WHATSBOT_TOM_EQUIPE).' },
+  };
+  var GRUPOS = { sempre: 'Sempre disponíveis', carrinho: 'Com pizza no carrinho', triagem: 'Pedido já feito (triagem)' };
+
+  function semPadroes(el, l) {
+    el.innerHTML += '<div class="aviso">O bot desta loja ainda não mandou os textos do código. Eles chegam quando ele sobe com a versão nova (até lá não dá para editar).</div>';
+  }
+  function hashTexto(s) { // sha-256 em hex, para comparar com o baseHash gravado
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)).then(function (b) {
+      return Array.prototype.map.call(new Uint8Array(b), function (x) { return ('0' + x.toString(16)).slice(-2); }).join('');
+    });
+  }
+  function marcaDesatualizado(sel, padrao, ed) {
+    if (!ed || !ed.baseHash || !window.crypto || !crypto.subtle) return;
+    hashTexto(padrao).then(function (h) {
+      var x = $(sel); if (x && h !== ed.baseHash) x.innerHTML = '<div class="aviso">O texto padrão no código mudou depois desta edição (alguém ajustou o bot). A versão da loja continua valendo e não recebe o ajuste: compare com o padrão.</div>';
+    });
+  }
+  function historicoDe(l, alvo) { return (l.config.historicoInstrucoes || []).filter(function (h) { return h.alvo === alvo; }); }
+
+  function pgInstrucoes(el, l) {
+    var pad = l.padroes && l.padroes.instrucoes, ed = l.config.instrucoes || {};
+    el.innerHTML = '<div class="page-head"><div><h1>Instruções</h1><p>O texto que a Izza lê antes de toda conversa desta loja.</p></div></div>';
+    if (!pad) return semPadroes(el, l);
+    var campos = Object.keys(CAMPOS).filter(function (k) { return pad[k] != null; });
+    if (!S.abaInstr || campos.indexOf(S.abaInstr) < 0) S.abaInstr = campos[0];
+    var k = S.abaInstr, atual = ed[k], texto = atual ? atual.texto : pad[k], pode = l.pode.instrucoes;
+    var hist = historicoDe(l, 'instrucoes:' + k);
+    el.innerHTML +=
+      '<div class="aviso">Isto muda o comportamento da Izza em <b>todas</b> as conversas desta loja em até 1 min, sem passar pela bancada de testes. ' +
+      'Mude pouco de cada vez e acompanhe as conversas; se algo sair errado, “Voltar ao padrão” desfaz na hora. Preço e cardápio continuam vindo do sistema, nunca daqui.' + (pode ? '' : ' <b>Só o dono edita.</b>') + '</div>' +
+      '<div class="card"><div class="tabs">' + campos.map(function (c) {
+        return '<button data-aba="' + c + '" class="' + (c === k ? 'on' : '') + '">' + CAMPOS[c].nome + (ed[c] ? ' <span class="badge acc">loja</span>' : '') + '</button>';
+      }).join('') + '</div>' +
+      '<p class="desc">' + esc(CAMPOS[k].desc) + '</p><div id="desat"></div>' +
+      '<div class="linha" style="justify-content:space-between;margin-bottom:8px">' +
+        (atual ? '<span class="badge acc">Versão da loja · ' + esc(quem(atual.por)) + ' · ' + esc(dataHora(atual.em)) + '</span>' : '<span class="badge">Padrão do código</span>') +
+        '<span class="muted small"><span id="cont">0</span> caracteres</span></div>' +
+      '<textarea id="txt" class="mono" rows="22"' + (pode ? '' : ' readonly') + '>' + esc(texto) + '</textarea>' +
+      '<div class="acoes">' +
+        (atual ? '<button class="btn" id="ver-pad">Ver o padrão</button>' : '') +
+        (hist.length ? '<button class="btn" id="ver-hist">Versões anteriores (' + hist.length + ')</button>' : '') +
+        (pode && atual ? '<button class="btn" id="volta">Voltar ao padrão</button>' : '') +
+        (pode ? '<button class="btn pri" id="salva">Salvar</button>' : '') +
+      '</div></div>';
+    var tx = $('#txt', el), ct = $('#cont', el);
+    tx.oninput = function () { ct.textContent = tx.value.length.toLocaleString('pt-BR'); }; tx.oninput();
+    marcaDesatualizado('#desat', pad[k], atual);
+    el.querySelectorAll('[data-aba]').forEach(function (b) { b.onclick = function () { S.abaInstr = b.getAttribute('data-aba'); desenhar(); }; });
+    var go = function (t, msg) { return salvar('instrucao', { loja: l.id, campo: k, texto: t }, msg); };
+    if ($('#salva', el)) $('#salva', el).onclick = function () {
+      if (tx.value.trim() === texto.trim()) return toast('Nada mudou.');
+      confirma('Salvar “' + CAMPOS[k].nome + '”? A Izza da ' + l.nome + ' passa a seguir este texto em até 1 min.', 'Salvar', function () { return go(tx.value, 'Salvo. Vale em até 1 min.'); });
+    };
+    if ($('#volta', el)) $('#volta', el).onclick = function () { confirma('Apagar a versão da loja e voltar ao texto do código?', 'Voltar ao padrão', function () { return go(null, 'De volta ao padrão.'); }); };
+    if ($('#ver-pad', el)) $('#ver-pad', el).onclick = function () { verTexto('Padrão do código — ' + CAMPOS[k].nome, pad[k], pode ? function (t) { tx.value = t; tx.oninput(); } : null); };
+    if ($('#ver-hist', el)) $('#ver-hist', el).onclick = function () { verHistorico(hist, pode ? function (t) { tx.value = t; tx.oninput(); } : null); };
+  }
+
+  function pgFerramentas(el, l) {
+    var pad = l.padroes && l.padroes.ferramentas, ed = l.config.ferramentas || {}, pode = l.pode.instrucoes;
+    el.innerHTML = '<div class="page-head"><div><h1>Ferramentas</h1><p>O que a Izza consegue fazer, e a descrição que ela lê para decidir quando usar cada uma.</p></div></div>';
+    if (!pad) return semPadroes(el, l);
+    el.innerHTML += '<div class="aviso">Aqui se muda só a <b>descrição</b> (quando e como usar). O que a ferramenta faz, os cálculos e as travas de preço ficam no código do bot.' + (pode ? '' : ' <b>Só o dono edita.</b>') + '</div>' +
+      Object.keys(GRUPOS).map(function (g) {
+        var fs = pad.filter(function (f) { return f.grupo === g; });
+        if (!fs.length) return '';
+        return '<div class="card"><h2>' + GRUPOS[g] + '</h2><p class="desc">' + fs.length + ' ferramenta' + (fs.length > 1 ? 's' : '') + '</p><div class="stack">' + fs.map(function (f) {
+          var e = ed[f.nome];
+          return '<div class="regra' + (e ? '' : ' off') + '"><div style="flex:1"><div><code>' + esc(f.nome) + '</code> ' + (e ? '<span class="badge acc">loja</span>' : '') + '</div>' +
+            '<div class="txt muted" style="margin-top:4px">' + esc(e ? e.descricao : f.descricao) + '</div>' +
+            (e ? '<div class="meta">' + esc(quem(e.por)) + ' · ' + esc(dataHora(e.em)) + '</div><div id="desat-' + esc(f.nome) + '"></div>' : '') + '</div>' +
+            '<div><button class="btn link" data-ed="' + esc(f.nome) + '">' + (pode ? 'Editar' : 'Ver') + '</button></div></div>';
+        }).join('') + '</div></div>';
+      }).join('');
+    pad.forEach(function (f) { if (ed[f.nome]) marcaDesatualizado('#desat-' + f.nome, f.descricao, ed[f.nome]); });
+    el.querySelectorAll('[data-ed]').forEach(function (b) {
+      b.onclick = function () {
+        var nome = b.getAttribute('data-ed'), f = pad.filter(function (x) { return x.nome === nome; })[0], e = ed[nome];
+        var hist = historicoDe(l, 'ferramentas:' + nome);
+        modal('<h3><code>' + esc(nome) + '</code></h3>' +
+          '<label class="campo"><span>Descrição que a Izza lê</span><textarea id="f-txt" class="mono" rows="9" maxlength="2000"' + (pode ? '' : ' readonly') + '>' + esc(e ? e.descricao : f.descricao) + '</textarea></label>' +
+          (e ? '<details><summary class="muted small">Padrão do código</summary><div class="muted small" style="white-space:pre-wrap;margin-top:6px">' + esc(f.descricao) + '</div></details>' : '<p class="muted small">Hoje vale o padrão do código.</p>') +
+          (hist.length ? '<details><summary class="muted small">Versões anteriores (' + hist.length + ')</summary>' + hist.map(function (h) { return '<div class="muted small" style="white-space:pre-wrap;margin-top:8px;border-top:1px solid var(--border);padding-top:8px">até ' + esc(dataHora(h.substituidoEm)) + (h.eraPadrao ? ' (padrão)' : '') + '\n' + esc(h.texto) + '</div>'; }).join('') + '</details>' : '') +
+          '<div class="acoes"><button class="btn" data-fecha>Fechar</button>' +
+          (pode && e ? '<button class="btn" id="f-volta">Voltar ao padrão</button>' : '') +
+          (pode ? '<button class="btn pri" id="f-ok">Salvar</button>' : '') + '</div>', function (m) {
+            var ok = $('#f-ok', m), vb = $('#f-volta', m);
+            if (ok) ok.onclick = function () { salvar('ferramenta', { loja: l.id, nome: nome, texto: $('#f-txt', m).value }, 'Salvo. Vale em até 1 min.').then(fecharModal); };
+            if (vb) vb.onclick = function () { salvar('ferramenta', { loja: l.id, nome: nome, texto: null }, 'De volta ao padrão.').then(fecharModal); };
+          });
+      };
+    });
+  }
+
+  function verTexto(titulo, texto, usar) {
+    modal('<h3>' + esc(titulo) + '</h3><textarea class="mono" rows="18" readonly>' + esc(texto) + '</textarea>' +
+      '<div class="acoes"><button class="btn" data-fecha>Fechar</button>' + (usar ? '<button class="btn pri" id="usar">Copiar para o editor</button>' : '') + '</div>', function (m) {
+        var u = $('#usar', m); if (u) u.onclick = function () { usar(texto); fecharModal(); toast('Copiado para o editor. Falta salvar.'); };
+      });
+  }
+  function verHistorico(hist, usar) {
+    modal('<h3>Versões anteriores</h3><p class="muted small">Cada item é o texto que valia até a data. “Usar” copia para o editor; só vale depois de salvar.</p>' +
+      hist.map(function (h, i) {
+        return '<div class="regra off"><div style="flex:1"><div class="meta" style="margin:0 0 6px">até ' + esc(dataHora(h.substituidoEm)) + ' · trocado por ' + esc(quem(h.por)) + (h.eraPadrao ? ' · era o padrão' : '') + '</div>' +
+          '<div class="txt small" style="max-height:140px;overflow:auto">' + esc(h.texto) + '</div></div>' + (usar ? '<div><button class="btn link" data-u="' + i + '">Usar</button></div>' : '') + '</div>';
+      }).join('') + '<div class="acoes"><button class="btn" data-fecha>Fechar</button></div>', function (m) {
+        m.querySelectorAll('[data-u]').forEach(function (b) { b.onclick = function () { usar(hist[+b.getAttribute('data-u')].texto); fecharModal(); toast('Copiado para o editor. Falta salvar.'); }; });
+      });
   }
 
   // ------------------------------------------------------------- Equipe

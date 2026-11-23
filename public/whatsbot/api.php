@@ -59,6 +59,9 @@ function config_padrao() {
         'tempoRetirada' => 'de 20 a 30 minutos',
         'numeros' => array(),
         'regras' => array(),
+        'instrucoes' => array(),   // campo -> {texto, baseHash, por, em}; ausente = padrao do codigo
+        'ferramentas' => array(),  // nome -> {descricao, baseHash, por, em}
+        'historicoInstrucoes' => array(),
         'atualizadoEm' => date('c'),
     );
 }
@@ -96,7 +99,7 @@ function bot_auth($db, $loja) {
     if ($hash === '' || !hash_equals($hash, hash('sha256', $m[1]))) falha(401, 'token invalido');
 }
 
-if ($action === 'bot' || $action === 'bot_status') {
+if ($action === 'bot' || $action === 'bot_status' || $action === 'bot_padroes') {
     $loja = isset($_GET['loja']) ? preg_replace('/[^a-z0-9_-]/', '', $_GET['loja']) : '';
     $db = db_load();
     if ($loja === '' || !isset($db['lojas'][$loja])) falha(404, 'loja');
@@ -106,6 +109,13 @@ if ($action === 'bot' || $action === 'bot_status') {
         $l = $db['lojas'][$loja];
         $c = isset($l['config']) ? $l['config'] : config_padrao();
         out(200, array('ok' => true, 'loja' => $loja, 'ativo' => !isset($l['ativo']) || $l['ativo'], 'config' => $c, 'agora' => date('c')));
+    }
+    // textos padrao do codigo (instrucoes e ferramentas): o bot manda quando mudam
+    if ($action === 'bot_padroes' && $method === 'POST') {
+        $p = corpo();
+        $p['recebidoEm'] = date('c');
+        json_write(data_dir() . '/padroes-' . $loja . '.json', $p);
+        out(200, array('ok' => true));
     }
     if ($action === 'bot_status' && $method === 'POST') {
         $st = corpo();
@@ -139,9 +149,11 @@ if ($action === 'estado' && $method === 'GET') {
                 'pausar' => pode($eu, $id, 'pausar'), 'numeros' => pode($eu, $id, 'numeros'),
                 'regras' => pode($eu, $id, 'regras'), 'horario' => pode($eu, $id, 'horario'),
                 'escopo' => pode($eu, $id, 'escopo'), 'equipe' => pode($eu, $id, 'equipe'),
+                'instrucoes' => pode($eu, $id, 'instrucoes'),
             ),
             'config' => isset($l['config']) ? $l['config'] : config_padrao(),
             'status' => $st,
+            'padroes' => pode($eu, $id, 'ver') ? json_read(data_dir() . '/padroes-' . $id . '.json', null) : null,
         );
     }
     // equipe: quem tem papel em alguma loja que eu administro
@@ -354,6 +366,55 @@ case 'usuario_del':
             }
         }
         if (empty($u['lojas'])) unset($db['usuarios'][$email]); else $db['usuarios'][$email] = $u;
+    });
+    out(200, array('ok' => true));
+
+case 'instrucao':
+case 'ferramenta':
+    exige($eu, $db, $loja, 'instrucoes');
+    $pad = json_read(data_dir() . '/padroes-' . $loja . '.json', null);
+    if (!$pad) falha(409, 'O bot desta loja ainda não mandou os textos padrão. Espere ele ficar no ar.');
+    if ($action === 'instrucao') {
+        $campo = isset($d['campo']) ? (string)$d['campo'] : '';
+        $tetos = array('identidade' => 3000, 'regrasCasa' => 11500, 'tomEquipe' => 4000);
+        if (!isset($tetos[$campo]) || !isset($pad['instrucoes'][$campo])) falha(400, 'campo');
+        $padrao = (string)$pad['instrucoes'][$campo];
+        $max = $tetos[$campo];
+    } else {
+        $campo = isset($d['nome']) ? (string)$d['nome'] : '';
+        $padrao = null;
+        foreach ((isset($pad['ferramentas']) ? $pad['ferramentas'] : array()) as $f) if ($f['nome'] === $campo) $padrao = (string)$f['descricao'];
+        if ($padrao === null) falha(400, 'ferramenta');
+        $max = 2000;
+    }
+    $novo = array_key_exists('texto', $d) && $d['texto'] !== null ? str_replace("\r\n", "\n", (string)$d['texto']) : null;
+    if ($novo !== null) {
+        $novo = trim($novo);
+        if (mb_strlen($novo) < 10) falha(400, 'Texto curto demais.');
+        if (mb_strlen($novo) > $max) falha(400, 'Passou do limite de ' . number_format($max, 0, ',', '.') . ' caracteres.');
+        // marcadores que o bot troca por valor ({LINK}, {TEMPO_ENTREGA}...) nao podem sumir
+        preg_match_all('/\{[A-Z_]+\}/', $padrao, $m1);
+        $faltam = array();
+        foreach (array_unique($m1[0]) as $ph) if (strpos($novo, $ph) === false) $faltam[] = $ph;
+        if ($faltam) falha(400, 'Faltam os marcadores ' . implode(', ', $faltam) . ' (o bot troca cada um pelo valor certo).');
+        if ($novo === trim($padrao)) $novo = null; // igual ao padrao = padrao
+    }
+    $chave = $action === 'instrucao' ? 'instrucoes' : 'ferramentas';
+    $baseHash = hash('sha256', $padrao);
+    db_tx(function (&$db) use ($eu, $loja, $chave, $campo, $novo, $baseHash, $padrao) {
+        $c = &cfg_de($db, $loja);
+        if (!isset($c[$chave]) || !is_array($c[$chave])) $c[$chave] = array();
+        $antes = isset($c[$chave][$campo]) ? $c[$chave][$campo] : null;
+        $textoAntes = $antes ? ($chave === 'instrucoes' ? $antes['texto'] : $antes['descricao']) : $padrao;
+        if (!isset($c['historicoInstrucoes']) || !is_array($c['historicoInstrucoes'])) $c['historicoInstrucoes'] = array();
+        array_unshift($c['historicoInstrucoes'], array('id' => novo_id(), 'alvo' => $chave . ':' . $campo, 'texto' => $textoAntes, 'eraPadrao' => !$antes, 'substituidoEm' => date('c'), 'por' => $eu['email']));
+        $c['historicoInstrucoes'] = array_slice($c['historicoInstrucoes'], 0, 40);
+        if ($novo === null) unset($c[$chave][$campo]);
+        else $c[$chave][$campo] = array($chave === 'instrucoes' ? 'texto' : 'descricao' => $novo, 'baseHash' => $baseHash, 'por' => $eu['email'], 'em' => date('c'));
+        if (!$c[$chave]) $c[$chave] = new stdClass();
+        $c['atualizadoEm'] = date('c');
+        $rot = $chave === 'instrucoes' ? array('identidade' => 'identidade', 'regrasCasa' => 'regras da casa', 'tomEquipe' => 'tom da equipe')[$campo] : 'ferramenta ' . $campo;
+        db_log($db, $eu['email'], $loja, ($novo === null ? 'voltou ao padrão: ' : 'editou ') . $rot, $novo === null ? '' : mb_substr($novo, 0, 200));
     });
     out(200, array('ok' => true));
 

@@ -198,3 +198,9 @@ code.tok { display: block; padding: 10px; background: var(--well); border: 1px s
   .busca { max-width: none; }
   .hide-m { display: none; }
 }
+
+/* instrucoes e ferramentas */
+textarea.mono { font-family: ui-monospace, 'Cascadia Code', Consolas, monospace; font-size: 13px; line-height: 1.55; min-height: 120px; }
+.modal { max-width: 640px; }
+details summary { cursor: pointer; }
+code { font-family: ui-monospace, Consolas, monospace; font-size: 13px; background: var(--border-2); padding: 1px 6px; border-radius: 6px; }

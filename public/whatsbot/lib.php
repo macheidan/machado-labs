@@ -157,7 +157,7 @@ function pode($u, $loja, $o_que) {
     switch ($o_que) {
         case 'ver': case 'pausar': case 'numeros': return $n >= 1;
         case 'regras': case 'horario':              return $n >= 2;
-        case 'escopo': case 'equipe':               return $n >= 3;
+        case 'escopo': case 'equipe': case 'instrucoes': return $n >= 3;
     }
     return false;
 }
