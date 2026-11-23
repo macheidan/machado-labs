@@ -263,9 +263,8 @@ table.clientes tr.cli.aberto td { background: var(--accent-light); }
 .fp { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; cursor: pointer; min-width: 0; }
 .fp input[type=checkbox] { flex: none; }
 .fp-nome { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.fp-ic { flex: none; width: 46px; height: 24px; border-radius: 5px; display: grid; place-items: center; font-size: 9.5px; font-weight: 700; letter-spacing: .03em; color: #fff; }
-.fp-ic.t-cred { background: #1e40af; } .fp-ic.t-deb { background: #0f766e; } .fp-ic.t-ref { background: #c2410c; }
-.fp-ic.t-din { background: #15803d; font-size: 12px; } .fp-ic.t-pix { background: #0e7490; } .fp-ic.t-outro { background: var(--muted); font-size: 14px; }
+.fp-ic { flex: none; display: grid; place-items: center; font-weight: 700; color: #fff; }
+.fp-ic.t-outro { width: 24px; height: 16px; border-radius: 2px; background: var(--muted); font-size: 12px; }
 .fp .fp-txt { flex: 1; min-width: 0; padding: 6px 10px; font-weight: 500; }
 .fp-rm { flex: none; padding: 4px 6px; }
 .fp-sec { font-size: 14px; font-weight: 600; margin: 24px 0 10px; }
@@ -277,9 +276,9 @@ table.clientes tr.cli.aberto td { background: var(--accent-light); }
 .fp-pct span { display: grid; place-items: center; padding: 0 12px; border: 1px solid var(--border); border-left: 0; border-radius: 0 8px 8px 0; background: var(--border-2); color: var(--muted); }
 @media (max-width: 900px) { .fp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 480px) { .fp-grid { grid-template-columns: 1fr; } }
-/* icones das formas de pagamento (folha do Delivery Direto, 24x16 por icone, mostrada a 1,5x) */
-.fp-ic.sc { width: 36px; height: 24px; border-radius: 3px; background: url(img/pag-sprite.png) 0 0 / 432px 48px repeat; }
-.fp-ic.sc[data-gen] { background: url(img/pag-generico.png) 0 0 / 36px 24px no-repeat; }
+/* icones das formas de pagamento: folha do Delivery Direto, 24x16 por icone, tamanho original */
+.fp-ic.sc { width: 24px; height: 16px; border-radius: 2px; background: url(img/pag-sprite.png) 0 0 / 288px 32px repeat; }
+.fp-ic.sc[data-gen] { background: url(img/pag-generico.png) 0 0 / 24px 16px no-repeat; }
 
 /* pagamento por categoria */
 .fp-cat .fp-sec { margin: 22px 0 0; display: flex; align-items: baseline; gap: 8px; }

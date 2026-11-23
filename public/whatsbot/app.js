@@ -663,7 +663,7 @@
       var box = $('#fp-grid', el); if (!box) return;
       var fo = f.pagamento.formas;
       var cel = function (x) {
-        return '<label class="fp"><input type="checkbox" data-fp="' + x.id + '"' + (fo[x.id] ? ' checked' : '') + dis + '><span class="fp-ic sc"' + (x.pos ? ' style="background-position:' + x.pos[0] * 1.5 + 'px ' + x.pos[1] * 1.5 + 'px"' : ' data-gen') + '></span><span class="fp-nome">' + esc(x.nome) + '</span></label>';
+        return '<label class="fp"><input type="checkbox" data-fp="' + x.id + '"' + (fo[x.id] ? ' checked' : '') + dis + '><span class="fp-ic sc"' + (x.pos ? ' style="background-position:' + x.pos[0] + 'px ' + x.pos[1] + 'px"' : ' data-gen') + '></span><span class="fp-nome">' + esc(x.nome) + '</span></label>';
       };
       // forma criada pela loja: nome livre e categoria escolhida
       var celOutra = function (o, i) {
