@@ -91,6 +91,7 @@
       { id: 'funcionamento', ic: '◷', nome: 'Funcionamento' },
       { id: 'fluxo', ic: '➜', nome: 'Fluxo de atendimento' },
       { id: 'frases', ic: '❝', nome: 'Frases fixas' },
+      { id: 'tamanhos', ic: '◔', nome: 'Tamanhos e sabores' },
       { id: 'ficha', ic: '☑', nome: 'Particularidades' },
       { id: 'instrucoes', ic: '¶', nome: 'Instruções e regras' },
       { id: 'ferramentas', ic: '⚙', nome: 'Ferramentas' },
@@ -121,7 +122,7 @@
 
     var c = $('#content');
     if (!l && S.pagina !== 'lojas') { c.innerHTML = '<div class="card vazio">Nenhuma loja ainda.' + (eu.superadmin ? ' Cadastre a primeira em <b>Lojas</b>.' : '') + '</div>'; return; }
-    ({ geral: pgGeral, numeros: pgNumeros, regras: pgRegras, funcionamento: pgFuncionamento, fluxo: pgFluxo, frases: pgFrases, pedidos: pgPedidos, clientes: pgClientes, ficha: pgFicha, instrucoes: pgInstrucoes, ferramentas: pgFerramentas, equipe: pgEquipe, historico: pgHistorico, lojas: pgLojas })[S.pagina](c, l);
+    ({ geral: pgGeral, numeros: pgNumeros, regras: pgRegras, funcionamento: pgFuncionamento, fluxo: pgFluxo, frases: pgFrases, pedidos: pgPedidos, clientes: pgClientes, ficha: function (c, l) { pgFicha(c, l, 'ficha'); }, tamanhos: function (c, l) { pgFicha(c, l, 'tamanhos'); }, instrucoes: pgInstrucoes, ferramentas: pgFerramentas, equipe: pgEquipe, historico: pgHistorico, lojas: pgLojas })[S.pagina](c, l);
   }
 
   function ir(p) {
@@ -472,7 +473,7 @@
       { id: 'pedidoMinimo', rot: 'Pedido mínimo (R$)', t: 'num', p: '' },
       { id: 'raioMax', rot: 'Raio máximo de entrega (km)', t: 'num', p: '' },
     ] },
-    { titulo: 'Sabores e preço', itens: [
+    { titulo: 'Regra de preço', itens: [
       { id: 'regraPreco', rot: 'Preço da pizza com mais de um sabor', t: 'radio', op: [['soma', 'Soma o adicional de cada sabor'], ['maior', 'Cobra o sabor mais caro'], ['medio', 'Média dos adicionais']], p: 'cardapio:regraSabores' },
       { id: 'pequenaRateio', rot: 'Pequena com 2 sabores cobra a média dos dois', t: 'sn', p: 'sim' },
       { id: 'grandeMeio', rot: 'Grande meio a meio tem preço próprio (adicional × 1,5)', t: 'sn', p: 'sim' },
@@ -543,12 +544,16 @@
       // variante de preco (ex.: Grande 35cm (2), meio a meio) conta como o mesmo tamanho
       var vars = c.tamanhos.filter(function (v) { return v.variante && v.nome.indexOf(t.nome) === 0; });
       var min = Math.min.apply(null, [t.min].concat(vars.map(function (v) { return v.min; })));
-      return { nome: t.nome.replace(/\s*\d+\s*cm.*/, ''), cm: cm, preco: t.preco, min: min, max: t.max, serve: SERVE[t.id] || '', fatias: FATIAS[t.id] || '', ativo: true };
+      return { id: t.id, nome: t.nome.replace(/\s*\d+\s*cm.*/, ''), cm: cm, preco: t.preco, min: min, max: t.max, serve: SERVE[t.id] || '', fatias: FATIAS[t.id] || '', ativo: true };
     }) : [];
     return { valores: v, tamanhos: tam, outras: [], cardapio: copiaCardapio(c), bairros: [] };
   }
 
-  function pgFicha(el, l) {
+  // Uma ficha so (config.ficha), mostrada em duas paginas: "Tamanhos e sabores" (tamanhos,
+  // regra de preco e o cardapio editavel) e "Particularidades" (o resto). Cada uma salva a ficha inteira.
+  var GRUPO_SABORES = 'Regra de preço';
+  function pgFicha(el, l, modo) {
+    var tam = modo === 'tamanhos';
     // conteiner proprio: os ouvintes de evento morrem junto quando a pagina troca
     var raiz = el; raiz.innerHTML = ''; el = document.createElement('div'); el.className = 'pagina'; raiz.appendChild(el);
     var salva = l.config.ficha, f = JSON.parse(JSON.stringify(salva || fichaPadrao(l))), pode = l.pode.horario;
@@ -556,22 +561,31 @@
     f.valores = f.valores || {}; f.tamanhos = f.tamanhos || []; f.outras = f.outras || [];
     // ficha salva antes da coluna de fatias: preenche com o que a Izza informa hoje
     f.tamanhos.forEach(function (t) { if (t.fatias == null) t.fatias = FATIAS[chaveTam(t.nome)] || ''; });
+    // id de cada tamanho: chave dos precos por tamanho de bordas e adicionais (o nome pode mudar)
+    var usados = {};
+    f.tamanhos.forEach(function (t) {
+      if (!t.id) t.id = chaveTam(t.nome) || 'tam';
+      while (usados[t.id]) t.id += '2';
+      usados[t.id] = 1;
+    });
     // itens que entraram na ficha depois de ela ter sido salva nascem com o padrao
     var pad = fichaPadrao(l);
     Object.keys(pad.valores).forEach(function (k) { if (f.valores[k] === undefined) f.valores[k] = pad.valores[k]; });
     if (!f.cardapio) f.cardapio = pad.cardapio;
     f.bairros = f.bairros || [];
     var dis = pode ? '' : ' disabled';
-    el.innerHTML = '<div class="page-head"><div><h1>Particularidades</h1><p>A ficha da ' + esc(l.nome) + ': o que é próprio desta pizzaria.</p></div>' +
+    var grupos = FICHA_GRUPOS.filter(function (g) { return (g.titulo === GRUPO_SABORES) === tam; });
+    el.innerHTML = '<div class="page-head"><div><h1>' + (tam ? 'Tamanhos e sabores' : 'Particularidades') + '</h1><p>' +
+      (tam ? 'Tamanhos, sabores e preços da ' + esc(l.nome) + '.' : 'A ficha da ' + esc(l.nome) + ': o que é próprio desta pizzaria.') + '</p></div>' +
       (pode ? '<button class="btn pri" id="sv-ficha">Salvar ficha</button>' : '') + '</div>' +
       '<div class="aviso">Ficha de referência: o que se marca aqui fica registrado no painel e <b>ainda não muda o bot</b>. ' +
       (salva ? 'Última edição: ' + esc(quem(l.config.fichaPor)) + ' · ' + esc(dataHora(l.config.fichaEm)) + '.' : 'Veio pré-preenchida com o que a Izza faz hoje (código e cardápio do sistema). Confira e salve.') + '</div>' +
       // tamanhos
-      '<div class="card"><h2>Tamanhos</h2><p class="desc">Quais tamanhos a loja vende e quantos sabores e fatias tem cada um.</p>' +
+      (!tam ? '' : '<div class="card"><h2>Tamanhos</h2><p class="desc">Quais tamanhos a loja vende e quantos sabores e fatias tem cada um.</p>' +
       '<div class="tabela-wrap"><table><thead><tr><th>Vende</th><th>Tamanho</th><th>cm</th><th>Preço base</th><th>Sabores (mín–máx)</th><th>Fatias</th><th class="hide-m">Serve</th><th></th></tr></thead><tbody id="tb-tam"></tbody></table></div>' +
-      (pode ? '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" id="add-tam">+ Tamanho</button></div>' : '') + '</div>' +
+      (pode ? '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" id="add-tam">+ Tamanho</button></div>' : '') + '</div>') +
       // checklist
-      '<div class="grid-2">' + FICHA_GRUPOS.map(function (g) {
+      '<div class="' + (tam ? '' : 'grid-2') + '">' + grupos.map(function (g) {
         return '<div class="card"><h2>' + esc(g.titulo) + '</h2><div class="stack" style="margin-top:12px">' + g.itens.map(function (it) {
           var v = f.valores[it.id] == null ? '' : f.valores[it.id];
           if (it.t === 'sn') return '<div class="item-ficha"><span>' + esc(it.rot) + '</span><div class="seg" data-sn="' + it.id + '">' +
@@ -583,18 +597,19 @@
         }).join('') + '</div></div>';
       }).join('') + '</div>' +
       // bairros (so com taxa por bairro)
-      '<div class="card" id="card-bairros"' + (f.valores.taxaModelo === 'bairro' ? '' : ' hidden') + '><h2>Bairros atendidos</h2>' +
-      '<p class="desc">Entrega por bairro: marque onde a loja entrega e, se quiser, a taxa de cada bairro. A lista vem do mapa (OpenStreetMap) pela cidade do bloco Entrega.</p><div id="bairros-ed"></div></div>' +
+      (tam ? '' : '<div class="card" id="card-bairros"' + (f.valores.taxaModelo === 'bairro' ? '' : ' hidden') + '><h2>Bairros atendidos</h2>' +
+      '<p class="desc">Entrega por bairro: marque onde a loja entrega e, se quiser, a taxa de cada bairro. A lista vem do mapa (OpenStreetMap) pela cidade do bloco Entrega.</p><div id="bairros-ed"></div></div>') +
       // outras
-      '<div class="card"><h2>Outras particularidades</h2><p class="desc">O que não coube acima: regra da casa, exceção, combinado com o cliente.</p><div class="stack" id="outras"></div>' +
-      (pode ? '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" id="add-outra">+ Particularidade</button></div>' : '') + '</div>' +
+      (tam ? '' : '<div class="card"><h2>Outras particularidades</h2><p class="desc">O que não coube acima: regra da casa, exceção, combinado com o cliente.</p><div class="stack" id="outras"></div>' +
+      (pode ? '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" id="add-outra">+ Particularidade</button></div>' : '') + '</div>') +
       // cardapio do sistema
-      '<div class="card"><div class="cab-card"><div><h2>Sabores e preços</h2><p class="desc">Começa igual ao cardápio do sistema da loja (planilha CARDAPIO). O que se muda aqui fica na ficha: <b>não muda a comanda nem o bot</b>. ' +
+      (!tam ? '' : '<div class="card"><div class="cab-card"><div><h2>Sabores e preços</h2><p class="desc">Começa igual ao cardápio do sistema da loja (planilha CARDAPIO). O que se muda aqui fica na ficha: <b>não muda a comanda nem o bot</b>. ' +
       'Linha diferente do sistema ganha a marca <span class="badge warn">mudou</span>; linha que o sistema não tem, <span class="badge acc">novo</span>.</p></div>' +
       (pode && c ? '<button class="btn sm" id="rl-card">Recarregar do sistema</button>' : '') + '</div>' +
-      (f.cardapio ? '<div id="cardapio-ed"></div>' : '<div class="vazio">O bot desta loja ainda não mandou o cardápio.</div>') + '</div>';
+      (f.cardapio ? '<div id="cardapio-ed"></div>' : '<div class="vazio">O bot desta loja ainda não mandou o cardápio.</div>') + '</div>');
 
     function desenhaTam() {
+      if (!$('#tb-tam', el)) return;
       $('#tb-tam', el).innerHTML = f.tamanhos.length ? f.tamanhos.map(function (t, i) {
         return '<tr><td><input type="checkbox" data-t="' + i + '" data-k="ativo"' + (t.ativo ? ' checked' : '') + dis + '></td>' +
           '<td><input type="text" data-t="' + i + '" data-k="nome" value="' + esc(t.nome) + '"' + dis + ' style="min-width:110px"></td>' +
@@ -605,9 +620,10 @@
           '<td class="hide-m"><input type="text" data-t="' + i + '" data-k="serve" value="' + esc(t.serve) + '"' + dis + ' style="min-width:110px"></td>' +
           '<td class="fim">' + (pode ? '<button class="btn link perigo" data-rm-t="' + i + '">Tirar</button>' : '') + '</td></tr>';
       }).join('') : '<tr><td colspan="8"><div class="vazio">Nenhum tamanho.</div></td></tr>';
-      el.querySelectorAll('[data-rm-t]').forEach(function (b) { b.onclick = function () { f.tamanhos.splice(+b.getAttribute('data-rm-t'), 1); desenhaTam(); }; });
+      el.querySelectorAll('[data-rm-t]').forEach(function (b) { b.onclick = function () { f.tamanhos.splice(+b.getAttribute('data-rm-t'), 1); desenhaTam(); desenhaCardapio(); }; });
     }
     function desenhaOutras() {
+      if (!$('#outras', el)) return;
       $('#outras', el).innerHTML = f.outras.length ? f.outras.map(function (o, i) {
         return '<div class="linha" style="flex-wrap:nowrap"><input type="checkbox" data-o="' + i + '" data-k="ativa"' + (o.ativa !== false ? ' checked' : '') + dis + ' title="Vale">' +
           '<input type="text" data-o="' + i + '" data-k="texto" value="' + esc(o.texto) + '" maxlength="300"' + dis + ' placeholder="Ex.: não entregamos no Centro depois das 23h">' +
@@ -616,11 +632,10 @@
       el.querySelectorAll('[data-rm-o]').forEach(function (b) { b.onclick = function () { f.outras.splice(+b.getAttribute('data-rm-o'), 1); desenhaOutras(); }; });
     }
     // ---- sabores e precos (copia editavel do cardapio do sistema)
-    var SYS = copiaCardapio(c), abaCard = 0;
-    var TAMS = c ? c.tamanhos.filter(function (t) { return !t.variante; }).map(function (t) { return { id: t.id, nome: t.nome.replace(/\s*\d+\s*cm.*/, '') }; }) : [];
-    if (!TAMS.length && f.cardapio) {
-      var ks = {}; f.cardapio.bordas.concat(f.cardapio.extras).forEach(function (b) { Object.keys(b.precos || {}).forEach(function (k) { ks[k] = 1; }); });
-      TAMS = Object.keys(ks).map(function (k) { return { id: k, nome: k.charAt(0).toUpperCase() + k.slice(1) }; });
+    var SYS = copiaCardapio(c), abaCard = 0, TAMS = [];
+    // colunas de preco = tamanhos que a loja vende na tabela Tamanhos (tamanho novo vira coluna)
+    function tamsDaFicha() {
+      TAMS = f.tamanhos.filter(function (t) { return t.ativo !== false && String(t.nome || '').trim(); }).map(function (t) { return { id: t.id, nome: t.nome.trim(), preco: t.preco }; });
     }
     var ROT_LISTA = { sabores: 'Sabor', bordas: 'Borda', extras: 'Adicional', bebidas: 'Bebida', combos: 'Combo' };
     function norm(s) { return String(s || '').trim().toLowerCase(); }
@@ -658,6 +673,7 @@
     }
     function desenhaCardapio() {
       var box = $('#cardapio-ed', el); if (!box || !f.cardapio) return;
+      tamsDaFicha();
       var ca = f.cardapio;
       var regra = { soma: 'soma o adicional de cada sabor', maior: 'cobra o sabor mais caro', medio: 'média dos adicionais' }[f.valores.regraPreco] || '';
       var porTam = function (lista) {
@@ -671,12 +687,14 @@
           return '<tr><td>' + cel(lista, i, 'ativo', x.ativo !== false, 'chk') + '</td><td>' + cel(lista, i, 'nome', x.nome, 'txt', 180) + '</td><td>' + cel(lista, i, 'preco', x.preco, 'num') + '</td>' + fimLinha(lista, i, x);
         });
       };
+      var inteira = function (x, t) { return t.preco === '' || t.preco == null ? '' : brl((+t.preco || 0) + (+x.adicional || 0)); };
       var abas = ['Sabores (' + ca.sabores.length + ')', 'Bordas e adicionais', 'Bebidas e combos', 'Promoções'];
       box.innerHTML = '<div class="tabs">' + abas.map(function (n, i) { return '<button type="button" data-ab="' + i + '" class="' + (i === abaCard ? 'on' : '') + '">' + n + '</button>'; }).join('') + '</div>' +
-        '<div data-pa="0"' + (abaCard === 0 ? '' : ' hidden') + '><p class="muted small" style="margin-bottom:8px">Preço da pizza = preço base do tamanho (tabela Tamanhos) + adicional do sabor' + (regra ? '; com mais de um sabor, ' + esc(regra) : '') + '.</p>' +
-          tabela('sabores', '<th>Sabor</th><th>Categoria</th><th>Adicional (R$)</th><th>Sob pedido</th><th class="hide-m">Descrição</th>', function (x, i) {
+        '<div data-pa="0"' + (abaCard === 0 ? '' : ' hidden') + '><p class="muted small" style="margin-bottom:8px">Preço da inteira = preço base do tamanho (tabela Tamanhos) + adicional do sabor; as colunas por tamanho mostram essa conta' + (regra ? '; com mais de um sabor, ' + esc(regra) : '') + '.</p>' +
+          tabela('sabores', '<th>Sabor</th><th>Categoria</th><th>Adicional (R$)</th>' + TAMS.map(function (t) { return '<th class="num" title="Preço base do tamanho + adicional do sabor">' + esc(t.nome) + '</th>'; }).join('') + '<th>Sob pedido</th><th class="hide-m">Descrição</th>', function (x, i) {
             return '<tr><td>' + cel('sabores', i, 'ativo', x.ativo !== false, 'chk') + '</td><td>' + cel('sabores', i, 'nome', x.nome, 'txt', 150) + '</td>' +
               '<td>' + cel('sabores', i, 'categoria', x.categoria, 'txt', 90) + '</td><td>' + cel('sabores', i, 'adicional', x.adicional, 'num', 80) + '</td>' +
+              TAMS.map(function (t) { return '<td class="num muted small nowrap" data-pz="' + esc(t.id) + '">' + inteira(x, t) + '</td>'; }).join('') +
               '<td>' + cel('sabores', i, 'sobPedido', x.sobPedido, 'chk') + '</td><td class="hide-m">' + cel('sabores', i, 'desc', x.desc, 'txt', 220) + '</td>' + fimLinha('sabores', i, x);
           }) + '</div>' +
         '<div data-pa="1"' + (abaCard === 1 ? '' : ' hidden') + '><h3 class="small" style="margin:4px 0">Bordas</h3>' + porTam('bordas') + '<h3 class="small" style="margin:16px 0 4px">Adicionais</h3>' + porTam('extras') + '</div>' +
@@ -700,6 +718,10 @@
           var val = inp.type === 'checkbox' ? inp.checked : inp.type === 'number' ? (inp.value === '' ? '' : +inp.value) : inp.value;
           if (k.indexOf('p:') === 0) { x.precos = x.precos || {}; x.precos[k.slice(2)] = val; } else x[k] = val;
           inp.closest('tr').querySelector('.st').innerHTML = status(lista, x);
+          if (k === 'adicional') inp.closest('tr').querySelectorAll('[data-pz]').forEach(function (td) {
+            var t = TAMS.filter(function (z) { return z.id === td.getAttribute('data-pz'); })[0];
+            td.textContent = t && t.preco !== '' && t.preco != null ? brl((+t.preco || 0) + (+x.adicional || 0)) : '';
+          });
         });
       });
       box.querySelectorAll('[data-rm-c]').forEach(function (b) {
@@ -789,7 +811,10 @@
     el.addEventListener('input', function (ev) {
       var t = ev.target, k = t.getAttribute('data-k');
       var val = t.type === 'checkbox' ? t.checked : t.type === 'number' ? (t.value === '' ? '' : +t.value) : t.value;
-      if (t.hasAttribute('data-t')) f.tamanhos[+t.getAttribute('data-t')][k] = val;
+      if (t.hasAttribute('data-t')) {
+        f.tamanhos[+t.getAttribute('data-t')][k] = val;
+        if (k === 'nome' || k === 'ativo' || k === 'preco') desenhaCardapio();
+      }
       else if (t.hasAttribute('data-o')) f.outras[+t.getAttribute('data-o')][k] = val;
       else if (t.hasAttribute('data-in')) f.valores[t.getAttribute('data-in')] = t.type === 'number' ? (t.value === '' ? '' : +t.value) : t.value;
     });
@@ -798,10 +823,10 @@
       if (t.type === 'radio' && t.name.indexOf('r-') === 0) {
         f.valores[t.name.slice(2)] = t.value;
         t.closest('.stack').querySelectorAll('.radio-card').forEach(function (rc) { rc.classList.toggle('on', rc.querySelector('input').checked); });
-        if (t.name === 'r-taxaModelo') { $('#card-bairros', el).hidden = t.value !== 'bairro'; if (t.value === 'bairro') desenhaBairros(); }
+        if (t.name === 'r-taxaModelo' && $('#card-bairros', el)) { $('#card-bairros', el).hidden = t.value !== 'bairro'; if (t.value === 'bairro') desenhaBairros(); }
         if (t.name === 'r-regraPreco') desenhaCardapio();
       }
-      if (t.getAttribute('data-in') === 'cidadeLoja' && !$('#card-bairros', el).hidden) desenhaBairros();
+      if (t.getAttribute('data-in') === 'cidadeLoja' && $('#card-bairros', el) && !$('#card-bairros', el).hidden) desenhaBairros();
     });
     el.querySelectorAll('[data-sn]').forEach(function (seg) {
       seg.addEventListener('click', function (ev) {
@@ -810,8 +835,8 @@
         seg.querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); });
       });
     });
-    $('#add-tam', el).onclick = function () { f.tamanhos.push({ nome: '', cm: '', preco: '', min: 1, max: 2, fatias: '', serve: '', ativo: true }); desenhaTam(); };
-    $('#add-outra', el).onclick = function () { f.outras.push({ texto: '', ativa: true }); desenhaOutras(); var ins = el.querySelectorAll('#outras input[type=text]'); if (ins.length) ins[ins.length - 1].focus(); };
+    if ($('#add-tam', el)) $('#add-tam', el).onclick = function () { f.tamanhos.push({ id: 't' + Date.now().toString(36), nome: '', cm: '', preco: '', min: 1, max: 2, fatias: '', serve: '', ativo: true }); desenhaTam(); var ins = el.querySelectorAll('#tb-tam [data-k=nome]'); if (ins.length) ins[ins.length - 1].focus(); };
+    if ($('#add-outra', el)) $('#add-outra', el).onclick = function () { f.outras.push({ texto: '', ativa: true }); desenhaOutras(); var ins = el.querySelectorAll('#outras input[type=text]'); if (ins.length) ins[ins.length - 1].focus(); };
     $('#sv-ficha', el).onclick = function () {
       f.outras = f.outras.filter(function (o) { return (o.texto || '').trim(); });
       f.tamanhos = f.tamanhos.filter(function (t) { return (t.nome || '').trim(); });
