@@ -104,7 +104,7 @@ function bot_auth($db, $loja) {
 
 if ($action === 'imp_parear' || $action === 'imp_poll' || $action === 'imp_resultado') imp_rotas_programa($action, $method);
 
-if ($action === 'bot' || $action === 'bot_status' || $action === 'bot_padroes' || $action === 'bot_pedidos' || $action === 'bot_clientes' || $action === 'bot_alertas') {
+if ($action === 'bot' || $action === 'bot_status' || $action === 'bot_padroes' || $action === 'bot_pedidos' || $action === 'bot_clientes' || $action === 'bot_alertas' || $action === 'bot_eventos') {
     $loja = isset($_GET['loja']) ? preg_replace('/[^a-z0-9_-]/', '', $_GET['loja']) : '';
     $db = db_load();
     if ($loja === '' || !isset($db['lojas'][$loja])) falha(404, 'loja');
@@ -130,12 +130,20 @@ if ($action === 'bot' || $action === 'bot_status' || $action === 'bot_padroes' |
         $lk = fopen($arq . '.lock', 'c'); flock($lk, LOCK_EX);
         $todos = json_read($arq, array());
         $idx = array();
-        $chegaram = array(); // pedidos que ainda nao existiam: podem imprimir sozinhos
+        // Imprime sozinho (Izza Impressora) quando o pedido ENTRA: status lancado, com comanda e
+        // sem imprimir:false (o Titan e a Saipos imprimem a deles). Antes de 24/11 imprimia na
+        // chegada, o que com a aprovacao pelo painel tiraria comanda de pedido ainda nao aprovado.
+        $chegaram = array();
         foreach ($todos as $i => $x) if (isset($x['id'])) $idx[$x['id']] = $i;
         foreach ($novos as $x) {
             if (!is_array($x) || empty($x['id'])) continue;
             $x['id'] = substr((string)$x['id'], 0, 80);
-            if (isset($idx[$x['id']])) $todos[$idx[$x['id']]] = $x; else { $idx[$x['id']] = count($todos); $todos[] = $x; $chegaram[] = $x; }
+            $velho = isset($idx[$x['id']]) ? $todos[$idx[$x['id']]] : null;
+            if ($velho && !empty($velho['impressoAuto'])) $x['impressoAuto'] = $velho['impressoAuto'];
+            $entra = isset($x['status']) && $x['status'] === 'lancado' && !empty($x['comanda'])
+                && !(isset($x['imprimir']) && $x['imprimir'] === false) && empty($x['impressoAuto']);
+            if ($entra) { $x['impressoAuto'] = date('c'); $chegaram[] = $x; }
+            if ($velho) $todos[$idx[$x['id']]] = $x; else { $idx[$x['id']] = count($todos); $todos[] = $x; }
         }
         usort($todos, function ($a, $b) { return strcmp(isset($a['em']) ? $a['em'] : '', isset($b['em']) ? $b['em'] : ''); });
         if (count($todos) > 5000) $todos = array_slice($todos, -5000);
@@ -153,7 +161,7 @@ if ($action === 'bot' || $action === 'bot_status' || $action === 'bot_padroes' |
         $todos = json_read($arq, array());
         $idx = array();
         foreach ($todos as $i => $x) if (isset($x['id'])) $idx[$x['id']] = $i;
-        $campos = array_flip(array('id', 'tipo', 'nivel', 'titulo', 'texto', 'nome', 'telefone', 'codigo', 'em', 'resolvido', 'resolvidoPor', 'marca', 'fala', 'resumo'));
+        $campos = array_flip(array('id', 'tipo', 'nivel', 'titulo', 'texto', 'nome', 'telefone', 'codigo', 'em', 'resolvido', 'resolvidoPor', 'marca', 'fala', 'resumo', 'pedido'));
         foreach ($novos as $x) {
             if (!is_array($x) || empty($x['id'])) continue;
             $x = array_intersect_key($x, $campos);
@@ -174,6 +182,39 @@ if ($action === 'bot' || $action === 'bot_status' || $action === 'bot_padroes' |
         json_write($arq, $todos);
         flock($lk, LOCK_UN); fclose($lk);
         out(200, array('ok' => true));
+    }
+    // Eventos para o bot (24/11/2026): aprovar/recusar decididos no painel e a coluna de cada
+    // pedido no Quadro ("Saiu / pronto" avisa o cliente). O bot pergunta a cada 4 s (GET) e
+    // devolve o resultado de cada decisao (POST feitas).
+    if ($action === 'bot_eventos') {
+        $arq = data_dir() . '/decisoes-' . $loja . '.json';
+        if ($method === 'GET') {
+            $ds = json_read($arq, array());
+            $pend = array_values(array_filter($ds, function ($x) { return is_array($x) && isset($x['estado']) && $x['estado'] === 'pendente'; }));
+            $q = json_read(data_dir() . '/quadro-' . $loja . '.json', array());
+            $corte = time() - 12 * 3600;
+            $q = array_filter($q, function ($x) use ($corte) { return is_array($x) && isset($x['em']) && strtotime($x['em']) > $corte; });
+            out(200, array('ok' => true, 'decisoes' => $pend, 'quadro' => (object)$q));
+        }
+        if ($method === 'POST') {
+            $p = corpo();
+            $feitas = array();
+            foreach ((isset($p['feitas']) && is_array($p['feitas']) ? $p['feitas'] : array()) as $f) if (is_array($f) && !empty($f['id'])) $feitas[(string)$f['id']] = $f;
+            $lk = fopen($arq . '.lock', 'c'); flock($lk, LOCK_EX);
+            $ds = json_read($arq, array());
+            foreach ($ds as &$x) {
+                if (!isset($x['id']) || !isset($feitas[$x['id']]) || $x['estado'] !== 'pendente') continue;
+                $f = $feitas[$x['id']];
+                $x['estado'] = !empty($f['ok']) ? 'feita' : 'falhou';
+                $x['erro'] = !empty($f['ok']) ? null : mb_substr((string)(isset($f['erro']) ? $f['erro'] : 'falhou'), 0, 300);
+                if (!empty($f['codigo'])) $x['codigo'] = substr((string)$f['codigo'], 0, 30);
+                $x['feitaEm'] = date('c');
+            }
+            unset($x);
+            json_write($arq, $ds);
+            flock($lk, LOCK_UN); fclose($lk);
+            out(200, array('ok' => true));
+        }
     }
     // clientes que ja pediram pelo WhatsApp, com o cadastro da base da loja: substitui a lista
     if ($action === 'bot_clientes' && $method === 'POST') {
@@ -330,7 +371,10 @@ if ($action === 'ao_vivo' && $method === 'GET') {
     }
     // Quadro (kanban): coluna de cada pedido, movida pela loja
     $quadro = json_read(data_dir() . '/quadro-' . $loja . '.json', array());
-    out(200, array('ok' => true, 'alertas' => $al, 'pedidosVersao' => $ver, 'pedidos' => $ped, 'quadro' => (object)$quadro, 'agora' => date('c')));
+    // decisoes de aprovar/recusar das ultimas 12 h: o Quadro mostra "enviando" e o erro do bot
+    $corteD = time() - 12 * 3600;
+    $dec = array_values(array_filter(array_slice(json_read(data_dir() . '/decisoes-' . $loja . '.json', array()), -60), function ($x) use ($corteD) { return is_array($x) && isset($x['em']) && strtotime($x['em']) > $corteD; }));
+    out(200, array('ok' => true, 'alertas' => $al, 'pedidosVersao' => $ver, 'pedidos' => $ped, 'quadro' => (object)$quadro, 'decisoes' => $dec, 'agora' => date('c')));
 }
 
 // Historico de pedidos e clientes (o bot manda; o painel so mostra)
@@ -547,6 +591,31 @@ case 'quadro_mover':
     json_write($arq, $q);
     flock($lk, LOCK_UN); fclose($lk);
     out(200, array('ok' => true));
+
+// Aprovar ou recusar pelo painel (24/11/2026, etapa 3): a decisao fica na fila e o bot executa
+// (bot_eventos) com as mesmas acoes da tela do monitor: lanca no sistema de pedidos (Izza, Saipos
+// ou Titan), confirma ao cliente ou passa a conversa para a loja. So pedido "Aguardando a loja".
+case 'pedido_decidir':
+    exige($eu, $db, $loja, 'ver');
+    $pid = isset($d['id']) ? substr((string)$d['id'], 0, 80) : '';
+    $dec = isset($d['decisao']) ? (string)$d['decisao'] : '';
+    if ($pid === '' || !in_array($dec, array('aprovar', 'recusar'), true)) falha(400, 'decisao');
+    $motivo = isset($d['motivo']) ? mb_substr(trim((string)$d['motivo']), 0, 200) : '';
+    $p = null;
+    foreach (array_reverse(json_read(data_dir() . '/pedidos-' . $loja . '.json', array())) as $x) if (is_array($x) && isset($x['id']) && $x['id'] === $pid) { $p = $x; break; }
+    if (!$p) falha(404, 'Pedido não encontrado.');
+    if (!isset($p['status']) || $p['status'] !== 'enviado') falha(409, 'Esse pedido já foi decidido.');
+    if (empty($p['aprovaNoPainel'])) falha(409, 'Esse pedido é aprovado no sistema da loja (Titan), não no painel.');
+    $arq = data_dir() . '/decisoes-' . $loja . '.json';
+    $lk = fopen($arq . '.lock', 'c'); flock($lk, LOCK_EX);
+    $ds = json_read($arq, array());
+    foreach ($ds as $x) if (isset($x['pedido']) && $x['pedido'] === $pid && $x['estado'] === 'pendente') { flock($lk, LOCK_UN); fclose($lk); falha(409, 'Já foi enviado à Izza; aguarde.'); }
+    $nova = array('id' => 'dc-' . novo_id(), 'pedido' => $pid, 'decisao' => $dec, 'motivo' => $motivo, 'por' => $eu['email'], 'em' => date('c'), 'estado' => 'pendente');
+    $ds[] = $nova;
+    if (count($ds) > 500) $ds = array_slice($ds, -500);
+    json_write($arq, $ds);
+    flock($lk, LOCK_UN); fclose($lk);
+    out(200, array('ok' => true, 'decisao' => $nova));
 
 // Alerta resolvido por alguem da loja (um, ou todos os abertos)
 case 'alerta_resolver':

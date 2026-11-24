@@ -1465,6 +1465,13 @@
         toast((novos.length === 1 ? novos[0].titulo : novos.length + ' alertas novos') + (novos[0].nome ? ' · ' + novos[0].nome : ''), urg);
       }
       VIVO.quadro = j.quadro || {};
+      // decisao que o bot nao conseguiu cumprir (pedido ja tinha saido da fila, sistema recusou)
+      var decAntes = VIVO.decisoes;
+      VIVO.decisoes = j.decisoes || [];
+      if (decAntes) VIVO.decisoes.forEach(function (d) {
+        var a = decAntes.filter(function (x) { return x.id === d.id; })[0];
+        if (a && a.estado === 'pendente' && d.estado === 'falhou') toast('A Izza não conseguiu ' + (d.decisao === 'aprovar' ? 'aprovar' : 'recusar') + ' o pedido: ' + (d.erro || 'erro'), true);
+      });
       if (j.pedidos) {
         VIVO.pedidos = j.pedidos;
         var primeiraP = !VIVO.pedConhecidos, pedNovos = [];
@@ -1481,6 +1488,7 @@
       }
       if (S.pagina === 'alertas' && (novos.length || primeira) && VIVO.redesenhaAlertas) VIVO.redesenhaAlertas();
       if (S.pagina === 'quadro' && VIVO.redesenhaQuadro) VIVO.redesenhaQuadro();
+      atualizaAprovacao();
     }).catch(function () {});
   }
   function ligaVivo() {
@@ -1561,7 +1569,7 @@
   }
   function atualizaChamado() {
     var a = chamadoDaVez();
-    if (a) abreChamado(a); else fechaChamado();
+    if (a) { if (APROVA.id) fechaAprova(); abreChamado(a); } else { fechaChamado(); atualizaAprovacao(); }
   }
   function assumiChamado() {
     var l = loja(), id = CHAMADO.id; if (!l || !id) return fechaChamado();
@@ -1572,6 +1580,116 @@
       if (S.pagina === 'alertas' && VIVO.redesenhaAlertas) VIVO.redesenhaAlertas();
       if (S.pagina === 'quadro' && VIVO.redesenhaQuadro) VIVO.redesenhaQuadro();
     }).catch(function (e) { toast(e.message, true); }).then(function () { b.disabled = false; });
+  }
+
+  // ------------------------------------------------------------- Aprovar pelo painel (24/11/2026, etapa 3)
+  // O que o Titan fazia na aba WhatsApp: pedido novo da Izza cobre a tela em verde, com os itens,
+  // o endereco, o pagamento e o total, e a harpa toca a cada 3 s ate alguem aprovar ou recusar.
+  // A decisao vai para a fila (pedido_decidir) e o bot cumpre em segundos (bot_eventos): lanca no
+  // sistema de pedidos e confirma ao cliente, ou passa a conversa para a loja. So pedido do bot que
+  // le o painel (aprovaNoPainel); os das lojas seguem aprovados no Titan. Chamado de atendente
+  // aberto tem a vez: a aprovacao espera ele fechar.
+  var APROVA = { id: null, timer: null, el: null, decididos: {} };
+  function decisaoDo(pid) {
+    var ds = (VIVO.decisoes || []).filter(function (d) { return d.pedido === pid; });
+    return ds.length ? ds[ds.length - 1] : null;
+  }
+  function esperandoAprovacao(p) {
+    if (!p || p.status !== 'enviado' || !p.aprovaNoPainel) return false;
+    var d = decisaoDo(p.id);
+    if (d && d.estado !== 'falhou') return false;
+    if (APROVA.decididos[p.id] && (!d || Date.parse(d.em) < APROVA.decididos[p.id])) return false;
+    return Date.now() - (Date.parse(p.em) || 0) < 3 * 3600e3;
+  }
+  function aprovacaoDaVez() {
+    var l = loja(); if (!l || VIVO.loja !== l.id) return null;
+    var fila = (VIVO.pedidos || []).filter(esperandoAprovacao).sort(function (a, b) { return (Date.parse(a.em) || 0) - (Date.parse(b.em) || 0); });
+    return fila.length ? { p: fila[0], mais: fila.length - 1 } : null;
+  }
+  function tocaAprova() {
+    try {
+      harpa = harpa || new Audio('sons/alerta-harpa.wav'); harpa.currentTime = 0;
+      var x = harpa.play();
+      if (x && x.then) x.then(function () { if (APROVA.el) APROVA.el.querySelector('.ch-mudo').hidden = true; })
+        .catch(function () { if (APROVA.el) APROVA.el.querySelector('.ch-mudo').hidden = false; });
+    } catch (e) {}
+  }
+  function elAprova() {
+    if (APROVA.el) return APROVA.el;
+    var d = document.createElement('div');
+    d.id = 'aprova'; d.className = 'chamado-full aprova-full'; d.setAttribute('role', 'alertdialog'); d.setAttribute('aria-modal', 'true'); d.setAttribute('aria-labelledby', 'ap-titulo');
+    d.innerHTML = '<div class="ch-caixa">' +
+      '<div class="ch-ico" aria-hidden="true">🍕</div>' +
+      '<h2 id="ap-titulo">PEDIDO NOVO PARA APROVAR</h2>' +
+      '<div class="ch-nome"></div><div class="ap-fone"></div>' +
+      '<div class="ch-porque ap-det"></div>' +
+      '<div class="ap-total"></div>' +
+      '<div class="ap-botoes"><button type="button" class="ch-sim ap-sim">Aprovar pedido</button><button type="button" class="ap-nao">Recusar</button></div>' +
+      '<div class="ap-recusa" hidden><label>Por que a loja vai recusar? (vai para a atendente, não para o cliente)<input type="text" maxlength="200" placeholder="ex.: acabou a massa, endereço fora da área"></label>' +
+        '<div class="ap-botoes"><button type="button" class="ap-nao ap-confirma">Recusar e falar com o cliente</button><button type="button" class="ap-volta">Voltar</button></div></div>' +
+      '<div class="ch-fila"></div>' +
+      '<p class="ch-mudo" hidden>O navegador bloqueou o som. Clique em qualquer lugar desta tela para ligar.</p>' +
+      '</div>';
+    d.addEventListener('click', function (e) { if (!e.target.closest('button,input,label')) tocaAprova(); });
+    d.querySelector('.ap-sim').onclick = function () { decide('aprovar'); };
+    d.querySelector('.ap-botoes .ap-nao').onclick = function () { d.querySelector('.ap-recusa').hidden = false; d.querySelector('.ap-recusa input').focus(); };
+    d.querySelector('.ap-volta').onclick = function () { d.querySelector('.ap-recusa').hidden = true; };
+    d.querySelector('.ap-confirma').onclick = function () { decide('recusar', d.querySelector('.ap-recusa input').value); };
+    document.body.appendChild(d);
+    APROVA.el = d;
+    return d;
+  }
+  function detalheAprova(p) {
+    var itens = itensDo(p.resumo);
+    var lugar = p.retirada ? '<b>Retirada no balcão</b>' : '<b>Entrega:</b> ' + esc([p.endereco && p.endereco.rua, p.endereco && p.endereco.numero, p.endereco && p.endereco.complemento, p.endereco && p.endereco.bairro].filter(Boolean).join(', ') || 'endereço no resumo');
+    return (itens.length ? '<ul class="ap-itens">' + itens.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' : '<pre class="ap-resumo">' + esc(p.resumo || '') + '</pre>') +
+      '<div class="ap-linha">' + lugar + '</div>' +
+      (p.pagamento ? '<div class="ap-linha"><b>Pagamento:</b> ' + esc(p.pagamento) + '</div>' : '') +
+      (p.agendadoPara ? '<div class="ap-linha"><b>Para:</b> ' + esc(p.agendadoPara) + '</div>' : '');
+  }
+  function abreAprova(v) {
+    var d = elAprova(), p = v.p, dec = decisaoDo(p.id);
+    d.querySelector('.ch-nome').textContent = p.nome || 'Cliente sem cadastro';
+    d.querySelector('.ap-fone').textContent = fmtTel(p.telefone) || '';
+    d.querySelector('.ap-det').innerHTML = detalheAprova(p) + (dec && dec.estado === 'falhou' ? '<div class="ap-erro">A última tentativa não deu: ' + esc(dec.erro || 'erro') + '</div>' : '');
+    d.querySelector('.ap-total').textContent = p.total != null ? brl(p.total) : '';
+    d.querySelector('.ch-fila').textContent = v.mais ? 'Depois deste, mais ' + v.mais + (v.mais === 1 ? ' pedido esperando.' : ' pedidos esperando.') : '';
+    d.classList.add('on');
+    document.documentElement.classList.add('com-chamado');
+    if (APROVA.id !== p.id) {
+      APROVA.id = p.id;
+      d.querySelector('.ap-recusa').hidden = true; d.querySelector('.ap-recusa input').value = '';
+      d.querySelectorAll('button').forEach(function (b) { b.disabled = false; });
+      notifica('Pedido novo para aprovar', [p.nome, p.total != null ? brl(p.total) : ''].filter(Boolean).join(' · '), 'ap-' + p.id);
+      tocaAprova(); clearInterval(APROVA.timer);
+      APROVA.timer = setInterval(tocaAprova, 3000);
+      setTimeout(function () { var b = d.querySelector('.ap-sim'); if (b) b.focus(); }, 0);
+    }
+  }
+  function fechaAprova() {
+    clearInterval(APROVA.timer); APROVA.timer = null; APROVA.id = null;
+    if (APROVA.el) APROVA.el.classList.remove('on');
+    if (!CHAMADO.id) document.documentElement.classList.remove('com-chamado');
+  }
+  function atualizaAprovacao() {
+    var v = CHAMADO.id ? null : aprovacaoDaVez();
+    if (v) abreAprova(v); else fechaAprova();
+  }
+  function decide(decisao, motivo, pid) {
+    var l = loja(); pid = pid || APROVA.id; if (!l || !pid) return Promise.resolve();
+    if (APROVA.el) APROVA.el.querySelectorAll('button').forEach(function (b) { b.disabled = true; });
+    return api('pedido_decidir', { loja: l.id, id: pid, decisao: decisao, motivo: motivo || '' }).then(function (j) {
+      APROVA.decididos[pid] = Date.now();
+      if (j.decisao) { VIVO.decisoes = (VIVO.decisoes || []).concat([j.decisao]); }
+      toast(decisao === 'aprovar' ? 'Aprovado: a Izza lança o pedido e confirma ao cliente.' : 'Recusado: a conversa passa para a loja.');
+      atualizaAprovacao();
+      if (S.pagina === 'quadro' && VIVO.redesenhaQuadro) VIVO.redesenhaQuadro();
+      // o bot cumpre em ate ~5 s: pergunta de novo logo, para o card andar
+      setTimeout(vivo, 5000); setTimeout(vivo, 12000);
+    }).catch(function (e) {
+      toast(e.message, true);
+      if (APROVA.el) APROVA.el.querySelectorAll('button').forEach(function (b) { b.disabled = false; });
+    });
   }
 
   // ------------------------------------------------------------- Alertas
@@ -1701,6 +1819,8 @@
       var i = COLS_Q.map(function (c) { return c.id; }).indexOf(col);
       var morto = p.status === 'recusado' || p.status === 'expirado';
       var lugar = [p.endereco && p.endereco.bairro ? p.endereco.bairro : '', p.pagamento || ''].filter(Boolean).join(' · ');
+      // pedido do bot que le o painel, esperando a loja: Aprovar / Recusar no card
+      var decide_ = p.status === 'enviado' && p.aprovaNoPainel;
       return '<div class="qcard' + (atrasado ? ' atrasado' : '') + (morto ? ' morto' : '') + '" draggable="true" data-ped="' + esc(p.id) + '">' +
         '<div class="qcard-top"><b>' + esc(p.nome || fmtTel(p.telefone) || 'Cliente') + '</b><span class="qcard-h" title="' + esc(dataHora(p.em)) + '">' + esc(hora(p.em)) + ' · ' + esc(idade(p.em)) + '</span></div>' +
         '<div class="qcard-tags"><span class="badge ' + st[1] + '">' + esc(st[0]) + '</span>' +
@@ -1710,11 +1830,18 @@
         (itens.length ? '<ul class="qcard-itens">' + itens.slice(0, 4).map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') +
           (itens.length > 4 ? '<li class="muted">+ ' + (itens.length - 4) + (itens.length - 4 === 1 ? ' item' : ' itens') + '</li>' : '') + '</ul>' : '') +
         '<div class="qcard-pe"><span class="muted small">' + esc(lugar) + '</span><b>' + (p.total != null ? brl(p.total) : '') + '</b></div>' +
+        (decide_ ? acoesAprova(p) :
         '<div class="qcard-acoes">' +
           (i > 0 ? '<button class="btn sm" data-mover="' + COLS_Q[i - 1].id + '" title="Voltar para ' + esc(COLS_Q[i - 1].nome) + '">←</button>' : '<span></span>') +
           '<button class="btn sm" data-ver>Ver</button>' +
           (i < COLS_Q.length - 1 ? '<button class="btn sm pri" data-mover="' + COLS_Q[i + 1].id + '">' + esc(COLS_Q[i + 1].nome) + ' →</button>' : '<span></span>') +
-        '</div></div>';
+        '</div>') + '</div>';
+    }
+    function acoesAprova(p) {
+      var d = decisaoDo(p.id);
+      if (d && d.estado === 'pendente') return '<div class="qcard-acoes"><span></span><span class="muted small">' + (d.decisao === 'aprovar' ? 'Aprovando…' : 'Recusando…') + '</span><span></span></div>';
+      return (d && d.estado === 'falhou' ? '<div class="qcard-erro">Não deu: ' + esc(d.erro || 'erro') + '</div>' : '') +
+        '<div class="qcard-acoes"><button class="btn sm" data-recusa>Recusar</button><button class="btn sm" data-ver>Ver</button><button class="btn sm pri" data-aprova>Aprovar</button></div>';
     }
     function desenha() {
       if (S.pagina !== 'quadro' || !pag.isConnected) return;
@@ -1767,7 +1894,15 @@
       pag.querySelectorAll('.qcard[data-ped]').forEach(function (c) {
         var id = c.getAttribute('data-ped');
         c.querySelectorAll('[data-mover]').forEach(function (b) { b.onclick = function () { mover(id, b.getAttribute('data-mover')); }; });
-        c.querySelector('[data-ver]').onclick = function () { verPedido(id); };
+        var bv = c.querySelector('[data-ver]'); if (bv) bv.onclick = function () { verPedido(id); };
+        var ba = c.querySelector('[data-aprova]'); if (ba) ba.onclick = function () { ba.disabled = true; decide('aprovar', '', id); };
+        var br = c.querySelector('[data-recusa]'); if (br) br.onclick = function () {
+          modal('<h3>Recusar o pedido</h3><p class="muted small">O pedido não entra e a conversa passa para a loja. O motivo vai para a atendente, não para o cliente.</p>' +
+            '<label class="campo"><span>Motivo (opcional)</span><input type="text" id="rc-mot" maxlength="200"></label>' +
+            '<div class="acoes"><button class="btn" data-fecha>Voltar</button><button class="btn perigo" id="rc-ok">Recusar</button></div>', function (m) {
+            m.querySelector('#rc-ok').onclick = function () { var mot = m.querySelector('#rc-mot').value; fecharModal(); decide('recusar', mot, id); };
+          });
+        };
         c.ondragstart = function (ev) { arrastando = id; c.classList.add('arrasta'); try { ev.dataTransfer.setData('text/plain', id); ev.dataTransfer.effectAllowed = 'move'; } catch (e) {} };
         c.ondragend = function () { arrastando = null; c.classList.remove('arrasta'); pag.querySelectorAll('.qcol.alvo').forEach(function (x) { x.classList.remove('alvo'); }); };
       });
@@ -2241,7 +2376,7 @@
       var tOk = !!it.titan.url, sOk = !!(it.saipos.idPartner && it.saipos.codStore && it.saipos.secret), wOk = !!it.webhook.url;
       pag.innerHTML = '<div class="page-head"><div><h1>Integrações</h1><p>Para onde vai o pedido que a Izza fecha na ' + esc(l.nome) + ' e de onde vêm o cardápio e os clientes.</p></div>' +
         (pode ? '<button class="btn pri" id="int-salvar">Salvar</button>' : '') + '</div>' +
-        '<div class="aviso">Em desenvolvimento: a configuração fica guardada aqui, mas a Izza ainda não usa estas integrações. Elas entram nas próximas etapas (Titan e Saipos).' +
+        '<div class="aviso">A Izza ligada a este painel (desenvolvimento) já usa “Para onde vai o pedido”: <b>Só a Izza</b> (aprova no Quadro, comanda pela Izza Impressora) e <b>Saipos</b> (aprova no Quadro e o pedido entra na Saipos; se ela recusar, a comanda sai aqui). As lojas Dáme e Lov seguem no Titan até a migração. Cardápio, clientes e webhook ainda não são usados.' +
         (base.atualizadoEm ? ' Última mudança: ' + esc(quem(base.atualizadoPor)) + ' · ' + esc(dataHora(base.atualizadoEm)) + '.' : '') + '</div>' +
         '<div class="card"><h2>Para onde vai o pedido</h2><p class="desc">Depois que o cliente confirma o pedido no WhatsApp.</p><div class="stack" style="margin-top:12px">' +
           INT_PEDIDOS.map(function (o) {
