@@ -401,3 +401,19 @@ html.com-chamado, html.com-chamado body { overflow: hidden; }
 .dia-cab { display: flex; align-items: baseline; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap; padding: 14px 2px 4px; border-bottom: 1px solid var(--border); }
 .dia-cab:first-child { padding-top: 0; }
 .dia-cab h2 { margin: 0; font-size: 15px; font-weight: 700; }
+
+/* Promocoes editaveis (24/11/2026) */
+.promo-ed { flex-direction: column; gap: 10px; align-items: stretch; }
+.promo-l1 { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.promo-l1 input[type=text] { flex: 1 1 240px; min-width: 0; }
+.promo-preco { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; }
+.promo-preco input { width: 100px; }
+.promo-l2 { display: flex; gap: 8px 16px; align-items: center; flex-wrap: wrap; font-size: 14px; }
+.promo-campo { display: inline-flex; align-items: center; gap: 6px; }
+.promo-ed textarea { width: 100%; min-height: 56px; resize: vertical; }
+.promo-sab summary { cursor: pointer; font-size: 14px; }
+.promo-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; max-height: 220px; overflow: auto; }
+.chip-chk { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--border); border-radius: 999px; padding: 4px 10px; font-size: 13px; background: var(--card); cursor: pointer; }
+.chip-chk:has(input:checked) { border-color: var(--accent, #4f46e5); background: var(--well); font-weight: 600; }
+.promo-aviso { font-size: 13px; color: var(--warning); }
+.promo-ed.off .promo-l1 input[type=text] { text-decoration: line-through; opacity: .7; }

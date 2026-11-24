@@ -608,6 +608,7 @@
       extras: c.extras.map(function (b) { return { nome: b.nome, precos: pr(b.precos), ativo: true }; }),
       bebidas: c.bebidas.map(function (b) { return { nome: b.nome, preco: b.preco, ativo: true }; }),
       combos: c.combos.map(function (b) { return { nome: b.nome, preco: b.preco, ativo: true }; }),
+      promocoes: (c.promocoes || []).map(function (p) { var x = pr(p); x.ativo = true; return x; }),
     };
   }
   function cidadeUf(txt) {
@@ -768,7 +769,7 @@
       (modo !== 'regras' ? '' : '<div class="card"><h2>Outras regras</h2><p class="desc">O que não coube nas outras páginas: regra da casa, exceção, combinado com o cliente.</p><div class="stack" id="outras"></div>' +
       (pode ? '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" id="add-outra">+ Particularidade</button></div>' : '') + '</div>') +
       // cardapio do sistema
-      (!tam ? '' : '<div class="card"><div class="cab-card"><div><h2>Sabores e preços</h2><p class="desc">Começa igual ao cardápio do sistema da loja (planilha CARDAPIO). O que se muda aqui fica na ficha: <b>não muda a comanda nem o bot</b>. ' +
+      (!tam ? '' : '<div class="card"><div class="cab-card"><div><h2>Sabores e preços</h2><p class="desc">Começa igual ao cardápio do sistema da loja (planilha CARDAPIO). Sabores, bordas, bebidas e combos daqui ficam na ficha (ainda não mudam o bot). <b>As promoções mudam o bot</b>: o que a Izza oferece, responde e cobra. ' +
       'Linha diferente do sistema ganha a marca <span class="badge warn">mudou</span>; linha que o sistema não tem, <span class="badge acc">novo</span>.</p></div>' +
       (pode && c ? '<button class="btn sm" id="rl-card">Recarregar do sistema</button>' : '') + '</div>' +
       (f.cardapio ? '<div id="cardapio-ed"></div>' : '<div class="vazio">O bot desta loja ainda não mandou o cardápio.</div>') + '</div>');
@@ -798,6 +799,7 @@
     }
     // ---- sabores e precos (copia editavel do cardapio do sistema)
     var SYS = copiaCardapio(c), abaCard = 0, TAMS = [];
+    if (f.cardapio && !f.cardapio.promocoes) f.cardapio.promocoes = SYS ? JSON.parse(JSON.stringify(SYS.promocoes)) : [];
     // colunas de preco = tamanhos que a loja vende na tabela Tamanhos (tamanho novo vira coluna)
     function tamsDaFicha() {
       TAMS = f.tamanhos.filter(function (t) { return t.ativo !== false && String(t.nome || '').trim(); }).map(function (t) { return { id: t.id, nome: t.nome.trim(), preco: t.preco }; });
@@ -807,7 +809,7 @@
     function doSistema(lista, x) { return SYS ? SYS[lista].filter(function (s) { return norm(s.nome) === norm(x.nome); })[0] : null; }
     function difere(lista, x, s) {
       var n = function (v) { return v === '' || v == null ? 0 : +v; };
-      if (lista === 'sabores') return n(x.adicional) !== n(s.adicional) || norm(x.categoria) !== norm(s.categoria) || !!x.sobPedido !== !!s.sobPedido || String(x.desc || '') !== String(s.desc || '');
+      if (lista === 'sabores') return n(x.adicional) !== n(s.adicional) || !!x.sobPedido !== !!s.sobPedido || String(x.desc || '') !== String(s.desc || '');
       if (lista === 'bordas' || lista === 'extras') return TAMS.some(function (t) { return n((x.precos || {})[t.id]) !== n((s.precos || {})[t.id]); });
       return n(x.preco) !== n(s.preco);
     }
@@ -817,7 +819,7 @@
       var s = doSistema(lista, x);
       if (!s) return h + '<span class="badge acc">novo</span>';
       if (!difere(lista, x, s)) return h;
-      var era = lista === 'sabores' ? 'adicional ' + (s.adicional ? '+ ' + brl(s.adicional) : 'nenhum') + (s.categoria ? ', ' + s.categoria : '')
+      var era = lista === 'sabores' ? 'adicional ' + (s.adicional ? '+ ' + brl(s.adicional) : 'nenhum') + (s.sobPedido ? ', menu secreto' : '')
         : (lista === 'bordas' || lista === 'extras') ? TAMS.map(function (t) { return t.nome + ' ' + brl((s.precos || {})[t.id]); }).join(' · ') : brl(s.preco);
       return h + '<span class="badge warn" title="No sistema: ' + esc(era) + '">mudou</span>';
     }
@@ -856,19 +858,15 @@
       var abas = ['Sabores (' + ca.sabores.length + ')', 'Bordas e adicionais', 'Bebidas e combos', 'Promoções'];
       box.innerHTML = '<div class="tabs">' + abas.map(function (n, i) { return '<button type="button" data-ab="' + i + '" class="' + (i === abaCard ? 'on' : '') + '">' + n + '</button>'; }).join('') + '</div>' +
         '<div data-pa="0"' + (abaCard === 0 ? '' : ' hidden') + '><p class="muted small" style="margin-bottom:8px">Preço da inteira = preço base do tamanho (tabela Tamanhos) + adicional do sabor; as colunas por tamanho mostram essa conta' + (regra ? '; com mais de um sabor, ' + esc(regra) : '') + '.</p>' +
-          tabela('sabores', '<th>Sabor</th><th>Categoria</th><th>Adicional (R$)</th>' + TAMS.map(function (t) { return '<th class="num" title="Preço base do tamanho + adicional do sabor">' + esc(t.nome) + '</th>'; }).join('') + '<th>Sob pedido</th><th class="hide-m">Descrição</th>', function (x, i) {
+          tabela('sabores', '<th>Sabor</th><th>Adicional (R$)</th>' + TAMS.map(function (t) { return '<th class="num" title="Preço base do tamanho + adicional do sabor">' + esc(t.nome) + '</th>'; }).join('') + '<th title="Sabor que a Izza não oferece; só sai se o cliente pedir">Menu secreto</th><th class="hide-m">Descrição</th>', function (x, i) {
             return '<tr><td>' + cel('sabores', i, 'ativo', x.ativo !== false, 'chk') + '</td><td>' + cel('sabores', i, 'nome', x.nome, 'txt', 150) + '</td>' +
-              '<td>' + cel('sabores', i, 'categoria', x.categoria, 'txt', 90) + '</td><td>' + cel('sabores', i, 'adicional', x.adicional, 'num', 80) + '</td>' +
+              '<td>' + cel('sabores', i, 'adicional', x.adicional, 'num', 80) + '</td>' +
               TAMS.map(function (t) { return '<td class="num muted small nowrap" data-pz="' + esc(t.id) + '">' + inteira(x, t) + '</td>'; }).join('') +
               '<td>' + cel('sabores', i, 'sobPedido', x.sobPedido, 'chk') + '</td><td class="hide-m">' + cel('sabores', i, 'desc', x.desc, 'txt', 220) + '</td>' + fimLinha('sabores', i, x);
           }) + '</div>' +
         '<div data-pa="1"' + (abaCard === 1 ? '' : ' hidden') + '><h3 class="small" style="margin:4px 0">Bordas</h3>' + porTam('bordas') + '<h3 class="small" style="margin:16px 0 4px">Adicionais</h3>' + porTam('extras') + '</div>' +
         '<div data-pa="2"' + (abaCard === 2 ? '' : ' hidden') + '><h3 class="small" style="margin:4px 0">Bebidas</h3>' + preco('bebidas') + '<h3 class="small" style="margin:16px 0 4px">Combos</h3>' + preco('combos') + '</div>' +
-        '<div data-pa="3"' + (abaCard === 3 ? '' : ' hidden') + '><p class="muted small" style="margin-bottom:8px">Promoções do sistema da loja. Somente visualização.</p><div class="stack">' +
-          (c && c.promocoes.length ? c.promocoes.map(function (p) {
-            return '<div class="regra off"><div style="flex:1"><b>' + esc(p.nome) + '</b> ' + (p.preco != null ? '<span class="badge acc">' + brl(p.preco) + '</span>' : '') + (p.soRetirada ? ' <span class="badge">só retirada</span>' : '') +
-              (p.desc ? '<div class="muted small" style="margin-top:4px">' + esc(p.desc) + '</div>' : '') + '</div></div>';
-          }).join('') : '<div class="vazio">Nenhuma promoção.</div>') + '</div></div>';
+        '<div data-pa="3"' + (abaCard === 3 ? '' : ' hidden') + '>' + promosHtml() + '</div>';
       box.querySelectorAll('[data-ab]').forEach(function (b) {
         b.onclick = function () {
           abaCard = +b.getAttribute('data-ab');
@@ -876,6 +874,7 @@
           box.querySelectorAll('[data-pa]').forEach(function (p) { p.hidden = +p.getAttribute('data-pa') !== abaCard; });
         };
       });
+      ligaPromos(box);
       if (!pode) return;
       box.querySelectorAll('[data-cl]').forEach(function (inp) {
         inp.addEventListener('input', function () {
@@ -901,6 +900,98 @@
           var ins = box.querySelectorAll('[data-cl="' + lista + '"][data-ck="nome"]'); if (ins.length) ins[ins.length - 1].focus();
         };
       });
+    }
+
+    // ---- promocoes (24/11/2026): editaveis, e o bot ligado ao painel usa estas no lugar das do sistema
+    // (whatsbot src/painel.js promocoes -> dd/catalogo.js): o que a Izza oferece, responde e cobra.
+    function famTam() {
+      var vistos = {}, out = [];
+      ((c && c.tamanhos) || []).forEach(function (t) { var id = String(t.id || '').split('-')[0]; if (!t.variante && id && !vistos[id]) { vistos[id] = 1; out.push({ id: id, nome: t.nome }); } });
+      if (!out.length) f.tamanhos.forEach(function (t) { if (t.id && !vistos[t.id]) { vistos[t.id] = 1; out.push({ id: t.id, nome: t.nome }); } });
+      return out;
+    }
+    function reaisNoTexto(txt) { return (String(txt || '').match(/R\$\s?\d{1,3}(?:\.\d{3})*,\d{2}/g) || []); }
+    function promoDoSistema(p) { return SYS ? SYS.promocoes.filter(function (s) { return (p.id && s.id === p.id) || norm(s.nome) === norm(p.nome); })[0] : null; }
+    function statusPromo(p) {
+      var h = p.ativo === false ? '<span class="badge">desligada</span> ' : '';
+      if (!SYS || !String(p.nome || '').trim()) return h;
+      var s = promoDoSistema(p);
+      if (!s) return h + '<span class="badge acc">nova</span>';
+      var igual = norm(s.nome) === norm(p.nome) && +s.preco === +p.preco && !!s.soRetirada === !!p.soRetirada && !!s.soQuandoPedir === !!p.soQuandoPedir &&
+        String(s.desc || '') === String(p.desc || '') && JSON.stringify(s.sabores || []) === JSON.stringify(p.sabores || []) && (s.maxSabores || '') == (p.maxSabores || '') && (s.tamanho || '') === (p.tamanho || '') && (s.desde || '') === (p.desde || '');
+      return h + (igual ? '' : '<span class="badge warn" title="No sistema: ' + esc(s.nome + ' · ' + brl(s.preco)) + '">mudou</span>');
+    }
+    function avisoPreco(p) {
+      var outros = reaisNoTexto(p.desc).filter(function (r) { return r.replace(/\s/g, ' ') !== brl(p.preco); });
+      return outros.length && p.preco !== '' && p.preco != null ? '<div class="promo-aviso">A descrição fala em ' + esc(outros.join(', ')) + ' e o preço é ' + esc(brl(p.preco)) + '. A Izza lê a descrição: confira.</div>' : '';
+    }
+    function promoHtml(p, i) {
+      var a = function (k) { return ' data-pr="' + i + '" data-pk="' + k + '"' + dis; };
+      var sab = f.cardapio.sabores.filter(function (s) { return s.ativo !== false && String(s.nome || '').trim(); }).map(function (s) { return s.nome; });
+      (p.sabores || []).forEach(function (n) { if (sab.indexOf(n) < 0) sab.push(n); });
+      var escolhidos = p.sabores || [];
+      var tams = famTam();
+      return '<div class="regra promo-ed' + (p.ativo === false ? ' off' : '') + '" data-promo="' + i + '">' +
+        '<div class="promo-l1"><label class="fp-radio" title="A Izza usa esta promoção"><input type="checkbox"' + a('ativo') + (p.ativo !== false ? ' checked' : '') + '>Vale</label>' +
+          '<input type="text"' + a('nome') + ' value="' + esc(p.nome || '') + '" placeholder="Nome da promoção" maxlength="120">' +
+          '<label class="promo-preco">R$ <input type="number" step="0.01" min="0"' + a('preco') + ' value="' + esc(p.preco == null ? '' : p.preco) + '"></label>' +
+          '<span class="st">' + statusPromo(p) + '</span>' + (pode ? '<button type="button" class="btn link perigo" data-rm-pr="' + i + '">Tirar</button>' : '') + '</div>' +
+        '<div class="promo-l2">' +
+          '<label class="fp-radio"><input type="checkbox"' + a('soRetirada') + (p.soRetirada ? ' checked' : '') + '>Só retirada no balcão</label>' +
+          '<label class="fp-radio" title="A Izza não oferece nem cita; vale se o cliente pedir promoção"><input type="checkbox"' + a('soQuandoPedir') + (p.soQuandoPedir ? ' checked' : '') + '>Só para quem pedir promoção</label>' +
+          '<label class="promo-campo">Tamanho <select' + a('tamanho') + '><option value="">—</option>' + tams.map(function (t) { return '<option value="' + esc(t.id) + '"' + (p.tamanho === t.id ? ' selected' : '') + '>' + esc(t.nome) + '</option>'; }).join('') + '</select></label>' +
+          '<label class="promo-campo">A partir de <input type="date"' + a('desde') + ' value="' + esc(p.desde || '') + '"></label>' +
+          (p.pizzas > 1 ? '<span class="badge">combo de ' + p.pizzas + ' pizzas</span>' : '') + '</div>' +
+        '<details class="promo-sab"' + (escolhidos.length ? ' open' : '') + '><summary>Sabores que o cliente escolhe (' + escolhidos.length + ')' + (escolhidos.length ? ' · até <input type="number" min="1" max="4"' + a('maxSabores') + ' value="' + esc(p.maxSabores || 2) + '" style="width:56px"> por pizza' : ' · nenhum: pizza fixa, sem escolha') + '</summary>' +
+          '<div class="promo-chips">' + sab.map(function (n) { return '<label class="chip-chk"><input type="checkbox" data-pr="' + i + '" data-ps="' + esc(n) + '"' + (escolhidos.indexOf(n) >= 0 ? ' checked' : '') + dis + '>' + esc(n) + '</label>'; }).join('') + '</div></details>' +
+        '<textarea rows="2"' + a('desc') + ' maxlength="600" placeholder="O que a Izza explica ao cliente: o que vem, regras, borda, entrega ou retirada">' + esc(p.desc || '') + '</textarea>' +
+        '<div class="promo-av">' + avisoPreco(p) + '</div></div>';
+    }
+    function promosHtml() {
+      var ps = f.cardapio.promocoes || [];
+      return '<p class="muted small" style="margin-bottom:8px">Começa igual às promoções do sistema da loja. O que vale aqui é o que a Izza oferece, responde e cobra: desligue, mude o preço, a regra ou crie uma nova. Preço e descrição saem para o cliente como estão.</p>' +
+        '<div class="stack" id="promo-lista">' + (ps.length ? ps.map(promoHtml).join('') : '<div class="vazio">Nenhuma promoção. A Izza diz que não tem.</div>') + '</div>' +
+        (pode ? '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" data-add-pr>+ Promoção</button></div>' : '');
+    }
+    function ligaPromos(box) {
+      if (!pode) return;
+      var lista = $('#promo-lista', box); if (!lista) return;
+      lista.querySelectorAll('[data-pk]').forEach(function (inp) {
+        var ev = inp.tagName === 'SELECT' || inp.type === 'checkbox' || inp.type === 'date' ? 'change' : 'input';
+        inp.addEventListener(ev, function () {
+          var p = f.cardapio.promocoes[+inp.getAttribute('data-pr')], k = inp.getAttribute('data-pk'), card = inp.closest('[data-promo]');
+          var val = inp.type === 'checkbox' ? inp.checked : inp.type === 'number' ? (inp.value === '' ? '' : +inp.value) : inp.value;
+          if (k === 'preco' && p.preco !== '' && p.preco != null && val !== '') {
+            // descricao que repetia o preco antigo acompanha o novo
+            var velho = brl(p.preco), novo = brl(val), ta = card.querySelector('[data-pk=desc]');
+            if (velho !== novo && String(p.desc || '').indexOf(velho) >= 0) { p.desc = p.desc.split(velho).join(novo); ta.value = p.desc; }
+          }
+          if (val === '' || val === false) { if (k === 'soQuandoPedir' || k === 'desde' || k === 'tamanho') delete p[k]; else p[k] = val; } else p[k] = val;
+          if (k === 'ativo') card.classList.toggle('off', !val);
+          card.querySelector('.st').innerHTML = statusPromo(p);
+          card.querySelector('.promo-av').innerHTML = avisoPreco(p);
+        });
+      });
+      lista.querySelectorAll('[data-ps]').forEach(function (cb) {
+        cb.onchange = function () {
+          var i = +cb.getAttribute('data-pr'), p = f.cardapio.promocoes[i], n = cb.getAttribute('data-ps');
+          p.sabores = (p.sabores || []).filter(function (x) { return x !== n; });
+          if (cb.checked) p.sabores.push(n);
+          if (!p.sabores.length) { delete p.sabores; delete p.maxSabores; } else if (!p.maxSabores) p.maxSabores = 2;
+          var y = window.scrollY; desenhaCardapio();
+          var d = $('#cardapio-ed', el).querySelector('[data-promo="' + i + '"] details'); if (d) d.open = true;
+          window.scrollTo(0, y);
+        };
+      });
+      lista.querySelectorAll('[data-rm-pr]').forEach(function (b) {
+        b.onclick = function () { f.cardapio.promocoes.splice(+b.getAttribute('data-rm-pr'), 1); desenhaCardapio(); };
+      });
+      var add = box.querySelector('[data-add-pr]');
+      if (add) add.onclick = function () {
+        f.cardapio.promocoes.push({ id: 'promo-' + Date.now().toString(36), nome: '', preco: '', soRetirada: false, desc: '', ativo: true });
+        desenhaCardapio();
+        var ins = $('#cardapio-ed', el).querySelectorAll('#promo-lista [data-pk=nome]'); if (ins.length) ins[ins.length - 1].focus();
+      };
     }
 
     // ---- bairros atendidos (taxa por bairro)
@@ -1015,7 +1106,12 @@
       f.pagamento.outras = f.pagamento.outras.filter(function (o) { return (o.nome || '').trim(); });
       sincPag();
       if (f.cardapio) Object.keys(ROT_LISTA).forEach(function (k) { f.cardapio[k] = (f.cardapio[k] || []).filter(function (x) { return String(x.nome || '').trim(); }); });
-      salvar('ficha', { loja: l.id, ficha: f }, 'Ficha salva (não muda o bot).');
+      if (f.cardapio && f.cardapio.promocoes) {
+        var semPreco = f.cardapio.promocoes.filter(function (p) { return p.ativo !== false && String(p.nome || '').trim() && (p.preco === '' || p.preco == null); });
+        if (semPreco.length) { abaCard = 3; desenhaCardapio(); return toast('Promoção sem preço: ' + semPreco[0].nome, true); }
+        f.cardapio.promocoes = f.cardapio.promocoes.filter(function (p) { return String(p.nome || '').trim(); });
+      }
+      salvar('ficha', { loja: l.id, ficha: f }, 'Ficha salva. As promoções valem no bot ligado ao painel em até 1 minuto.');
     };
   }
 
