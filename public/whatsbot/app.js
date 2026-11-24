@@ -1338,6 +1338,7 @@
     }
     var s = $('#sino');
     if (s) { var x = s.querySelector('.sino-n'); x.hidden = !n; x.textContent = n > 99 ? '99+' : n; s.classList.toggle('tem', !!n); }
+    atualizaChamado();
   }
   function poeSino() {
     if ($('#sino')) return;
@@ -1349,7 +1350,7 @@
   }
   function vivo() {
     var l = loja(); if (!l) return;
-    if (VIVO.loja !== l.id) { VIVO.loja = l.id; VIVO.alertas = []; VIVO.conhecidos = null; VIVO.pedConhecidos = null; VIVO.versao = ''; VIVO.pedidos = []; VIVO.quadro = {}; }
+    if (VIVO.loja !== l.id) { fechaChamado(); VIVO.loja = l.id; VIVO.alertas = []; VIVO.conhecidos = null; VIVO.pedConhecidos = null; VIVO.versao = ''; VIVO.pedidos = []; VIVO.quadro = {}; }
     var pediu = l.id;
     api('ao_vivo&loja=' + encodeURIComponent(l.id) + '&v=' + encodeURIComponent(VIVO.versao)).then(function (j) {
       if (VIVO.loja !== pediu) return;
@@ -1388,8 +1389,93 @@
   }
   function ligaVivo() {
     poeSino();
-    if (!VIVO.timer) VIVO.timer = setInterval(vivo, 15000);
+    if (!VIVO.timer) VIVO.timer = setInterval(vivo, 10000);
     vivo();
+  }
+
+  // ------------------------------------------------------------- Chamado de atendente em tela cheia (24/11/2026)
+  // Igual ao Titan (pedidos dame lov/public/index.html, #wzHumano): cliente esperando atendente
+  // cobre a tela inteira em laranja, com o telefone grande, e a harpa toca a cada 3 s ate alguem
+  // clicar em "Ja estou falando com ele" (pedido do Fábio, 24/11). Toca mesmo com o Som desligado:
+  // e o aviso que nao pode passar. Mais de um na fila: mostra o mais antigo primeiro.
+  var CHAMADO = { id: null, timer: null, tituloAntes: null, el: null };
+  function chamadoDaVez() {
+    var corte = Date.now() - 12 * 3600 * 1000; // a fila do bot tambem esquece chamado de 12 h
+    var abertos = (VIVO.alertas || []).filter(function (a) {
+      var em = Date.parse(a.em || a.recebidoEm || '');
+      return a.tipo === 'atendente' && !a.resolvido && (!em || em > corte);
+    });
+    return abertos.length ? abertos[abertos.length - 1] : null; // VIVO.alertas vem do mais novo ao mais antigo
+  }
+  function tocaChamado() {
+    try {
+      harpa = harpa || new Audio('sons/alerta-harpa.wav'); harpa.currentTime = 0;
+      var p = harpa.play();
+      if (p && p.then) p.then(function () { if (CHAMADO.el) CHAMADO.el.querySelector('.ch-mudo').hidden = true; })
+        .catch(function () { if (CHAMADO.el) CHAMADO.el.querySelector('.ch-mudo').hidden = false; });
+    } catch (e) {}
+  }
+  function elChamado() {
+    if (CHAMADO.el) return CHAMADO.el;
+    var d = document.createElement('div');
+    d.id = 'chamado'; d.className = 'chamado-full'; d.setAttribute('role', 'alertdialog'); d.setAttribute('aria-modal', 'true'); d.setAttribute('aria-labelledby', 'ch-titulo');
+    d.innerHTML = '<div class="ch-caixa">' +
+      '<div class="ch-ico" aria-hidden="true">🙋</div>' +
+      '<h2 id="ch-titulo">CLIENTE QUER FALAR COM ATENDENTE</h2>' +
+      '<p>A Izza parou de responder essa conversa. Chame no WhatsApp da loja:</p>' +
+      '<div class="ch-nome"></div><div class="ch-fone"></div>' +
+      '<div class="ch-porque"></div>' +
+      '<div class="ch-fila"></div>' +
+      '<button type="button" class="ch-sim">Já estou falando com ele</button>' +
+      '<p class="ch-mudo" hidden>O navegador bloqueou o som. Clique em qualquer lugar desta tela para ligar.</p>' +
+      '</div>';
+    d.addEventListener('click', function (e) { if (!e.target.closest('.ch-sim')) tocaChamado(); });
+    d.querySelector('.ch-sim').onclick = assumiChamado;
+    document.body.appendChild(d);
+    CHAMADO.el = d;
+    return d;
+  }
+  function abreChamado(a) {
+    var d = elChamado(), l = loja();
+    var porque = [l ? esc(l.nome) : '', esc(a.texto || 'o bot não conseguiu resolver')].filter(Boolean).join(' · ');
+    if (a.fala) porque += '<span class="ch-fala">“' + esc(a.fala) + '”</span>';
+    if (a.resumo) porque += '<span class="ch-resumo"><b>A Izza anotou:</b> ' + esc(a.resumo) + '</span>';
+    d.querySelector('.ch-nome').textContent = a.nome || 'Cliente sem cadastro';
+    d.querySelector('.ch-fone').textContent = fmtTel(a.telefone) || '';
+    d.querySelector('.ch-porque').innerHTML = porque;
+    var outros = (VIVO.alertas || []).filter(function (x) { return x.tipo === 'atendente' && !x.resolvido && x.id !== a.id; }).length;
+    d.querySelector('.ch-fila').textContent = outros ? 'Depois deste, mais ' + outros + (outros === 1 ? ' cliente esperando.' : ' clientes esperando.') : '';
+    d.classList.add('on');
+    document.documentElement.classList.add('com-chamado');
+    if (CHAMADO.id !== a.id) {
+      CHAMADO.id = a.id;
+      if (CHAMADO.tituloAntes === null) CHAMADO.tituloAntes = document.title;
+      document.title = '🟠 CLIENTE QUER ATENDENTE';
+      notifica('Cliente quer falar com atendente', [a.nome, fmtTel(a.telefone)].filter(Boolean).join(' · '), 'ch-' + a.id);
+      tocaChamado(); clearInterval(CHAMADO.timer);
+      CHAMADO.timer = setInterval(tocaChamado, 3000);
+      setTimeout(function () { var b = d.querySelector('.ch-sim'); if (b) b.focus(); }, 0);
+    }
+  }
+  function fechaChamado() {
+    clearInterval(CHAMADO.timer); CHAMADO.timer = null; CHAMADO.id = null;
+    if (CHAMADO.tituloAntes !== null) { document.title = CHAMADO.tituloAntes; CHAMADO.tituloAntes = null; }
+    if (CHAMADO.el) CHAMADO.el.classList.remove('on');
+    document.documentElement.classList.remove('com-chamado');
+  }
+  function atualizaChamado() {
+    var a = chamadoDaVez();
+    if (a) abreChamado(a); else fechaChamado();
+  }
+  function assumiChamado() {
+    var l = loja(), id = CHAMADO.id; if (!l || !id) return fechaChamado();
+    var b = CHAMADO.el.querySelector('.ch-sim'); b.disabled = true;
+    api('alerta_resolver', { loja: l.id, id: id }).then(function () {
+      VIVO.alertas.forEach(function (a) { if (a.id === id) { a.resolvido = true; a.resolvidoPor = S.dados.eu.email; a.resolvidoEm = new Date().toISOString(); } });
+      fechaChamado(); marcaContadores();
+      if (S.pagina === 'alertas' && VIVO.redesenhaAlertas) VIVO.redesenhaAlertas();
+      if (S.pagina === 'quadro' && VIVO.redesenhaQuadro) VIVO.redesenhaQuadro();
+    }).catch(function (e) { toast(e.message, true); }).then(function () { b.disabled = false; });
   }
 
   // ------------------------------------------------------------- Alertas

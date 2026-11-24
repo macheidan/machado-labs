@@ -153,12 +153,12 @@ if ($action === 'bot' || $action === 'bot_status' || $action === 'bot_padroes' |
         $todos = json_read($arq, array());
         $idx = array();
         foreach ($todos as $i => $x) if (isset($x['id'])) $idx[$x['id']] = $i;
-        $campos = array_flip(array('id', 'tipo', 'nivel', 'titulo', 'texto', 'nome', 'telefone', 'codigo', 'em', 'resolvido', 'resolvidoPor', 'marca'));
+        $campos = array_flip(array('id', 'tipo', 'nivel', 'titulo', 'texto', 'nome', 'telefone', 'codigo', 'em', 'resolvido', 'resolvidoPor', 'marca', 'fala', 'resumo'));
         foreach ($novos as $x) {
             if (!is_array($x) || empty($x['id'])) continue;
             $x = array_intersect_key($x, $campos);
             $x['id'] = substr((string)$x['id'], 0, 80);
-            foreach (array('titulo', 'texto', 'nome') as $k) if (isset($x[$k])) $x[$k] = mb_substr((string)$x[$k], 0, 500);
+            foreach (array('titulo', 'texto', 'nome', 'fala', 'resumo') as $k) if (isset($x[$k])) $x[$k] = mb_substr((string)$x[$k], 0, 500);
             if (isset($idx[$x['id']])) {
                 $i = $idx[$x['id']];
                 if (!empty($todos[$i]['resolvido']) && empty($x['resolvido'])) unset($x['resolvido']);
