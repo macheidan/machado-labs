@@ -1634,7 +1634,88 @@
   }
   function atualizaChamado() {
     var a = chamadoDaVez();
-    if (a) { if (APROVA.id) fechaAprova(); abreChamado(a); } else { fechaChamado(); atualizaAprovacao(); }
+    if (a) { if (APROVA.id) fechaAprova(); if (ERRO.id) fechaErro(); abreChamado(a); } else { fechaChamado(); atualizaErro(); }
+  }
+
+  // ------------------------------------------------------------- Erro em tela cheia (24/11/2026)
+  // "Quando da um erro, tem que aparecer toda tela vermelha como nos outros alertas, esperando um
+  // clique da atendente" (Fábio). Vale para o que precisa de mao: pedido que nao foi para a Saipos,
+  // impressao que falhou, comanda parada (computador da impressora desligado) e pedido que expirou
+  // sem aprovacao. A harpa toca a cada 3 s ate "Entendi, vou resolver" (resolve o alerta para todos).
+  // Ordem da vez: chamado de atendente, depois erro, depois pedido para aprovar.
+  var ERRO = { id: null, timer: null, el: null };
+  function erroDaVez() {
+    var corte = Date.now() - 12 * 3600 * 1000;
+    var abertos = (VIVO.alertas || []).filter(function (a) {
+      var em = Date.parse(a.em || a.recebidoEm || '');
+      return (a.tipo === 'impressao' || a.tipo === 'expirado') && !a.resolvido && (!em || em > corte);
+    });
+    return abertos.length ? abertos[abertos.length - 1] : null;
+  }
+  function tocaErro() {
+    try {
+      harpa = harpa || new Audio('sons/alerta-harpa.wav'); harpa.currentTime = 0;
+      var x = harpa.play();
+      if (x && x.then) x.then(function () { if (ERRO.el) ERRO.el.querySelector('.ch-mudo').hidden = true; })
+        .catch(function () { if (ERRO.el) ERRO.el.querySelector('.ch-mudo').hidden = false; });
+    } catch (e) {}
+  }
+  function elErro() {
+    if (ERRO.el) return ERRO.el;
+    var d = document.createElement('div');
+    d.id = 'erro-full'; d.className = 'chamado-full erro-full'; d.setAttribute('role', 'alertdialog'); d.setAttribute('aria-modal', 'true'); d.setAttribute('aria-labelledby', 'er-titulo');
+    d.innerHTML = '<div class="ch-caixa">' +
+      '<div class="ch-ico" aria-hidden="true">⚠️</div>' +
+      '<h2 id="er-titulo"></h2>' +
+      '<div class="ch-nome"></div><div class="er-fone"></div>' +
+      '<div class="ch-porque"></div>' +
+      '<div class="ch-fila"></div>' +
+      '<button type="button" class="ch-sim">Entendi, vou resolver</button>' +
+      '<p class="ch-mudo" hidden>O navegador bloqueou o som. Clique em qualquer lugar desta tela para ligar.</p>' +
+      '</div>';
+    d.addEventListener('click', function (e) { if (!e.target.closest('.ch-sim')) tocaErro(); });
+    d.querySelector('.ch-sim').onclick = resolveErro;
+    document.body.appendChild(d);
+    ERRO.el = d;
+    return d;
+  }
+  function abreErro(a) {
+    var d = elErro(), l = loja();
+    d.querySelector('#er-titulo').textContent = String(a.titulo || 'Erro').toUpperCase();
+    d.querySelector('.ch-nome').textContent = a.nome || '';
+    d.querySelector('.er-fone').textContent = fmtTel(a.telefone) || '';
+    d.querySelector('.ch-porque').innerHTML = [l ? esc(l.nome) : '', a.codigo ? 'Pedido nº ' + esc(a.codigo) : ''].filter(Boolean).join(' · ') +
+      '<span class="ch-resumo">' + esc(a.texto || '') + '</span>';
+    var outros = (VIVO.alertas || []).filter(function (x) { return (x.tipo === 'impressao' || x.tipo === 'expirado') && !x.resolvido && x.id !== a.id; }).length;
+    d.querySelector('.ch-fila').textContent = outros ? 'Depois deste, mais ' + outros + (outros === 1 ? ' erro.' : ' erros.') : '';
+    d.classList.add('on');
+    document.documentElement.classList.add('com-chamado');
+    if (ERRO.id !== a.id) {
+      ERRO.id = a.id;
+      d.querySelector('.ch-sim').disabled = false;
+      notifica(a.titulo || 'Erro na Izza', [a.nome, a.texto].filter(Boolean).join(' · '), 'er-' + a.id);
+      tocaErro(); clearInterval(ERRO.timer);
+      ERRO.timer = setInterval(tocaErro, 3000);
+      setTimeout(function () { var b = d.querySelector('.ch-sim'); if (b) b.focus(); }, 0);
+    }
+  }
+  function fechaErro() {
+    clearInterval(ERRO.timer); ERRO.timer = null; ERRO.id = null;
+    if (ERRO.el) ERRO.el.classList.remove('on');
+    if (!CHAMADO.id && !APROVA.id) document.documentElement.classList.remove('com-chamado');
+  }
+  function atualizaErro() {
+    var a = CHAMADO.id ? null : erroDaVez();
+    if (a) { if (APROVA.id) fechaAprova(); abreErro(a); } else { fechaErro(); atualizaAprovacao(); }
+  }
+  function resolveErro() {
+    var l = loja(), id = ERRO.id; if (!l || !id) return fechaErro();
+    var b = ERRO.el.querySelector('.ch-sim'); b.disabled = true;
+    api('alerta_resolver', { loja: l.id, id: id }).then(function () {
+      VIVO.alertas.forEach(function (a) { if (a.id === id) { a.resolvido = true; a.resolvidoPor = S.dados.eu.email; a.resolvidoEm = new Date().toISOString(); } });
+      fechaErro(); marcaContadores();
+      if (S.pagina === 'alertas' && VIVO.redesenhaAlertas) VIVO.redesenhaAlertas();
+    }).catch(function (e) { toast(e.message, true); b.disabled = false; });
   }
   function assumiChamado() {
     var l = loja(), id = CHAMADO.id; if (!l || !id) return fechaChamado();
@@ -1734,10 +1815,10 @@
   function fechaAprova() {
     clearInterval(APROVA.timer); APROVA.timer = null; APROVA.id = null;
     if (APROVA.el) APROVA.el.classList.remove('on');
-    if (!CHAMADO.id) document.documentElement.classList.remove('com-chamado');
+    if (!CHAMADO.id && !ERRO.id) document.documentElement.classList.remove('com-chamado');
   }
   function atualizaAprovacao() {
-    var v = CHAMADO.id ? null : aprovacaoDaVez();
+    var v = CHAMADO.id || ERRO.id ? null : aprovacaoDaVez();
     if (v) abreAprova(v); else fechaAprova();
   }
   function decide(decisao, motivo, pid) {
