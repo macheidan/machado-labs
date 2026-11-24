@@ -222,10 +222,13 @@ if ($action === 'bot' || $action === 'bot_status' || $action === 'bot_padroes' |
         // sem imprimir:false (o Titan e a Saipos imprimem a deles). Antes de 24/11 imprimia na
         // chegada, o que com a aprovacao pelo painel tiraria comanda de pedido ainda nao aprovado.
         $chegaram = array();
+        // pedido que o admin excluiu (pedido_excluir) nao volta quando o bot reenvia o historico
+        $fora = array_flip(json_read(data_dir() . '/pedidos-excluidos-' . $loja . '.json', array()));
         foreach ($todos as $i => $x) if (isset($x['id'])) $idx[$x['id']] = $i;
         foreach ($novos as $x) {
             if (!is_array($x) || empty($x['id'])) continue;
             $x['id'] = substr((string)$x['id'], 0, 80);
+            if (isset($fora[$x['id']])) continue;
             $velho = isset($idx[$x['id']]) ? $todos[$idx[$x['id']]] : null;
             if ($velho && !empty($velho['impressoAuto'])) $x['impressoAuto'] = $velho['impressoAuto'];
             // o cancelamento veio da Saipos direto ao painel: o bot ainda pode mandar a versao de antes
@@ -713,6 +716,34 @@ case 'quadro_mover':
     if (count($q) > 500) $q = array_slice($q, -500, null, true);
     json_write($arq, $q);
     flock($lk, LOCK_UN); fclose($lk);
+    out(200, array('ok' => true));
+
+// Excluir pedido do Historico e do Quadro (24/11/2026, Fábio: "admin pode excluir pedidos do
+// historico/kanban"). So o admin geral. O id vai para pedidos-excluidos-<loja>.json para o bot nao
+// trazer de volta no proximo envio do historico. Nao mexe na Saipos: venda la se cancela la.
+case 'pedido_excluir':
+    if (!$eu['superadmin']) falha(403, 'Só o administrador geral exclui pedidos.');
+    exige($eu, $db, $loja, 'ver');
+    $pid = isset($d['id']) ? substr((string)$d['id'], 0, 80) : '';
+    if ($pid === '') falha(400, 'id');
+    $parq = data_dir() . '/pedidos-' . $loja . '.json';
+    $lk = fopen($parq . '.lock', 'c'); flock($lk, LOCK_EX);
+    $ps = json_read($parq, array());
+    $tirado = null; $resto = array();
+    foreach ($ps as $x) { if (is_array($x) && isset($x['id']) && $x['id'] === $pid) $tirado = $x; else $resto[] = $x; }
+    if ($tirado) json_write($parq, $resto);
+    $earq = data_dir() . '/pedidos-excluidos-' . $loja . '.json';
+    $ex = json_read($earq, array());
+    if (!in_array($pid, $ex, true)) { $ex[] = $pid; json_write($earq, array_slice($ex, -5000)); }
+    flock($lk, LOCK_UN); fclose($lk);
+    if (!$tirado) falha(404, 'Pedido não encontrado.');
+    $qarq = data_dir() . '/quadro-' . $loja . '.json';
+    $lk = fopen($qarq . '.lock', 'c'); flock($lk, LOCK_EX);
+    $q = json_read($qarq, array());
+    if (isset($q[$pid])) { unset($q[$pid]); json_write($qarq, $q); }
+    flock($lk, LOCK_UN); fclose($lk);
+    $desc = trim((isset($tirado['codigo']) && $tirado['codigo'] ? 'nº ' . $tirado['codigo'] . ' ' : '') . (isset($tirado['nome']) ? $tirado['nome'] : '') . ' ' . (isset($tirado['em']) ? $tirado['em'] : ''));
+    db_tx(function (&$db) use ($eu, $loja, $desc) { db_log($db, $eu['email'], $loja, 'excluiu um pedido', $desc); });
     out(200, array('ok' => true));
 
 // Aprovar ou recusar pelo painel (24/11/2026, etapa 3): a decisao fica na fila e o bot executa

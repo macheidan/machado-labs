@@ -1351,8 +1351,24 @@
           (p.pagamento ? '<div><span class="muted small">Pagamento</span><div>' + esc(p.pagamento) + '</div></div>' : '') +
           (p.agendadoPara ? '<div><span class="muted small">Agendado para</span><div>' + esc(p.agendadoPara) + '</div></div>' : '') +
           (p.atualizadoEm ? '<div><span class="muted small">Último status</span><div>' + esc(dataHora(p.atualizadoEm)) + '</div></div>' : '') +
-          (comNome ? '<div><button class="btn sm" data-imprime="' + esc(p.id) + '">⎙ Imprimir comanda</button></div>' : '') +
+          (comNome ? '<div class="pedido-bts"><button class="btn sm" data-imprime="' + esc(p.id) + '">⎙ Imprimir comanda</button>' +
+            (S.dados.eu.superadmin ? '<button class="btn sm perigo" data-exclui="' + esc(p.id) + '">Excluir pedido</button>' : '') + '</div>' : '') +
         '</div></div></div>';
+  }
+  // Excluir pedido (24/11/2026, so o admin geral): some do Historico e do Quadro para todos.
+  // A venda na Saipos nao e tocada.
+  function excluiPedido(l, p, depois) {
+    var quem = [p.codigo ? 'nº ' + p.codigo : '', p.nome || fmtTel(p.telefone), dataHora(p.em)].filter(Boolean).join(' · ');
+    confirma('Excluir o pedido ' + quem + '? Ele some do Histórico e do Quadro para todos e não volta. Se ele entrou na Saipos, cancele lá também.', 'Excluir', function () {
+      return api('pedido_excluir', { loja: l.id, id: p.id }).then(function () {
+        VIVO.pedidos = (VIVO.pedidos || []).filter(function (x) { return x.id !== p.id; });
+        if (VIVO.quadro) delete VIVO.quadro[p.id];
+        VIVO.versao = '';
+        toast('Pedido excluído.');
+        if (VIVO.redesenhaQuadro && S.pagina === 'quadro') VIVO.redesenhaQuadro();
+        if (depois) depois();
+      }).catch(function (e) { toast(e.message, true); throw e; });
+    });
   }
   function ligaPedidos(box) {
     box.querySelectorAll('.pedido-top').forEach(function (t) {
@@ -2103,6 +2119,7 @@
       modal('<h3>' + esc(p.nome || 'Pedido') + '</h3>' + pedidoHtml(p, true).replace('<div class="pedido-det" hidden>', '<div class="pedido-det">') +
         '<div class="acoes"><button class="btn" data-fecha>Fechar</button></div>', function (m) {
         var b = m.querySelector('[data-imprime]'); if (b) b.onclick = function () { imprimeComanda(p, l); };
+        var bx = m.querySelector('[data-exclui]'); if (bx) bx.onclick = function () { excluiPedido(l, p); };
       });
     }
     VIVO.redesenhaQuadro = desenha;
@@ -2226,6 +2243,9 @@
       });
       $('#plista', pag).querySelectorAll('[data-imprime]').forEach(function (b) {
         b.onclick = function (ev) { ev.stopPropagation(); var p = porId[b.getAttribute('data-imprime')]; if (p) imprimeNaFila({ loja: l.id, pedido: p.id }, function () { imprimeComanda(pedidoParaComanda(p, l), l); }); };
+      });
+      $('#plista', pag).querySelectorAll('[data-exclui]').forEach(function (b) {
+        b.onclick = function (ev) { ev.stopPropagation(); var p = porId[b.getAttribute('data-exclui')]; if (p) excluiPedido(l, p, function () { if (VIVO.recarregaPedidos) VIVO.recarregaPedidos(); }); };
       });
     }
     busca().then(function () { monta(); desenha(); }).catch(function (e) { pag.innerHTML = head + '<div class="card vazio">' + esc(e.message) + '</div>'; });

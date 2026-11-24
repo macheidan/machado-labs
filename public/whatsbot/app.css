@@ -469,3 +469,6 @@ html.com-chamado, html.com-chamado body { overflow: hidden; }
   #user .btn.sm { padding: 4px 8px; }
 }
 @media (max-width: 420px) { .top-right #bt-pausa .tx { display: none; } }
+
+/* Excluir pedido (24/11/2026, admin geral) */
+.pedido-bts { display: flex; flex-wrap: wrap; gap: 8px; }
