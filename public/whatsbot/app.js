@@ -1532,10 +1532,30 @@
   }
 
   // ------------------------------------------------------------- Quadro (kanban, 23/11/2026)
-  // Tela que fica aberta na loja: alertas de interacao (cliente esperando atendente, reclamacao,
-  // pedido para aprovar...) na primeira coluna e os pedidos da Izza andando por Novos -> Em preparo
-  // -> Saiu/Pronto -> Concluidos. A coluna e da loja (quadro_mover, guardada no painel); o bot nao
-  // le. Pedido recusado, que nao entrou ou parado ha 4 h vai direto para Concluidos. Mostra as ultimas 16 h.
+  // Tela que fica aberta na loja: os pedidos da Izza andando por Novos -> Em preparo -> Saiu/Pronto
+  // -> Concluidos. A coluna e da loja (quadro_mover, guardada no painel); o bot nao le. Pedido
+  // recusado, que nao entrou ou parado ha 4 h vai direto para Concluidos. So o expediente atual: as
+  // 15 h o quadro vira e os pedidos de antes somem dele (ficam na pagina Pedidos). Sem coluna de
+  // alertas desde 24/11 (Fábio): chamado de atendente e so a tela cheia; o resto fica em Alertas.
+  // Expediente vira as 15 h (Fábio, 24/11/2026): pedido da madrugada conta no dia em que a loja abriu.
+  var VIRADA_H = 15;
+  function inicioExpediente(t) {
+    var d = t ? new Date(t) : new Date(), c = new Date(d.getTime());
+    c.setHours(VIRADA_H, 0, 0, 0);
+    if (d < c) c.setDate(c.getDate() - 1);
+    return c;
+  }
+  function chaveDia(d) { return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+  function diaDoPedido(iso) { return chaveDia(inicioExpediente(iso)); }
+  function nomeDia(chave) {
+    var hoje = new Date(), ontem = new Date(); ontem.setDate(ontem.getDate() - 1); // dia do calendario
+    var d = new Date(chave + 'T12:00:00');
+    var sem = d.toLocaleDateString('pt-BR', { weekday: 'long' });
+    var data = d.toLocaleDateString('pt-BR', d.getFullYear() === new Date().getFullYear() ? { day: '2-digit', month: '2-digit' } : undefined);
+    if (chave === chaveDia(hoje)) return 'Hoje · ' + sem + ', ' + data;
+    if (chave === chaveDia(ontem)) return 'Ontem · ' + sem + ', ' + data;
+    return sem.charAt(0).toUpperCase() + sem.slice(1) + ', ' + data;
+  }
   var COLS_Q = [
     { id: 'novo', nome: 'Novos' },
     { id: 'preparo', nome: 'Em preparo' },
@@ -1600,24 +1620,15 @@
           (i < COLS_Q.length - 1 ? '<button class="btn sm pri" data-mover="' + COLS_Q[i + 1].id + '">' + esc(COLS_Q[i + 1].nome) + ' →</button>' : '<span></span>') +
         '</div></div>';
     }
-    function cardAlerta(a) {
-      var t = TIPO_AL[a.tipo] || [a.tipo || 'Alerta', '•'];
-      var em = a.em || a.recebidoEm;
-      return '<div class="qcard qalerta' + (a.nivel === 'urgente' ? ' urgente' : '') + '">' +
-        '<div class="qcard-top"><b>' + esc(t[1] + ' ' + (a.titulo || t[0])) + '</b><span class="qcard-h">' + esc(hora(em)) + ' · ' + esc(idade(em)) + '</span></div>' +
-        (a.nome || a.telefone ? '<div>' + esc(a.nome || '') + (a.telefone ? ' <a href="https://wa.me/' + esc(String(a.telefone).replace(/\D/g, '')) + '" target="_blank" rel="noopener">' + esc(fmtTel(a.telefone)) + '</a>' : '') + '</div>' : '') +
-        (a.texto ? '<div class="muted small qalerta-txt">' + esc(a.texto) + '</div>' : '') +
-        '<div class="qcard-acoes"><span></span><span></span><button class="btn sm pri" data-resolve="' + esc(a.id) + '">Resolvido</button></div></div>';
-    }
     function desenha() {
       if (S.pagina !== 'quadro' || !pag.isConnected) return;
-      var desde = Date.now() - 16 * 3600e3;
+      var desde = inicioExpediente().getTime();
       var peds = (VIVO.loja === l.id ? VIVO.pedidos : []).filter(function (p) { return p.em && new Date(p.em).getTime() >= desde; });
       var porCol = { novo: [], preparo: [], saiu: [], concluido: [] };
       peds.forEach(function (p) { (porCol[colunaDe(p)] || porCol.novo).push(p); });
-      ['novo', 'preparo', 'saiu'].forEach(function (k) { porCol[k].sort(function (a, b) { return a.em < b.em ? -1 : 1; }); });
-      porCol.concluido.sort(function (a, b) { return a.em < b.em ? 1 : -1; });
-      var als = (VIVO.loja === l.id ? VIVO.alertas : []).filter(function (a) { return !a.resolvido; });
+      function ms(p) { return Date.parse(p.em) || 0; }
+      ['novo', 'preparo', 'saiu'].forEach(function (k) { porCol[k].sort(function (a, b) { return ms(a) - ms(b); }); });
+      porCol.concluido.sort(function (a, b) { return ms(b) - ms(a); });
       var cheio = document.body.classList.contains('quadro-cheio');
       var notif = window.Notification ? Notification.permission : 'nao';
       var rolagem = [].map.call(pag.querySelectorAll('.qcol-corpo'), function (x) { return x.scrollTop; });
@@ -1627,8 +1638,6 @@
           '<label class="fp-radio"><input type="checkbox" id="qd-som"' + (somLigado() ? ' checked' : '') + '>Som</label>' +
           '<button class="btn sm" id="qd-cheio">' + (cheio ? 'Sair da tela cheia' : '⛶ Tela cheia') + '</button></div></div>' +
         '<div class="quadro">' +
-          '<section class="qcol qcol-alerta"><header><span>Atenção</span><span class="cont' + (als.length ? ' cont-alerta' : '') + '">' + als.length + '</span></header><div class="qcol-corpo">' +
-            (als.length ? als.map(cardAlerta).join('') : '<div class="qvazio">Nenhuma interação esperando.</div>') + '</div></section>' +
           COLS_Q.map(function (c) {
             var lista = c.id === 'concluido' ? porCol.concluido.slice(0, 30) : porCol[c.id];
             return '<section class="qcol" data-col="' + c.id + '"><header><span>' + esc(c.nome) + '</span><span class="cont">' + porCol[c.id].length + '</span></header><div class="qcol-corpo">' +
@@ -1659,15 +1668,6 @@
         } catch (e) {}
         desenha();
       };
-      pag.querySelectorAll('[data-resolve]').forEach(function (b) {
-        b.onclick = function () {
-          var id = b.getAttribute('data-resolve');
-          api('alerta_resolver', { loja: l.id, id: id }).then(function () {
-            VIVO.alertas.forEach(function (a) { if (a.id === id) { a.resolvido = true; a.resolvidoPor = S.dados.eu.email; a.resolvidoEm = new Date().toISOString(); } });
-            marcaContadores(); desenha();
-          }).catch(function (e) { toast(e.message, true); });
-        };
-      });
       pag.querySelectorAll('.qcard[data-ped]').forEach(function (c) {
         var id = c.getAttribute('data-ped');
         c.querySelectorAll('[data-mover]').forEach(function (b) { b.onclick = function () { mover(id, b.getAttribute('data-mover')); }; });
@@ -1714,14 +1714,15 @@
         (rs[1].clientes || []).forEach(function (c) { if (c.nome) nomes[c.telefone] = c.nome; });
         // pedido de antes de 23/11 nao tem o nome: vem do cadastro do cliente
         (rs[0].pedidos || []).forEach(function (p) { if (!p.nome && nomes[p.telefone]) p.nome = nomes[p.telefone]; });
-        todos = (rs[0].pedidos || []).slice().reverse();
+        // ordem pela hora de verdade: o bot manda em UTC (Z) e outros em -03:00, e a ordem do texto mistura
+        todos = (rs[0].pedidos || []).slice().sort(function (a, b) { return (Date.parse(b.em) || 0) - (Date.parse(a.em) || 0); });
         porId = {}; todos.forEach(function (p) { porId[p.id] = p; });
       });
     }
     function monta() {
       pag.innerHTML = head + '<div class="stats" id="ped-kpi"></div>' +
         '<div class="card"><div class="filtros-frase"><input type="search" id="pq" placeholder="Buscar por nome, telefone, número ou item…">' +
-        '<select id="pd"><option value="1">Hoje</option><option value="7">Últimos 7 dias</option><option value="30" selected>Últimos 30 dias</option><option value="0">Tudo</option></select>' +
+        '<select id="pd"><option value="1">Último expediente (desde as 15 h)</option><option value="7">Últimos 7 dias</option><option value="30" selected>Últimos 30 dias</option><option value="0">Tudo</option></select>' +
         '<select id="ps"><option value="">Todos os status</option>' + Object.keys(ST_PED).map(function (k) { return '<option value="' + k + '">' + ST_PED[k][0] + '</option>'; }).join('') + '</select></div></div>' +
         '<div class="card"><div class="stack" id="plista"></div></div>';
       $('#pq', pag).oninput = function () { filtro.q = this.value; mostra = 100; desenha(); };
@@ -1731,9 +1732,9 @@
     }
     function desenha() {
       var q = filtro.q.toLowerCase(), qd = q.replace(/\D/g, '');
-      var desde = filtro.dias ? (filtro.dias === 1 ? new Date(new Date().setHours(0, 0, 0, 0)) : new Date(Date.now() - filtro.dias * 864e5)).toISOString() : '';
+      var desde = filtro.dias ? (filtro.dias === 1 ? inicioExpediente() : new Date(Date.now() - filtro.dias * 864e5)).getTime() : 0;
       var fs = todos.filter(function (p) {
-        if (desde && p.em < desde) return false;
+        if (desde && (Date.parse(p.em) || 0) < desde) return false;
         if (filtro.st && p.status !== filtro.st) return false;
         if (!q) return true;
         return [p.nome, p.codigo, p.resumo].join(' ').toLowerCase().indexOf(q) >= 0 || (qd.length >= 4 && String(p.telefone).indexOf(qd) >= 0);
@@ -1744,9 +1745,22 @@
         '<div class="stat"><span>Faturamento</span><b>' + (brl(soma) || 'R$ 0,00') + '</b></div>' +
         '<div class="stat"><span>Ticket médio</span><b>' + (ok.length ? brl(soma / ok.length) : '—') + '</b></div>' +
         '<div class="stat"><span>Não entraram</span><b>' + (fs.length - ok.length) + '</b></div>';
-      var recente = new Date(Date.now() - 3 * 60000).toISOString();
+      var recente = Date.now() - 3 * 60000;
+      // separado por dia de expediente (Fábio, 24/11): cabecalho com quantidade e total de cada dia
+      var porDia = {};
+      fs.forEach(function (p) {
+        var x = porDia[diaDoPedido(p.em)] = porDia[diaDoPedido(p.em)] || { n: 0, soma: 0, fora: 0 };
+        if (valePed(p)) { x.n++; x.soma += Number(p.total) || 0; } else x.fora++;
+      });
+      var diaAtual = null;
       $('#plista', pag).innerHTML = fs.length ? fs.slice(0, mostra).map(function (p) {
-        return pedidoHtml(p, true).replace('<div class="pedido">', '<div class="pedido' + (p.em > recente ? ' novo' : '') + (abertos[p.id] ? ' aberto' : '') + '" data-pid="' + esc(p.id) + '">')
+        var k = diaDoPedido(p.em), cab = '';
+        if (k !== diaAtual) {
+          diaAtual = k; var x = porDia[k];
+          cab = '<div class="dia-cab"><h2>' + esc(nomeDia(k)) + '</h2><span class="muted small">' + nPed(x.n) + (x.n ? ' · ' + brl(x.soma) : '') +
+            (x.fora ? ' · ' + x.fora + (x.fora === 1 ? ' não entrou' : ' não entraram') : '') + '</span></div>';
+        }
+        return cab + pedidoHtml(p, true).replace('<div class="pedido">', '<div class="pedido' + ((Date.parse(p.em) || 0) > recente ? ' novo' : '') + (abertos[p.id] ? ' aberto' : '') + '" data-pid="' + esc(p.id) + '">')
           .replace('<div class="pedido-det" hidden>', abertos[p.id] ? '<div class="pedido-det">' : '<div class="pedido-det" hidden>');
       }).join('') + (fs.length > mostra ? '<button class="btn sm" id="pmais">Mostrar mais (' + (fs.length - mostra) + ')</button>' : '') : '<div class="vazio">Nenhum pedido nesse filtro.</div>';
       $('#plista', pag).querySelectorAll('.pedido-top').forEach(function (t) {

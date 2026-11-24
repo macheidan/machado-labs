@@ -324,8 +324,9 @@ if ($action === 'ao_vivo' && $method === 'GET') {
     $ver = is_file($parq) ? filemtime($parq) . '-' . filesize($parq) : '';
     $ped = null;
     if ($ver !== '' && (!isset($_GET['v']) || $_GET['v'] !== $ver)) {
-        // registro inteiro (resumo, endereco, pagamento): o Quadro mostra e imprime a comanda
-        $ped = array_values(array_filter(array_slice(json_read($parq, array()), -40), 'is_array'));
+        // registro inteiro (resumo, endereco, pagamento): o Quadro mostra e imprime a comanda.
+        // 150 cobre um expediente inteiro (o Quadro mostra desde as 15 h)
+        $ped = array_values(array_filter(array_slice(json_read($parq, array()), -150), 'is_array'));
     }
     // Quadro (kanban): coluna de cada pedido, movida pela loja
     $quadro = json_read(data_dir() . '/quadro-' . $loja . '.json', array());

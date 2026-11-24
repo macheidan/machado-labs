@@ -318,7 +318,7 @@ code { background: var(--border-2); padding: 1px 5px; border-radius: 4px; font-s
 .quadro-pag { display: flex; flex-direction: column; gap: 14px; }
 .quadro-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
 .quadro-head h1 { font-size: 22px; }
-.quadro { display: grid; grid-template-columns: repeat(5, minmax(220px, 1fr)); gap: 12px; overflow-x: auto; padding-bottom: 6px; }
+.quadro { display: grid; grid-template-columns: repeat(4, minmax(220px, 1fr)); gap: 12px; overflow-x: auto; padding-bottom: 6px; }
 .qcol { background: var(--well); border: 1px solid var(--border); border-radius: 14px; display: flex; flex-direction: column; min-height: 60vh; max-height: calc(100dvh - 190px); }
 .qcol header { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; font-weight: 600; border-bottom: 1px solid var(--border); }
 .qcol header .cont { font-size: 12px; background: var(--border-2); color: var(--muted); border-radius: 99px; padding: 0 8px; }
@@ -349,7 +349,7 @@ body.quadro-cheio .sidebar, body.quadro-cheio .topbar { display: none; }
 body.quadro-cheio .content { max-width: none; padding: 14px; }
 body.quadro-cheio .qcol { max-height: calc(100dvh - 90px); }
 @media (max-width: 900px) {
-  .quadro { grid-template-columns: repeat(5, 82vw); scroll-snap-type: x mandatory; }
+  .quadro { grid-template-columns: repeat(4, 82vw); scroll-snap-type: x mandatory; }
   .qcol { scroll-snap-align: start; max-height: none; }
 }
 .content:has(.quadro-pag) { max-width: none; }
@@ -396,3 +396,8 @@ html.com-chamado, html.com-chamado body { overflow: hidden; }
 .chamado-full .ch-sim:focus-visible { outline: 3px solid #ffd58a; outline-offset: 3px; }
 .chamado-full .ch-mudo { margin-top: 16px; font-size: 15px; background: rgba(0,0,0,.25); padding: 10px 14px; border-radius: 8px; }
 @media (max-width: 480px) { .chamado-full .ch-fone { font-size: 34px; } .chamado-full .ch-ico { font-size: 60px; } .chamado-full h2 { font-size: 22px; } }
+
+/* Pedidos separados por dia de expediente (24/11/2026) */
+.dia-cab { display: flex; align-items: baseline; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap; padding: 14px 2px 4px; border-bottom: 1px solid var(--border); }
+.dia-cab:first-child { padding-top: 0; }
+.dia-cab h2 { margin: 0; font-size: 15px; font-weight: 700; }
