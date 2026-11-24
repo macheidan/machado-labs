@@ -2456,7 +2456,9 @@
           campo('titan', 'url', 'Endereço do Titan', 'http://100.x.x.x:3900') + campo('titan', 'usuario', 'Usuário de integração', 'integracao') + segredo('titan', 'senha', 'Senha de integração') + '</div></div>' : '') +
         (usa('saipos') ? '<div class="card"><div class="cab-card"><div><h2>Saipos</h2><p class="desc">API de pedidos da Saipos (Order API). Os dados vêm da Saipos ao liberar a integração.</p></div>' + situacao(sOk) + '</div><div class="grid-2" style="margin-top:12px">' +
           campo('saipos', 'idPartner', 'ID do parceiro (id_partner)') + campo('saipos', 'codStore', 'Código da loja (cod_store)') + segredo('saipos', 'secret', 'Secret (opcional: guardado no servidor da Izza)') +
-          '<div class="campo"><span>Ambiente</span><div class="seg" data-ia="ambiente"><button type="button" data-v="producao" class="' + (it.saipos.ambiente !== 'homologacao' ? 'on' : '') + '"' + dis + '>Produção</button><button type="button" data-v="homologacao" class="' + (it.saipos.ambiente === 'homologacao' ? 'on' : '') + '"' + dis + '>Homologação</button></div></div></div></div>' : '') +
+          '<div class="campo"><span>Ambiente</span><div class="seg" data-ia="ambiente"><button type="button" data-v="producao" class="' + (it.saipos.ambiente !== 'homologacao' ? 'on' : '') + '"' + dis + '>Produção</button><button type="button" data-v="homologacao" class="' + (it.saipos.ambiente === 'homologacao' ? 'on' : '') + '"' + dis + '>Homologação</button></div></div></div>' +
+          '<div class="campo" style="margin-top:12px"><span>Endereço de eventos (passe à Saipos para ela avisar cancelamento, pronto e saída)</span>' +
+          '<div class="linha" style="gap:8px;flex-wrap:wrap"><button type="button" class="btn sm" id="int-sp-url">Mostrar endereço</button><code id="int-sp-v" style="overflow-wrap:anywhere"></code></div></div></div>' : '') +
         (it.pedidos === 'webhook' ? '<div class="card"><div class="cab-card"><div><h2>Webhook</h2><p class="desc">A Izza faz um POST com o pedido em JSON. O cabeçalho <code>X-Izza-Assinatura</code> traz <code>sha256=</code> + HMAC-SHA256 do corpo com o segredo abaixo.</p></div>' + situacao(wOk) + '</div><div class="grid-2" style="margin-top:12px">' +
           campo('webhook', 'url', 'Endereço (https://)', 'https://seusistema.com.br/izza/pedido') + segredo('webhook', 'segredo', 'Segredo da assinatura') + '</div>' +
           (pode ? '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" id="int-teste">Enviar pedido de teste</button><span class="muted small" id="int-teste-r"></span></div>' : '') + '</div>' : '') +
@@ -2464,6 +2466,9 @@
           '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" data-ir="comanda">Abrir a comanda</button><button class="btn sm" data-ir="alertas">Ver alertas</button></div></div>' : '');
       pag.querySelectorAll('input[name=int-pedidos]').forEach(function (r) { r.onchange = function () { it.pedidos = r.value; desenha(); }; });
       pag.querySelectorAll('[data-if]').forEach(function (s) { s.onclick = function (ev) { var b = ev.target.closest('button'); if (!b || b.disabled) return; it[s.getAttribute('data-if')] = b.getAttribute('data-v'); desenha(); }; });
+      if ($('#int-sp-url', pag)) $('#int-sp-url', pag).onclick = function () {
+        api('saipos_url', { loja: l.id }).then(function (j) { $('#int-sp-v', pag).textContent = j.url; }).catch(function (e) { toast(e.message, true); });
+      };
       pag.querySelectorAll('[data-ia]').forEach(function (s) { s.onclick = function (ev) { var b = ev.target.closest('button'); if (!b || b.disabled) return; it.saipos.ambiente = b.getAttribute('data-v'); desenha(); }; });
       pag.querySelectorAll('[data-is]').forEach(function (i) {
         i.oninput = function () { var sis = i.getAttribute('data-is'), k = i.getAttribute('data-ik'); if (i.type === 'password') it[sis]['_novo_' + k] = i.value; else it[sis][k] = i.value; };
