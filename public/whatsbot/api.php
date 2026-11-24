@@ -104,7 +104,95 @@ function bot_auth($db, $loja) {
 
 if ($action === 'imp_parear' || $action === 'imp_poll' || $action === 'imp_resultado') imp_rotas_programa($action, $method);
 
-if ($action === 'bot' || $action === 'bot_status' || $action === 'bot_padroes' || $action === 'bot_pedidos' || $action === 'bot_clientes' || $action === 'bot_alertas' || $action === 'bot_eventos') {
+// Eventos da Saipos (webhook da Order API, 24/11/2026): a Saipos chama este endereco quando o
+// pedido que a Izza mandou muda de status la: CONFIRMED, READY_TO_DELIVER, DISPATCHED,
+// CONCLUDED, CANCELLED. Cancelar e sempre na Saipos (Fábio, 24/11) e a Saipos informa o painel:
+// o pedido vira "Cancelado na Saipos", o card vai para Concluidos e acende o alerta. Pronto/saiu
+// move o card para "Saiu / pronto", e o bot avisa quem pediu. O endereco leva a chave `k`
+// (Integracoes > Saipos mostra); a Saipos so manda { event, cod_store, order_id }.
+function saipos_chave() {
+    $arq = data_dir() . '/saipos-webhook.key';
+    $k = is_file($arq) ? trim((string)file_get_contents($arq)) : '';
+    if ($k === '') { $k = bin2hex(random_bytes(20)); file_put_contents($arq, $k); }
+    return $k;
+}
+if ($action === 'saipos_webhook') {
+    if ($method !== 'POST') falha(405, 'metodo');
+    $k = isset($_GET['k']) ? (string)$_GET['k'] : '';
+    if ($k === '' || !hash_equals(saipos_chave(), $k)) falha(401, 'chave');
+    $p = corpo();
+    $ev = strtoupper(trim((string)(isset($p['event']) ? $p['event'] : '')));
+    $cod = trim((string)(isset($p['cod_store']) ? $p['cod_store'] : ''));
+    $oid = trim((string)(isset($p['order_id']) ? $p['order_id'] : ''));
+    $log = data_dir() . '/saipos-webhook.json';
+    $l = json_read($log, array());
+    $l[] = array('em' => date('c'), 'event' => $ev, 'cod_store' => $cod, 'order_id' => $oid);
+    json_write($log, array_slice($l, -500));
+    if ($ev === '' || $oid === '') out(200, array('ok' => false, 'erro' => 'evento ou order_id vazio'));
+    $db = db_load();
+    $loja = '';
+    foreach ($db['lojas'] as $id => $lj) {
+        $c = isset($lj['config']['integracoes']['saipos']['codStore']) ? trim((string)$lj['config']['integracoes']['saipos']['codStore']) : '';
+        if ($c !== '' && $c === $cod) { $loja = $id; break; }
+    }
+    if ($loja === '') out(200, array('ok' => false, 'erro' => 'cod_store sem loja no painel'));
+    // o pedido: pelo order_id que o bot gravou ao lancar
+    $parq = data_dir() . '/pedidos-' . $loja . '.json';
+    $lk = fopen($parq . '.lock', 'c'); flock($lk, LOCK_EX);
+    $ps = json_read($parq, array());
+    $ped = null;
+    for ($i = count($ps) - 1; $i >= 0; $i--) {
+        if (is_array($ps[$i]) && isset($ps[$i]['saipos']['order_id']) && (string)$ps[$i]['saipos']['order_id'] === $oid) { $ped = &$ps[$i]; break; }
+    }
+    if ($ped !== null) {
+        $ped['saipos']['status'] = $ev;
+        $ped['saipos']['statusEm'] = date('c');
+        if ($ev === 'CANCELLED') { $ped['status'] = 'cancelado'; $ped['canceladoEm'] = date('c'); }
+        json_write($parq, $ps);
+    }
+    flock($lk, LOCK_UN); fclose($lk);
+    if ($ped === null) out(200, array('ok' => false, 'erro' => 'pedido nao encontrado'));
+    $pid = (string)$ped['id'];
+    // coluna do Quadro
+    $col = array('CONFIRMED' => 'preparo', 'READY_TO_DELIVER' => 'saiu', 'DISPATCHED' => 'saiu', 'CONCLUDED' => 'concluido', 'CANCELLED' => 'concluido');
+    if (isset($col[$ev])) {
+        $qarq = data_dir() . '/quadro-' . $loja . '.json';
+        $lk = fopen($qarq . '.lock', 'c'); flock($lk, LOCK_EX);
+        $q = json_read($qarq, array());
+        $ordem = array('novo' => 0, 'preparo' => 1, 'saiu' => 2, 'concluido' => 3);
+        $agora = isset($q[$pid]['col']) ? $q[$pid]['col'] : 'novo';
+        // so anda para a frente (a loja pode ja ter movido no painel)
+        if ($ordem[$col[$ev]] > (isset($ordem[$agora]) ? $ordem[$agora] : 0)) {
+            unset($q[$pid]);
+            $q[$pid] = array('col' => $col[$ev], 'por' => 'saipos', 'em' => date('c'));
+            if (count($q) > 500) $q = array_slice($q, -500, null, true);
+            json_write($qarq, $q);
+        }
+        flock($lk, LOCK_UN); fclose($lk);
+    }
+    // evento para o bot (bot_eventos) e alerta do cancelamento
+    $earq = data_dir() . '/saipos-eventos-' . $loja . '.json';
+    $lk = fopen($earq . '.lock', 'c'); flock($lk, LOCK_EX);
+    $es = json_read($earq, array());
+    $es[] = array('id' => 'se-' . novo_id(), 'event' => $ev, 'order_id' => $oid, 'pedido' => $pid, 'codigo' => isset($ped['codigo']) ? $ped['codigo'] : null, 'em' => date('c'), 'visto' => false);
+    json_write($earq, array_slice($es, -500));
+    flock($lk, LOCK_UN); fclose($lk);
+    if ($ev === 'CANCELLED') {
+        $aarq = data_dir() . '/alertas-' . $loja . '.json';
+        $lk = fopen($aarq . '.lock', 'c'); flock($lk, LOCK_EX);
+        $al = json_read($aarq, array());
+        $al[] = array('id' => 'cancel-' . $oid, 'tipo' => 'cancelado', 'nivel' => 'urgente', 'marca' => $loja,
+            'titulo' => 'Pedido cancelado na Saipos',
+            'texto' => 'Pedido nº ' . (isset($ped['codigo']) ? $ped['codigo'] : '?') . (isset($ped['total']) ? ' · R$ ' . number_format((float)$ped['total'], 2, ',', '.') : '') . ': cancelado na Saipos.',
+            'nome' => isset($ped['nome']) ? $ped['nome'] : '', 'telefone' => isset($ped['telefone']) ? $ped['telefone'] : '',
+            'codigo' => isset($ped['codigo']) ? $ped['codigo'] : null, 'pedido' => $pid, 'em' => date('c'), 'recebidoEm' => date('c'));
+        json_write($aarq, array_slice($al, -1000));
+        flock($lk, LOCK_UN); fclose($lk);
+    }
+    out(200, array('ok' => true));
+}
+
+if ($action === 'bot' || $action === 'bot_status' || $action === 'bot_padroes' || $action === 'bot_pedidos' || $action === 'bot_clientes' || $action === 'bot_alertas' || $action === 'bot_eventos' || $action === 'bot_clientes_base') {
     $loja = isset($_GET['loja']) ? preg_replace('/[^a-z0-9_-]/', '', $_GET['loja']) : '';
     $db = db_load();
     if ($loja === '' || !isset($db['lojas'][$loja])) falha(404, 'loja');
@@ -140,6 +228,12 @@ if ($action === 'bot' || $action === 'bot_status' || $action === 'bot_padroes' |
             $x['id'] = substr((string)$x['id'], 0, 80);
             $velho = isset($idx[$x['id']]) ? $todos[$idx[$x['id']]] : null;
             if ($velho && !empty($velho['impressoAuto'])) $x['impressoAuto'] = $velho['impressoAuto'];
+            // o cancelamento veio da Saipos direto ao painel: o bot ainda pode mandar a versao de antes
+            if ($velho && isset($velho['status']) && $velho['status'] === 'cancelado' && (!isset($x['status']) || $x['status'] !== 'cancelado')) {
+                $x['status'] = 'cancelado';
+                if (isset($velho['canceladoEm'])) $x['canceladoEm'] = $velho['canceladoEm'];
+                if (isset($velho['saipos'])) $x['saipos'] = array_merge(isset($x['saipos']) && is_array($x['saipos']) ? $x['saipos'] : array(), $velho['saipos']);
+            }
             $entra = isset($x['status']) && $x['status'] === 'lancado' && !empty($x['comanda'])
                 && !(isset($x['imprimir']) && $x['imprimir'] === false) && empty($x['impressoAuto']);
             if ($entra) { $x['impressoAuto'] = date('c'); $chegaram[] = $x; }
@@ -194,10 +288,21 @@ if ($action === 'bot' || $action === 'bot_status' || $action === 'bot_padroes' |
             $q = json_read(data_dir() . '/quadro-' . $loja . '.json', array());
             $corte = time() - 12 * 3600;
             $q = array_filter($q, function ($x) use ($corte) { return is_array($x) && isset($x['em']) && strtotime($x['em']) > $corte; });
-            out(200, array('ok' => true, 'decisoes' => $pend, 'quadro' => (object)$q));
+            $se = array_values(array_filter(json_read(data_dir() . '/saipos-eventos-' . $loja . '.json', array()), function ($x) { return is_array($x) && empty($x['visto']); }));
+            out(200, array('ok' => true, 'decisoes' => $pend, 'quadro' => (object)$q, 'saipos' => $se));
         }
         if ($method === 'POST') {
             $p = corpo();
+            $vistos = isset($p['saiposVistos']) && is_array($p['saiposVistos']) ? array_flip(array_map('strval', $p['saiposVistos'])) : array();
+            if ($vistos) {
+                $earq = data_dir() . '/saipos-eventos-' . $loja . '.json';
+                $lk2 = fopen($earq . '.lock', 'c'); flock($lk2, LOCK_EX);
+                $es = json_read($earq, array());
+                foreach ($es as &$e) if (isset($e['id']) && isset($vistos[$e['id']])) $e['visto'] = true;
+                unset($e);
+                json_write($earq, $es);
+                flock($lk2, LOCK_UN); fclose($lk2);
+            }
             $feitas = array();
             foreach ((isset($p['feitas']) && is_array($p['feitas']) ? $p['feitas'] : array()) as $f) if (is_array($f) && !empty($f['id'])) $feitas[(string)$f['id']] = $f;
             $lk = fopen($arq . '.lock', 'c'); flock($lk, LOCK_EX);
@@ -215,6 +320,14 @@ if ($action === 'bot' || $action === 'bot_status' || $action === 'bot_padroes' |
             flock($lk, LOCK_UN); fclose($lk);
             out(200, array('ok' => true));
         }
+    }
+    // Base de clientes que a loja importou no painel (planilha): o bot pergunta com a versao que
+    // ja tem e so recebe a lista quando mudou.
+    if ($action === 'bot_clientes_base' && $method === 'GET') {
+        $b = json_read(data_dir() . '/clientes-base-' . $loja . '.json', null);
+        if (!$b) out(200, array('ok' => true, 'versao' => null, 'clientes' => array()));
+        if (isset($_GET['v']) && (string)$_GET['v'] === (string)$b['versao']) out(200, array('ok' => true, 'versao' => $b['versao'], 'mesma' => true));
+        out(200, array('ok' => true, 'versao' => $b['versao'], 'clientes' => $b['clientes']));
     }
     // clientes que ja pediram pelo WhatsApp, com o cadastro da base da loja: substitui a lista
     if ($action === 'bot_clientes' && $method === 'POST') {
@@ -666,6 +779,39 @@ case 'integracoes':
         db_log($db, $eu['email'], $loja, 'mudou as integrações', 'pedido: ' . $novo['pedidos'] . ', cardápio: ' . $novo['cardapio'] . ', clientes: ' . $novo['clientes']);
     });
     out(200, array('ok' => true));
+
+// Importar a base de clientes da loja (24/11/2026): planilha lida no navegador, a lista vem pronta.
+// Substitui a importacao anterior; o bot cria quem falta e atualiza quem existe (nunca apaga).
+// Dame e Lov nao precisam: a base delas vem da intranet sozinha.
+case 'clientes_importar':
+    exige($eu, $db, $loja, 'clientes');
+    $in = isset($d['clientes']) && is_array($d['clientes']) ? $d['clientes'] : null;
+    if (!$in) falha(400, 'clientes');
+    if (count($in) > 30000) falha(400, 'No máximo 30.000 clientes por importação.');
+    $cl = array();
+    foreach ($in as $c) {
+        if (!is_array($c)) continue;
+        $tel = preg_replace('/\D/', '', (string)(isset($c['telefone']) ? $c['telefone'] : ''));
+        if (strlen($tel) < 10 || strlen($tel) > 13) continue;
+        $x = array('telefone' => $tel);
+        foreach (array('nome', 'rua', 'numero', 'complemento', 'bairro') as $k) $x[$k] = mb_substr(trim((string)(isset($c[$k]) ? $c[$k] : '')), 0, 120);
+        $cl[] = $x;
+    }
+    if (!$cl) falha(400, 'Nenhum cliente com telefone válido na planilha.');
+    json_write(data_dir() . '/clientes-base-' . $loja . '.json', array('versao' => (string)time(), 'em' => date('c'), 'por' => $eu['email'], 'clientes' => $cl));
+    db_tx(function (&$db) use ($eu, $loja, $cl) { db_log($db, $eu['email'], $loja, 'importou clientes', count($cl) . ' clientes'); });
+    out(200, array('ok' => true, 'total' => count($cl)));
+
+case 'clientes_base':
+    exige($eu, $db, $loja, 'clientes');
+    $b = json_read(data_dir() . '/clientes-base-' . $loja . '.json', null);
+    out(200, array('ok' => true, 'total' => $b ? count($b['clientes']) : 0, 'em' => $b ? $b['em'] : null, 'por' => $b ? $b['por'] : null));
+
+// Endereco que se passa a Saipos para ela avisar os status (saipos_webhook). Um so para todas as lojas.
+case 'saipos_url':
+    exige($eu, $db, $loja, 'integracoes');
+    $base = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . strtok($_SERVER['REQUEST_URI'], '?');
+    out(200, array('ok' => true, 'url' => $base . '?a=saipos_webhook&k=' . saipos_chave()));
 
 // Teste do webhook: o servidor manda um pedido de exemplo, assinado, para o endereco da loja.
 case 'integracao_teste':

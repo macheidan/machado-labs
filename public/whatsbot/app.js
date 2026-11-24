@@ -1292,7 +1292,7 @@
   // ------------------------------------------------------------- Histórico de pedidos e Clientes
   // O bot manda (src/pedidos/historico.js): cada pedido fechado pela Izza com o resumo que o
   // cliente viu, e os clientes que ja pediram pelo WhatsApp com o cadastro da base da loja.
-  var ST_PED = { enviado: ['Aguardando a loja', 'warn'], agendado: ['Agendado', 'acc'], lancado: ['Confirmado', 'ok'], recusado: ['Recusado pela loja', 'err'], expirado: ['Não entrou', 'err'] };
+  var ST_PED = { enviado: ['Aguardando a loja', 'warn'], agendado: ['Agendado', 'acc'], lancado: ['Confirmado', 'ok'], recusado: ['Recusado pela loja', 'err'], expirado: ['Não entrou', 'err'], cancelado: ['Cancelado na Saipos', 'err'] };
   function fmtTel(t) {
     var d = String(t || '').replace(/\D/g, ''); if (d.length >= 12 && d.indexOf('55') === 0) d = d.slice(2);
     if (d.length === 11) return '(' + d.slice(0, 2) + ') ' + d.slice(2, 7) + '-' + d.slice(7);
@@ -1325,9 +1325,74 @@
     });
   }
 
+  // Importar a base de clientes (24/11/2026): planilha CSV (do sistema antigo, Excel "salvar como
+  // CSV") com telefone, nome e endereco. A Izza passa a reconhecer essas pessoas pelo telefone.
+  // Dame e Lov nao precisam: a base vem da intranet todo dia.
+  function colunaCsv(cab, nomes) {
+    for (var i = 0; i < cab.length; i++) { var c = cab[i]; if (nomes.some(function (n) { return c === n || c.indexOf(n) === 0; })) return i; }
+    return -1;
+  }
+  function leCsv(txt) {
+    txt = txt.replace(/^\ufeff/, '');
+    var linhas = txt.split(/\r?\n/).filter(function (x) { return x.trim(); });
+    if (!linhas.length) return [];
+    var sep = (linhas[0].split(';').length >= linhas[0].split(',').length) ? ';' : ',';
+    function campos(l) {
+      var out = [], cur = '', q = false;
+      for (var i = 0; i < l.length; i++) {
+        var ch = l[i];
+        if (ch === '"') { if (q && l[i + 1] === '"') { cur += '"'; i++; } else q = !q; }
+        else if (ch === sep && !q) { out.push(cur); cur = ''; }
+        else cur += ch;
+      }
+      out.push(cur); return out.map(function (x) { return x.trim(); });
+    }
+    var norm = function (s) { return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z]/g, ''); };
+    var cab = campos(linhas[0]).map(norm);
+    var ix = { telefone: colunaCsv(cab, ['telefone', 'celular', 'fone', 'whatsapp', 'tel']), nome: colunaCsv(cab, ['nome', 'cliente']),
+      rua: colunaCsv(cab, ['rua', 'logradouro', 'endereco']), numero: colunaCsv(cab, ['numero', 'num', 'nro']),
+      complemento: colunaCsv(cab, ['complemento', 'compl']), bairro: colunaCsv(cab, ['bairro']) };
+    if (ix.telefone < 0) throw new Error('A planilha precisa de uma coluna "telefone" (ou celular/whatsapp) na primeira linha.');
+    return linhas.slice(1).map(function (l) {
+      var c = campos(l), o = {};
+      Object.keys(ix).forEach(function (k) { o[k] = ix[k] >= 0 ? (c[ix[k]] || '') : ''; });
+      return o;
+    }).filter(function (o) { var d = o.telefone.replace(/\D/g, ''); return d.length >= 10 && d.length <= 13; });
+  }
+  function importaClientes(l) {
+    modal('<h3>Importar clientes</h3><p class="muted small">Planilha CSV com a primeira linha de títulos: <b>telefone</b> (obrigatório), <b>nome</b>, <b>rua</b>, <b>numero</b>, <b>complemento</b>, <b>bairro</b>. No Excel: Arquivo &gt; Salvar como &gt; CSV. A Izza passa a chamar essas pessoas pelo nome e a oferecer o endereço. Importar de novo substitui a planilha anterior; ninguém é apagado do cadastro.</p>' +
+      '<p class="muted small" id="ci-atual">…</p><label class="campo"><span>Arquivo</span><input type="file" id="ci-arq" accept=".csv,text/csv,text/plain"></label><div id="ci-prev" class="muted small"></div>' +
+      '<div class="acoes"><button class="btn" data-fecha>Cancelar</button><button class="btn pri" id="ci-ok" disabled>Importar</button></div>', function (m) {
+      var lista = null;
+      api('clientes_base&loja=' + encodeURIComponent(l.id)).then(function (j) {
+        m.querySelector('#ci-atual').textContent = j.total ? 'Última importação: ' + j.total + ' clientes, ' + quem(j.por) + ' · ' + dataHora(j.em) + '.' : 'Nenhuma planilha importada ainda.';
+      }).catch(function () { m.querySelector('#ci-atual').textContent = ''; });
+      m.querySelector('#ci-arq').onchange = function () {
+        var f = this.files[0]; lista = null; m.querySelector('#ci-ok').disabled = true;
+        if (!f) return;
+        var r = new FileReader();
+        r.onload = function () {
+          try {
+            lista = leCsv(String(r.result || ''));
+            var ex = lista.slice(0, 3).map(function (c) { return esc(c.nome || '(sem nome)') + ' · ' + esc(c.telefone) + (c.rua ? ' · ' + esc(c.rua + (c.numero ? ', ' + c.numero : '')) : ''); }).join('<br>');
+            m.querySelector('#ci-prev').innerHTML = lista.length ? '<b>' + lista.length + ' clientes</b> com telefone válido. Exemplo:<br>' + ex : 'Nenhuma linha com telefone válido.';
+            m.querySelector('#ci-ok').disabled = !lista.length;
+          } catch (e) { m.querySelector('#ci-prev').textContent = e.message; }
+        };
+        r.readAsText(f, 'utf-8');
+      };
+      m.querySelector('#ci-ok').onclick = function () {
+        var b = this; b.disabled = true;
+        api('clientes_importar', { loja: l.id, clientes: lista }).then(function (j) { fecharModal(); toast(j.total + ' clientes importados. A Izza recebe em até 1 minuto.'); })
+          .catch(function (e) { toast(e.message, true); b.disabled = false; });
+      };
+    });
+  }
   function pgClientes(el, l) {
     var pag = document.createElement('div'); pag.className = 'pagina'; el.innerHTML = ''; el.appendChild(pag);
-    var head = '<div class="page-head"><div><h1>Clientes</h1><p>Quem já pediu pela Izza no WhatsApp da ' + esc(l.nome) + '. O cadastro (nome, endereços, compras na loja) vem da base de clientes atual da loja. Somente visualização.</p></div></div>';
+    var head = '<div class="page-head"><div><h1>Clientes</h1><p>Quem já pediu pela Izza no WhatsApp da ' + esc(l.nome) + '. O cadastro (nome, endereços, compras na loja) vem da base de clientes atual da loja.</p></div>' +
+      '<button class="btn" id="cl-imp">Importar clientes</button></div>';
+    pag.addEventListener('click', function (ev) { if (ev.target.closest('#cl-imp')) importaClientes(l); });
     pag.innerHTML = head + '<div class="card vazio">Carregando…</div>';
     Promise.all([api('clientes&loja=' + encodeURIComponent(l.id)), api('pedidos&loja=' + encodeURIComponent(l.id))]).then(function (rs) {
       var cs = rs[0].clientes || [], peds = (rs[1].pedidos || []).slice().reverse(), filtro = { q: '', ord: 'ultimo' };
@@ -1796,7 +1861,7 @@
   function colunaDe(p) {
     var q = VIVO.quadro[p.id];
     if (q && q.col) return q.col;
-    if (p.status === 'recusado' || p.status === 'expirado') return 'concluido';
+    if (p.status === 'recusado' || p.status === 'expirado' || p.status === 'cancelado') return 'concluido';
     // ninguem mexeu em 4 h: ja foi (nao deixa pedido de ontem parado em Novos)
     if (p.em && Date.now() - new Date(p.em).getTime() > 4 * 3600e3) return 'concluido';
     return 'novo';
@@ -1817,7 +1882,7 @@
       var m = minutos(p.em), atrasado = (col === 'novo' && m >= 15) || (col === 'preparo' && m >= 40);
       var itens = itensDo(p.resumo);
       var i = COLS_Q.map(function (c) { return c.id; }).indexOf(col);
-      var morto = p.status === 'recusado' || p.status === 'expirado';
+      var morto = p.status === 'recusado' || p.status === 'expirado' || p.status === 'cancelado';
       var lugar = [p.endereco && p.endereco.bairro ? p.endereco.bairro : '', p.pagamento || ''].filter(Boolean).join(' · ');
       // pedido do bot que le o painel, esperando a loja: Aprovar / Recusar no card
       var decide_ = p.status === 'enviado' && p.aprovaNoPainel;
@@ -2373,7 +2438,8 @@
     function campo(sis, k, rot, ph) { return '<label class="campo"><span>' + rot + '</span><input type="text" data-is="' + sis + '" data-ik="' + k + '" value="' + esc(it[sis][k]) + '" placeholder="' + esc(ph || '') + '"' + dis + '></label>'; }
     function situacao(ok) { return ok ? '<span class="badge ok">Configurado</span>' : '<span class="badge warn">Falta configurar</span>'; }
     function desenha() {
-      var tOk = !!it.titan.url, sOk = !!(it.saipos.idPartner && it.saipos.codStore && it.saipos.secret), wOk = !!it.webhook.url;
+      // o secret da Saipos das lojas Dame e Lov fica no cofre do servidor da Izza; no painel e opcional
+      var tOk = !!it.titan.url, sOk = !!(it.saipos.idPartner && it.saipos.codStore), wOk = !!it.webhook.url;
       pag.innerHTML = '<div class="page-head"><div><h1>Integrações</h1><p>Para onde vai o pedido que a Izza fecha na ' + esc(l.nome) + ' e de onde vêm o cardápio e os clientes.</p></div>' +
         (pode ? '<button class="btn pri" id="int-salvar">Salvar</button>' : '') + '</div>' +
         '<div class="aviso">A Izza ligada a este painel (desenvolvimento) já usa “Para onde vai o pedido”: <b>Só a Izza</b> (aprova no Quadro, comanda pela Izza Impressora) e <b>Saipos</b> (aprova no Quadro e o pedido entra na Saipos; se ela recusar, a comanda sai aqui). As lojas Dáme e Lov seguem no Titan até a migração. Cardápio, clientes e webhook ainda não são usados.' +
@@ -2389,7 +2455,7 @@
         (usa('titan') ? '<div class="card"><div class="cab-card"><div><h2>Titan</h2><p class="desc">Sistema de pedidos no computador da loja.</p></div>' + situacao(tOk) + '</div><div class="grid-2" style="margin-top:12px">' +
           campo('titan', 'url', 'Endereço do Titan', 'http://100.x.x.x:3900') + campo('titan', 'usuario', 'Usuário de integração', 'integracao') + segredo('titan', 'senha', 'Senha de integração') + '</div></div>' : '') +
         (usa('saipos') ? '<div class="card"><div class="cab-card"><div><h2>Saipos</h2><p class="desc">API de pedidos da Saipos (Order API). Os dados vêm da Saipos ao liberar a integração.</p></div>' + situacao(sOk) + '</div><div class="grid-2" style="margin-top:12px">' +
-          campo('saipos', 'idPartner', 'ID do parceiro (id_partner)') + campo('saipos', 'codStore', 'Código da loja (cod_store)') + segredo('saipos', 'secret', 'Secret') +
+          campo('saipos', 'idPartner', 'ID do parceiro (id_partner)') + campo('saipos', 'codStore', 'Código da loja (cod_store)') + segredo('saipos', 'secret', 'Secret (opcional: guardado no servidor da Izza)') +
           '<div class="campo"><span>Ambiente</span><div class="seg" data-ia="ambiente"><button type="button" data-v="producao" class="' + (it.saipos.ambiente !== 'homologacao' ? 'on' : '') + '"' + dis + '>Produção</button><button type="button" data-v="homologacao" class="' + (it.saipos.ambiente === 'homologacao' ? 'on' : '') + '"' + dis + '>Homologação</button></div></div></div></div>' : '') +
         (it.pedidos === 'webhook' ? '<div class="card"><div class="cab-card"><div><h2>Webhook</h2><p class="desc">A Izza faz um POST com o pedido em JSON. O cabeçalho <code>X-Izza-Assinatura</code> traz <code>sha256=</code> + HMAC-SHA256 do corpo com o segredo abaixo.</p></div>' + situacao(wOk) + '</div><div class="grid-2" style="margin-top:12px">' +
           campo('webhook', 'url', 'Endereço (https://)', 'https://seusistema.com.br/izza/pedido') + segredo('webhook', 'segredo', 'Segredo da assinatura') + '</div>' +
