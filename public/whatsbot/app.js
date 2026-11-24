@@ -2,8 +2,8 @@
 (function () {
   'use strict';
 
-  var S = { dados: null, loja: null, pagina: 'geral', abaNumeros: 'bloqueado' };
-  try { S.loja = localStorage.getItem('wb_loja'); S.pagina = localStorage.getItem('wb_pag') || 'geral'; } catch (e) {}
+  var S = { dados: null, loja: null, pagina: 'quadro', abaNumeros: 'bloqueado' };
+  try { S.loja = localStorage.getItem('wb_loja'); S.pagina = localStorage.getItem('wb_pag') || 'quadro'; } catch (e) {}
 
   var TIPOS = {
     bloqueado: { nome: 'Bot não atende', curto: 'Bloqueados', desc: 'A Izza nunca responde esses números (equipe, fornecedor, parceiro). A conversa fica para a loja.' },
@@ -89,13 +89,16 @@
   // instruções e ferramentas (o funcionamento da Izza) ficam só para o administrador geral.
   function paginas() {
     var l = loja(), po = l ? l.pode : {}, adm = S.dados.eu.superadmin;
+    // Menu de 24/11/2026 (Fábio): Pedidos (o kanban, pagina inicial), Alertas, Historico, Numeros.
+    // Sem "Visao geral": o status do bot fica no topo. Clientes mora em Configuracoes, e o operador
+    // nao ve Configuracoes.
+    var gerente = adm || (l && l.papel !== 'operador');
     var p = [
-      { g: 'Dia a dia', id: 'geral', ic: '◉', nome: 'Visão geral', ve: true },
-      { g: 'Dia a dia', id: 'quadro', ic: '▦', nome: 'Quadro', ve: true },
-      { g: 'Dia a dia', id: 'pedidos', ic: '▤', nome: 'Pedidos', ve: true },
+      { g: 'Dia a dia', id: 'quadro', ic: '▦', nome: 'Pedidos', ve: true },
       { g: 'Dia a dia', id: 'alertas', ic: '⚑', nome: 'Alertas', cont: alertasAbertos(l), ve: true },
-      { g: 'Dia a dia', id: 'clientes', ic: '☻', nome: 'Clientes', ve: po.clientes },
+      { g: 'Dia a dia', id: 'pedidos', ic: '▤', nome: 'Histórico', ve: true },
       { g: 'Dia a dia', id: 'numeros', ic: '☎', nome: 'Números', cont: l ? l.config.numeros.length : 0, ve: po.numeros },
+      { g: 'Loja', id: 'clientes', ic: '☻', nome: 'Clientes', ve: po.clientes && gerente },
       { g: 'Loja', id: 'tamanhos', ic: '◔', nome: 'Tamanhos e sabores', ve: po.horario },
       { g: 'Loja', id: 'funcionamento', ic: '◷', nome: 'Horários', ve: po.horario },
       { g: 'Loja', id: 'entrega', ic: '⛟', nome: 'Entrega', ve: po.horario },
@@ -105,7 +108,7 @@
       { g: 'Loja', id: 'impressoras', ic: '⎘', nome: 'Impressoras', ve: po.horario },
       { g: 'Conta', id: 'integracoes', ic: '⇄', nome: 'Integrações', ve: po.integracoes },
       { g: 'Conta', id: 'equipe', ic: '☺', nome: 'Equipe', ve: po.equipe },
-      { g: 'Conta', id: 'historico', ic: '≡', nome: 'Log', ve: true },
+      { g: 'Conta', id: 'historico', ic: '≡', nome: 'Log', ve: gerente },
       { g: 'Plataforma', id: 'frases', ic: '❝', nome: 'Frases fixas', ve: adm },
       { g: 'Plataforma', id: 'fluxo', ic: '➜', nome: 'Fluxo de atendimento', ve: adm },
       { g: 'Plataforma', id: 'instrucoes', ic: '¶', nome: 'Instruções e regras', ve: adm },
@@ -126,7 +129,7 @@
 
     var ps = paginas();
     if (S.pagina === 'ficha') S.pagina = 'regrasloja'; // pagina antiga "Particularidades"
-    if (!ps.some(function (p) { return p.id === S.pagina; })) S.pagina = 'geral';
+    if (!ps.some(function (p) { return p.id === S.pagina; })) S.pagina = 'quadro';
     // Dia a dia fica solto; Loja, Conta e Plataforma moram dentro de "Configurações", que abre em
     // acordeão só com as categorias. As páginas de cada categoria viram abas no topo do conteúdo,
     // como a intranet ("Escala | Escala 5x2 | ..."). Clicar em Configurações abre Loja na primeira
@@ -146,6 +149,7 @@
           return '<button class="nav-item sub' + (atual && atual.g === g ? ' ativo' : '') + '" data-cat="' + esc(g) + '"><span class="ic">' + (ICS[g] || '•') + '</span>' + esc(g) + '</button>';
         }).join('') + '</div>' : '') : '');
     poePausaTopo(loja());
+    poeStatusTopo(loja());
     if (typeof marcaContadores === 'function') marcaContadores();
     var l = loja();
     $('#side-foot').innerHTML = l ? 'Seu papel aqui: <b>' + esc(eu.superadmin ? 'Administrador geral' : PAPEIS[l.papel]) + '</b>' : '';
@@ -237,6 +241,37 @@
 
     ligaAtalhos(el);
   }
+  // Status do bot no topo (24/11/2026, no lugar da Visao geral): No ar / Sem sinal / WhatsApp
+  // desconectado / Pausada. Clicar mostra o detalhe (atendimento, horario, ultima sincronizacao).
+  function poeStatusTopo(l) {
+    var b = $('#bt-status');
+    if (!l) { if (b) b.remove(); return; }
+    if (!b) {
+      b = document.createElement('button'); b.id = 'bt-status'; b.type = 'button';
+      var tr = $('.top-right'); tr.insertBefore(b, tr.firstChild);
+      b.onclick = function () { detalheStatus(loja()); };
+    }
+    var st = statusBot(l);
+    var rot = st.pausado ? 'Izza pausada' : st.rot, cls = st.pausado ? 'err' : st.cls;
+    b.className = 'status-topo badge ' + cls;
+    b.innerHTML = '<span class="dot"></span><span class="st-rot">' + esc(rot) + '</span>';
+    b.title = st.sub;
+  }
+  function detalheStatus(l) {
+    if (!l) return;
+    var c = l.config, b = statusBot(l);
+    var pausaTxt = c.pausa.ligado
+      ? 'Pausada pelo painel por ' + esc(quem(c.pausa.por)) + ' ' + quando(c.pausa.em) + (c.pausa.motivo ? ' — “' + esc(c.pausa.motivo) + '”' : '')
+      : b.pausaLoja ? 'Pausada pelo WhatsApp da loja (/pararbot) ' + quando(b.pausaLoja.desde) + '. Para voltar, a loja manda /iniciarbot.' : '';
+    modal('<h3>Izza na ' + esc(l.nome) + '</h3>' +
+      (b.pausado ? '<div class="aviso err"><b>A Izza está pausada.</b> ' + pausaTxt + '</div>' : '') +
+      '<div class="stack">' +
+        '<div><span class="muted small">Bot</span><div><span class="badge ' + b.cls + '"><span class="dot"></span>' + esc(b.rot) + '</span> <span class="muted small">' + esc(b.sub) + '</span></div></div>' +
+        '<div><span class="muted small">Atendimento</span><div>' + esc(descEscopo(c.escopo)) + '</div></div>' +
+        '<div><span class="muted small">Horário da loja</span><div>' + esc(descHorario(c)) + ' · entrega ' + esc(c.tempoEntrega) + ' · retirada ' + esc(c.tempoRetirada) + '</div></div>' +
+        (l.status && l.status.configEm ? '<div><span class="muted small">Sincronizou com o painel</span><div>' + esc(quando(l.status.configEm)) + '</div></div>' : '') +
+      '</div><div class="acoes"><button class="btn" data-fecha>Fechar</button></div>');
+  }
   // Botao "Pausar a Izza" na barra superior (pedido do Fabio, 23/11): vale para a loja escolhida
   function poePausaTopo(l) {
     var b = $('#bt-pausa');
@@ -248,7 +283,7 @@
     }
     var on = !!l.config.pausa.ligado;
     b.className = 'btn sm ' + (on ? 'pri' : 'perigo');
-    b.innerHTML = on ? '▶ Religar a Izza' : '❚❚ Pausar a Izza';
+    b.innerHTML = on ? '▶<span class="tx"> Religar a Izza</span>' : '❚❚<span class="tx"> Pausar a Izza</span>';
     b.title = on ? 'A Izza está pausada pelo painel nesta loja' : 'Para a Izza de responder os clientes desta loja';
   }
   function pedePausa(l) {
@@ -2001,7 +2036,7 @@
       var cheio = document.body.classList.contains('quadro-cheio');
       var notif = window.Notification ? Notification.permission : 'nao';
       var rolagem = [].map.call(pag.querySelectorAll('.qcol-corpo'), function (x) { return x.scrollTop; });
-      pag.innerHTML = '<div class="quadro-head"><div class="linha" style="gap:10px;flex-wrap:wrap"><h1>Quadro · ' + esc(l.nome) + '</h1><span class="badge ok vivo-pill"><span class="dot"></span>ao vivo</span><span class="muted small">' + esc(hora(new Date().toISOString())) + '</span></div>' +
+      pag.innerHTML = '<div class="quadro-head"><div class="linha" style="gap:10px;flex-wrap:wrap"><h1>Pedidos · ' + esc(l.nome) + '</h1><span class="badge ok vivo-pill"><span class="dot"></span>ao vivo</span><span class="muted small">' + esc(hora(new Date().toISOString())) + '</span></div>' +
         '<div class="linha" style="gap:8px;flex-wrap:wrap">' +
           (notif === 'default' ? '<button class="btn sm" id="qd-notif">Ativar notificações</button>' : '') +
           '<label class="fp-radio"><input type="checkbox" id="qd-som"' + (somLigado() ? ' checked' : '') + '>Som</label>' +
@@ -2080,73 +2115,118 @@
   }
 
   // ------------------------------------------------------------- Pedidos (ao vivo)
+  // Historico (24/11/2026, Fábio: "melhore a secao pedidos, de forma que seja mais facil ver por
+  // dia; operador so pode ver os ultimos 7 dias"). Um dia de expediente por vez (vira as 15 h): setas,
+  // calendario e a faixa dos ultimos dias com quantidade e total; os numeros do dia em cima e a lista
+  // embaixo. A busca procura em todos os dias que a pessoa pode ver. O limite do operador tambem vale
+  // no servidor (api.php?a=pedidos).
+  function somaDia(chave, n) { var d = new Date(chave + 'T12:00:00'); d.setDate(d.getDate() + n); return chaveDia(d); }
+  function curtoDia(chave) {
+    var d = new Date(chave + 'T12:00:00');
+    return { sem: d.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', ''), data: ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2) };
+  }
   function pgPedidos(el, l) {
     var pag = document.createElement('div'); pag.className = 'pagina'; el.innerHTML = ''; el.appendChild(pag);
-    var head = '<div class="page-head"><div><h1>Pedidos <span class="badge ok vivo-pill"><span class="dot"></span>ao vivo</span></h1><p>Pedidos que a Izza fechou pelo WhatsApp na ' + esc(l.nome) + '. Pedido novo aparece sozinho, com som. Clique num pedido para ver o resumo e imprimir a comanda.</p></div></div>';
+    var operador = !S.dados.eu.superadmin && l.papel === 'operador';
+    var hoje = chaveDia(inicioExpediente()), minimo = operador ? somaDia(hoje, -6) : null;
+    var head = '<div class="page-head"><div><h1>Histórico <span class="badge ok vivo-pill"><span class="dot"></span>ao vivo</span></h1><p>Pedidos que a Izza fechou pelo WhatsApp na ' + esc(l.nome) + ', dia a dia (o dia da loja vira às 15 h). Clique num pedido para ver o resumo e imprimir a comanda.' + (operador ? ' Você vê os últimos 7 dias.' : '') + '</p></div></div>';
     pag.innerHTML = head + '<div class="card vazio">Carregando…</div>';
-    var todos = [], filtro = { q: '', st: '', dias: 30 }, mostra = 100, montado = false, porId = {}, abertos = {};
+    var todos = [], porId = {}, porDia = {}, dia = hoje, filtro = { q: '', st: '' }, montado = false, abertos = {};
     function busca() {
       return Promise.all([api('pedidos&loja=' + encodeURIComponent(l.id)), l.pode.clientes ? api('clientes&loja=' + encodeURIComponent(l.id)).catch(function () { return {}; }) : {}]).then(function (rs) {
         var nomes = {};
         (rs[1].clientes || []).forEach(function (c) { if (c.nome) nomes[c.telefone] = c.nome; });
-        // pedido de antes de 23/11 nao tem o nome: vem do cadastro do cliente
         (rs[0].pedidos || []).forEach(function (p) { if (!p.nome && nomes[p.telefone]) p.nome = nomes[p.telefone]; });
-        // ordem pela hora de verdade: o bot manda em UTC (Z) e outros em -03:00, e a ordem do texto mistura
-        todos = (rs[0].pedidos || []).slice().sort(function (a, b) { return (Date.parse(b.em) || 0) - (Date.parse(a.em) || 0); });
-        porId = {}; todos.forEach(function (p) { porId[p.id] = p; });
+        todos = (rs[0].pedidos || []).filter(function (p) { return !minimo || diaDoPedido(p.em) >= minimo; })
+          .sort(function (a, b) { return (Date.parse(b.em) || 0) - (Date.parse(a.em) || 0); });
+        porId = {}; porDia = {};
+        todos.forEach(function (p) { porId[p.id] = p; (porDia[diaDoPedido(p.em)] = porDia[diaDoPedido(p.em)] || []).push(p); });
       });
     }
+    function resumoDe(lista) {
+      var ok = lista.filter(valePed), soma = ok.reduce(function (a, p) { return a + (Number(p.total) || 0); }, 0);
+      return { n: ok.length, soma: soma, fora: lista.length - ok.length, ent: ok.filter(function (p) { return p.retirada === false; }).length, ret: ok.filter(function (p) { return p.retirada === true; }).length };
+    }
     function monta() {
-      pag.innerHTML = head + '<div class="stats" id="ped-kpi"></div>' +
-        '<div class="card"><div class="filtros-frase"><input type="search" id="pq" placeholder="Buscar por nome, telefone, número ou item…">' +
-        '<select id="pd"><option value="1">Último expediente (desde as 15 h)</option><option value="7">Últimos 7 dias</option><option value="30" selected>Últimos 30 dias</option><option value="0">Tudo</option></select>' +
+      pag.innerHTML = head +
+        '<div class="card hist-topo"><div class="hist-nav">' +
+          '<button class="btn" id="hd-ant" aria-label="Dia anterior">‹</button>' +
+          '<div class="hist-dia"><b id="hd-nome"></b><input type="date" id="hd-data" aria-label="Escolher o dia"' + (minimo ? ' min="' + minimo + '"' : '') + ' max="' + hoje + '"></div>' +
+          '<button class="btn" id="hd-prox" aria-label="Próximo dia">›</button>' +
+          '<button class="btn sm" id="hd-hoje">Hoje</button></div>' +
+          '<div class="hist-dias" id="hd-chips" role="tablist"></div></div>' +
+        '<div class="stats" id="ped-kpi"></div>' +
+        '<div class="card"><div class="filtros-frase f2"><input type="search" id="pq" placeholder="Buscar em todos os dias: nome, telefone, número ou item…">' +
         '<select id="ps"><option value="">Todos os status</option>' + Object.keys(ST_PED).map(function (k) { return '<option value="' + k + '">' + ST_PED[k][0] + '</option>'; }).join('') + '</select></div></div>' +
         '<div class="card"><div class="stack" id="plista"></div></div>';
-      $('#pq', pag).oninput = function () { filtro.q = this.value; mostra = 100; desenha(); };
-      $('#pd', pag).onchange = function () { filtro.dias = +this.value; mostra = 100; desenha(); };
-      $('#ps', pag).onchange = function () { filtro.st = this.value; mostra = 100; desenha(); };
+      $('#pq', pag).oninput = function () { filtro.q = this.value; desenha(); };
+      $('#ps', pag).onchange = function () { filtro.st = this.value; desenha(); };
+      $('#hd-ant', pag).onclick = function () { vaiPara(somaDia(dia, -1)); };
+      $('#hd-prox', pag).onclick = function () { vaiPara(somaDia(dia, 1)); };
+      $('#hd-hoje', pag).onclick = function () { vaiPara(hoje); };
+      $('#hd-data', pag).onchange = function () { if (this.value) vaiPara(this.value); };
       montado = true;
     }
+    function vaiPara(k) {
+      if (k > hoje) k = hoje;
+      if (minimo && k < minimo) { k = minimo; toast('Você vê os pedidos dos últimos 7 dias.'); }
+      dia = k; filtro.q = ''; $('#pq', pag).value = ''; desenha();
+    }
+    function linha(p) {
+      var recente = Date.now() - 3 * 60000;
+      return pedidoHtml(p, true).replace('<div class="pedido">', '<div class="pedido' + ((Date.parse(p.em) || 0) > recente ? ' novo' : '') + (abertos[p.id] ? ' aberto' : '') + '" data-pid="' + esc(p.id) + '">')
+        .replace('<div class="pedido-det" hidden>', abertos[p.id] ? '<div class="pedido-det">' : '<div class="pedido-det" hidden>');
+    }
     function desenha() {
-      var q = filtro.q.toLowerCase(), qd = q.replace(/\D/g, '');
-      var desde = filtro.dias ? (filtro.dias === 1 ? inicioExpediente() : new Date(Date.now() - filtro.dias * 864e5)).getTime() : 0;
-      var fs = todos.filter(function (p) {
-        if (desde && (Date.parse(p.em) || 0) < desde) return false;
+      // faixa dos ultimos dias (7 para o operador, 14 para os outros), mesmo os sem pedido
+      var n = minimo ? 7 : 14, chips = [];
+      for (var i = 0; i < n; i++) chips.push(somaDia(hoje, -i));
+      if (chips.indexOf(dia) < 0) chips.push(dia);
+      $('#hd-chips', pag).innerHTML = chips.map(function (k) {
+        var r = resumoDe(porDia[k] || []), c = curtoDia(k);
+        return '<button type="button" role="tab" class="hd-chip' + (k === dia ? ' on' : '') + (r.n ? '' : ' vazio') + '" aria-selected="' + (k === dia) + '" data-dia="' + k + '">' +
+          '<span class="hd-sem">' + (k === hoje ? 'atual' : esc(c.sem)) + '</span><span class="hd-data">' + c.data + '</span>' +
+          '<b>' + r.n + '</b><span class="hd-soma">' + (r.n ? esc(brl(r.soma)) : '—') + '</span></button>';
+      }).join('');
+      $('#hd-chips', pag).querySelectorAll('[data-dia]').forEach(function (b) { b.onclick = function () { vaiPara(b.getAttribute('data-dia')); }; });
+      var on = $('#hd-chips .on', pag); if (on && on.scrollIntoView) try { on.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) {}
+      // antes das 15 h o expediente atual ainda e o de ontem: "Ontem" no titulo confundia
+      $('#hd-nome', pag).textContent = dia === hoje ? 'Expediente atual · ' + nomeDia(dia).replace(/^(Hoje|Ontem) · /, '') : nomeDia(dia);
+      $('#hd-data', pag).value = dia;
+      $('#hd-prox', pag).disabled = dia >= hoje;
+      $('#hd-ant', pag).disabled = !!(minimo && dia <= minimo);
+
+      var q = filtro.q.toLowerCase().trim(), qd = q.replace(/\D/g, '');
+      var base = q ? todos : (porDia[dia] || []);
+      var fs = base.filter(function (p) {
         if (filtro.st && p.status !== filtro.st) return false;
         if (!q) return true;
         return [p.nome, p.codigo, p.resumo].join(' ').toLowerCase().indexOf(q) >= 0 || (qd.length >= 4 && String(p.telefone).indexOf(qd) >= 0);
       });
-      var ok = fs.filter(valePed), soma = ok.reduce(function (a, p) { return a + (Number(p.total) || 0); }, 0);
+      var r = resumoDe(fs);
       $('#ped-kpi', pag).innerHTML =
-        '<div class="stat"><span>Pedidos</span><b>' + ok.length + '</b></div>' +
-        '<div class="stat"><span>Faturamento</span><b>' + (brl(soma) || 'R$ 0,00') + '</b></div>' +
-        '<div class="stat"><span>Ticket médio</span><b>' + (ok.length ? brl(soma / ok.length) : '—') + '</b></div>' +
-        '<div class="stat"><span>Não entraram</span><b>' + (fs.length - ok.length) + '</b></div>';
-      var recente = Date.now() - 3 * 60000;
-      // separado por dia de expediente (Fábio, 24/11): cabecalho com quantidade e total de cada dia
-      var porDia = {};
-      fs.forEach(function (p) {
-        var x = porDia[diaDoPedido(p.em)] = porDia[diaDoPedido(p.em)] || { n: 0, soma: 0, fora: 0 };
-        if (valePed(p)) { x.n++; x.soma += Number(p.total) || 0; } else x.fora++;
-      });
-      var diaAtual = null;
-      $('#plista', pag).innerHTML = fs.length ? fs.slice(0, mostra).map(function (p) {
-        var k = diaDoPedido(p.em), cab = '';
-        if (k !== diaAtual) {
-          diaAtual = k; var x = porDia[k];
-          cab = '<div class="dia-cab"><h2>' + esc(nomeDia(k)) + '</h2><span class="muted small">' + nPed(x.n) + (x.n ? ' · ' + brl(x.soma) : '') +
-            (x.fora ? ' · ' + x.fora + (x.fora === 1 ? ' não entrou' : ' não entraram') : '') + '</span></div>';
-        }
-        return cab + pedidoHtml(p, true).replace('<div class="pedido">', '<div class="pedido' + ((Date.parse(p.em) || 0) > recente ? ' novo' : '') + (abertos[p.id] ? ' aberto' : '') + '" data-pid="' + esc(p.id) + '">')
-          .replace('<div class="pedido-det" hidden>', abertos[p.id] ? '<div class="pedido-det">' : '<div class="pedido-det" hidden>');
-      }).join('') + (fs.length > mostra ? '<button class="btn sm" id="pmais">Mostrar mais (' + (fs.length - mostra) + ')</button>' : '') : '<div class="vazio">Nenhum pedido nesse filtro.</div>';
+        '<div class="stat"><span>' + (q ? 'Achados' : 'Pedidos do dia') + '</span><b>' + r.n + '</b></div>' +
+        '<div class="stat"><span>Faturamento</span><b>' + (brl(r.soma) || 'R$ 0,00') + '</b></div>' +
+        '<div class="stat"><span>Ticket médio</span><b>' + (r.n ? brl(r.soma / r.n) : '—') + '</b></div>' +
+        '<div class="stat"><span>Entrega · retirada</span><b>' + r.ent + ' · ' + r.ret + '</b></div>' +
+        '<div class="stat"><span>Não entraram</span><b>' + r.fora + '</b></div>';
+      var html;
+      if (!fs.length) html = '<div class="vazio">' + (q ? 'Nada achado' + (minimo ? ' nos últimos 7 dias' : '') + '.' : 'Nenhum pedido em ' + esc(nomeDia(dia).toLowerCase()) + '.') + '</div>';
+      else if (q) {
+        var atual = null;
+        html = fs.slice(0, 300).map(function (p) {
+          var k = diaDoPedido(p.em), cab = '';
+          if (k !== atual) { atual = k; cab = '<div class="dia-cab"><h2>' + esc(nomeDia(k)) + '</h2></div>'; }
+          return cab + linha(p);
+        }).join('');
+      } else html = fs.map(linha).join('');
+      $('#plista', pag).innerHTML = html;
       $('#plista', pag).querySelectorAll('.pedido-top').forEach(function (t) {
         t.onclick = function () { var box = t.parentNode, d = box.querySelector('.pedido-det'); d.hidden = !d.hidden; box.classList.toggle('aberto', !d.hidden); abertos[box.getAttribute('data-pid')] = !d.hidden; };
       });
       $('#plista', pag).querySelectorAll('[data-imprime]').forEach(function (b) {
         b.onclick = function (ev) { ev.stopPropagation(); var p = porId[b.getAttribute('data-imprime')]; if (p) imprimeNaFila({ loja: l.id, pedido: p.id }, function () { imprimeComanda(pedidoParaComanda(p, l), l); }); };
       });
-      if ($('#pmais', pag)) $('#pmais', pag).onclick = function () { mostra += 100; desenha(); };
     }
     busca().then(function () { monta(); desenha(); }).catch(function (e) { pag.innerHTML = head + '<div class="card vazio">' + esc(e.message) + '</div>'; });
     VIVO.recarregaPedidos = function () { if (S.pagina !== 'pedidos' || !pag.isConnected) return; busca().then(function () { if (!montado) monta(); desenha(); }).catch(function () {}); };
@@ -2661,6 +2741,12 @@
   }
 
   carregar().catch(function (e) { $('#content').innerHTML = '<div class="aviso err">Não consegui carregar o painel: ' + esc(e.message) + '</div>'; });
-  // status do bot se atualiza sozinho na visão geral (sem atrapalhar quem está editando)
-  setInterval(function () { if (S.pagina === 'geral' && $('#modal').hidden && document.visibilityState === 'visible') carregar().catch(function () {}); }, 30000);
+  // status do bot no topo se atualiza sozinho, sem redesenhar a pagina (quem esta editando nao perde nada)
+  setInterval(function () {
+    if (document.visibilityState !== 'visible' || !S.dados) return;
+    api('estado').then(function (j) {
+      var novo = j.lojas.filter(function (x) { return x.id === S.loja; })[0], l = loja();
+      if (novo && l) { l.status = novo.status; l.config.pausa = novo.config.pausa; poeStatusTopo(l); poePausaTopo(l); }
+    }).catch(function () {});
+  }, 30000);
 })();

@@ -494,7 +494,17 @@ if ($action === 'ao_vivo' && $method === 'GET') {
 if (($action === 'pedidos' || $action === 'clientes') && $method === 'GET') {
     $loja = isset($_GET['loja']) ? (string)$_GET['loja'] : '';
     exige($eu, $db, $loja, $action === 'pedidos' ? 'ver' : 'clientes');
-    if ($action === 'pedidos') out(200, array('ok' => true, 'pedidos' => json_read(data_dir() . '/pedidos-' . $loja . '.json', array())));
+    if ($action === 'pedidos') {
+        $ps = json_read(data_dir() . '/pedidos-' . $loja . '.json', array());
+        // operador ve so os ultimos 7 dias de expediente (Fábio, 24/11/2026); o dia vira as 15 h
+        if (!$eu['superadmin'] && nivel($eu, $loja) < 2) {
+            $ini = (new DateTime('today 15:00', new DateTimeZone('America/Sao_Paulo')))->getTimestamp();
+            if (time() < $ini) $ini -= 86400;
+            $corte = $ini - 6 * 86400;
+            $ps = array_values(array_filter($ps, function ($p) use ($corte) { return is_array($p) && isset($p['em']) && strtotime($p['em']) >= $corte; }));
+        }
+        out(200, array('ok' => true, 'pedidos' => $ps));
+    }
     $c = json_read(data_dir() . '/clientes-' . $loja . '.json', array('clientes' => array(), 'recebidoEm' => null));
     out(200, array('ok' => true) + $c);
 }
