@@ -472,3 +472,7 @@ html.com-chamado, html.com-chamado body { overflow: hidden; }
 
 /* Excluir pedido (24/11/2026, admin geral) */
 .pedido-bts { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* codigo de integracao da Saipos (Cardapio, 25/11/2026) */
+.cod-saipos { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; }
+.cod-saipos.mudou { border-color: var(--warning); background: var(--warning-bg); }

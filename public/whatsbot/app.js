@@ -99,7 +99,7 @@
       { g: 'Dia a dia', id: 'pedidos', ic: '▤', nome: 'Histórico', ve: true },
       { g: 'Dia a dia', id: 'numeros', ic: '☎', nome: 'Números', cont: l ? l.config.numeros.length : 0, ve: po.numeros },
       { g: 'Loja', id: 'clientes', ic: '☻', nome: 'Clientes', ve: po.clientes && gerente },
-      { g: 'Loja', id: 'tamanhos', ic: '◔', nome: 'Tamanhos e sabores', ve: po.horario },
+      { g: 'Loja', id: 'tamanhos', ic: '◔', nome: 'Cardápio', ve: po.horario },
       { g: 'Loja', id: 'funcionamento', ic: '◷', nome: 'Horários', ve: po.horario },
       { g: 'Loja', id: 'entrega', ic: '⛟', nome: 'Entrega', ve: po.horario },
       { g: 'Loja', id: 'pagamento', ic: '$', nome: 'Pagamento', ve: po.horario },
@@ -680,12 +680,12 @@
     return { valores: v, tamanhos: tam, outras: [], cardapio: copiaCardapio(c), bairros: [], pagamento: pagamentoPadrao(v) };
   }
 
-  // Uma ficha so (config.ficha), mostrada em duas paginas: "Tamanhos e sabores" (tamanhos,
+  // Uma ficha so (config.ficha), mostrada em duas paginas: "Cardápio" (ex-"Tamanhos e sabores"; tamanhos,
   // regra de preco e o cardapio editavel) e "Particularidades" (o resto). Cada uma salva a ficha inteira.
   // Em que pagina fica cada bloco da ficha. Todas salvam a ficha inteira.
   var FICHA_PAG = { 'Atendimento': 'regras', 'Entrega': 'entrega', 'Regra de preço': 'tamanhos', 'Borda, adicionais e bebida': 'tamanhos', 'Pizza': 'tamanhos', 'Pagamento': 'pagamento' };
   var FICHA_CAB = {
-    tamanhos: ['Tamanhos e sabores', function (n) { return 'Tamanhos, sabores, preços, bordas e bebidas da ' + n + '.'; }],
+    tamanhos: ['Cardápio', function (n) { return 'Tamanhos, sabores, preços, bordas, bebidas, promoções e o código de integração de cada item na Saipos da ' + n + '.'; }],
     entrega: ['Entrega', function (n) { return 'De onde a ' + n + ' entrega, até onde e quanto cobra.'; }],
     pagamento: ['Pagamento', function (n) { return 'Como o cliente da ' + n + ' pode pagar.'; }],
     regras: ['Regras da loja', function (n) { return 'Como a ' + n + ' atende e as regras próprias da casa.'; }],
@@ -791,7 +791,7 @@
       (salva ? 'Última edição: ' + esc(quem(l.config.fichaPor)) + ' · ' + esc(dataHora(l.config.fichaEm)) + '.' : 'Veio pré-preenchida com o que a Izza faz hoje (código e cardápio do sistema). Confira e salve.') + '</div>' +
       // tamanhos
       (!tam ? '' : '<div class="card"><h2>Tamanhos</h2><p class="desc">Quais tamanhos a loja vende e quantos sabores e fatias tem cada um.</p>' +
-      '<div class="tabela-wrap"><table><thead><tr><th>Vende</th><th>Tamanho</th><th>cm</th><th>Preço base</th><th>Sabores (mín–máx)</th><th>Fatias</th><th class="hide-m">Serve</th><th></th></tr></thead><tbody id="tb-tam"></tbody></table></div>' +
+      '<div class="tabela-wrap"><table><thead><tr><th>Vende</th><th>Tamanho</th><th>cm</th><th>Preço base</th><th>Sabores (mín–máx)</th><th>Fatias</th><th class="hide-m">Serve</th><th title="Código de integração do tamanho na Saipos: é com ele que a Izza lança a pizza">Código Saipos</th><th></th></tr></thead><tbody id="tb-tam"></tbody></table></div>' +
       (pode ? '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" id="add-tam">+ Tamanho</button></div>' : '') + '</div>') +
       // checklist
       (modo === 'pagamento' ? pagHtml() : '<div class="' + (grupos.length > 1 ? 'grid-2' : '') + '">' + grupos.map(function (g) {
@@ -804,11 +804,27 @@
       (modo !== 'regras' ? '' : '<div class="card"><h2>Outras regras</h2><p class="desc">O que não coube nas outras páginas: regra da casa, exceção, combinado com o cliente.</p><div class="stack" id="outras"></div>' +
       (pode ? '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" id="add-outra">+ Particularidade</button></div>' : '') + '</div>') +
       // cardapio do sistema
-      (!tam ? '' : '<div class="card"><div class="cab-card"><div><h2>Sabores e preços</h2><p class="desc">Começa igual ao cardápio do sistema da loja (planilha CARDAPIO). Sabores, bordas, bebidas e combos daqui ficam na ficha (ainda não mudam o bot). <b>As promoções mudam o bot</b>: o que a Izza oferece, responde e cobra. ' +
+      (!tam ? '' : '<div class="card"><div class="cab-card"><div><h2>Sabores e preços</h2><p class="desc">Começa igual ao cardápio do sistema da loja (planilha CARDAPIO). Sabores, bordas, bebidas e combos daqui ficam na ficha (ainda não mudam o bot). <b>As promoções mudam o bot</b>: o que a Izza oferece, responde e cobra. <b>O código Saipos também</b>: é o código de integração de cada item na Saipos, com o qual a Izza lança o pedido; vem do de/para do sistema e, mudado aqui, vale a partir do próximo pedido (a linha ganha <span class="badge warn">código mudou</span>). ' +
       'Linha diferente do sistema ganha a marca <span class="badge warn">mudou</span>; linha que o sistema não tem, <span class="badge acc">novo</span>.</p></div>' +
       (pode && c ? '<button class="btn sm" id="rl-card">Recarregar do sistema</button>' : '') + '</div>' +
       (f.cardapio ? '<div id="cardapio-ed"></div>' : '<div class="vazio">O bot desta loja ainda não mandou o cardápio.</div>') + '</div>');
 
+    // ---- codigo de integracao da Saipos (25/11/2026): o bot manda o do de/para (padroes.cardapio);
+    // a ficha so guarda `codigo` quando alguem digita um diferente, e esse passa a valer no pedido
+    // que a Izza lanca na Saipos (whatsbot src/saipos/mapa.js)
+    function semX(v) { return String(v == null ? '' : v).trim().replace(/^x\./i, ''); }
+    function mesmoCod(a, b) { return semX(a) === semX(b); }
+    function codTam(id) { var t = c && (c.tamanhos || []).filter(function (z) { return z.id === id; })[0]; return (t && t.codigo) || ''; }
+    function codSis(lista, x) { var s = c && (c[lista] || []).filter(function (z) { return String(z.nome || '').trim().toLowerCase() === String(x.nome || '').trim().toLowerCase(); })[0]; return (s && s.codigo) || ''; }
+    function campoCod(proprio, sis, attrs) {
+      var v = proprio != null ? proprio : sis;
+      var mudou = proprio != null && !mesmoCod(proprio, sis);
+      return '<input type="text" class="cod-saipos' + (mudou ? ' mudou' : '') + '"' + attrs + dis + ' value="' + esc(v || '') + '" placeholder="sem código" style="width:130px"' +
+        (mudou ? ' title="No de/para da Saipos: ' + esc(sis || 'sem código') + '"' : '') + '>';
+    }
+    function guardaCod(obj, val, sis) {
+      if (!String(val || '').trim() || mesmoCod(val, sis)) delete obj.codigo; else obj.codigo = String(val).trim();
+    }
     function desenhaTam() {
       if (!$('#tb-tam', el)) return;
       $('#tb-tam', el).innerHTML = f.tamanhos.length ? f.tamanhos.map(function (t, i) {
@@ -819,8 +835,9 @@
           '<td><div class="linha" style="gap:6px;flex-wrap:nowrap"><input type="number" min="1" data-t="' + i + '" data-k="min" value="' + esc(t.min) + '"' + dis + ' style="width:60px">–<input type="number" min="1" data-t="' + i + '" data-k="max" value="' + esc(t.max) + '"' + dis + ' style="width:60px"></div></td>' +
           '<td><input type="number" min="1" data-t="' + i + '" data-k="fatias" value="' + esc(t.fatias) + '"' + dis + ' style="width:64px"></td>' +
           '<td class="hide-m"><input type="text" data-t="' + i + '" data-k="serve" value="' + esc(t.serve) + '"' + dis + ' style="min-width:110px"></td>' +
+          '<td>' + campoCod(t.codigo, codTam(t.id), ' data-t="' + i + '" data-k="codigo"') + '</td>' +
           '<td class="fim">' + (pode ? '<button class="btn link perigo" data-rm-t="' + i + '">Tirar</button>' : '') + '</td></tr>';
-      }).join('') : '<tr><td colspan="8"><div class="vazio">Nenhum tamanho.</div></td></tr>';
+      }).join('') : '<tr><td colspan="9"><div class="vazio">Nenhum tamanho.</div></td></tr>';
       el.querySelectorAll('[data-rm-t]').forEach(function (b) { b.onclick = function () { f.tamanhos.splice(+b.getAttribute('data-rm-t'), 1); desenhaTam(); desenhaCardapio(); }; });
     }
     function desenhaOutras() {
@@ -850,6 +867,9 @@
     }
     function status(lista, x) {
       var h = x.ativo === false ? '<span class="badge">não vende</span> ' : '';
+      var sisCod = codSis(lista, x);
+      if (x.codigo != null && !mesmoCod(x.codigo, sisCod)) h += '<span class="badge warn" title="No de/para da Saipos: ' + esc(sisCod || 'sem código') + '">código mudou</span> ';
+      else if (x.codigo == null && !sisCod && x.ativo !== false && String(x.nome || '').trim()) h += '<span class="badge" title="Sem o código de integração a Saipos não reconhece o item">sem código</span> ';
       if (!SYS || !String(x.nome || '').trim()) return h;
       var s = doSistema(lista, x);
       if (!s) return h + '<span class="badge acc">novo</span>';
@@ -861,6 +881,7 @@
     function cel(lista, i, k, v, tipo, w) {
       var a = ' data-cl="' + lista + '" data-ci="' + i + '" data-ck="' + k + '"' + dis;
       if (tipo === 'chk') return '<input type="checkbox"' + a + (v ? ' checked' : '') + '>';
+      if (tipo === 'cod') return campoCod(v, codSis(lista, f.cardapio[lista][i]), ' data-cl="' + lista + '" data-ci="' + i + '" data-ck="' + k + '"');
       if (tipo === 'num') return '<input type="number" step="0.01" min="0"' + a + ' value="' + esc(v == null ? '' : v) + '" style="width:' + (w || 90) + 'px">';
       return '<input type="text"' + a + ' value="' + esc(v || '') + '" style="min-width:' + (w || 120) + 'px">';
     }
@@ -879,22 +900,24 @@
       var ca = f.cardapio;
       var regra = { soma: 'soma o adicional de cada sabor', maior: 'cobra o sabor mais caro', medio: 'média dos adicionais' }[f.valores.regraPreco] || '';
       var porTam = function (lista) {
-        return tabela(lista, '<th>Item</th>' + TAMS.map(function (t) { return '<th>' + esc(t.nome) + '</th>'; }).join(''), function (x, i) {
-          return '<tr><td>' + cel(lista, i, 'ativo', x.ativo !== false, 'chk') + '</td><td>' + cel(lista, i, 'nome', x.nome, 'txt', 140) + '</td>' +
+        return tabela(lista, '<th>Item</th>' + TH_COD + TAMS.map(function (t) { return '<th>' + esc(t.nome) + '</th>'; }).join(''), function (x, i) {
+          return '<tr><td>' + cel(lista, i, 'ativo', x.ativo !== false, 'chk') + '</td><td>' + cel(lista, i, 'nome', x.nome, 'txt', 140) + '</td><td>' + cel(lista, i, 'codigo', x.codigo, 'cod') + '</td>' +
             TAMS.map(function (t) { return '<td>' + cel(lista, i, 'p:' + t.id, (x.precos || {})[t.id], 'num', 80) + '</td>'; }).join('') + fimLinha(lista, i, x);
         });
       };
       var preco = function (lista) {
-        return tabela(lista, '<th>Item</th><th>Preço (R$)</th>', function (x, i) {
-          return '<tr><td>' + cel(lista, i, 'ativo', x.ativo !== false, 'chk') + '</td><td>' + cel(lista, i, 'nome', x.nome, 'txt', 180) + '</td><td>' + cel(lista, i, 'preco', x.preco, 'num') + '</td>' + fimLinha(lista, i, x);
+        return tabela(lista, '<th>Item</th>' + TH_COD + '<th>Preço (R$)</th>', function (x, i) {
+          return '<tr><td>' + cel(lista, i, 'ativo', x.ativo !== false, 'chk') + '</td><td>' + cel(lista, i, 'nome', x.nome, 'txt', 180) + '</td><td>' + cel(lista, i, 'codigo', x.codigo, 'cod') + '</td><td>' + cel(lista, i, 'preco', x.preco, 'num') + '</td>' + fimLinha(lista, i, x);
         });
       };
+      var TH_COD = '<th title="Código de integração do item na Saipos (o mesmo da planilha do cardápio). É com ele que a Izza lança o pedido; mudado aqui, vale no próximo pedido">Código Saipos</th>';
       var inteira = function (x, t) { return t.preco === '' || t.preco == null ? '' : brl((+t.preco || 0) + (+x.adicional || 0)); };
       var abas = ['Sabores (' + ca.sabores.length + ')', 'Bordas e adicionais', 'Bebidas e combos', 'Promoções'];
       box.innerHTML = '<div class="tabs">' + abas.map(function (n, i) { return '<button type="button" data-ab="' + i + '" class="' + (i === abaCard ? 'on' : '') + '">' + n + '</button>'; }).join('') + '</div>' +
         '<div data-pa="0"' + (abaCard === 0 ? '' : ' hidden') + '><p class="muted small" style="margin-bottom:8px">Preço da inteira = preço base do tamanho (tabela Tamanhos) + adicional do sabor; as colunas por tamanho mostram essa conta' + (regra ? '; com mais de um sabor, ' + esc(regra) : '') + '.</p>' +
-          tabela('sabores', '<th>Sabor</th><th>Adicional (R$)</th>' + TAMS.map(function (t) { return '<th class="num" title="Preço base do tamanho + adicional do sabor">' + esc(t.nome) + '</th>'; }).join('') + '<th title="Sabor que a Izza não oferece; só sai se o cliente pedir">Menu secreto</th><th class="hide-m">Descrição</th>', function (x, i) {
+          tabela('sabores', '<th>Sabor</th>' + TH_COD + '<th>Adicional (R$)</th>' + TAMS.map(function (t) { return '<th class="num" title="Preço base do tamanho + adicional do sabor">' + esc(t.nome) + '</th>'; }).join('') + '<th title="Sabor que a Izza não oferece; só sai se o cliente pedir">Menu secreto</th><th class="hide-m">Descrição</th>', function (x, i) {
             return '<tr><td>' + cel('sabores', i, 'ativo', x.ativo !== false, 'chk') + '</td><td>' + cel('sabores', i, 'nome', x.nome, 'txt', 150) + '</td>' +
+              '<td>' + cel('sabores', i, 'codigo', x.codigo, 'cod') + '</td>' +
               '<td>' + cel('sabores', i, 'adicional', x.adicional, 'num', 80) + '</td>' +
               TAMS.map(function (t) { return '<td class="num muted small nowrap" data-pz="' + esc(t.id) + '">' + inteira(x, t) + '</td>'; }).join('') +
               '<td>' + cel('sabores', i, 'sobPedido', x.sobPedido, 'chk') + '</td><td class="hide-m">' + cel('sabores', i, 'desc', x.desc, 'txt', 220) + '</td>' + fimLinha('sabores', i, x);
@@ -915,7 +938,8 @@
         inp.addEventListener('input', function () {
           var lista = inp.getAttribute('data-cl'), x = f.cardapio[lista][+inp.getAttribute('data-ci')], k = inp.getAttribute('data-ck');
           var val = inp.type === 'checkbox' ? inp.checked : inp.type === 'number' ? (inp.value === '' ? '' : +inp.value) : inp.value;
-          if (k.indexOf('p:') === 0) { x.precos = x.precos || {}; x.precos[k.slice(2)] = val; } else x[k] = val;
+          if (k === 'codigo') { guardaCod(x, val, codSis(lista, x)); inp.classList.toggle('mudou', x.codigo != null); }
+          else if (k.indexOf('p:') === 0) { x.precos = x.precos || {}; x.precos[k.slice(2)] = val; } else x[k] = val;
           inp.closest('tr').querySelector('.st').innerHTML = status(lista, x);
           if (k === 'adicional') inp.closest('tr').querySelectorAll('[data-pz]').forEach(function (td) {
             var t = TAMS.filter(function (z) { return z.id === td.getAttribute('data-pz'); })[0];
@@ -976,7 +1000,8 @@
           '<label class="fp-radio" title="A Izza não oferece nem cita; vale se o cliente pedir promoção"><input type="checkbox"' + a('soQuandoPedir') + (p.soQuandoPedir ? ' checked' : '') + '>Só para quem pedir promoção</label>' +
           '<label class="promo-campo">Tamanho <select' + a('tamanho') + '><option value="">—</option>' + tams.map(function (t) { return '<option value="' + esc(t.id) + '"' + (p.tamanho === t.id ? ' selected' : '') + '>' + esc(t.nome) + '</option>'; }).join('') + '</select></label>' +
           '<label class="promo-campo">A partir de <input type="date"' + a('desde') + ' value="' + esc(p.desde || '') + '"></label>' +
-          (p.pizzas > 1 ? '<span class="badge">combo de ' + p.pizzas + ' pizzas</span>' : '') + '</div>' +
+          (p.pizzas > 1 ? '<span class="badge">combo de ' + p.pizzas + ' pizzas</span>' : '') +
+          '<span class="promo-campo small muted" title="Código do item da promoção na Saipos. É um por tipo (balcão, tele, duas pizzas) e os sabores da promoção têm códigos próprios: muda pela planilha do cardápio. Promoção sem código vai para a Saipos como pizza comum, no preço da promoção.">Código Saipos: <b>' + esc(((promoDoSistema(p) || {}).codigo) || p.codigo || '—') + '</b></span>' + '</div>' +
         '<details class="promo-sab"' + (escolhidos.length ? ' open' : '') + '><summary>Sabores que o cliente escolhe (' + escolhidos.length + ')' + (escolhidos.length ? ' · até <input type="number" min="1" max="4"' + a('maxSabores') + ' value="' + esc(p.maxSabores || 2) + '" style="width:56px"> por pizza' : ' · nenhum: pizza fixa, sem escolha') + '</summary>' +
           '<div class="promo-chips">' + sab.map(function (n) { return '<label class="chip-chk"><input type="checkbox" data-pr="' + i + '" data-ps="' + esc(n) + '"' + (escolhidos.indexOf(n) >= 0 ? ' checked' : '') + dis + '>' + esc(n) + '</label>'; }).join('') + '</div></details>' +
         '<textarea rows="2"' + a('desc') + ' maxlength="600" placeholder="O que a Izza explica ao cliente: o que vem, regras, borda, entrega ou retirada">' + esc(p.desc || '') + '</textarea>' +
@@ -1103,6 +1128,7 @@
       var t = ev.target, k = t.getAttribute('data-k');
       var val = t.type === 'checkbox' ? t.checked : t.type === 'number' ? (t.value === '' ? '' : +t.value) : t.value;
       if (t.hasAttribute('data-t')) {
+        if (k === 'codigo') { var tt = f.tamanhos[+t.getAttribute('data-t')]; guardaCod(tt, val, codTam(tt.id)); t.classList.toggle('mudou', tt.codigo != null); return; }
         f.tamanhos[+t.getAttribute('data-t')][k] = val;
         if (k === 'nome' || k === 'ativo' || k === 'preco') desenhaCardapio();
       }
