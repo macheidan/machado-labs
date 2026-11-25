@@ -886,7 +886,7 @@
         var n = e.bairros.filter(function (b) { return daCidade(b, x, i); }).length;
         return '<button type="button" data-bx-cid="' + i + '" class="' + (i === BX.sel ? 'on' : '') + '">' + esc(x.cidade) + ' (' + n + ')</button>';
       }).join('') + '</div>' : '';
-      if (!LB.nomes) { box.innerHTML = abas + '<div class="vazio">Buscando os bairros de ' + esc(c.cidade + ' / ' + c.uf) + '…</div>'; ligaAbas(); return; }
+      if (!LB.nomes) { box.innerHTML = abas + '<div class="vazio">Buscando os bairros de ' + esc(c.cidade + ' / ' + c.uf) + '… Cidade grande pode levar até 1 minuto, só na primeira vez.</div>'; ligaAbas(); return; }
       var meus = e.bairros.filter(function (b) { return daCidade(b, c, BX.sel); });
       var todos = LB.nomes.slice();
       meus.forEach(function (b) { if (!todos.some(function (n) { return semAcento(n) === semAcento(b.nome); })) todos.unshift(b.nome); });

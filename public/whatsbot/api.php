@@ -472,42 +472,100 @@ if ($action === 'bairros' && $method === 'GET') {
     $fixo = json_read(__DIR__ . '/bairros/' . $slug . '.json', null);
     if ($fixo) out(200, array('ok' => true) + $fixo);
     $cache = json_read($arq, null);
-    if ($cache && isset($cache['em']) && time() - strtotime($cache['em']) < 90 * 86400) out(200, array('ok' => true) + $cache);
+    if ($cache && isset($cache['em']) && time() - strtotime($cache['em']) < (isset($cache['fonte']) && $cache['fonte'] === 'IBGE' ? 2 : 90) * 86400) out(200, array('ok' => true) + $cache); // IBGE e reserva: tenta o mapa de novo em 2 dias
 
-    $nomeRe = str_replace(array('.', '-'), array('\\\\.', '\\\\-'), $cid);
-    $area = 'area["ISO3166-2"="BR-' . $uf . '"]->.uf;rel["boundary"="administrative"]["admin_level"="8"]["name"~"^' . $nomeRe . '$",i](area.uf);map_to_area->.c;';
-    $consultas = array(
-        '[out:json][timeout:40];' . $area . 'rel["boundary"="administrative"]["admin_level"~"^(9|10)$"](area.c);out tags;',
-        '[out:json][timeout:40];' . $area . '(node["place"~"^(suburb|neighbourhood|quarter)$"](area.c);way["place"~"^(suburb|neighbourhood|quarter)$"](area.c);rel["place"~"^(suburb|neighbourhood|quarter)$"](area.c););out tags;',
-    );
-    @set_time_limit(150);
-    $nomes = array();
-    $erro = false;
-    $servidores = array('https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter');
-    foreach ($consultas as $q) foreach ($servidores as $srv) {
-        if ($nomes) break 2;
-        $url = $srv . '?data=' . rawurlencode($q);
-        if (function_exists('curl_init')) {
-            $ch = curl_init($url);
-            curl_setopt_array($ch, array(CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 35, CURLOPT_USERAGENT => 'painel-whatsbot/1.0'));
-            $r = curl_exec($ch); $code = curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
-        } else {
-            list($code, $r) = wb_http_get($url);
+    // Cidade grande (Sao Paulo) leva 40 s ou mais no Overpass, e um servidor so cai muito. Entao:
+    // 1) o Nominatim da o id da cidade (consulta por id e bem mais leve que por nome dentro do
+    // estado); 2) dois servidores Overpass e o IBGE (distritos) ao mesmo tempo, fica o primeiro
+    // limite administrativo que chegar; 3) sem ele, os lugares marcados como bairro; 4) sem eles,
+    // os distritos do IBGE (so se forem 10 ou mais, como os 96 de Sao Paulo).
+    @set_time_limit(120);
+    $chaveN = function ($s) { $p = function_exists('iconv') ? @iconv('UTF-8', 'ASCII//TRANSLIT', $s) : $s; return trim(preg_replace('/[^a-z0-9]+/', ' ', strtolower((string)$p))); };
+    $baixa = function ($urls, $tempo, $basta = null) {
+        $res = array();
+        if (!function_exists('curl_multi_init')) {
+            foreach ($urls as $k => $u) { list($code, $r) = wb_http_get($u); $res[$k] = $code === 200 ? json_decode((string)$r, true) : null; if ($basta && $basta($res)) break; }
+            return $res;
         }
-        $j = $code === 200 ? json_decode((string)$r, true) : null;
-        if (!is_array($j) || !isset($j['elements'])) { $erro = true; continue; }
-        $erro = false;
-        foreach ($j['elements'] as $e) {
-            if (!empty($e['tags']['name'])) $nomes[$e['tags']['name']] = true;
+        $mh = curl_multi_init(); $hs = array();
+        foreach ($urls as $k => $u) {
+            $ch = curl_init($u);
+            curl_setopt_array($ch, array(CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => $tempo, CURLOPT_CONNECTTIMEOUT => 8, CURLOPT_USERAGENT => 'painel-whatsbot/1.0'));
+            curl_multi_add_handle($mh, $ch); $hs[$k] = $ch;
         }
-        if ($nomes) break 2;
-        break; // respondeu vazio: tenta a proxima consulta, nao outro servidor
+        do {
+            $st = curl_multi_exec($mh, $vivos);
+            while ($info = curl_multi_info_read($mh)) {
+                $k = array_search($info['handle'], $hs, true);
+                $code = curl_getinfo($info['handle'], CURLINFO_HTTP_CODE);
+                $res[$k] = $code === 200 ? json_decode((string)curl_multi_getcontent($info['handle']), true) : null;
+            }
+            if ($basta && $basta($res)) break;
+            if ($vivos) curl_multi_select($mh, 1.0);
+        } while ($vivos && $st === CURLM_OK);
+        foreach ($hs as $ch) { curl_multi_remove_handle($mh, $ch); curl_close($ch); }
+        curl_multi_close($mh);
+        return $res;
+    };
+    $nomesDe = function ($j) {
+        $n = array();
+        if (is_array($j) && isset($j['elements'])) foreach ($j['elements'] as $e) if (!empty($e['tags']['name'])) $n[$e['tags']['name']] = true;
+        return array_keys($n);
+    };
+
+    // 1) id da cidade no OpenStreetMap e no IBGE
+    $ini = $baixa(array(
+        'nom' => 'https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&countrycodes=br&limit=10&accept-language=pt-BR&city=' . rawurlencode($cid),
+        'ibge' => 'https://servicodados.ibge.gov.br/api/v1/localidades/estados/' . $uf . '/municipios',
+    ), 15);
+    $areaId = 0;
+    if (is_array(isset($ini['nom']) ? $ini['nom'] : null)) foreach ($ini['nom'] as $x) {
+        $iso = isset($x['address']['ISO3166-2-lvl4']) ? $x['address']['ISO3166-2-lvl4'] : '';
+        if ($iso === 'BR-' . $uf && isset($x['osm_type']) && $x['osm_type'] === 'relation' && $chaveN(isset($x['name']) ? $x['name'] : '') === $chaveN($cid)) { $areaId = 3600000000 + (int)$x['osm_id']; break; }
     }
-    $nomes = array_keys($nomes);
-    if (!$nomes) falha($erro ? 502 : 404, $erro ? 'O serviço de mapas não respondeu. Tente de novo em instantes.' : 'Não achei os bairros de ' . $cid . '/' . $uf . ' no mapa. Confira o nome da cidade.');
+    $ibgeId = 0;
+    if (is_array(isset($ini['ibge']) ? $ini['ibge'] : null)) foreach ($ini['ibge'] as $m) {
+        if (isset($m['nome']) && $chaveN($m['nome']) === $chaveN($cid)) { $ibgeId = (int)$m['id']; break; }
+    }
+    if (!$areaId && !$ibgeId) falha(404, 'Não achei a cidade ' . $cid . '/' . $uf . '. Confira o nome e a UF.');
+
+    // 2) bairros: Overpass em dois servidores + IBGE, juntos
+    if ($areaId) {
+        $area = 'area(id:' . $areaId . ')->.c;';
+    } else {
+        $nomeRe = str_replace(array('.', '-'), array('\\\\.', '\\\\-'), $cid);
+        $area = 'area["ISO3166-2"="BR-' . $uf . '"]->.uf;rel["boundary"="administrative"]["admin_level"="8"]["name"~"^' . $nomeRe . '$",i](area.uf);map_to_area->.c;';
+    }
+    $qAdm = '[out:json][timeout:55];' . $area . 'rel["boundary"="administrative"]["admin_level"~"^(9|10)$"](area.c);out tags;';
+    $qLug = '[out:json][timeout:55];' . $area . '(node["place"~"^(suburb|neighbourhood|quarter)$"](area.c);way["place"~"^(suburb|neighbourhood|quarter)$"](area.c);rel["place"~"^(suburb|neighbourhood|quarter)$"](area.c););out tags;';
+    $urls = array(
+        'adm1' => 'https://overpass-api.de/api/interpreter?data=' . rawurlencode($qAdm),
+        'adm2' => 'https://overpass.private.coffee/api/interpreter?data=' . rawurlencode($qAdm),
+        'lug' => 'https://overpass-api.de/api/interpreter?data=' . rawurlencode($qLug),
+    );
+    if ($ibgeId) {
+        $urls['dist'] = 'https://servicodados.ibge.gov.br/api/v1/localidades/municipios/' . $ibgeId . '/distritos';
+        $urls['sub'] = 'https://servicodados.ibge.gov.br/api/v1/localidades/municipios/' . $ibgeId . '/subdistritos';
+    }
+    $r = $baixa($urls, 45, function ($r) use ($nomesDe) {
+        foreach (array('adm1', 'adm2') as $k) if (isset($r[$k]) && $nomesDe($r[$k])) return true;
+        return false;
+    });
+    $nomes = array(); $fonte = 'OpenStreetMap';
+    foreach (array('adm1', 'adm2', 'lug') as $k) if (!$nomes && isset($r[$k])) $nomes = $nomesDe($r[$k]);
+    if (!$nomes) {
+        $ib = array();
+        foreach (array('sub', 'dist') as $k) if (!$ib && isset($r[$k]) && is_array($r[$k])) {
+            foreach ($r[$k] as $d) if (!empty($d['nome']) && $chaveN($d['nome']) !== $chaveN($cid)) $ib[$d['nome']] = true;
+            if (count($ib) < 10) $ib = array(); // poucos distritos (Campinas tem 6) nao servem de lista de bairros
+        }
+        if ($ib) { $nomes = array_keys($ib); $fonte = 'IBGE'; }
+    }
+    $erro = !$nomes && !array_filter(array(isset($r['adm1']) ? $r['adm1'] : null, isset($r['adm2']) ? $r['adm2'] : null, isset($r['lug']) ? $r['lug'] : null));
+    if (!$nomes) falha($erro ? 502 : 404, ($erro ? 'O serviço de mapas não respondeu agora.' : 'Não achei a lista de bairros de ' . $cid . '/' . $uf . ' no mapa.') . ' Dá para incluir os bairros um a um no campo abaixo' . ($erro ? ', ou tentar de novo em instantes.' : '.'));
     $chave = function ($s) { $p = function_exists('iconv') ? @iconv('UTF-8', 'ASCII//TRANSLIT', $s) : $s; return strtolower((string)$p); };
     usort($nomes, function ($a, $b) use ($chave) { return strcmp($chave($a), $chave($b)); });
-    $res = array('cidade' => $cid, 'uf' => $uf, 'bairros' => $nomes, 'fonte' => 'OpenStreetMap', 'em' => date('c'));
+    $res = array('cidade' => $cid, 'uf' => $uf, 'bairros' => $nomes, 'fonte' => $fonte, 'em' => date('c'));
     json_write($arq, $res);
     out(200, array('ok' => true) + $res);
 }
