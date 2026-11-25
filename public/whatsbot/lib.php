@@ -16,6 +16,25 @@ const COOKIE_PATH = '/whatsbot/';
 // Papeis por loja, do menor ao maior. O que cada um pode: ver pode_*().
 const PAPEIS = array('operador' => 1, 'gerente' => 2, 'dono' => 3);
 
+// Automacao (Fábio, 25/11/2026: "nas revisoes e melhorias ao inves de mudar o env, vc muda no
+// painel"): o Claude muda a config da loja por script (Pizzarias/whatsbot/scripts/painel_config.js)
+// com o header X-WB-Automacao. O valor fica no store central (WHATSBOT_PAINEL_AUTOMACAO); aqui so o
+// sha256. Papel de dono nas lojas, sem superadmin: so as acoes abaixo, e loja/token so de loja
+// de teste (id comecando com "teste"), para o bot de desenvolvimento nao usar o token da Dame.
+// Aparece no Log como claude@automacao.
+const AUTOMACAO_HASH = '25d2ed489158e5c6913f07ce4a4cee94e315c511f018fdc2f2212dbea6133ef4';
+const AUTOMACAO_ACOES = array('estado', 'pausa', 'numero', 'numero_del', 'config', 'loja', 'loja_token');
+function usuario_automacao($db, $acao, $corpo) {
+    $k = isset($_SERVER['HTTP_X_WB_AUTOMACAO']) ? (string)$_SERVER['HTTP_X_WB_AUTOMACAO'] : '';
+    if ($k === '' || !hash_equals(AUTOMACAO_HASH, hash('sha256', $k))) return null;
+    if (!in_array($acao, AUTOMACAO_ACOES, true)) return null;
+    $teste = ($acao === 'loja' || $acao === 'loja_token');
+    if ($teste && strpos(strtolower(isset($corpo['id']) ? (string)$corpo['id'] : ''), 'teste') !== 0) return null;
+    $lojas = array();
+    foreach ($db['lojas'] as $id => $l) $lojas[$id] = 'dono';
+    return array('email' => 'claude@automacao', 'nome' => 'Claude (automação)', 'superadmin' => $teste, 'lojas' => $lojas, 'automacao' => true);
+}
+
 function data_dir() {
     $d = __DIR__ . '/data';
     if (!is_dir($d)) @mkdir($d, 0750, true);

@@ -351,6 +351,7 @@ if ($action === 'bot' || $action === 'bot_status' || $action === 'bot_padroes' |
 // ======================================================================= PAINEL
 $db = db_load();
 $eu = current_user($db);
+if (!$eu && isset($_SERVER['HTTP_X_WB_AUTOMACAO'])) $eu = usuario_automacao($db, $action, $method === 'POST' ? corpo() : array());
 if (!$eu) falha(401, 'unauthorized');
 
 if ($method === 'POST' && (empty($_SERVER['HTTP_X_WB']) || $_SERVER['HTTP_X_WB'] !== '1')) falha(403, 'csrf');
