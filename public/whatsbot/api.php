@@ -414,6 +414,49 @@ if ($action === 'estado' && $method === 'GET') {
     out(200, array('ok' => true, 'eu' => $eu, 'lojas' => $lojas, 'equipe' => $equipe, 'log' => $log, 'agora' => date('c')));
 }
 
+// Endereco -> ponto no mapa (pagina Entrega: ponto da loja e o teste de endereco). OpenStreetMap
+// (Nominatim), so Brasil; cache de 30 dias em data/geo/. A Izza usa o Google; aqui e para a loja
+// conferir, entao um ponto um pouco diferente e aceitavel.
+if ($action === 'geocode' && $method === 'GET') {
+    $q = trim(isset($_GET['q']) ? (string)$_GET['q'] : '');
+    if (mb_strlen($q) < 4 || mb_strlen($q) > 200) falha(400, 'Digite o endereço (rua, número, cidade).');
+    $dir = data_dir() . '/geo';
+    if (!is_dir($dir)) @mkdir($dir, 0750, true);
+    $arq = $dir . '/' . md5(mb_strtolower($q)) . '.json';
+    $cache = json_read($arq, null);
+    if ($cache && isset($cache['em']) && time() - strtotime($cache['em']) < 30 * 86400) out(200, array('ok' => true) + $cache);
+    $url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&countrycodes=br&limit=5&accept-language=pt-BR&q=' . rawurlencode($q);
+    $r = null; $code = 0;
+    if (function_exists('curl_init')) {
+        $ch = curl_init($url);
+        curl_setopt_array($ch, array(CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 12, CURLOPT_USERAGENT => 'painel-whatsbot/1.0'));
+        $r = curl_exec($ch); $code = curl_getinfo($ch, CURLINFO_HTTP_CODE); curl_close($ch);
+    } else {
+        list($code, $r) = wb_http_get($url);
+    }
+    $j = $code === 200 ? json_decode((string)$r, true) : null;
+    if (!is_array($j)) falha(502, 'O serviço de mapas não respondeu. Tente de novo em instantes.');
+    $lista = array();
+    foreach ($j as $x) {
+        $a = isset($x['address']) && is_array($x['address']) ? $x['address'] : array();
+        $pega = function ($ks) use ($a) { foreach ($ks as $k) if (!empty($a[$k])) return (string)$a[$k]; return ''; };
+        $iso = $pega(array('ISO3166-2-lvl4'));
+        $lista[] = array(
+            'lat' => (float)$x['lat'], 'lng' => (float)$x['lon'],
+            'nome' => isset($x['display_name']) ? (string)$x['display_name'] : '',
+            'rua' => $pega(array('road', 'pedestrian', 'footway')), 'numero' => $pega(array('house_number')),
+            'bairro' => $pega(array('suburb', 'neighbourhood', 'city_district', 'quarter')),
+            'cidade' => $pega(array('city', 'town', 'village', 'municipality')),
+            'uf' => preg_match('/^BR-([A-Z]{2})$/', $iso, $m) ? $m[1] : '',
+            'cep' => preg_replace('/\D/', '', $pega(array('postcode'))),
+        );
+    }
+    if (!$lista) falha(404, 'Não achei esse endereço no mapa. Confira a rua e a cidade.');
+    $res = array('resultados' => $lista, 'fonte' => 'OpenStreetMap', 'em' => date('c'));
+    json_write($arq, $res);
+    out(200, array('ok' => true) + $res);
+}
+
 // Bairros de uma cidade (ficha: entrega por bairro). Vem do OpenStreetMap (limites
 // administrativos; se a cidade nao tiver, os lugares marcados como bairro) e fica em
 // cache 90 dias em data/bairros-<cidade>-<uf>.json.
@@ -887,7 +930,8 @@ case 'comanda':
     });
     out(200, array('ok' => true));
 
-// Ficha de particularidades da loja (22/11/2026): referencia do negocio, o bot NAO le.
+// Ficha de particularidades da loja (22/11/2026): referencia do negocio. O bot le dela as
+// promocoes, os codigos de integracao e a entrega (ficha.entrega, desde 25/11/2026).
 case 'ficha':
     exige($eu, $db, $loja, 'horario');
     $f = isset($d['ficha']) && is_array($d['ficha']) ? $d['ficha'] : null;

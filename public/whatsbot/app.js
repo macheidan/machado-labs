@@ -167,7 +167,7 @@
       c = $('#sub-conteudo');
     }
     if (!l && S.pagina !== 'lojas') { c.innerHTML = '<div class="card vazio">Nenhuma loja ainda.' + (eu.superadmin ? ' Cadastre a primeira em <b>Lojas</b>.' : '') + '</div>'; return; }
-    ({ geral: pgGeral, numeros: pgNumeros, regras: pgRegras, funcionamento: pgFuncionamento, fluxo: pgFluxo, frases: pgFrases, pedidos: pgPedidos, quadro: pgQuadro, clientes: pgClientes, alertas: pgAlertas, comanda: pgComanda, impressoras: pgImpressoras, integracoes: pgIntegracoes, entrega: function (c, l) { pgFicha(c, l, 'entrega'); }, pagamento: function (c, l) { pgFicha(c, l, 'pagamento'); }, regrasloja: function (c, l) { pgFicha(c, l, 'regras'); }, tamanhos: function (c, l) { pgFicha(c, l, 'tamanhos'); }, instrucoes: pgInstrucoes, ferramentas: pgFerramentas, equipe: pgEquipe, historico: pgHistorico, lojas: pgLojas })[S.pagina](c, l);
+    ({ geral: pgGeral, numeros: pgNumeros, regras: pgRegras, funcionamento: pgFuncionamento, fluxo: pgFluxo, frases: pgFrases, pedidos: pgPedidos, quadro: pgQuadro, clientes: pgClientes, alertas: pgAlertas, comanda: pgComanda, impressoras: pgImpressoras, integracoes: pgIntegracoes, entrega: pgEntrega, pagamento: function (c, l) { pgFicha(c, l, 'pagamento'); }, regrasloja: function (c, l) { pgFicha(c, l, 'regras'); }, tamanhos: function (c, l) { pgFicha(c, l, 'tamanhos'); }, instrucoes: pgInstrucoes, ferramentas: pgFerramentas, equipe: pgEquipe, historico: pgHistorico, lojas: pgLojas })[S.pagina](c, l);
   }
 
   function ir(p) {
@@ -680,13 +680,409 @@
     return { valores: v, tamanhos: tam, outras: [], cardapio: copiaCardapio(c), bairros: [], pagamento: pagamentoPadrao(v) };
   }
 
+  // ------------------------------------------------------------- Entrega (25/11/2026)
+  // Pagina pensada para pizzaria de qualquer lugar do Brasil (Fábio: "imaginando que clientes de
+  // qualquer lugar do brasil podem acessar e configurar taxa, distancias, bairros, valor da taxa
+  // fixa"). Fica na ficha (config.ficha.entrega) e MUDA o bot: o whatsbot le em painel.entrega()
+  // e calcula a taxa em entrega/distancia.js. Sem a pagina salva, a Izza segue com dados/loja.json,
+  // que vem em padroes.entrega para a pagina nascer preenchida com o que ela faz hoje.
+  var UFS = ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'];
+  var MODELOS_ENT = [
+    ['distancia', 'Por distância', 'Faixas de km da loja até o endereço, em linha reta'],
+    ['bairro', 'Por bairro', 'Você marca os bairros atendidos e a taxa de cada um'],
+    ['fixa', 'Taxa fixa', 'O mesmo valor para qualquer endereço da área'],
+    ['gratis', 'Grátis', 'Entrega sem taxa'],
+  ];
+  function semAcento(s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); }
+  function numOu(v) { return v === '' || v == null || !isFinite(Number(v)) ? '' : Number(v); }
+  function kmEntre(a, b) {
+    var R = 6371, r = function (x) { return x * Math.PI / 180; };
+    var dLat = r(b.lat - a.lat), dLng = r(b.lng - a.lng);
+    var s = Math.pow(Math.sin(dLat / 2), 2) + Math.cos(r(a.lat)) * Math.cos(r(b.lat)) * Math.pow(Math.sin(dLng / 2), 2);
+    return R * 2 * Math.asin(Math.sqrt(s));
+  }
+  function entregaInicial(f, sis) {
+    var v = f.valores || {};
+    var o = { cep: '', rua: '', numero: '', bairro: '', cidade: '', uf: '', lat: '', lng: '' };
+    if (sis && sis.origem) {
+      var p = String(sis.origem.endereco || '').split(',').map(function (x) { return x.trim(); });
+      o.rua = p[0] || ''; o.numero = p[1] || ''; o.bairro = p[2] || '';
+      o.lat = sis.origem.lat; o.lng = sis.origem.lng;
+    } else if (v.enderecoLoja) o.rua = v.enderecoLoja;
+    var cu = cidadeUf(sis && sis.cidade) || cidadeUf(v.cidadeLoja);
+    if (cu) { o.cidade = cu.cidade; o.uf = cu.uf; }
+    var faixas = (sis && sis.faixas || []).map(function (x) { return { ate: x.ate, valor: x.valor, entregador: x.entregador == null ? '' : x.entregador }; });
+    return {
+      origem: o, modelo: faixas.length ? 'distancia' : (v.taxaModelo || 'distancia'), faixas: faixas, cidades: [],
+      bairros: (f.bairros || []).map(function (b) { return { nome: b.nome, cidade: o.cidade, taxa: numOu(b.taxa) }; }),
+      taxaPadrao: '', fixa: '', raioMax: numOu(v.raioMax), pedidoMinimo: numOu(v.pedidoMinimo), gratisAcima: '',
+    };
+  }
+  // mesma conta do bot (entrega/distancia.js, taxaDoLugar): valor, fora e o motivo
+  function taxaDoLugarJs(e, km, nomes) {
+    var raio = Number(e.raioMax) || 0, longe = raio > 0 && km != null && km > raio;
+    if (e.modelo === 'fixa' || e.modelo === 'gratis') return longe ? { fora: true, motivo: 'além do raio de ' + raio + ' km' } : { valor: e.modelo === 'gratis' ? 0 : Number(e.fixa) || 0 };
+    if (e.modelo === 'bairro') {
+      if (longe) return { fora: true, motivo: 'além do raio de ' + raio + ' km' };
+      for (var i = 0; i < nomes.length; i++) {
+        var b = nomes[i] && e.bairros.filter(function (x) { return semAcento(x.nome) === semAcento(nomes[i]); })[0];
+        if (!b) continue;
+        var v = b.taxa === '' || b.taxa == null ? e.taxaPadrao : b.taxa;
+        return v === '' || v == null ? { fora: true, motivo: 'o bairro ' + b.nome + ' está sem taxa' } : { valor: Number(v), bairro: b.nome };
+      }
+      return { fora: true, motivo: nomes.filter(Boolean)[0] ? 'o bairro ' + nomes.filter(Boolean)[0] + ' não está marcado' : 'não deu para saber o bairro' };
+    }
+    var fx = e.faixas.filter(function (x) { return x.ate !== '' && x.valor !== ''; }).slice().sort(function (a, b) { return a.ate - b.ate; });
+    for (var j = 0; j < fx.length; j++) if (km <= Number(fx[j].ate)) return { valor: Number(fx[j].valor) };
+    return { fora: true, motivo: 'passou da última faixa (' + (fx.length ? fx[fx.length - 1].ate + ' km' : 'sem faixas') + ')' };
+  }
+  function carregaLeaflet() {
+    if (window.L) return Promise.resolve(window.L);
+    if (carregaLeaflet.p) return carregaLeaflet.p;
+    carregaLeaflet.p = new Promise(function (ok, erro) {
+      var css = document.createElement('link'); css.rel = 'stylesheet'; css.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css'; document.head.appendChild(css);
+      var s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+      s.onload = function () { ok(window.L); }; s.onerror = function () { carregaLeaflet.p = null; erro(new Error('mapa')); };
+      document.head.appendChild(s);
+    });
+    return carregaLeaflet.p;
+  }
+
+  function pgEntrega(raiz, l) {
+    raiz.innerHTML = ''; var el = document.createElement('div'); el.className = 'pagina'; raiz.appendChild(el);
+    var pode = l.pode.horario, dis = pode ? '' : ' disabled';
+    var salva = l.config.ficha, f = JSON.parse(JSON.stringify(salva || fichaPadrao(l)));
+    f.valores = f.valores || {};
+    var sis = l.padroes && l.padroes.entrega, nova = !f.entrega;
+    var e = f.entrega ? JSON.parse(JSON.stringify(f.entrega)) : entregaInicial(f, sis);
+    e.origem = e.origem || {}; e.faixas = e.faixas || []; e.cidades = e.cidades || []; e.bairros = e.bairros || [];
+    var mapa = null, camadas = null, pinoTeste = null;
+    var BX = { sel: 0, listas: {}, q: '', novo: '' };
+
+    function cidades() {
+      var p = { cidade: String(e.origem.cidade || '').trim(), uf: String(e.origem.uf || '').toUpperCase() };
+      return [p].concat(e.cidades.filter(function (c) { return String(c.cidade || '').trim() && c.uf; }));
+    }
+    function temPonto() { return e.origem.lat !== '' && e.origem.lat != null && e.origem.lng !== '' && e.origem.lng != null && isFinite(e.origem.lat) && isFinite(e.origem.lng); }
+    function problemas() {
+      var p = [];
+      if (!String(e.origem.cidade || '').trim() || !e.origem.uf) p.push('Preencha a cidade e a UF da loja.');
+      if (!temPonto()) p.push('Falta o ponto da loja no mapa: use <b>Achar no mapa</b> ou arraste o pino.');
+      if (e.modelo === 'distancia') {
+        var fx = e.faixas.filter(function (x) { return x.ate !== '' || x.valor !== ''; });
+        if (!fx.length) p.push('Cadastre pelo menos uma faixa de distância.');
+        if (fx.some(function (x) { return x.ate === '' || x.valor === '' || Number(x.ate) <= 0; })) p.push('Toda faixa precisa do km e da taxa (taxa 0 = grátis).');
+        var kms = fx.map(function (x) { return Number(x.ate); });
+        if (kms.some(function (k, i) { return kms.indexOf(k) !== i; })) p.push('Duas faixas com o mesmo km.');
+      }
+      if (e.modelo === 'bairro') {
+        if (!e.bairros.length) p.push('Marque pelo menos um bairro atendido.');
+        var sem = e.bairros.filter(function (b) { return b.taxa === '' || b.taxa == null; });
+        if (sem.length && e.taxaPadrao === '') p.push(sem.length + ' bairro(s) sem taxa (ex.: ' + esc(sem[0].nome) + '): preencha a taxa ou a <b>taxa dos bairros sem valor</b>.');
+      }
+      if (e.modelo === 'fixa' && e.fixa === '') p.push('Preencha o valor da taxa fixa.');
+      return p;
+    }
+
+    function campoOrigem(k, rot, extra) {
+      return '<label class="campo"><span>' + rot + '</span><input type="text" data-eo="' + k + '" value="' + esc(e.origem[k] || '') + '"' + dis + (extra || '') + '></label>';
+    }
+    function selUf(attr, v) {
+      return '<select ' + attr + dis + '><option value="">UF</option>' + UFS.map(function (u) { return '<option' + (u === v ? ' selected' : '') + '>' + u + '</option>'; }).join('') + '</select>';
+    }
+    function num(attr, v, ph, w) { return '<input type="number" min="0" step="0.5" ' + attr + ' value="' + esc(v) + '" placeholder="' + (ph || '') + '"' + dis + ' style="width:' + (w || 120) + 'px">'; }
+
+    el.innerHTML = '<div class="page-head"><div><h1>Entrega</h1><p>' + esc('De onde a ' + l.nome + ' entrega, até onde, quanto cobra e o pedido mínimo.') + '</p></div>' +
+      (pode ? '<button class="btn pri" id="sv-ent">Salvar entrega</button>' : '') + '</div>' +
+      '<div class="aviso">' + (nova
+        ? 'Esta página <b>muda a Izza</b>, mas ainda não foi salva: hoje a taxa sai do sistema da loja, e é isso que já está preenchido abaixo. Confira e salve para passar a valer daqui.'
+        : '<b>Vale na Izza</b>: o que se salva aqui muda a taxa, a área e o pedido mínimo em até 1 minuto. Última edição: ' + esc(quem(l.config.fichaPor)) + ' · ' + esc(dataHora(l.config.fichaEm)) + '.') + '</div>' +
+      '<div id="ent-prob" hidden></div>' +
+      // ponto de partida
+      '<div class="card"><h2>Endereço da loja</h2><p class="desc">De onde sai a entrega. Digite o CEP para preencher o resto e confira o pino no mapa: a distância é medida a partir dele.</p>' +
+      '<div class="ent-end">' +
+      '<label class="campo"><span>CEP</span><span class="linha" style="gap:6px;flex-wrap:nowrap"><input type="text" data-eo="cep" inputmode="numeric" maxlength="9" placeholder="00000-000" value="' + esc(e.origem.cep || '') + '"' + dis + ' style="width:120px">' + (pode ? '<button class="btn sm" id="ent-cep">Buscar</button>' : '') + '</span></label>' +
+      campoOrigem('rua', 'Rua') + campoOrigem('numero', 'Número', ' style="width:90px"') + campoOrigem('bairro', 'Bairro') + campoOrigem('cidade', 'Cidade') +
+      '<label class="campo"><span>UF</span>' + selUf('data-eo="uf"', e.origem.uf) + '</label></div>' +
+      (pode ? '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" id="ent-geo">Achar no mapa</button><span class="muted small" id="ent-coord"></span></div>' : '<div class="muted small" id="ent-coord"></div>') +
+      '<div class="ent-mapa" id="ent-mapa"><div class="vazio">Carregando o mapa…</div></div>' +
+      '<p class="muted small" style="margin-top:6px">Arraste o pino para o ponto exato da porta da loja. Mapa © OpenStreetMap.</p></div>' +
+      // modelo
+      '<div class="card"><h2>Como a taxa é cobrada</h2><div class="ent-modelos">' + MODELOS_ENT.map(function (m) {
+        return '<label class="radio-card' + (e.modelo === m[0] ? ' on' : '') + '"><input type="radio" name="ent-modelo" value="' + m[0] + '"' + (e.modelo === m[0] ? ' checked' : '') + dis + '><span><b>' + m[1] + '</b><small>' + m[2] + '</small></span></label>';
+      }).join('') + '</div><div id="ent-modelo-ed" style="margin-top:16px"></div></div>' +
+      // cidades
+      '<div class="card"><h2>Cidades atendidas</h2><p class="desc">A Izza só procura o endereço do cliente nessas cidades. Entrega em mais de uma (divisa, região metropolitana)? Acrescente aqui.</p><div class="stack" id="ent-cidades"></div>' +
+      (pode ? '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" id="ent-add-cid">+ Cidade</button></div>' : '') + '</div>' +
+      // valores
+      '<div class="card"><h2>Valor do pedido</h2><p class="desc">Valem só para entrega; na retirada não há mínimo nem taxa. Vazio = não tem.</p><div class="linha">' +
+      '<label class="campo"><span>Pedido mínimo para entrega (R$)</span>' + num('data-ev="pedidoMinimo"', e.pedidoMinimo, 'sem mínimo', 160) + '</label>' +
+      '<label class="campo"><span>Entrega grátis a partir de (R$)</span>' + num('data-ev="gratisAcima"', e.gratisAcima, 'nunca', 160) + '</label></div>' +
+      '<p class="muted small">O mínimo conta os itens, sem a taxa. A entrega grátis vale quando os itens somam o valor ou mais; se o cliente tirar item e baixar disso, a taxa volta.</p></div>' +
+      // teste
+      '<div class="card"><h2>Testar um endereço</h2><p class="desc">Veja quanto a Izza cobraria com a configuração da tela (mesmo antes de salvar).</p>' +
+      '<div class="linha" style="gap:8px"><input type="text" id="ent-teste" placeholder="Rua, número, bairro" style="flex:1;min-width:220px"><button class="btn sm" id="ent-testar">Calcular</button></div>' +
+      '<div id="ent-teste-res" style="margin-top:10px"></div>' +
+      '<p class="muted small">O teste localiza o endereço pelo OpenStreetMap; a Izza usa o Google, então o ponto pode variar um pouco.</p></div>';
+
+    function mostraProblemas() {
+      var p = problemas(), box = $('#ent-prob', el);
+      box.hidden = !p.length;
+      box.innerHTML = p.length ? '<div class="aviso err">' + (nova ? 'Para salvar: ' : 'Falta corrigir: ') + '<ul style="margin:6px 0 0 18px">' + p.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul></div>' : '';
+      var c = $('#ent-coord', el); if (c) c.textContent = temPonto() ? 'Ponto: ' + Number(e.origem.lat).toFixed(5) + ', ' + Number(e.origem.lng).toFixed(5) : 'Sem ponto no mapa';
+    }
+
+    // ---- editor do modelo
+    function desenhaModelo() {
+      var box = $('#ent-modelo-ed', el), h = '';
+      var raio = '<label class="campo"><span>Raio máximo (km)</span>' + num('data-ev="raioMax"', e.raioMax, 'sem limite') + '</label>';
+      if (e.modelo === 'distancia') {
+        var ord = e.faixas.slice().sort(function (a, b) { return (a.ate === '' ? 1e9 : a.ate) - (b.ate === '' ? 1e9 : b.ate); });
+        e.faixas = ord;
+        h = '<p class="desc">Cada faixa vai do fim da anterior até o km dela. Passou da última, o endereço está fora da área. Taxa 0 é entrega grátis.</p>' +
+          '<div class="tabela-wrap"><table><thead><tr><th>De</th><th>Até (km)</th><th>Taxa (R$)</th><th title="Quanto a loja paga ao entregador nessa faixa. Só controle da loja: o cliente não vê">Repasse ao entregador (R$)</th><th></th></tr></thead><tbody>' +
+          (e.faixas.length ? e.faixas.map(function (x, i) {
+            var de = i ? e.faixas[i - 1].ate : 0;
+            return '<tr><td class="muted">' + esc(de === '' ? '—' : String(de).replace('.', ',') + ' km') + '</td>' +
+              '<td>' + num('data-ef="' + i + '" data-k="ate"', x.ate, 'km', 90) + '</td>' +
+              '<td>' + num('data-ef="' + i + '" data-k="valor"', x.valor, 'R$', 100) + (x.valor === 0 ? ' <span class="badge acc">grátis</span>' : '') + '</td>' +
+              '<td>' + num('data-ef="' + i + '" data-k="entregador"', x.entregador, 'opcional', 100) + '</td>' +
+              '<td class="fim">' + (pode ? '<button class="btn link perigo" data-rm-fx="' + i + '">Tirar</button>' : '') + '</td></tr>';
+          }).join('') : '<tr><td colspan="5"><div class="vazio">Nenhuma faixa.</div></td></tr>') + '</tbody></table></div>' +
+          (pode ? '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" id="ent-add-fx">+ Faixa</button></div>' : '');
+      } else if (e.modelo === 'bairro') {
+        h = '<div class="linha"><label class="campo"><span>Taxa dos bairros marcados sem valor (R$)</span>' + num('data-ev="taxaPadrao"', e.taxaPadrao, 'R$', 140) + '</label>' + raio + '</div>' +
+          '<p class="desc">Marque onde a loja entrega e a taxa de cada bairro. Bairro fora da lista: a Izza diz que não entrega lá. A lista vem do mapa (OpenStreetMap); faltou algum, acrescente pelo nome.</p><div id="ent-bairros"></div>';
+      } else if (e.modelo === 'fixa') {
+        h = '<div class="linha"><label class="campo"><span>Taxa (R$)</span>' + num('data-ev="fixa"', e.fixa, 'R$') + '</label>' + raio + '</div>' +
+          '<p class="muted small">Com raio, o endereço mais longe que isso fica fora da área; sem raio, a Izza entrega em qualquer endereço das cidades atendidas.</p>';
+      } else {
+        h = '<div class="linha">' + raio + '</div><p class="muted small">Sem taxa. Com raio, o endereço mais longe que isso fica fora da área.</p>';
+      }
+      box.innerHTML = h;
+      if (e.modelo === 'bairro') desenhaBairros();
+      if ($('#ent-add-fx', el)) $('#ent-add-fx', el).onclick = function () {
+        var ult = e.faixas.length ? Number(e.faixas[e.faixas.length - 1].ate) || 0 : 0;
+        e.faixas.push({ ate: ult + 1, valor: '', entregador: '' }); desenhaModelo(); atualiza();
+        var ins = box.querySelectorAll('[data-k=valor]'); if (ins.length) ins[ins.length - 1].focus();
+      };
+      box.querySelectorAll('[data-rm-fx]').forEach(function (b) { b.onclick = function () { e.faixas.splice(+b.getAttribute('data-rm-fx'), 1); desenhaModelo(); atualiza(); }; });
+    }
+
+    // ---- bairros (por cidade atendida)
+    function daCidade(b, c, i) { var bc = semAcento(b.cidade || ''); return bc ? bc === semAcento(c.cidade) : i === 0; }
+    function desenhaBairros() {
+      var box = $('#ent-bairros', el); if (!box) return;
+      var cs = cidades(); if (BX.sel >= cs.length) BX.sel = 0;
+      var c = cs[BX.sel];
+      if (!c.cidade || !c.uf) { box.innerHTML = '<div class="vazio">Preencha a cidade e a UF da loja.</div>'; return; }
+      var ch = semAcento(c.cidade) + '/' + c.uf, LB = BX.listas[ch];
+      if (!LB) {
+        LB = BX.listas[ch] = { nomes: null, erro: null };
+        api('bairros&cidade=' + encodeURIComponent(c.cidade) + '&uf=' + c.uf).then(function (j) { LB.nomes = j.bairros; desenhaBairros(); })
+          .catch(function (er) { LB.erro = er.message; LB.nomes = []; desenhaBairros(); });
+      }
+      var abas = cs.length > 1 ? '<div class="seg" style="margin-bottom:10px">' + cs.map(function (x, i) {
+        var n = e.bairros.filter(function (b) { return daCidade(b, x, i); }).length;
+        return '<button type="button" data-bx-cid="' + i + '" class="' + (i === BX.sel ? 'on' : '') + '">' + esc(x.cidade) + ' (' + n + ')</button>';
+      }).join('') + '</div>' : '';
+      if (!LB.nomes) { box.innerHTML = abas + '<div class="vazio">Buscando os bairros de ' + esc(c.cidade + ' / ' + c.uf) + '…</div>'; ligaAbas(); return; }
+      var meus = e.bairros.filter(function (b) { return daCidade(b, c, BX.sel); });
+      var todos = LB.nomes.slice();
+      meus.forEach(function (b) { if (!todos.some(function (n) { return semAcento(n) === semAcento(b.nome); })) todos.unshift(b.nome); });
+      var q = semAcento(BX.q);
+      var vis = todos.filter(function (n) { return !q || semAcento(n).indexOf(q) >= 0; });
+      var marc = function (n) { return meus.filter(function (b) { return semAcento(b.nome) === semAcento(n); })[0]; };
+      box.innerHTML = abas + (LB.erro ? '<div class="aviso err" style="margin-bottom:10px">' + esc(LB.erro) + ' <button class="btn sm" id="bx-rt">Tentar de novo</button></div>' : '') +
+        '<div class="filtros-frase f3"><input type="search" id="bx-q" placeholder="Buscar bairro de ' + esc(c.cidade) + '…" value="' + esc(BX.q) + '">' +
+        '<span class="muted small">' + meus.length + ' de ' + todos.length + ' marcados</span>' +
+        (pode ? '<span class="linha" style="gap:6px;flex-wrap:nowrap"><button class="btn sm" id="bx-todos">Marcar todos</button><button class="btn sm" id="bx-nenhum">Desmarcar</button></span>' : '<span></span>') + '</div>' +
+        '<div class="bairros-grid">' + (vis.length ? vis.map(function (n) {
+          var m = marc(n);
+          return '<div class="bairro' + (m ? ' on' : '') + '"><label><input type="checkbox" data-bx="' + esc(n) + '"' + (m ? ' checked' : '') + dis + '><span>' + esc(n) + '</span></label>' +
+            (m ? '<input type="number" step="0.5" min="0" data-bx-taxa="' + esc(n) + '" value="' + esc(m.taxa) + '" placeholder="' + (e.taxaPadrao !== '' ? esc(String(e.taxaPadrao)) : 'Taxa R$') + '"' + dis + '>' : '') + '</div>';
+        }).join('') : '<div class="vazio">Nenhum bairro com esse nome.</div>') + '</div>' +
+        (pode ? '<div class="linha" style="gap:8px;margin-top:10px"><input type="text" id="bx-novo" placeholder="Bairro que não está na lista" style="flex:1;min-width:200px"><button class="btn sm" id="bx-add">+ Bairro</button></div>' : '');
+      ligaAbas();
+      $('#bx-q', box).oninput = function () { BX.q = this.value; var p = this.selectionStart; desenhaBairros(); var i = $('#bx-q', el); i.focus(); i.setSelectionRange(p, p); };
+      if ($('#bx-rt', box)) $('#bx-rt', box).onclick = function () { delete BX.listas[ch]; desenhaBairros(); };
+      if (!pode) return;
+      var tira = function (n) { e.bairros = e.bairros.filter(function (b) { return !(daCidade(b, c, BX.sel) && semAcento(b.nome) === semAcento(n)); }); };
+      var poe = function (n) { if (!marc(n)) e.bairros.push({ nome: n, cidade: c.cidade, taxa: '' }); };
+      box.querySelectorAll('[data-bx]').forEach(function (cb) {
+        cb.onchange = function () { var n = cb.getAttribute('data-bx'); if (cb.checked) poe(n); else tira(n); desenhaBairros(); mostraProblemas(); };
+      });
+      box.querySelectorAll('[data-bx-taxa]').forEach(function (inp) {
+        inp.oninput = function () { var m = marc(inp.getAttribute('data-bx-taxa')); if (m) m.taxa = numOu(inp.value); mostraProblemas(); };
+      });
+      $('#bx-todos', box).onclick = function () { LB.nomes.forEach(poe); desenhaBairros(); mostraProblemas(); };
+      $('#bx-nenhum', box).onclick = function () { meus.forEach(function (b) { tira(b.nome); }); desenhaBairros(); mostraProblemas(); };
+      $('#bx-add', box).onclick = function () { var n = $('#bx-novo', box).value.trim(); if (!n) return; poe(n); desenhaBairros(); mostraProblemas(); };
+    }
+    function ligaAbas() {
+      el.querySelectorAll('[data-bx-cid]').forEach(function (b) { b.onclick = function () { BX.sel = +b.getAttribute('data-bx-cid'); BX.q = ''; desenhaBairros(); }; });
+    }
+
+    // ---- cidades extras
+    function desenhaCidades() {
+      var box = $('#ent-cidades', el);
+      var p = '<div class="linha" style="gap:8px;align-items:center"><span class="badge">principal</span><b>' + esc((e.origem.cidade || '—') + (e.origem.uf ? ' / ' + e.origem.uf : '')) + '</b><span class="muted small">(a do endereço da loja)</span></div>';
+      box.innerHTML = p + e.cidades.map(function (c, i) {
+        return '<div class="linha" style="gap:8px;flex-wrap:nowrap"><input type="text" data-ec="' + i + '" data-k="cidade" value="' + esc(c.cidade) + '" placeholder="Cidade"' + dis + ' style="flex:1;min-width:140px">' +
+          selUf('data-ec="' + i + '" data-k="uf"', c.uf) + (pode ? '<button class="btn link perigo" data-rm-cid="' + i + '">Tirar</button>' : '') + '</div>';
+      }).join('');
+      box.querySelectorAll('[data-rm-cid]').forEach(function (b) { b.onclick = function () { e.cidades.splice(+b.getAttribute('data-rm-cid'), 1); desenhaCidades(); if (e.modelo === 'bairro') desenhaBairros(); }; });
+    }
+
+    // ---- mapa
+    function corAcento() { return (getComputedStyle(document.documentElement).getPropertyValue('--accent') || '#c0392b').trim() || '#c0392b'; }
+    function desenhaMapa() {
+      if (!mapa || !window.L) return;
+      camadas.clearLayers();
+      if (!temPonto()) return;
+      var c = [Number(e.origem.lat), Number(e.origem.lng)], cor = corAcento(), maior = 0;
+      var raios = e.modelo === 'distancia'
+        ? e.faixas.filter(function (x) { return Number(x.ate) > 0; }).map(function (x) { return { km: Number(x.ate), rot: x.valor === '' ? '' : brl(x.valor) }; })
+        : (Number(e.raioMax) > 0 ? [{ km: Number(e.raioMax), rot: 'raio' }] : []);
+      raios.sort(function (a, b) { return b.km - a.km; }).forEach(function (r, i) {
+        maior = Math.max(maior, r.km);
+        L.circle(c, { radius: r.km * 1000, color: cor, weight: 1.5, fillColor: cor, fillOpacity: 0.05 + i * 0.03 }).bindTooltip('até ' + String(r.km).replace('.', ',') + ' km' + (r.rot ? ' · ' + r.rot : '')).addTo(camadas);
+      });
+      var pino = L.marker(c, { draggable: pode, title: 'Loja' }).addTo(camadas);
+      pino.on('dragend', function () { var p = pino.getLatLng(); e.origem.lat = +p.lat.toFixed(6); e.origem.lng = +p.lng.toFixed(6); atualiza(); });
+      if (pinoTeste) pinoTeste.addTo(camadas);
+      if (!desenhaMapa.ajustado) { desenhaMapa.ajustado = true; if (maior) mapa.fitBounds(L.latLng(c).toBounds(maior * 2000), { padding: [10, 10] }); else mapa.setView(c, 14); }
+    }
+    function iniciaMapa() {
+      carregaLeaflet().then(function (L) {
+        var box = $('#ent-mapa', el); if (!box) return;
+        box.innerHTML = '';
+        var c = temPonto() ? [Number(e.origem.lat), Number(e.origem.lng)] : [-14.2, -51.9];
+        mapa = L.map(box, { scrollWheelZoom: false }).setView(c, temPonto() ? 13 : 4);
+        // o OpenStreetMap exige o Referer, e o painel manda no-referrer: o mapa pede so a origem
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, referrerPolicy: 'strict-origin-when-cross-origin', attribution: '© OpenStreetMap' }).addTo(mapa);
+        camadas = L.layerGroup().addTo(mapa);
+        if (pode) mapa.on('click', function (ev) { if (temPonto()) return; e.origem.lat = +ev.latlng.lat.toFixed(6); e.origem.lng = +ev.latlng.lng.toFixed(6); desenhaMapa.ajustado = false; atualiza(); });
+        desenhaMapa();
+      }).catch(function () { var box = $('#ent-mapa', el); if (box) box.innerHTML = '<div class="vazio">O mapa não carregou. O resto da página funciona; tente recarregar.</div>'; });
+    }
+    var tMapa;
+    function atualiza() { mostraProblemas(); clearTimeout(tMapa); tMapa = setTimeout(desenhaMapa, 250); }
+
+    desenhaModelo(); desenhaCidades(); mostraProblemas(); iniciaMapa();
+
+    // ---- teste de endereco (funciona tambem so para ver)
+    $('#ent-testar', el).onclick = function () {
+      var q = $('#ent-teste', el).value.trim(), res = $('#ent-teste-res', el);
+      if (!q) return;
+      if (!temPonto()) { res.innerHTML = '<div class="aviso err">Coloque primeiro o ponto da loja no mapa.</div>'; return; }
+      var cs = cidades(), alvo = cs[0];
+      res.innerHTML = '<span class="muted">Procurando…</span>';
+      // tenta em cada cidade atendida; fica com o primeiro ponto que cair numa delas
+      var tenta = function (i) {
+        if (i >= cs.length) return Promise.resolve(null);
+        return api('geocode&q=' + encodeURIComponent(q + ', ' + cs[i].cidade + ' - ' + cs[i].uf)).then(function (j) {
+          var r = j.resultados.filter(function (x) { return semAcento(x.cidade) === semAcento(cs[i].cidade); })[0];
+          return r || tenta(i + 1);
+        }).catch(function () { return tenta(i + 1); });
+      };
+      tenta(0).then(function (r) {
+        if (!r) { res.innerHTML = '<div class="aviso err">Não achei esse endereço em ' + esc(cs.map(function (c) { return c.cidade; }).join(', ')) + '.</div>'; return; }
+        var km = Math.round(kmEntre({ lat: Number(e.origem.lat), lng: Number(e.origem.lng) }, r) * 100) / 100;
+        var bai = q.split(',').slice(2).join(',').trim();
+        var t = taxaDoLugarJs(e, km, [r.bairro, bai]);
+        var gr = Number(e.gratisAcima) > 0 && !t.fora && t.valor > 0 ? ' · grátis a partir de ' + brl(e.gratisAcima) + ' em itens' : '';
+        res.innerHTML = '<div class="aviso' + (t.fora ? ' err' : '') + '"><b>' + (t.fora ? 'Fora da área' : t.valor === 0 ? 'Entrega grátis' : 'Taxa ' + brl(t.valor)) + '</b>' +
+          (t.fora ? ' (' + esc(t.motivo) + ')' : gr) + '<br><span class="small">' + esc(r.nome) + ' · ' + String(km).replace('.', ',') + ' km da loja' + (r.bairro ? ' · bairro ' + esc(r.bairro) : '') + '</span></div>';
+        if (window.L && mapa) {
+          pinoTeste = L.circleMarker([r.lat, r.lng], { radius: 7, color: t.fora ? '#b42318' : '#027a48', fillOpacity: 0.9 }).bindTooltip(String(km).replace('.', ',') + ' km');
+          desenhaMapa(); mapa.fitBounds(L.latLngBounds([[Number(e.origem.lat), Number(e.origem.lng)], [r.lat, r.lng]]), { padding: [40, 40], maxZoom: 15 });
+        }
+      });
+    };
+    $('#ent-teste', el).addEventListener('keydown', function (ev) { if (ev.key === 'Enter') $('#ent-testar', el).click(); });
+
+    if (!pode) return;
+    el.addEventListener('input', function (ev) {
+      var t = ev.target, v = t.value;
+      if (t.hasAttribute('data-eo')) {
+        var k = t.getAttribute('data-eo');
+        e.origem[k] = k === 'uf' ? v.toUpperCase() : v;
+        if (k === 'cidade' || k === 'uf') { desenhaCidades(); if (e.modelo === 'bairro') desenhaBairros(); }
+        mostraProblemas();
+      } else if (t.hasAttribute('data-ef')) {
+        e.faixas[+t.getAttribute('data-ef')][t.getAttribute('data-k')] = numOu(v); atualiza();
+      } else if (t.hasAttribute('data-ev')) {
+        e[t.getAttribute('data-ev')] = numOu(v); atualiza();
+      } else if (t.hasAttribute('data-ec')) {
+        e.cidades[+t.getAttribute('data-ec')][t.getAttribute('data-k')] = t.getAttribute('data-k') === 'uf' ? v.toUpperCase() : v;
+        if (e.modelo === 'bairro' && t.tagName === 'SELECT') desenhaBairros();
+      }
+    });
+    // ordem das faixas e o "De" se acertam ao sair do campo de km
+    el.addEventListener('change', function (ev) {
+      var t = ev.target;
+      if (t.name === 'ent-modelo') {
+        e.modelo = t.value;
+        el.querySelectorAll('.ent-modelos .radio-card').forEach(function (rc) { rc.classList.toggle('on', rc.querySelector('input').checked); });
+        desenhaModelo(); atualiza();
+      }
+      if (t.getAttribute('data-k') === 'ate' && t.hasAttribute('data-ef')) desenhaModelo();
+      if (t.getAttribute('data-ec') != null && t.getAttribute('data-k') === 'cidade' && e.modelo === 'bairro') desenhaBairros();
+    });
+    $('#ent-add-cid', el).onclick = function () { e.cidades.push({ cidade: '', uf: e.origem.uf || '' }); desenhaCidades(); var ins = el.querySelectorAll('[data-ec][data-k=cidade]'); if (ins.length) ins[ins.length - 1].focus(); };
+    $('#ent-cep', el).onclick = function () {
+      var cep = String(e.origem.cep || '').replace(/\D/g, '');
+      if (cep.length !== 8) return toast('CEP com 8 números.', true);
+      fetch('https://viacep.com.br/ws/' + cep + '/json/').then(function (r) { return r.json(); }).then(function (j) {
+        if (j.erro) return toast('CEP não encontrado.', true);
+        e.origem.cep = cep.slice(0, 5) + '-' + cep.slice(5);
+        e.origem.rua = j.logradouro || e.origem.rua; e.origem.bairro = j.bairro || e.origem.bairro;
+        e.origem.cidade = j.localidade || e.origem.cidade; e.origem.uf = j.uf || e.origem.uf;
+        ['cep', 'rua', 'bairro', 'cidade', 'uf'].forEach(function (k) { var i = el.querySelector('[data-eo="' + k + '"]'); if (i) i.value = e.origem[k]; });
+        desenhaCidades(); if (e.modelo === 'bairro') desenhaBairros(); mostraProblemas();
+        var n = el.querySelector('[data-eo="numero"]'); if (n && !n.value) n.focus();
+      }).catch(function () { toast('Não consegui consultar o CEP agora.', true); });
+    };
+    $('#ent-geo', el).onclick = function () {
+      var o = e.origem, q = [[o.rua, o.numero].filter(Boolean).join(', '), o.bairro, o.cidade + (o.uf ? ' - ' + o.uf : '')].filter(function (x) { return String(x || '').trim(); }).join(', ');
+      if (!o.rua || !o.cidade) return toast('Preencha pelo menos a rua e a cidade.', true);
+      var b = this; b.disabled = true; b.textContent = 'Procurando…';
+      api('geocode&q=' + encodeURIComponent(q)).then(function (j) {
+        var r = j.resultados.filter(function (x) { return semAcento(x.cidade) === semAcento(o.cidade); })[0] || j.resultados[0];
+        o.lat = +r.lat.toFixed(6); o.lng = +r.lng.toFixed(6);
+        if (!o.cep && r.cep) { o.cep = r.cep.replace(/^(\d{5})(\d{3})$/, '$1-$2'); var i = el.querySelector('[data-eo="cep"]'); if (i) i.value = o.cep; }
+        desenhaMapa.ajustado = false; atualiza(); clearTimeout(tMapa); desenhaMapa();
+        toast('Achei: ' + r.nome.split(',').slice(0, 3).join(',') + '. Confira o pino.');
+      }).catch(function (er) { toast(er.message, true); }).then(function () { b.disabled = false; b.textContent = 'Achar no mapa'; });
+    };
+    $('#sv-ent', el).onclick = function () {
+      var p = problemas();
+      if (p.length) { mostraProblemas(); window.scrollTo(0, 0); return toast('Falta corrigir a entrega antes de salvar.', true); }
+      var o = e.origem;
+      var limpa = {
+        origem: { cep: String(o.cep || '').trim(), rua: String(o.rua || '').trim(), numero: String(o.numero || '').trim(), bairro: String(o.bairro || '').trim(), cidade: String(o.cidade || '').trim(), uf: String(o.uf || '').toUpperCase(), lat: Number(o.lat), lng: Number(o.lng) },
+        modelo: e.modelo,
+        faixas: e.faixas.filter(function (x) { return x.ate !== '' && x.valor !== ''; }).sort(function (a, b) { return a.ate - b.ate; }),
+        cidades: e.cidades.filter(function (c) { return String(c.cidade || '').trim() && c.uf; }).map(function (c) { return { cidade: c.cidade.trim(), uf: c.uf }; }),
+        bairros: e.bairros, taxaPadrao: e.taxaPadrao, fixa: e.fixa, raioMax: e.raioMax, pedidoMinimo: e.pedidoMinimo, gratisAcima: e.gratisAcima,
+      };
+      f.entrega = limpa;
+      // a ficha antiga (referencia) acompanha
+      f.valores.enderecoLoja = [[o.rua, o.numero].filter(Boolean).join(', '), o.bairro].filter(Boolean).join(' - ');
+      f.valores.cidadeLoja = o.cidade + ' / ' + o.uf;
+      f.valores.taxaModelo = e.modelo; f.valores.pedidoMinimo = e.pedidoMinimo; f.valores.raioMax = e.raioMax;
+      f.bairros = e.bairros.map(function (b) { return { nome: b.nome, taxa: b.taxa }; });
+      salvar('ficha', { loja: l.id, ficha: f }, 'Entrega salva. Vale na Izza em até 1 minuto.');
+    };
+  }
+
   // Uma ficha so (config.ficha), mostrada em duas paginas: "Cardápio" (ex-"Tamanhos e sabores"; tamanhos,
   // regra de preco e o cardapio editavel) e "Particularidades" (o resto). Cada uma salva a ficha inteira.
   // Em que pagina fica cada bloco da ficha. Todas salvam a ficha inteira.
   var FICHA_PAG = { 'Atendimento': 'regras', 'Entrega': 'entrega', 'Regra de preço': 'tamanhos', 'Borda, adicionais e bebida': 'tamanhos', 'Pizza': 'tamanhos', 'Pagamento': 'pagamento' };
   var FICHA_CAB = {
     tamanhos: ['Cardápio', function (n) { return 'Tamanhos, sabores, preços, bordas, bebidas, promoções e o código de integração de cada item da ' + n + '.'; }],
-    entrega: ['Entrega', function (n) { return 'De onde a ' + n + ' entrega, até onde e quanto cobra.'; }],
     pagamento: ['Pagamento', function (n) { return 'Como o cliente da ' + n + ' pode pagar.'; }],
     regras: ['Regras da loja', function (n) { return 'Como a ' + n + ' atende e as regras próprias da casa.'; }],
   };
@@ -797,9 +1193,6 @@
       (modo === 'pagamento' ? pagHtml() : '<div class="' + (grupos.length > 1 ? 'grid-2' : '') + '">' + grupos.map(function (g) {
         return '<div class="card"><h2>' + esc(g.titulo) + '</h2><div class="stack" style="margin-top:12px">' + g.itens.map(itemFicha).join('') + '</div></div>';
       }).join('') + '</div>') +
-      // bairros (so com taxa por bairro)
-      (modo !== 'entrega' ? '' : '<div class="card" id="card-bairros"' + (f.valores.taxaModelo === 'bairro' ? '' : ' hidden') + '><h2>Bairros atendidos</h2>' +
-      '<p class="desc">Entrega por bairro: marque onde a loja entrega e, se quiser, a taxa de cada bairro. A lista vem do mapa (OpenStreetMap) pela cidade do bloco Entrega.</p><div id="bairros-ed"></div></div>') +
       // outras
       (modo !== 'regras' ? '' : '<div class="card"><h2>Outras regras</h2><p class="desc">O que não coube nas outras páginas: regra da casa, exceção, combinado com o cliente.</p><div class="stack" id="outras"></div>' +
       (pode ? '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" id="add-outra">+ Particularidade</button></div>' : '') + '</div>') +
@@ -1054,65 +1447,7 @@
       };
     }
 
-    // ---- bairros atendidos (taxa por bairro)
-    var BAI = { chave: null, nomes: null, erro: null, carregando: false, q: '' };
-    function marcado(nome) { return f.bairros.filter(function (b) { return b.nome === nome; })[0]; }
-    function listaBairros() {
-      var lst = $('#bai-lista', el); if (!lst) return;
-      var todos = (BAI.nomes || []).slice();
-      f.bairros.forEach(function (b) { if (todos.indexOf(b.nome) < 0) todos.unshift(b.nome); });
-      var q = norm(BAI.q).normalize('NFD').replace(/[̀-ͯ]/g, '');
-      var vis = todos.filter(function (n) { return !q || norm(n).normalize('NFD').replace(/[̀-ͯ]/g, '').indexOf(q) >= 0; });
-      lst.innerHTML = vis.length ? vis.map(function (n) {
-        var m = marcado(n);
-        return '<div class="bairro' + (m ? ' on' : '') + '"><label><input type="checkbox" data-bai="' + esc(n) + '"' + (m ? ' checked' : '') + dis + '><span>' + esc(n) + '</span></label>' +
-          (m ? '<input type="number" step="0.5" min="0" data-bai-taxa="' + esc(n) + '" value="' + esc(m.taxa == null ? '' : m.taxa) + '" placeholder="Taxa R$"' + dis + '>' : '') + '</div>';
-      }).join('') : '<div class="vazio">Nenhum bairro com esse nome.</div>';
-      $('#bai-cont', el).textContent = f.bairros.length + ' de ' + todos.length + ' marcados';
-      if (!pode) return;
-      lst.querySelectorAll('[data-bai]').forEach(function (cb) {
-        cb.onchange = function () {
-          var n = cb.getAttribute('data-bai');
-          if (cb.checked) { if (!marcado(n)) f.bairros.push({ nome: n, taxa: '' }); }
-          else f.bairros = f.bairros.filter(function (b) { return b.nome !== n; });
-          listaBairros();
-        };
-      });
-      lst.querySelectorAll('[data-bai-taxa]').forEach(function (inp) {
-        inp.oninput = function () { var m = marcado(inp.getAttribute('data-bai-taxa')); if (m) m.taxa = inp.value === '' ? '' : +inp.value; };
-      });
-    }
-    function desenhaBairros() {
-      var box = $('#bairros-ed', el); if (!box) return;
-      var cu = cidadeUf(f.valores.cidadeLoja);
-      if (!cu) { box.innerHTML = '<div class="vazio">Preencha <b>Cidade / UF</b> no bloco Entrega (ex.: Porto Alegre / RS).</div>'; return; }
-      var ch = norm(cu.cidade) + '/' + cu.uf;
-      if (BAI.chave !== ch) {
-        BAI.chave = ch; BAI.nomes = null; BAI.erro = null; BAI.carregando = true;
-        api('bairros&cidade=' + encodeURIComponent(cu.cidade) + '&uf=' + cu.uf).then(function (j) {
-          if (BAI.chave !== ch) return; BAI.nomes = j.bairros; BAI.carregando = false; desenhaBairros();
-        }).catch(function (e) {
-          if (BAI.chave !== ch) return; BAI.erro = e.message; BAI.carregando = false; desenhaBairros();
-        });
-      }
-      if (BAI.carregando) { box.innerHTML = '<div class="vazio">Buscando os bairros de ' + esc(cu.cidade + ' / ' + cu.uf) + '…</div>'; return; }
-      box.innerHTML = (BAI.erro ? '<div class="aviso err" style="margin-bottom:12px">' + esc(BAI.erro) + ' <button class="btn sm" id="bai-rt">Tentar de novo</button></div>' : '') +
-        '<div class="filtros-frase f3">' +
-        '<input type="search" id="bai-q" placeholder="Buscar bairro de ' + esc(cu.cidade) + '…" value="' + esc(BAI.q) + '">' +
-        '<span class="muted small" id="bai-cont"></span>' +
-        (pode ? '<span class="linha" style="gap:6px;flex-wrap:nowrap"><button class="btn sm" id="bai-todos">Marcar todos</button><button class="btn sm" id="bai-nenhum">Desmarcar</button></span>' : '<span></span>') +
-        '</div><div class="bairros-grid" id="bai-lista"></div>';
-      $('#bai-q', el).oninput = function () { BAI.q = this.value; listaBairros(); };
-      if ($('#bai-rt', el)) $('#bai-rt', el).onclick = function () { BAI.chave = null; desenhaBairros(); };
-      if (pode) {
-        $('#bai-todos', el).onclick = function () { (BAI.nomes || []).forEach(function (n) { if (!marcado(n)) f.bairros.push({ nome: n, taxa: '' }); }); listaBairros(); };
-        $('#bai-nenhum', el).onclick = function () { f.bairros = []; listaBairros(); };
-      }
-      listaBairros();
-    }
-
     desenhaTam(); desenhaOutras(); desenhaCardapio();
-    if (f.valores.taxaModelo === 'bairro') desenhaBairros();
     if (!pode) return;
     if ($('#rl-card', el)) {
       var armado = 0;
@@ -1145,10 +1480,8 @@
       if (t.type === 'radio' && t.name.indexOf('r-') === 0) {
         f.valores[t.name.slice(2)] = t.value;
         (t.closest('.stack') || el).querySelectorAll('.radio-card').forEach(function (rc) { rc.classList.toggle('on', rc.querySelector('input').checked); });
-        if (t.name === 'r-taxaModelo' && $('#card-bairros', el)) { $('#card-bairros', el).hidden = t.value !== 'bairro'; if (t.value === 'bairro') desenhaBairros(); }
         if (t.name === 'r-regraPreco') desenhaCardapio();
       }
-      if (t.getAttribute('data-in') === 'cidadeLoja' && $('#card-bairros', el) && !$('#card-bairros', el).hidden) desenhaBairros();
     });
     el.querySelectorAll('[data-sn]').forEach(function (seg) {
       seg.addEventListener('click', function (ev) {
