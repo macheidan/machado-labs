@@ -685,7 +685,7 @@
   // Em que pagina fica cada bloco da ficha. Todas salvam a ficha inteira.
   var FICHA_PAG = { 'Atendimento': 'regras', 'Entrega': 'entrega', 'Regra de preço': 'tamanhos', 'Borda, adicionais e bebida': 'tamanhos', 'Pizza': 'tamanhos', 'Pagamento': 'pagamento' };
   var FICHA_CAB = {
-    tamanhos: ['Cardápio', function (n) { return 'Tamanhos, sabores, preços, bordas, bebidas, promoções e o código de integração de cada item na Saipos da ' + n + '.'; }],
+    tamanhos: ['Cardápio', function (n) { return 'Tamanhos, sabores, preços, bordas, bebidas, promoções e o código de integração de cada item da ' + n + '.'; }],
     entrega: ['Entrega', function (n) { return 'De onde a ' + n + ' entrega, até onde e quanto cobra.'; }],
     pagamento: ['Pagamento', function (n) { return 'Como o cliente da ' + n + ' pode pagar.'; }],
     regras: ['Regras da loja', function (n) { return 'Como a ' + n + ' atende e as regras próprias da casa.'; }],
@@ -791,7 +791,7 @@
       (salva ? 'Última edição: ' + esc(quem(l.config.fichaPor)) + ' · ' + esc(dataHora(l.config.fichaEm)) + '.' : 'Veio pré-preenchida com o que a Izza faz hoje (código e cardápio do sistema). Confira e salve.') + '</div>' +
       // tamanhos
       (!tam ? '' : '<div class="card"><h2>Tamanhos</h2><p class="desc">Quais tamanhos a loja vende e quantos sabores e fatias tem cada um.</p>' +
-      '<div class="tabela-wrap"><table><thead><tr><th>Vende</th><th>Tamanho</th><th>cm</th><th>Preço base</th><th>Sabores (mín–máx)</th><th>Fatias</th><th class="hide-m">Serve</th><th title="Código de integração do tamanho na Saipos: é com ele que a Izza lança a pizza">Código Saipos</th><th></th></tr></thead><tbody id="tb-tam"></tbody></table></div>' +
+      '<div class="tabela-wrap"><table><thead><tr><th>Vende</th><th>Tamanho</th><th>cm</th><th>Preço base</th><th>Sabores (mín–máx)</th><th>Fatias</th><th class="hide-m">Serve</th><th title="Código do tamanho no sistema que recebe o pedido (Configurações > Integrações; hoje a Saipos): é com ele que a Izza lança a pizza">Código Integração</th><th></th></tr></thead><tbody id="tb-tam"></tbody></table></div>' +
       (pode ? '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" id="add-tam">+ Tamanho</button></div>' : '') + '</div>') +
       // checklist
       (modo === 'pagamento' ? pagHtml() : '<div class="' + (grupos.length > 1 ? 'grid-2' : '') + '">' + grupos.map(function (g) {
@@ -804,7 +804,7 @@
       (modo !== 'regras' ? '' : '<div class="card"><h2>Outras regras</h2><p class="desc">O que não coube nas outras páginas: regra da casa, exceção, combinado com o cliente.</p><div class="stack" id="outras"></div>' +
       (pode ? '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" id="add-outra">+ Particularidade</button></div>' : '') + '</div>') +
       // cardapio do sistema
-      (!tam ? '' : '<div class="card"><div class="cab-card"><div><h2>Sabores e preços</h2><p class="desc">Começa igual ao cardápio do sistema da loja (planilha CARDAPIO). Sabores, bordas, bebidas e combos daqui ficam na ficha (ainda não mudam o bot). <b>As promoções mudam o bot</b>: o que a Izza oferece, responde e cobra. <b>O código Saipos também</b>: é o código de integração de cada item na Saipos, com o qual a Izza lança o pedido; vem do de/para do sistema e, mudado aqui, vale a partir do próximo pedido (a linha ganha <span class="badge warn">código mudou</span>). ' +
+      (!tam ? '' : '<div class="card"><div class="cab-card"><div><h2>Sabores e preços</h2><p class="desc">Começa igual ao cardápio do sistema da loja (planilha CARDAPIO). Sabores, bordas, bebidas e combos daqui ficam na ficha (ainda não mudam o bot). <b>As promoções mudam o bot</b>: o que a Izza oferece, responde e cobra. <b>O código de integração também</b>: é o código de cada item no sistema que recebe o pedido (Integrações; hoje a Saipos), com o qual a Izza lança o pedido. Trocou o sistema, troque os códigos. Vem do de/para do sistema e, mudado aqui, vale a partir do próximo pedido (a linha ganha <span class="badge warn">código mudou</span>). ' +
       'Linha diferente do sistema ganha a marca <span class="badge warn">mudou</span>; linha que o sistema não tem, <span class="badge acc">novo</span>.</p></div>' +
       (pode && c ? '<button class="btn sm" id="rl-card">Recarregar do sistema</button>' : '') + '</div>' +
       (f.cardapio ? '<div id="cardapio-ed"></div>' : '<div class="vazio">O bot desta loja ainda não mandou o cardápio.</div>') + '</div>');
@@ -820,7 +820,7 @@
       var v = proprio != null ? proprio : sis;
       var mudou = proprio != null && !mesmoCod(proprio, sis);
       return '<input type="text" class="cod-saipos' + (mudou ? ' mudou' : '') + '"' + attrs + dis + ' value="' + esc(v || '') + '" placeholder="sem código" style="width:130px"' +
-        (mudou ? ' title="No de/para da Saipos: ' + esc(sis || 'sem código') + '"' : '') + '>';
+        (mudou ? ' title="No de/para do sistema: ' + esc(sis || 'sem código') + '"' : '') + '>';
     }
     function guardaCod(obj, val, sis) {
       if (!String(val || '').trim() || mesmoCod(val, sis)) delete obj.codigo; else obj.codigo = String(val).trim();
@@ -868,8 +868,8 @@
     function status(lista, x) {
       var h = x.ativo === false ? '<span class="badge">não vende</span> ' : '';
       var sisCod = codSis(lista, x);
-      if (x.codigo != null && !mesmoCod(x.codigo, sisCod)) h += '<span class="badge warn" title="No de/para da Saipos: ' + esc(sisCod || 'sem código') + '">código mudou</span> ';
-      else if (x.codigo == null && !sisCod && x.ativo !== false && String(x.nome || '').trim()) h += '<span class="badge" title="Sem o código de integração a Saipos não reconhece o item">sem código</span> ';
+      if (x.codigo != null && !mesmoCod(x.codigo, sisCod)) h += '<span class="badge warn" title="No de/para do sistema: ' + esc(sisCod || 'sem código') + '">código mudou</span> ';
+      else if (x.codigo == null && !sisCod && x.ativo !== false && String(x.nome || '').trim()) h += '<span class="badge" title="Sem o código de integração o sistema que recebe o pedido não reconhece o item">sem código</span> ';
       if (!SYS || !String(x.nome || '').trim()) return h;
       var s = doSistema(lista, x);
       if (!s) return h + '<span class="badge acc">novo</span>';
@@ -910,7 +910,7 @@
           return '<tr><td>' + cel(lista, i, 'ativo', x.ativo !== false, 'chk') + '</td><td>' + cel(lista, i, 'nome', x.nome, 'txt', 180) + '</td><td>' + cel(lista, i, 'codigo', x.codigo, 'cod') + '</td><td>' + cel(lista, i, 'preco', x.preco, 'num') + '</td>' + fimLinha(lista, i, x);
         });
       };
-      var TH_COD = '<th title="Código de integração do item na Saipos (o mesmo da planilha do cardápio). É com ele que a Izza lança o pedido; mudado aqui, vale no próximo pedido">Código Saipos</th>';
+      var TH_COD = '<th title="Código do item no sistema que recebe o pedido (Configurações > Integrações; hoje a Saipos, o mesmo da planilha do cardápio). É com ele que a Izza lança o pedido; mudado aqui, vale no próximo pedido. Trocou o sistema, troque os códigos">Código Integração</th>';
       var inteira = function (x, t) { return t.preco === '' || t.preco == null ? '' : brl((+t.preco || 0) + (+x.adicional || 0)); };
       var abas = ['Sabores (' + ca.sabores.length + ')', 'Bordas e adicionais', 'Bebidas e combos', 'Promoções'];
       box.innerHTML = '<div class="tabs">' + abas.map(function (n, i) { return '<button type="button" data-ab="' + i + '" class="' + (i === abaCard ? 'on' : '') + '">' + n + '</button>'; }).join('') + '</div>' +
@@ -1001,7 +1001,7 @@
           '<label class="promo-campo">Tamanho <select' + a('tamanho') + '><option value="">—</option>' + tams.map(function (t) { return '<option value="' + esc(t.id) + '"' + (p.tamanho === t.id ? ' selected' : '') + '>' + esc(t.nome) + '</option>'; }).join('') + '</select></label>' +
           '<label class="promo-campo">A partir de <input type="date"' + a('desde') + ' value="' + esc(p.desde || '') + '"></label>' +
           (p.pizzas > 1 ? '<span class="badge">combo de ' + p.pizzas + ' pizzas</span>' : '') +
-          '<span class="promo-campo small muted" title="Código do item da promoção na Saipos. É um por tipo (balcão, tele, duas pizzas) e os sabores da promoção têm códigos próprios: muda pela planilha do cardápio. Promoção sem código vai para a Saipos como pizza comum, no preço da promoção.">Código Saipos: <b>' + esc(((promoDoSistema(p) || {}).codigo) || p.codigo || '—') + '</b></span>' + '</div>' +
+          '<span class="promo-campo small muted" title="Código do item da promoção no sistema que recebe o pedido (hoje a Saipos). É um por tipo (balcão, tele, duas pizzas) e os sabores da promoção têm códigos próprios: muda pela planilha do cardápio. Promoção sem código vai como pizza comum, no preço da promoção.">Código Integração: <b>' + esc(((promoDoSistema(p) || {}).codigo) || p.codigo || '—') + '</b></span>' + '</div>' +
         '<details class="promo-sab"' + (escolhidos.length ? ' open' : '') + '><summary>Sabores que o cliente escolhe (' + escolhidos.length + ')' + (escolhidos.length ? ' · até <input type="number" min="1" max="4"' + a('maxSabores') + ' value="' + esc(p.maxSabores || 2) + '" style="width:56px"> por pizza' : ' · nenhum: pizza fixa, sem escolha') + '</summary>' +
           '<div class="promo-chips">' + sab.map(function (n) { return '<label class="chip-chk"><input type="checkbox" data-pr="' + i + '" data-ps="' + esc(n) + '"' + (escolhidos.indexOf(n) >= 0 ? ' checked' : '') + dis + '>' + esc(n) + '</label>'; }).join('') + '</div></details>' +
         '<textarea rows="2"' + a('desc') + ' maxlength="600" placeholder="O que a Izza explica ao cliente: o que vem, regras, borda, entrega ou retirada">' + esc(p.desc || '') + '</textarea>' +
