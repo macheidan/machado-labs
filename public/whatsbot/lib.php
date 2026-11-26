@@ -26,12 +26,21 @@ const AUTOMACAO_HASH = '25d2ed489158e5c6913f07ce4a4cee94e315c511f018fdc2f2212dbe
 // pedido_excluir: so pedido de teste da bancada (id wa-undefined-*), checado no api.php (25/11/2026,
 // Fábio: "Se foram testes delete do painel").
 const AUTOMACAO_ACOES = array('estado', 'pausa', 'numero', 'numero_del', 'config', 'loja', 'loja_token', 'pedido_excluir');
+// Ficha, frases, instrucoes e ferramentas pela automacao: SO na loja de teste (id comecando com
+// "teste"), que e a que o bot de desenvolvimento le (26/11/2026). Nas lojas de verdade quem muda
+// e a equipe, logada.
+const AUTOMACAO_SO_TESTE = array('ficha', 'ficha_desfazer', 'frase', 'instrucao', 'ferramenta');
 function usuario_automacao($db, $acao, $corpo) {
     $k = isset($_SERVER['HTTP_X_WB_AUTOMACAO']) ? (string)$_SERVER['HTTP_X_WB_AUTOMACAO'] : '';
     if ($k === '' || !hash_equals(AUTOMACAO_HASH, hash('sha256', $k))) return null;
-    if (!in_array($acao, AUTOMACAO_ACOES, true)) return null;
+    $soTeste = in_array($acao, AUTOMACAO_SO_TESTE, true);
+    if (!$soTeste && !in_array($acao, AUTOMACAO_ACOES, true)) return null;
     $teste = ($acao === 'loja' || $acao === 'loja_token');
     if ($teste && strpos(strtolower(isset($corpo['id']) ? (string)$corpo['id'] : ''), 'teste') !== 0) return null;
+    if ($soTeste) {
+        if (strpos(strtolower(isset($corpo['loja']) ? (string)$corpo['loja'] : ''), 'teste') !== 0) return null;
+        $teste = true; // instrucoes e frases pedem o administrador geral
+    }
     $lojas = array();
     foreach ($db['lojas'] as $id => $l) $lojas[$id] = 'dono';
     return array('email' => 'claude@automacao', 'nome' => 'Claude (automação)', 'superadmin' => $teste, 'lojas' => $lojas, 'automacao' => true);
@@ -173,17 +182,18 @@ function nivel($u, $loja) { $p = papel_em($u, $loja); return $p ? PAPEIS[$p] : 0
 
 // operador: pausa e numeros. gerente: + regras, horario e tempos. dono: + escopo e equipe.
 function pode($u, $loja, $o_que) {
-    if ($o_que === 'regras' || $o_que === 'instrucoes') return false;
+    // Instrucoes, ferramentas e frases fixas (o prompt da Izza): so o administrador geral.
+    // De 22 a 26/11/2026 eram so visualizacao; religadas em 26/11 (Fabio: "tudo que for
+    // alterado no painel deve valer na hora para o bot"). O bot le por PROMPT_DO_PAINEL.
+    if ($o_que === 'instrucoes') return !empty($u['superadmin']);
     if ($u['superadmin']) return true;
     $n = nivel($u, $loja);
     switch ($o_que) {
         case 'ver': case 'pausar': case 'numeros': return $n >= 1;
         case 'horario': case 'clientes':            return $n >= 2;
+        case 'regras':                              return $n >= 2;
         case 'escopo': case 'equipe':               return $n >= 3;
         case 'integracoes':                         return $n >= 3;
-        // Regras, instrucoes e ferramentas: SO VISUALIZACAO (Fabio, 22/11/2026: "nao quero
-        // que mude o bot"). Nem o superadmin edita; o bot tambem ignora esses campos.
-        case 'regras': case 'instrucoes':           return false;
     }
     return false;
 }

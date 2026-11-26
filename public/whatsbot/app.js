@@ -96,8 +96,15 @@
   function seloAba(ef) {
     return ef && SELOS[ef] ? '<span class="selo-aba s-' + ef + '" title="' + esc(SELOS[ef][1]) + '" aria-label="' + esc(SELOS[ef][0]) + '"></span>' : '';
   }
+  // Ficha viva (26/11/2026): o bot que manda versao 2 no sinal de vida le a ficha inteira, as
+  // instrucoes, as ferramentas e as frases do painel. Para ele, tudo que se salva "vale na hora".
+  // Bot antigo (ou loja sem bot) continua com os selos de antes.
+  function fichaViva(l) { return !!(l && l.status && l.status.versao >= 2 && l.status.fichaViva !== false); }
+  function promptVivo(l) { return !!(l && l.status && l.status.versao >= 2 && l.status.promptDoPainel !== false); }
+  // selo de um bloco que so valia como registro: some quando a ficha e viva
+  function seloFicha(l, ef) { return fichaViva(l) ? '' : seloCard(ef || 'reg'); }
   function paginas() {
-    var l = loja(), po = l ? l.pode : {}, adm = S.dados.eu.superadmin;
+    var l = loja(), po = l ? l.pode : {}, adm = S.dados.eu.superadmin, viva = fichaViva(l);
     // Menu de 24/11/2026 (Fábio): Pedidos (o kanban, pagina inicial), Alertas, Historico, Numeros.
     // Sem "Visao geral": o status do bot fica no topo. Clientes mora em Configuracoes, e o operador
     // nao ve Configuracoes.
@@ -111,10 +118,10 @@
       // regras da casa, impressao; Clientes e consulta e fica por ultimo. `ef` e o selo da aba:
       // vale = muda a Izza/impressao na hora, parte = so alguns blocos valem, reg = so registro.
       { g: 'Loja', id: 'funcionamento', ic: '◷', nome: 'Horários', ve: po.horario, ef: 'vale' },
-      { g: 'Loja', id: 'cardapio', ic: '◔', nome: 'Cardápio', ve: po.horario, ef: 'parte' },
+      { g: 'Loja', id: 'cardapio', ic: '◔', nome: 'Cardápio', ve: po.horario, ef: viva ? 'vale' : 'parte' },
       { g: 'Loja', id: 'entrega', ic: '⛟', nome: 'Entrega', ve: po.horario, ef: 'vale' },
-      { g: 'Loja', id: 'pagamento', ic: '$', nome: 'Pagamento', ve: po.horario, ef: 'reg' },
-      { g: 'Loja', id: 'regrasloja', ic: '☑', nome: 'Regras da loja', ve: po.horario, ef: 'reg' },
+      { g: 'Loja', id: 'pagamento', ic: '$', nome: 'Pagamento', ve: po.horario, ef: viva ? 'vale' : 'reg' },
+      { g: 'Loja', id: 'regrasloja', ic: '☑', nome: 'Regras da loja', ve: po.horario, ef: viva ? 'vale' : 'reg' },
       { g: 'Loja', id: 'impressao', ic: '⎙', nome: 'Impressão', ve: po.horario, ef: 'vale' },
       { g: 'Loja', id: 'clientes', ic: '☻', nome: 'Clientes', ve: po.clientes && gerente },
       { g: 'Conta', id: 'integracoes', ic: '⇄', nome: 'Integrações', ve: po.integracoes },
@@ -176,7 +183,7 @@
         '<div class="sub-abas" role="tablist">' + abas.map(function (p) {
           return '<button type="button" role="tab" class="' + (p.id === S.pagina ? 'on' : '') + '" aria-selected="' + (p.id === S.pagina) + '" data-p="' + p.id + '">' + esc(p.nome) + seloAba(p.ef) + '</button>';
         }).join('') + '</div>' +
-        (temSelo ? '<div class="sub-legenda">' + ['vale', 'parte', 'reg'].map(function (k) { return '<span>' + seloAba(k) + SELOS[k][0] + '</span>'; }).join('') + '</div>' : '') +
+        (temSelo ? '<div class="sub-legenda">' + ['vale', 'parte', 'reg'].filter(function (k) { return abas.some(function (p) { return p.ef === k; }); }).map(function (k) { return '<span>' + seloAba(k) + SELOS[k][0] + '</span>'; }).join('') + '</div>' : '') +
         '</div><div class="sub-conteudo" id="sub-conteudo"></div>';
       c.querySelectorAll('.sub-abas [data-p]').forEach(function (b) { b.onclick = function () { ir(b.getAttribute('data-p')); }; });
       var on = c.querySelector('.sub-abas .on'); if (on && on.scrollIntoView) try { on.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) {}
@@ -453,13 +460,13 @@
         (ph ? '<div class="acoes"><button class="btn pri" id="sv-hor">Salvar horário</button></div>' : '') +
       '</div></div>' +
       // agendamento veio de "Regras da loja" (26/11/2026): quem procura pedido agendado procura em Horários
-      '<div class="card"><div class="cab-card"><div><h2>Pedido agendado ' + seloCard('reg') + '</h2><p class="desc">Fica na ficha da loja junto com Pagamento e Regras da loja.</p></div></div>' +
+      '<div class="card"><div class="cab-card"><div><h2>Pedido agendado ' + seloFicha(l) + '</h2><p class="desc">' + (fichaViva(l) ? 'Com “Não”, a Izza não aceita pedido para horário marcado e, com a loja fechada, não fecha pedido: informa o horário e convida a voltar.' : 'Fica na ficha da loja junto com Pagamento e Regras da loja.') + '</p></div></div>' +
         '<div class="stack" style="margin-top:12px">' + htmlSn(ITEM_FICHA.agendamento, fh.valores.agendamento, dis(ph)) + '</div>' +
         (ph ? '<div class="acoes"><button class="btn pri" id="sv-agd">Salvar</button></div>' : '') +
       '</div>';
     ligaSn(el, fh.valores);
     var sv3 = $('#sv-agd', el);
-    if (sv3) sv3.onclick = function () { salvar('ficha', { loja: l.id, ficha: fh }, 'Ficha salva.'); };
+    if (sv3) sv3.onclick = function () { salvar('ficha', { loja: l.id, ficha: fh }, fichaViva(l) ? 'Salvo. Vale na Izza em até 1 minuto.' : 'Ficha salva.'); };
 
     $('#e-de', el).value = e.de; $('#e-ate', el).value = e.ate; $('#e-fora', el).value = c.foraDaLista;
     var mostra = function () {
@@ -527,7 +534,8 @@
   // etapa, montado das constantes do codigo, entao acompanha o que esta no ar. Somente visualizacao.
   function pgFrases(el, l) {
     var cat = l.padroes && l.padroes.frases;
-    var head = '<div class="page-head"><div><h1>Frases fixas</h1><p>O que a Izza responde em cada etapa, com as variações. Somente visualização.</p></div></div>';
+    var ed = l.config.frases || {}, pode = l.pode.instrucoes && promptVivo(l);
+    var head = '<div class="page-head"><div><h1>Frases fixas</h1><p>O que a Izza responde em cada etapa, com as variações.' + (pode ? ' Clique numa frase para reescrever.' : ' Somente visualização.') + '</p></div></div>';
     if (!cat || !cat.frases || !cat.frases.length) { el.innerHTML = head + '<div class="card vazio">O bot desta loja ainda não mandou as frases. Elas chegam quando ele reinicia com a versão nova.</div>'; return; }
     var pag = document.createElement('div'); pag.className = 'pagina'; el.innerHTML = ''; el.appendChild(pag);
     var etapas = cat.etapas || [];
@@ -536,7 +544,8 @@
     var TIPO = { fixa: ['Fixa', 'ok', 'Sai exatamente assim, escrita pelo código.'], prompt: ['Orientada', 'warn', 'O modelo é instruído a usar esta frase; pode variar um pouco.'], dinamica: ['Montada', 'acc', 'Texto fixo com partes que vêm do sistema (nome, preço, cardápio).'] };
     var nT = function (t) { return cat.frases.filter(function (f) { return f.tipo === t; }).length; };
     pag.innerHTML = head +
-      '<div class="aviso">Partes entre chaves, como <code>{nome}</code> ou <code>{preco}</code>, são preenchidas na hora com o dado do cliente ou do sistema da loja. ' +
+      '<div class="aviso">' + (pode ? '<b>Vale na Izza</b>: a frase reescrita sai no lugar da original em até 1 minuto. A troca é pelo texto exato: frase <span class="badge warn">Orientada</span> o modelo pode dizer com outras palavras, e aí sai como ele disser. Menu com opções numeradas: mantenha os números e a ordem. ' : '') +
+      'Partes entre chaves, como <code>{nome}</code> ou <code>{preco}</code>, são preenchidas na hora com o dado do cliente ou do sistema da loja' + (pode ? ' e precisam continuar na frase' : '') + '. ' +
       (l.padroes.recebidoEm ? 'Atualizado pelo bot em ' + esc(dataHora(l.padroes.recebidoEm)) + '.' : '') + '</div>' +
       '<div class="card"><div class="filtros-frase">' +
       '<input id="fq" type="search" placeholder="Buscar frase…">' +
@@ -556,13 +565,50 @@
         html += '<div class="card"><h2><span class="muted">' + (i + 1) + '.</span> ' + esc(e) + ' <span class="badge">' + fs.length + '</span></h2><div class="stack">' +
           fs.map(function (f) {
             var t = TIPO[f.tipo] || TIPO.fixa;
+            var balao = function (texto, id, cls) {
+              var e2 = id && ed[id];
+              return '<div class="balao' + (cls || '') + (pode && id ? ' editavel' : '') + (e2 ? ' da-loja' : '') + '"' + (id ? ' data-fr="' + esc(id) + '"' : '') + (pode && id ? ' title="Clique para reescrever"' : '') + '>' +
+                esc(e2 ? e2.texto : texto) + (e2 ? ' <span class="badge acc">loja</span>' : '') + '</div>';
+            };
             return '<div class="frase"><div class="frase-top"><span class="muted small">' + esc(f.quando || '') + '</span><span class="badge ' + t[1] + '">' + t[0] + '</span></div>' +
-              '<div class="balao">' + esc(f.texto) + '</div>' +
-              ((f.variacoes || []).length ? '<div class="muted small" style="margin:8px 0 4px">Variações</div>' + f.variacoes.map(function (v) { return '<div class="balao var">' + esc(v) + '</div>'; }).join('') : '') +
+              balao(f.texto, f.id) +
+              ((f.variacoes || []).length ? '<div class="muted small" style="margin:8px 0 4px">Variações</div>' + f.variacoes.map(function (v, vi) { return balao(v, (f.idsVariacoes || [])[vi], ' var'); }).join('') : '') +
               '</div>';
           }).join('') + '</div></div>';
       });
       $('#flist', pag).innerHTML = html || '<div class="card vazio">Nenhuma frase com esse filtro.</div>';
+      if (pode) pag.querySelectorAll('#flist [data-fr]').forEach(function (b) { b.onclick = function () { editaFrase(b.getAttribute('data-fr')); }; });
+    }
+    // padrao de uma frase (ou variacao) pelo id que o bot mandou
+    function padraoDe(id) {
+      for (var i = 0; i < cat.frases.length; i++) {
+        var f = cat.frases[i];
+        if (f.id === id) return f.texto;
+        var j = (f.idsVariacoes || []).indexOf(id);
+        if (j >= 0) return f.variacoes[j];
+      }
+      return null;
+    }
+    function editaFrase(id) {
+      var padrao = padraoDe(id), e2 = ed[id];
+      if (padrao == null) return;
+      var chaves = padrao.match(/\{[^{}\n]{1,60}\}/g) || [];
+      modal('<h3>Reescrever a frase</h3>' +
+        '<label class="campo"><span>Como a Izza vai dizer</span><textarea id="fr-txt" rows="' + Math.min(14, Math.max(3, padrao.split('\n').length + 1)) + '" maxlength="1500">' + esc(e2 ? e2.texto : padrao) + '</textarea></label>' +
+        (chaves.length ? '<p class="muted small">Mantenha na frase: ' + chaves.map(function (c2) { return '<code>' + esc(c2) + '</code>'; }).join(' ') + '</p>' : '') +
+        '<details' + (e2 ? ' open' : '') + '><summary class="muted small">Frase do código (padrão)</summary><div class="muted small" style="white-space:pre-wrap;margin-top:6px">' + esc(padrao) + '</div></details>' +
+        (e2 ? '<p class="muted small">Versão da loja · ' + esc(quem(e2.por)) + ' · ' + esc(dataHora(e2.em)) + '</p>' : '') +
+        '<div class="acoes"><button class="btn" data-fecha>Fechar</button>' +
+        (e2 ? '<button class="btn" id="fr-volta">Voltar ao padrão</button>' : '') +
+        '<button class="btn pri" id="fr-ok">Salvar</button></div>', function (m) {
+          $('#fr-ok', m).onclick = function () {
+            var t = $('#fr-txt', m).value;
+            var falta = chaves.filter(function (c2) { return t.indexOf(c2) < 0; });
+            if (falta.length) return toast('Falta na frase: ' + falta.join(' '), true);
+            salvar('frase', { loja: l.id, id: id, texto: t }, 'Salvo. Vale na Izza em até 1 minuto.').then(fecharModal);
+          };
+          if ($('#fr-volta', m)) $('#fr-volta', m).onclick = function () { salvar('frase', { loja: l.id, id: id, texto: null }, 'De volta à frase do código.').then(fecharModal); };
+        });
     }
     $('#fq', pag).addEventListener('input', function () { filtro.q = this.value; desenha(); });
     $('#fe', pag).addEventListener('change', function () { filtro.etapa = this.value; desenha(); });
@@ -603,17 +649,18 @@
       { id: 'grandeMeio', rot: 'Grande meio a meio tem preço próprio (adicional × 1,5)', t: 'sn', p: 'sim' },
       { id: 'superQuatro', rot: 'Super com 3 sabores cobra os 4 espaços', t: 'sn', p: 'sim' },
       { id: 'doceSalgado', rot: 'Permite meio a meio doce + salgado', t: 'sn', p: '' },
-      { id: 'sobPedido', rot: 'Tem sabores feitos só sob pedido', t: 'sn', p: 'cardapio:sobPedido' },
     ] },
     { titulo: 'Borda, adicionais e bebida', itens: [
       { id: 'borda', rot: 'Tem borda recheada', t: 'sn', p: 'cardapio:bordas' },
       { id: 'ofereceBorda', rot: 'Oferece borda ou bebida uma vez no pedido', t: 'sn', p: 'sim' },
       { id: 'adicionalSoPedido', rot: 'Adicional (ex.: mussarela em dobro) só se o cliente pedir', t: 'sn', p: 'sim' },
       { id: 'cortesiaSuper', rot: 'Super ganha refrigerante 2L de cortesia', t: 'sn', p: 'sim' },
-      { id: 'cortesiaQual', rot: 'Qual cortesia', t: 'txt', p: 'Fruki 2L ou Fruki Zero 2L (Coca na Super é cobrada)' },
+      // a bebida da cortesia (Fruki 2L, normal ou zero) esta no codigo da Izza: aqui so liga e desliga
+      { id: 'cortesiaQual', rot: 'Qual cortesia (fixo: a Izza só opera esta)', t: 'fixo', p: 'Fruki 2L ou Fruki Zero 2L (Coca na Super é cobrada)' },
     ] },
     { titulo: 'Pizza', itens: [
       { id: 'fatiada', rot: 'Fatiada', t: 'radio', op: [['sim', 'Vem fatiada'], ['sePedir', 'Não vem; fatia se pedir'], ['nao', 'Não fatia']], p: 'sePedir' },
+      { id: 'linkCardapio', rot: 'Link do cardápio que a Izza manda', t: 'txt', p: 'loja:link' },
     ] },
     { titulo: 'Pagamento', itens: [
       { id: 'dinheiro', rot: 'Aceita dinheiro', t: 'sn', p: 'sim' },
@@ -655,7 +702,8 @@
     { id: 'vr', nome: 'VR', sig: 'VR', tipo: 'ref', pos: [-96, 0] },
     { id: 'pixmaquina', nome: 'Pix na Máquina', sig: 'PIX', tipo: 'pix', on: 1 },
   ];
-  var CAT_PAG = [['deb', 'Débito'], ['cred', 'Crédito'], ['din', 'Dinheiro'], ['pix', 'Pix'], ['ref', 'Vale-refeição'], ['outro', 'Outras']];
+  // "Outras" saiu da escolha em 26/11/2026: a Izza so registra pagamento de uma destas categorias
+  var CAT_PAG = [['deb', 'Débito'], ['cred', 'Crédito'], ['din', 'Dinheiro'], ['pix', 'Pix'], ['ref', 'Vale-refeição'], ['outro', 'Outras (a Izza não aceita)']];
   function pagamentoPadrao(v) {
     var fo = {};
     FORMAS_PAG.forEach(function (x) { if (x.on) fo[x.id] = true; });
@@ -663,6 +711,8 @@
     return { formas: fo, outras: [] };
   }
   var PIX_LOJA = { dame: 'pix@damepizza.com.br', lov: 'pix@lovpizza.com.br' };
+  // link do cardapio que a Izza manda hoje (persona.js do whatsbot)
+  var LINK_LOJA = { dame: 'damepizza.com.br/cardapio', lov: 'lovpizza.com.br/cardapio' };
   // mesmo endereco que a Izza informa (src/roteiro/textos.js do whatsbot)
   var END_LOJA = { dame: 'Rua Carazinho, 443 - Petrópolis', lov: 'Av. Anita Garibaldi, 1593 - Boa Vista' };
   function copiaCardapio(c) {
@@ -696,6 +746,7 @@
         else if (p === 'cardapio:sobPedido') p = c ? (c.sabores.some(function (s) { return s.sobPedido; }) ? 'sim' : 'nao') : '';
         else if (p === 'cardapio:bordas') p = c ? (c.bordas.length ? 'sim' : 'nao') : '';
         else if (p === 'loja:pix') p = PIX_LOJA[l.id] || '';
+        else if (p === 'loja:link') p = LINK_LOJA[l.id] || '';
         else if (p === 'loja:endereco') p = END_LOJA[l.id] || '';
         else if (p === 'loja:cidade') p = END_LOJA[l.id] ? 'Porto Alegre / RS' : '';
         v[it.id] = p;
@@ -717,6 +768,8 @@
     var f = JSON.parse(JSON.stringify(l.config.ficha || fichaPadrao(l))), pad = fichaPadrao(l);
     f.valores = f.valores || {};
     Object.keys(pad.valores).forEach(function (k) { if (f.valores[k] === undefined) f.valores[k] = pad.valores[k]; });
+    // formas de pagamento so entram na ficha pela pagina Pagamento (com a ficha viva elas mudam a Izza)
+    if (!(l.config.ficha && l.config.ficha.pagamento)) delete f.pagamento;
     return f;
   }
   function htmlSn(it, v, dis) {
@@ -856,8 +909,10 @@
         : '<b>Vale na Izza</b>: o que se salva aqui muda a taxa, a área e o pedido mínimo em até 1 minuto. Última edição: ' + esc(quem(l.config.fichaPor)) + ' · ' + esc(dataHora(l.config.fichaEm)) + '.') + '</div>' +
       '<div id="ent-prob" hidden></div>' +
       // entrega e retirada vieram de "Regras da loja" (26/11/2026); salvam junto com a entrega
-      '<div class="card"><h2>Entrega e retirada ' + seloCard('reg') + '</h2><p class="desc">O que a loja oferece. Fica na ficha da loja e salva com o botão <b>Salvar entrega</b>.</p>' +
-        '<div class="stack" style="margin-top:12px">' + htmlSn(ITEM_FICHA.entrega, f.valores.entrega, dis) + htmlSn(ITEM_FICHA.retirada, f.valores.retirada, dis) + '</div></div>' +
+      '<div class="card"><h2>Entrega e retirada ' + seloFicha(l) + '</h2><p class="desc">O que a loja oferece' + (fichaViva(l) ? ': com “Não”, a Izza recusa aquela modalidade e nem pergunta “entrega ou retirada?”.' : '. Fica na ficha da loja.') + ' Salva com o botão <b>Salvar entrega</b>.</p>' +
+        '<div class="stack" style="margin-top:12px">' + htmlSn(ITEM_FICHA.entrega, f.valores.entrega, dis) + htmlSn(ITEM_FICHA.retirada, f.valores.retirada, dis) +
+        htmlSn(ITEM_FICHA.taxaAnuncia, f.valores.taxaAnuncia, dis) + '</div>' +
+        '<p class="muted small">Sem anunciar, a taxa só aparece no resumo do pedido ou quando o cliente pergunta.</p></div>' +
       // ponto de partida
       '<div class="card"><h2>Endereço da loja</h2><p class="desc">De onde sai a entrega. Digite o CEP para preencher o resto e confira o pino no mapa: a distância é medida a partir dele.</p>' +
       '<div class="ent-end">' +
@@ -1148,7 +1203,7 @@
     regras: ['Regras da loja', function (n) { return 'Como a ' + n + ' atende e as regras próprias da casa.'; }],
   };
   function pgFicha(el, l, modo) {
-    var tam = modo === 'tamanhos';
+    var tam = modo === 'tamanhos', viva = fichaViva(l);
     // conteiner proprio: os ouvintes de evento morrem junto quando a pagina troca
     var raiz = el; raiz.innerHTML = ''; el = document.createElement('div'); el.className = 'pagina'; raiz.appendChild(el);
     var salva = l.config.ficha, f = JSON.parse(JSON.stringify(salva || fichaPadrao(l))), pode = l.pode.horario;
@@ -1175,6 +1230,7 @@
       var v = f.valores[it.id] == null ? '' : f.valores[it.id];
       if (it.t === 'sn') return '<div class="item-ficha"><span>' + esc(it.rot) + '</span><div class="seg" data-sn="' + it.id + '">' +
         SIM_NAO.map(function (o) { return '<button type="button" data-v="' + o[0] + '" class="' + (v === o[0] ? 'on' : '') + '"' + dis + '>' + o[1] + '</button>'; }).join('') + '</div></div>';
+      if (it.t === 'fixo') return '<div class="campo"><span>' + esc(it.rot) + '</span><div class="muted small">' + esc(it.p) + '</div></div>';
       if (it.t === 'radio') return '<div class="campo"><span>' + esc(it.rot) + '</span><div class="stack">' + it.op.map(function (o) {
         return '<label class="radio-card' + (v === o[0] ? ' on' : '') + '" style="padding:8px 12px"><input type="radio" name="r-' + it.id + '" value="' + o[0] + '"' + (v === o[0] ? ' checked' : '') + dis + '><span><b>' + esc(o[1]) + '</b></span></label>';
       }).join('') + '</div></div>';
@@ -1193,10 +1249,10 @@
           return '<label class="fp-radio"><input type="radio" name="r-cpfNota" value="' + o[0] + '"' + (v.cpfNota === o[0] ? ' checked' : '') + dis + '>' + esc(o[1]) + '</label>';
         }).join('') + '</div>' +
         '<h3 class="fp-sec">Cartão de crédito na entrega</h3><label class="fp-radio"><input type="checkbox" data-cb="cartao"' + (v.cartao === 'sim' ? ' checked' : '') + dis + '>Oferecer pagamento com cartão de crédito na entrega</label>' +
-        '<h3 class="fp-sec">Desconto para pagamento em dinheiro</h3><div class="fp-desc">Clientes que pagarem com dinheiro ganham <span class="fp-pct"><input type="number" min="0" max="100" step="1" data-in="descontoDinheiro" value="' + esc(v.descontoDinheiro == null ? '' : v.descontoDinheiro) + '" placeholder="0"' + dis + '><span>%</span></span> de desconto</div>' +
+        '<p class="muted small" style="margin-top:14px">A Izza aceita as formas marcadas (dinheiro, crédito, débito, Banrisul, vale e Pix na maquininha) e recusa as desmarcadas. Desconto para pagamento em dinheiro ela ainda não aplica: o total do pedido é sempre o do cardápio.</p>' +
         '</div>' +
         '<div class="grid-2">' +
-          '<div class="card"><h2>Pix antecipado</h2><div class="stack" style="margin-top:12px">' + itens(['pix', 'pixChave', 'pixHumano']) + '</div></div>' +
+          '<div class="card"><h2>Pix antecipado</h2><div class="stack" style="margin-top:12px">' + itens(['pix', 'pixChave']) + '<p class="muted small">O comprovante é sempre conferido por uma pessoa da loja: a Izza nunca confirma que o dinheiro entrou.</p></div></div>' +
           '<div class="card"><h2>Na conversa</h2><p class="desc">O que a atendente virtual pergunta na hora de fechar.</p><div class="stack" style="margin-top:12px">' + itens(['trocoPergunta', 'cartaoBandeira']) + '</div></div>' +
         '</div>';
     }
@@ -1244,28 +1300,35 @@
     var cab = FICHA_CAB[modo] || FICHA_CAB.regras;
     el.innerHTML = '<div class="page-head"><div><h1>' + cab[0] + '</h1><p>' + esc(cab[1](l.nome)) + '</p></div>' +
       (pode ? '<button class="btn pri" id="sv-ficha">Salvar ficha</button>' : '') + '</div>' +
-      '<div class="aviso">' + (tam
-        ? 'Nesta página <b>só as promoções e os códigos de integração mudam a Izza</b> (em até 1 minuto); o resto é ficha de referência. Cada bloco tem o selo. '
-        : 'Ficha de referência: o que se marca aqui fica registrado no painel e <b>ainda não muda o bot</b>. ') +
-      (salva ? 'Última edição: ' + esc(quem(l.config.fichaPor)) + ' · ' + esc(dataHora(l.config.fichaEm)) + '.' : 'Veio pré-preenchida com o que a Izza faz hoje (código e cardápio do sistema). Confira e salve.') + '</div>' +
+      '<div class="aviso">' + (viva
+        ? (tam
+          ? '<b>Vale na Izza</b>: tamanho, sabor, preço, borda, bebida, promoção e regra de preço salvos aqui mudam o atendimento em até 1 minuto. Linha que você não mexer continua seguindo o cardápio do sistema (planilha). '
+          : '<b>Vale na Izza</b>: o que se salva aqui muda o atendimento em até 1 minuto. ')
+        : (tam
+          ? 'Nesta página <b>só as promoções e os códigos de integração mudam a Izza</b> (em até 1 minuto); o resto é ficha de referência. Cada bloco tem o selo. '
+          : 'Ficha de referência: o que se marca aqui fica registrado no painel e <b>ainda não muda o bot</b>. ')) +
+      (salva ? 'Última edição: ' + esc(quem(l.config.fichaPor)) + ' · ' + esc(dataHora(l.config.fichaEm)) + '.' : 'Veio pré-preenchida com o que a Izza faz hoje (código e cardápio do sistema). Confira e salve.') +
+      (pode && l.fichaAnterior ? ' <button class="btn link" id="ficha-desfaz">Desfazer a última alteração (' + esc(dataHora(l.fichaAnterior.em)) + ')</button>' : '') + '</div>' +
       // atalhos do Cardápio (pagina comprida, 26/11/2026)
       (!tam ? '' : '<div class="ancoras" role="navigation" aria-label="Partes do cardápio">' +
         [['c-tam', 'Tamanhos'], ['c-regras', 'Regras de preço e adicionais'], ['c-sabores', 'Sabores e preços']].map(function (a) {
           return '<button type="button" class="chip" data-ancora="' + a[0] + '">' + a[1] + '</button>';
         }).join('') + '</div>') +
       // tamanhos
-      (!tam ? '' : '<div class="card" id="c-tam"><h2>Tamanhos ' + seloCard('parte') + '</h2><p class="desc">Quais tamanhos a loja vende e quantos sabores e fatias tem cada um. Só o <b>código de integração</b> vale na Izza.</p>' +
+      (!tam ? '' : '<div class="card" id="c-tam"><h2>Tamanhos ' + seloFicha(l, 'parte') + '</h2><p class="desc">Quais tamanhos a loja vende e quantos sabores e fatias tem cada um.' + (viva ? ' “Tirar” um tamanho do sistema só desmarca “Vende”.' : ' Só o <b>código de integração</b> vale na Izza.') + '</p>' +
       '<div class="tabela-wrap"><table><thead><tr><th>Vende</th><th>Tamanho</th><th>cm</th><th>Preço base</th><th>Sabores (mín–máx)</th><th>Fatias</th><th class="hide-m">Serve</th><th title="Código do tamanho no sistema que recebe o pedido (Configurações > Integrações; hoje a Saipos): é com ele que a Izza lança a pizza">Código Integração</th><th></th></tr></thead><tbody id="tb-tam"></tbody></table></div>' +
       (pode ? '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" id="add-tam">+ Tamanho</button></div>' : '') + '</div>') +
       // checklist
       (modo === 'pagamento' ? pagHtml() : '<div' + (tam ? ' id="c-regras"' : '') + ' class="' + (grupos.length > 1 ? 'grid-2' : '') + '">' + grupos.map(function (g) {
-        return '<div class="card"><h2>' + esc(g.titulo) + (tam ? ' ' + seloCard('reg') : '') + '</h2><div class="stack" style="margin-top:12px">' + g.itens.map(itemFicha).join('') + '</div></div>';
+        return '<div class="card"><h2>' + esc(g.titulo) + (tam ? ' ' + seloFicha(l) : '') + '</h2><div class="stack" style="margin-top:12px">' + g.itens.map(itemFicha).join('') + '</div></div>';
       }).join('') + '</div>') +
       // outras
-      (modo !== 'regras' ? '' : '<div class="card"><h2>Outras regras</h2><p class="desc">O que não coube nas outras páginas: regra da casa, exceção, combinado com o cliente.</p><div class="stack" id="outras"></div>' +
+      (modo !== 'regras' ? '' : '<div class="card"><h2>Outras regras</h2><p class="desc">O que não coube nas outras páginas: regra da casa, exceção, combinado com o cliente.' + (viva ? ' Cada regra marcada entra nas instruções da Izza (até 300 caracteres cada, 1.500 no total): escreva curto e direto, como uma ordem.' : '') + '</p><div class="stack" id="outras"></div>' +
       (pode ? '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" id="add-outra">+ Particularidade</button></div>' : '') + '</div>') +
       // cardapio do sistema
-      (!tam ? '' : '<div class="card" id="c-sabores"><div class="cab-card"><div><h2>Sabores e preços ' + seloCard('parte') + '</h2><p class="desc">Começa igual ao cardápio do sistema da loja (planilha CARDAPIO). Sabores, bordas, bebidas e combos daqui ficam na ficha (ainda não mudam o bot). <b>As promoções mudam o bot</b>: o que a Izza oferece, responde e cobra. <b>O código de integração também</b>: é o código de cada item no sistema que recebe o pedido (Integrações; hoje a Saipos), com o qual a Izza lança o pedido. Trocou o sistema, troque os códigos. Vem do de/para do sistema e, mudado aqui, vale a partir do próximo pedido (a linha ganha <span class="badge warn">código mudou</span>). ' +
+      (!tam ? '' : '<div class="card" id="c-sabores"><div class="cab-card"><div><h2>Sabores e preços ' + seloFicha(l, 'parte') + '</h2><p class="desc">' + (viva
+        ? 'Começa igual ao cardápio do sistema da loja (planilha CARDAPIO) e <b>tudo aqui vale na Izza</b>: o que ela oferece, responde e cobra. Item novo precisa do <b>código de integração</b> (o código dele no sistema que recebe o pedido; hoje a Saipos), senão o sistema recusa o pedido e acende o alerta. '
+        : 'Começa igual ao cardápio do sistema da loja (planilha CARDAPIO). Sabores, bordas, bebidas e combos daqui ficam na ficha (ainda não mudam o bot). <b>As promoções mudam o bot</b>: o que a Izza oferece, responde e cobra. <b>O código de integração também</b>: é o código de cada item no sistema que recebe o pedido (Integrações; hoje a Saipos), com o qual a Izza lança o pedido. Trocou o sistema, troque os códigos. Vem do de/para do sistema e, mudado aqui, vale a partir do próximo pedido (a linha ganha <span class="badge warn">código mudou</span>). ') +
       'Linha diferente do sistema ganha a marca <span class="badge warn">mudou</span>; linha que o sistema não tem, <span class="badge acc">novo</span>.</p></div>' +
       (pode && c ? '<button class="btn sm" id="rl-card">Recarregar do sistema</button>' : '') + '</div>' +
       (f.cardapio ? '<div id="cardapio-ed"></div>' : '<div class="vazio">O bot desta loja ainda não mandou o cardápio.</div>') + '</div>');
@@ -1299,7 +1362,13 @@
           '<td>' + campoCod(t.codigo, codTam(t.id), ' data-t="' + i + '" data-k="codigo"') + '</td>' +
           '<td class="fim">' + (pode ? '<button class="btn link perigo" data-rm-t="' + i + '">Tirar</button>' : '') + '</td></tr>';
       }).join('') : '<tr><td colspan="9"><div class="vazio">Nenhum tamanho.</div></td></tr>';
-      el.querySelectorAll('[data-rm-t]').forEach(function (b) { b.onclick = function () { f.tamanhos.splice(+b.getAttribute('data-rm-t'), 1); desenhaTam(); desenhaCardapio(); }; });
+      el.querySelectorAll('[data-rm-t]').forEach(function (b) { b.onclick = function () {
+        var i = +b.getAttribute('data-rm-t'), t = f.tamanhos[i];
+        // tamanho do sistema nao se apaga (voltaria na proxima leitura): fica desmarcado em "Vende"
+        if (t && pad.tamanhos.some(function (s2) { return s2.id === t.id; })) { t.ativo = false; toast('Tamanho do sistema: desmarquei “Vende”.'); }
+        else f.tamanhos.splice(i, 1);
+        desenhaTam(); desenhaCardapio();
+      }; });
     }
     function desenhaOutras() {
       if (!$('#outras', el)) return;
@@ -1409,7 +1478,12 @@
         });
       });
       box.querySelectorAll('[data-rm-c]').forEach(function (b) {
-        b.onclick = function () { var p = b.getAttribute('data-rm-c').split(':'); f.cardapio[p[0]].splice(+p[1], 1); desenhaCardapio(); };
+        b.onclick = function () {
+          var p = b.getAttribute('data-rm-c').split(':'), x = f.cardapio[p[0]][+p[1]];
+          // item do sistema apagado aqui nao volta na proxima leitura do sistema
+          if (x && doSistema(p[0], x)) { var fo = f.cardapio.fora || (f.cardapio.fora = {}); (fo[p[0]] = fo[p[0]] || []).push(x.nome); }
+          f.cardapio[p[0]].splice(+p[1], 1); desenhaCardapio();
+        };
       });
       box.querySelectorAll('[data-add]').forEach(function (b) {
         b.onclick = function () {
@@ -1515,7 +1589,60 @@
       };
     }
 
+    // ---- o que a loja mexeu x o que segue o sistema (26/11/2026)
+    // Cada linha salva leva `st`: 'igual' (segue o sistema), 'mudou' (vale o que esta aqui) ou
+    // 'novo'. Ao abrir, a linha 'igual' e atualizada com o sistema de agora e o que o sistema
+    // ganhou depois entra no fim; o que a loja apagou fica em cardapio.fora e nao volta.
+    function atualizaDoSistema() {
+      var sysT = {}; pad.tamanhos.forEach(function (t) { sysT[t.id] = t; });
+      f.tamanhos = f.tamanhos.filter(function (t) { return !(t.st === 'igual' && !sysT[t.id]); });
+      f.tamanhos.forEach(function (t) {
+        var s2 = sysT[t.id];
+        if (t.st === 'igual' && s2) ['nome', 'cm', 'preco', 'min', 'max'].forEach(function (k) { t[k] = s2[k]; });
+      });
+      pad.tamanhos.forEach(function (s2) { if (!f.tamanhos.some(function (t) { return t.id === s2.id; })) f.tamanhos.push(JSON.parse(JSON.stringify(s2))); });
+      if (!SYS || !f.cardapio) return;
+      var fora = f.cardapio.fora || {};
+      Object.keys(ROT_LISTA).forEach(function (lista) {
+        var apag = (fora[lista] || []).map(norm);
+        var xs = (f.cardapio[lista] || []).filter(function (x) { return !(x.st === 'igual' && !doSistema(lista, x)); });
+        xs.forEach(function (x) {
+          if (x.st !== 'igual') return;
+          var s2 = doSistema(lista, x), cod = x.codigo;
+          Object.keys(s2).forEach(function (k) { x[k] = JSON.parse(JSON.stringify(s2[k])); });
+          if (cod != null) x.codigo = cod;
+        });
+        SYS[lista].forEach(function (s2) {
+          if (apag.indexOf(norm(s2.nome)) >= 0 || xs.some(function (x) { return norm(x.nome) === norm(s2.nome); })) return;
+          xs.push(JSON.parse(JSON.stringify(s2)));
+        });
+        f.cardapio[lista] = xs;
+      });
+    }
+    function marcaOQueMudou() {
+      var sysT = {}; pad.tamanhos.forEach(function (t) { sysT[t.id] = t; });
+      f.tamanhos.forEach(function (t) {
+        var s2 = sysT[t.id];
+        t.st = !s2 ? 'novo' : (+t.preco !== +s2.preco || +t.min !== +s2.min || +t.max !== +s2.max || String(t.nome).trim() !== String(s2.nome).trim() || String(t.cm) !== String(s2.cm)) ? 'mudou' : 'igual';
+      });
+      if (!SYS || !f.cardapio) return;
+      tamsDaFicha();
+      var fora = {};
+      Object.keys(ROT_LISTA).forEach(function (lista) {
+        (f.cardapio[lista] || []).forEach(function (x) { var s2 = doSistema(lista, x); x.st = !s2 ? 'novo' : difere(lista, x, s2) ? 'mudou' : 'igual'; });
+        var apag = ((f.cardapio.fora || {})[lista] || []).filter(function (n) {
+          return SYS[lista].some(function (s2) { return norm(s2.nome) === norm(n); }) && !f.cardapio[lista].some(function (x) { return norm(x.nome) === norm(n); });
+        });
+        if (apag.length) fora[lista] = apag;
+      });
+      f.cardapio.fora = fora;
+    }
+    if (tam) atualizaDoSistema();
+
     desenhaTam(); desenhaOutras(); desenhaCardapio();
+    if ($('#ficha-desfaz', el)) $('#ficha-desfaz', el).onclick = function () {
+      confirma('Voltar a ficha da loja (cardápio, pagamento, regras e entrega) para como estava antes da última alteração?', 'Desfazer', function () { return salvar('ficha_desfazer', { loja: l.id }, 'Ficha de volta à versão anterior.'); });
+    };
     if (!pode) return;
     if ($('#rl-card', el)) {
       var armado = 0;
@@ -1523,7 +1650,7 @@
         var b = this;
         if (Date.now() - armado > 4000) { armado = Date.now(); b.textContent = 'Confirmar: descarta as mudanças'; setTimeout(function () { b.textContent = 'Recarregar do sistema'; }, 4000); return; }
         armado = 0; b.textContent = 'Recarregar do sistema';
-        f.cardapio = copiaCardapio(c); desenhaCardapio(); toast('Voltou ao cardápio do sistema. Salve a ficha para gravar.');
+        f.cardapio = copiaCardapio(c); desenhaCardapio(); toast('Voltou ao cardápio do sistema (promoções inclusive). Salve a ficha para gravar.');
       };
     }
 
@@ -1563,20 +1690,25 @@
     });
     if ($('#add-tam', el)) $('#add-tam', el).onclick = function () { f.tamanhos.push({ id: 't' + Date.now().toString(36), nome: '', cm: '', preco: '', min: 1, max: 2, fatias: '', serve: '', ativo: true }); desenhaTam(); var ins = el.querySelectorAll('#tb-tam [data-k=nome]'); if (ins.length) ins[ins.length - 1].focus(); };
     desenhaFormas();
-    if ($('#add-fp', el)) $('#add-fp', el).onclick = function () { f.pagamento.outras.push({ nome: '', tipo: 'outro', ativo: true }); desenhaFormas(); var ins = el.querySelectorAll('#fp-grid .fp-txt'); if (ins.length) ins[ins.length - 1].focus(); };
+    if ($('#add-fp', el)) $('#add-fp', el).onclick = function () { f.pagamento.outras.push({ nome: '', tipo: 'ref', ativo: true }); desenhaFormas(); var ins = el.querySelectorAll('#fp-grid .fp-txt'); if (ins.length) ins[ins.length - 1].focus(); };
     if ($('#add-outra', el)) $('#add-outra', el).onclick = function () { f.outras.push({ texto: '', ativa: true }); desenhaOutras(); var ins = el.querySelectorAll('#outras input[type=text]'); if (ins.length) ins[ins.length - 1].focus(); };
     $('#sv-ficha', el).onclick = function () {
       f.outras = f.outras.filter(function (o) { return (o.texto || '').trim(); });
       f.tamanhos = f.tamanhos.filter(function (t) { return (t.nome || '').trim(); });
-      f.pagamento.outras = f.pagamento.outras.filter(function (o) { return (o.nome || '').trim(); });
-      sincPag();
+      // A pagina Pagamento so entra na ficha quando ELA e salva (ou ja foi): salvar o Cardápio nao
+      // pode ligar formas de pagamento que ninguem conferiu (com a ficha viva isso muda a Izza).
+      if (modo === 'pagamento' || (salva && salva.pagamento)) {
+        f.pagamento.outras = f.pagamento.outras.filter(function (o) { return (o.nome || '').trim(); });
+        sincPag();
+      } else delete f.pagamento;
+      if (tam) marcaOQueMudou();
       if (f.cardapio) Object.keys(ROT_LISTA).forEach(function (k) { f.cardapio[k] = (f.cardapio[k] || []).filter(function (x) { return String(x.nome || '').trim(); }); });
       if (f.cardapio && f.cardapio.promocoes) {
         var semPreco = f.cardapio.promocoes.filter(function (p) { return p.ativo !== false && String(p.nome || '').trim() && (p.preco === '' || p.preco == null); });
         if (semPreco.length) { abaCard = 3; desenhaCardapio(); return toast('Promoção sem preço: ' + semPreco[0].nome, true); }
         f.cardapio.promocoes = f.cardapio.promocoes.filter(function (p) { return String(p.nome || '').trim(); });
       }
-      salvar('ficha', { loja: l.id, ficha: f }, 'Ficha salva. As promoções valem no bot ligado ao painel em até 1 minuto.');
+      salvar('ficha', { loja: l.id, ficha: f }, viva ? 'Salvo. Vale na Izza em até 1 minuto.' : 'Ficha salva. As promoções valem no bot ligado ao painel em até 1 minuto.');
     };
   }
 
@@ -1615,7 +1747,9 @@
     var k = S.abaInstr, atual = ed[k], texto = atual ? atual.texto : pad[k], pode = l.pode.instrucoes;
     var hist = historicoDe(l, 'instrucoes:' + k);
     el.innerHTML +=
-      '<div class="aviso">Somente visualização: é o texto que está hoje no código do bot. Mudança nele se faz no código e passa pela bancada de testes.</div>' +
+      '<div class="aviso">' + (pode && promptVivo(l)
+        ? '<b>Vale na Izza</b>: o texto salvo aqui substitui o do código em até 1 minuto, em toda conversa desta loja. É o manual inteiro dela: mude uma frase por vez e acompanhe as conversas. “Voltar ao padrão” desfaz.'
+        : 'Somente visualização: é o texto que está hoje no código do bot.' + (pode ? ' O bot desta loja ainda não lê as instruções do painel (versão antiga).' : '')) + '</div>' +
       '<div class="card"><div class="tabs">' + campos.map(function (c) {
         return '<button data-aba="' + c + '" class="' + (c === k ? 'on' : '') + '">' + CAMPOS[c].nome + (ed[c] ? ' <span class="badge acc">loja</span>' : '') + '</button>';
       }).join('') + '</div>' +
@@ -1648,7 +1782,9 @@
     var pad = l.padroes && l.padroes.ferramentas, ed = l.config.ferramentas || {}, pode = l.pode.instrucoes;
     el.innerHTML = '<div class="page-head"><div><h1>Ferramentas</h1><p>O que a Izza consegue fazer, e a descrição que ela lê para decidir quando usar cada uma.</p></div></div>';
     if (!pad) return semPadroes(el, l);
-    el.innerHTML += '<div class="aviso">Somente visualização: o nome de cada ferramenta e a descrição que a Izza lê para decidir quando usar. O que ela faz, os cálculos e as travas de preço ficam no código do bot.</div>' +
+    el.innerHTML += '<div class="aviso">' + (pode && promptVivo(l)
+      ? '<b>Vale na Izza</b>: a descrição salva aqui é a que ela lê para decidir quando usar a ferramenta (em até 1 minuto). O que a ferramenta faz, os cálculos e as travas de preço continuam no código.'
+      : 'Somente visualização: o nome de cada ferramenta e a descrição que a Izza lê para decidir quando usar. O que ela faz, os cálculos e as travas de preço ficam no código do bot.') + '</div>' +
       Object.keys(GRUPOS).map(function (g) {
         var fs = pad.filter(function (f) { return f.grupo === g; });
         if (!fs.length) return '';

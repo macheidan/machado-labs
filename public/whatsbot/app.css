@@ -507,3 +507,8 @@ html.com-chamado, html.com-chamado body { overflow: hidden; }
   .ent-modelos { grid-template-columns: 1fr; }
   .ent-mapa { height: 260px; }
 }
+
+/* frases fixas editaveis (26/11/2026) */
+.balao.editavel { cursor: pointer; }
+.balao.editavel:hover { outline: 2px solid var(--accent); outline-offset: 1px; }
+.balao.da-loja { border-left: 3px solid var(--accent); }

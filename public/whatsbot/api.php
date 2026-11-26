@@ -40,7 +40,8 @@ function falha($code, $err) { out($code, array('ok' => false, 'err' => $err)); }
 
 function corpo() {
     $raw = file_get_contents('php://input');
-    if (strlen($raw) > 65536) falha(413, 'muito grande');
+    // 64 KB ate 26/11/2026: os textos padrao do bot (instrucoes + cardapio + frases) ja batiam 62 KB
+    if (strlen($raw) > 400000) falha(413, 'muito grande');
     $d = json_decode($raw, true);
     return is_array($d) ? $d : array();
 }
@@ -201,6 +202,7 @@ if ($action === 'bot' || $action === 'bot_status' || $action === 'bot_padroes' |
     if ($action === 'bot' && $method === 'GET') {
         $l = $db['lojas'][$loja];
         $c = isset($l['config']) ? $l['config'] : config_padrao();
+        unset($c['historicoInstrucoes']); // so o painel usa
         out(200, array('ok' => true, 'loja' => $loja, 'ativo' => !isset($l['ativo']) || $l['ativo'], 'config' => $c, 'agora' => date('c')));
     }
     // textos padrao do codigo (instrucoes e ferramentas): o bot manda quando mudam
@@ -370,7 +372,13 @@ if ($action === 'estado' && $method === 'GET') {
         // o prompt (instrucoes e ferramentas) e do produto: so o administrador geral ve
         if (!$eu['superadmin']) {
             if (is_array($pad)) unset($pad['instrucoes'], $pad['ferramentas']);
-            unset($cfg['instrucoes'], $cfg['ferramentas']);
+            unset($cfg['instrucoes'], $cfg['ferramentas'], $cfg['frases']);
+        }
+        // versao anterior da ficha, para o "Desfazer" (so a data e quem; a ficha fica no servidor)
+        $fa = null;
+        if (pode($eu, $id, 'horario')) {
+            $fh = json_read(data_dir() . '/ficha-hist-' . $id . '.json', array());
+            if (is_array($fh) && count($fh)) $fa = array('em' => isset($fh[0]['trocadaEm']) ? $fh[0]['trocadaEm'] : '', 'por' => isset($fh[0]['por']) ? $fh[0]['por'] : '');
         }
         $lojas[] = array(
             'id' => $id,
@@ -389,6 +397,7 @@ if ($action === 'estado' && $method === 'GET') {
             'config' => $cfg,
             'status' => $st,
             'padroes' => $pad,
+            'fichaAnterior' => $fa,
         );
     }
     // equipe: quem tem papel em alguma loja que eu administro
@@ -999,10 +1008,81 @@ case 'ficha':
     if (strlen($bruto) > 250000) falha(413, 'Ficha grande demais.');
     db_tx(function (&$db) use ($eu, $loja, $f) {
         $c = &cfg_de($db, $loja);
+        // A ficha muda a Izza na hora (26/11/2026): a versao anterior fica guardada para o
+        // "Desfazer a ultima alteracao" (as 10 ultimas, em ficha-hist-<loja>.json).
+        if (isset($c['ficha']) && is_array($c['ficha'])) {
+            $arq = data_dir() . '/ficha-hist-' . $loja . '.json';
+            $h = json_read($arq, array());
+            if (!is_array($h)) $h = array();
+            array_unshift($h, array('ficha' => $c['ficha'], 'por' => isset($c['fichaPor']) ? $c['fichaPor'] : '', 'em' => isset($c['fichaEm']) ? $c['fichaEm'] : '', 'trocadaEm' => date('c')));
+            json_write($arq, array_slice($h, 0, 10));
+        }
         $c['ficha'] = $f;
         $c['fichaPor'] = $eu['email'];
         $c['fichaEm'] = date('c');
-        db_log($db, $eu['email'], $loja, 'atualizou as particularidades da loja', '');
+        $c['atualizadoEm'] = date('c');
+        db_log($db, $eu['email'], $loja, 'atualizou a ficha da loja', '');
+    });
+    out(200, array('ok' => true));
+
+case 'ficha_desfazer':
+    exige($eu, $db, $loja, 'horario');
+    $arq = data_dir() . '/ficha-hist-' . $loja . '.json';
+    $h = json_read($arq, array());
+    if (!is_array($h) || !count($h)) falha(409, 'Não há versão anterior da ficha.');
+    $ant = array_shift($h);
+    if (!isset($ant['ficha']) || !is_array($ant['ficha'])) falha(409, 'A versão anterior da ficha não pôde ser lida.');
+    db_tx(function (&$db) use ($eu, $loja, $ant) {
+        $c = &cfg_de($db, $loja);
+        $c['ficha'] = $ant['ficha'];
+        $c['fichaPor'] = $eu['email'];
+        $c['fichaEm'] = date('c');
+        $c['atualizadoEm'] = date('c');
+        db_log($db, $eu['email'], $loja, 'desfez a última alteração da ficha da loja', '');
+    });
+    json_write($arq, $h);
+    out(200, array('ok' => true));
+
+// Frase fixa reescrita pela loja (Plataforma > Frases fixas, 26/11/2026). O id e o que o bot
+// mandou no catalogo (padroes.frases); o bot troca a frase padrao pela daqui na saida da mensagem.
+case 'frase':
+    exige($eu, $db, $loja, 'instrucoes');
+    $pad = json_read(data_dir() . '/padroes-' . $loja . '.json', null);
+    $lista = is_array($pad) && isset($pad['frases']['frases']) && is_array($pad['frases']['frases']) ? $pad['frases']['frases'] : null;
+    if (!$lista) falha(409, 'O bot desta loja ainda não mandou as frases. Espere ele ficar no ar.');
+    $idF = isset($d['id']) ? preg_replace('/[^a-z0-9]/', '', (string)$d['id']) : '';
+    $padrao = null;
+    foreach ($lista as $fr) {
+        if (isset($fr['id']) && $fr['id'] === $idF) { $padrao = (string)$fr['texto']; break; }
+        if (isset($fr['idsVariacoes']) && is_array($fr['idsVariacoes'])) {
+            $j = array_search($idF, $fr['idsVariacoes'], true);
+            if ($j !== false && isset($fr['variacoes'][$j])) { $padrao = (string)$fr['variacoes'][$j]; break; }
+        }
+    }
+    if ($idF === '' || $padrao === null) falha(400, 'Essa frase não está mais no catálogo do bot.');
+    $novo = array_key_exists('texto', $d) && $d['texto'] !== null ? trim(str_replace("\r\n", "\n", (string)$d['texto'])) : null;
+    if ($novo !== null) {
+        if ($novo === '') falha(400, 'Frase vazia.');
+        if (mb_strlen($novo) > 1500) falha(400, 'Passou do limite de 1.500 caracteres.');
+        // partes que o sistema preenche ({nome}, {preco}...) tem que continuar na frase
+        preg_match_all('/\{[^{}\n]{1,60}\}/u', $padrao, $m1);
+        $faltam = array();
+        foreach (array_unique($m1[0]) as $ph) if (strpos($novo, $ph) === false) $faltam[] = $ph;
+        if ($faltam) falha(400, 'Faltam na frase: ' . implode(' ', $faltam));
+        if ($novo === trim($padrao)) $novo = null; // igual ao padrao = padrao
+    }
+    db_tx(function (&$db) use ($eu, $loja, $idF, $novo, $padrao) {
+        $c = &cfg_de($db, $loja);
+        if (!isset($c['frases']) || !is_array($c['frases'])) $c['frases'] = array();
+        $antes = isset($c['frases'][$idF]) ? $c['frases'][$idF] : null;
+        if (!isset($c['historicoInstrucoes']) || !is_array($c['historicoInstrucoes'])) $c['historicoInstrucoes'] = array();
+        array_unshift($c['historicoInstrucoes'], array('id' => novo_id(), 'alvo' => 'frases:' . $idF, 'texto' => $antes ? $antes['texto'] : $padrao, 'eraPadrao' => !$antes, 'substituidoEm' => date('c'), 'por' => $eu['email']));
+        $c['historicoInstrucoes'] = array_slice($c['historicoInstrucoes'], 0, 40);
+        if ($novo === null) unset($c['frases'][$idF]);
+        else $c['frases'][$idF] = array('texto' => $novo, 'padrao' => $padrao, 'por' => $eu['email'], 'em' => date('c'));
+        if (!$c['frases']) $c['frases'] = new stdClass();
+        $c['atualizadoEm'] = date('c');
+        db_log($db, $eu['email'], $loja, ($novo === null ? 'voltou ao padrão a frase: ' : 'reescreveu a frase: ') . mb_substr($padrao, 0, 80), $novo === null ? '' : mb_substr($novo, 0, 200));
     });
     out(200, array('ok' => true));
 
