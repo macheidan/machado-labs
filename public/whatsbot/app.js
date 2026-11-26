@@ -87,6 +87,15 @@
   // Menu em grupos. Cada item aparece só para quem tem o papel: operador (dia a dia e números),
   // gerente (+ cardápio, loja e clientes), dono (+ integrações e equipe). Frases fixas, fluxo,
   // instruções e ferramentas (o funcionamento da Izza) ficam só para o administrador geral.
+  // selo das abas de Loja: o que se salva ali muda a Izza (ou a impressao) ou e so ficha de referencia
+  var SELOS = {
+    vale: ['vale na hora', 'O que se salva aqui muda a Izza (ou a impressão) em até 1 minuto'],
+    parte: ['vale em parte', 'Só alguns blocos desta página mudam a Izza; cada um diz se vale'],
+    reg: ['só registro', 'Ficha de referência: fica registrado no painel e ainda não muda a Izza'],
+  };
+  function seloAba(ef) {
+    return ef && SELOS[ef] ? '<span class="selo-aba s-' + ef + '" title="' + esc(SELOS[ef][1]) + '" aria-label="' + esc(SELOS[ef][0]) + '"></span>' : '';
+  }
   function paginas() {
     var l = loja(), po = l ? l.pode : {}, adm = S.dados.eu.superadmin;
     // Menu de 24/11/2026 (Fábio): Pedidos (o kanban, pagina inicial), Alertas, Historico, Numeros.
@@ -98,14 +107,16 @@
       { g: 'Dia a dia', id: 'alertas', ic: '⚑', nome: 'Alertas', cont: alertasAbertos(l), ve: true },
       { g: 'Dia a dia', id: 'pedidos', ic: '▤', nome: 'Histórico', ve: true },
       { g: 'Dia a dia', id: 'numeros', ic: '☎', nome: 'Números', cont: l ? l.config.numeros.length : 0, ve: po.numeros },
+      // Loja na ordem do pedido (26/11/2026): quando atende, o que vende, como entrega, como cobra,
+      // regras da casa, impressao; Clientes e consulta e fica por ultimo. `ef` e o selo da aba:
+      // vale = muda a Izza/impressao na hora, parte = so alguns blocos valem, reg = so registro.
+      { g: 'Loja', id: 'funcionamento', ic: '◷', nome: 'Horários', ve: po.horario, ef: 'vale' },
+      { g: 'Loja', id: 'cardapio', ic: '◔', nome: 'Cardápio', ve: po.horario, ef: 'parte' },
+      { g: 'Loja', id: 'entrega', ic: '⛟', nome: 'Entrega', ve: po.horario, ef: 'vale' },
+      { g: 'Loja', id: 'pagamento', ic: '$', nome: 'Pagamento', ve: po.horario, ef: 'reg' },
+      { g: 'Loja', id: 'regrasloja', ic: '☑', nome: 'Regras da loja', ve: po.horario, ef: 'reg' },
+      { g: 'Loja', id: 'impressao', ic: '⎙', nome: 'Impressão', ve: po.horario, ef: 'vale' },
       { g: 'Loja', id: 'clientes', ic: '☻', nome: 'Clientes', ve: po.clientes && gerente },
-      { g: 'Loja', id: 'tamanhos', ic: '◔', nome: 'Cardápio', ve: po.horario },
-      { g: 'Loja', id: 'funcionamento', ic: '◷', nome: 'Horários', ve: po.horario },
-      { g: 'Loja', id: 'entrega', ic: '⛟', nome: 'Entrega', ve: po.horario },
-      { g: 'Loja', id: 'pagamento', ic: '$', nome: 'Pagamento', ve: po.horario },
-      { g: 'Loja', id: 'regrasloja', ic: '☑', nome: 'Regras da loja', ve: po.horario },
-      { g: 'Loja', id: 'comanda', ic: '⎙', nome: 'Comanda', ve: po.horario },
-      { g: 'Loja', id: 'impressoras', ic: '⎘', nome: 'Impressoras', ve: po.horario },
       { g: 'Conta', id: 'integracoes', ic: '⇄', nome: 'Integrações', ve: po.integracoes },
       { g: 'Conta', id: 'equipe', ic: '☺', nome: 'Equipe', ve: po.equipe },
       { g: 'Conta', id: 'historico', ic: '≡', nome: 'Log', ve: gerente },
@@ -128,7 +139,9 @@
     $('#sair').onclick = sair;
 
     var ps = paginas();
-    if (S.pagina === 'ficha') S.pagina = 'regrasloja'; // pagina antiga "Particularidades"
+    // paginas antigas: "Particularidades"; "Tamanhos" (id do Cardápio ate 26/11); Comanda e Impressoras viraram Impressão
+    var ANTIGAS = { ficha: 'regrasloja', tamanhos: 'cardapio', comanda: 'impressao', impressoras: 'impressao' };
+    if (ANTIGAS[S.pagina]) S.pagina = ANTIGAS[S.pagina];
     if (!ps.some(function (p) { return p.id === S.pagina; })) S.pagina = 'quadro';
     // Dia a dia fica solto; Loja, Conta e Plataforma moram dentro de "Configurações", que abre em
     // acordeão só com as categorias. As páginas de cada categoria viram abas no topo do conteúdo,
@@ -158,16 +171,19 @@
     // pagina de Configuracoes: cabecalho da categoria com as abas, e a pagina embaixo
     if (atual && (l || S.pagina === 'lojas')) {
       var abas = cfg.filter(function (p) { return p.g === atual.g; });
+      var temSelo = abas.some(function (p) { return p.ef; });
       c.innerHTML = '<div class="sub-bar"><div class="sub-titulo"><span class="ic">' + (ICS[atual.g] || '⚙') + '</span>' + esc(atual.g) + '</div>' +
         '<div class="sub-abas" role="tablist">' + abas.map(function (p) {
-          return '<button type="button" role="tab" class="' + (p.id === S.pagina ? 'on' : '') + '" aria-selected="' + (p.id === S.pagina) + '" data-p="' + p.id + '">' + esc(p.nome) + '</button>';
-        }).join('') + '</div></div><div class="sub-conteudo" id="sub-conteudo"></div>';
+          return '<button type="button" role="tab" class="' + (p.id === S.pagina ? 'on' : '') + '" aria-selected="' + (p.id === S.pagina) + '" data-p="' + p.id + '">' + esc(p.nome) + seloAba(p.ef) + '</button>';
+        }).join('') + '</div>' +
+        (temSelo ? '<div class="sub-legenda">' + ['vale', 'parte', 'reg'].map(function (k) { return '<span>' + seloAba(k) + SELOS[k][0] + '</span>'; }).join('') + '</div>' : '') +
+        '</div><div class="sub-conteudo" id="sub-conteudo"></div>';
       c.querySelectorAll('.sub-abas [data-p]').forEach(function (b) { b.onclick = function () { ir(b.getAttribute('data-p')); }; });
       var on = c.querySelector('.sub-abas .on'); if (on && on.scrollIntoView) try { on.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) {}
       c = $('#sub-conteudo');
     }
     if (!l && S.pagina !== 'lojas') { c.innerHTML = '<div class="card vazio">Nenhuma loja ainda.' + (eu.superadmin ? ' Cadastre a primeira em <b>Lojas</b>.' : '') + '</div>'; return; }
-    ({ geral: pgGeral, numeros: pgNumeros, regras: pgRegras, funcionamento: pgFuncionamento, fluxo: pgFluxo, frases: pgFrases, pedidos: pgPedidos, quadro: pgQuadro, clientes: pgClientes, alertas: pgAlertas, comanda: pgComanda, impressoras: pgImpressoras, integracoes: pgIntegracoes, entrega: pgEntrega, pagamento: function (c, l) { pgFicha(c, l, 'pagamento'); }, regrasloja: function (c, l) { pgFicha(c, l, 'regras'); }, tamanhos: function (c, l) { pgFicha(c, l, 'tamanhos'); }, instrucoes: pgInstrucoes, ferramentas: pgFerramentas, equipe: pgEquipe, historico: pgHistorico, lojas: pgLojas })[S.pagina](c, l);
+    ({ geral: pgGeral, numeros: pgNumeros, regras: pgRegras, funcionamento: pgFuncionamento, fluxo: pgFluxo, frases: pgFrases, pedidos: pgPedidos, quadro: pgQuadro, clientes: pgClientes, alertas: pgAlertas, impressao: pgImpressao, integracoes: pgIntegracoes, entrega: pgEntrega, pagamento: function (c, l) { pgFicha(c, l, 'pagamento'); }, regrasloja: function (c, l) { pgFicha(c, l, 'regras'); }, cardapio: function (c, l) { pgFicha(c, l, 'tamanhos'); }, instrucoes: pgInstrucoes, ferramentas: pgFerramentas, equipe: pgEquipe, historico: pgHistorico, lojas: pgLojas })[S.pagina](c, l);
   }
 
   function ir(p) {
@@ -227,7 +243,7 @@
         '<div class="card"><h2>Atalhos</h2><p class="desc">O que mais se faz por aqui.</p><div class="stack">' +
           (l.pode.numeros ? '<button class="btn" data-ir="numeros" data-novo="bloqueado">+ Bloquear um número</button>' : '') +
           '<button class="btn" data-ir="pedidos">Ver os pedidos</button>' +
-          (l.pode.horario ? '<button class="btn" data-ir="tamanhos">Tamanhos, sabores e preços</button>' : '') +
+          (l.pode.horario ? '<button class="btn" data-ir="cardapio">Cardápio</button>' : '') +
           (l.pode.horario ? '<button class="btn" data-ir="funcionamento">Horário e faixa de atendimento</button>' : '') +
         '</div></div>' +
         '<div class="card"><h2>Últimas mudanças</h2><p class="desc">Quem mexeu em quê nesta loja.</p>' +
@@ -411,9 +427,11 @@
   function pgFuncionamento(el, l) {
     var c = l.config, e = c.escopo, ph = l.pode.horario, pe = l.pode.escopo;
     var dis = function (p) { return p ? '' : ' disabled'; };
+    var fh = fichaParaEditar(l);
     var horas = ''; for (var i = 0; i < 24; i++) horas += '<option value="' + i + '">' + i + 'h</option>';
     el.innerHTML =
-      '<div class="page-head"><div><h1>Funcionamento</h1><p>Quando a Izza atende, o horário que ela informa e os tempos que promete.</p></div></div>' +
+      '<div class="page-head"><div><h1>Horários</h1><p>Quando a Izza atende, o horário que ela informa e os tempos que promete.</p></div></div>' +
+      '<div class="aviso"><b>Vale na Izza</b>: faixa e horário salvos mudam o atendimento em até 1 minuto.</div>' +
       '<div class="grid-2">' +
       '<div class="card"><h2>Faixa de atendimento</h2><p class="desc">Para quem a Izza responde.' + (pe ? '' : ' Só o dono muda.') + '</p><div class="stack" id="esc">' +
         [['lista', 'Só números de teste', 'Fase de testes: clientes não recebem resposta, a loja atende normalmente.'],
@@ -433,7 +451,15 @@
         '<div class="linha" style="margin-top:16px"><label class="campo"><span>Tempo de entrega</span><input type="text" id="t-ent" maxlength="60" value="' + esc(c.tempoEntrega) + '"' + dis(ph) + '></label><label class="campo"><span>Tempo de retirada</span><input type="text" id="t-ret" maxlength="60" value="' + esc(c.tempoRetirada) + '"' + dis(ph) + '></label></div>' +
         '<p class="muted small" style="margin-top:6px">Escreva como a Izza fala: “de 40 a 60 minutos”. 23:59 vale como meia-noite.</p>' +
         (ph ? '<div class="acoes"><button class="btn pri" id="sv-hor">Salvar horário</button></div>' : '') +
-      '</div></div>';
+      '</div></div>' +
+      // agendamento veio de "Regras da loja" (26/11/2026): quem procura pedido agendado procura em Horários
+      '<div class="card"><div class="cab-card"><div><h2>Pedido agendado ' + seloCard('reg') + '</h2><p class="desc">Fica na ficha da loja junto com Pagamento e Regras da loja.</p></div></div>' +
+        '<div class="stack" style="margin-top:12px">' + htmlSn(ITEM_FICHA.agendamento, fh.valores.agendamento, dis(ph)) + '</div>' +
+        (ph ? '<div class="acoes"><button class="btn pri" id="sv-agd">Salvar</button></div>' : '') +
+      '</div>';
+    ligaSn(el, fh.valores);
+    var sv3 = $('#sv-agd', el);
+    if (sv3) sv3.onclick = function () { salvar('ficha', { loja: l.id, ficha: fh }, 'Ficha salva.'); };
 
     $('#e-de', el).value = e.de; $('#e-ate', el).value = e.ate; $('#e-fora', el).value = c.foraDaLista;
     var mostra = function () {
@@ -549,10 +575,15 @@
   // do sistema); o que se marca aqui fica registrado no painel e ainda NAO muda o bot.
   var SIM_NAO = [['sim', 'Sim'], ['nao', 'Não'], ['', 'Não definido']];
   var FICHA_GRUPOS = [
-    { titulo: 'Atendimento', itens: [
+    // entrega/retirada aparecem na pagina Entrega e o agendamento em Horarios (26/11/2026); ver FICHA_PAG
+    { titulo: 'Entrega e retirada', itens: [
       { id: 'entrega', rot: 'Faz entrega', t: 'sn', p: 'sim' },
       { id: 'retirada', rot: 'Aceita retirada no balcão', t: 'sn', p: 'sim' },
+    ] },
+    { titulo: 'Agendamento', itens: [
       { id: 'agendamento', rot: 'Aceita pedido agendado para mais tarde', t: 'sn', p: 'sim' },
+    ] },
+    { titulo: 'Atendimento', itens: [
       { id: 'nomeAntes', rot: 'Pergunta o nome quando não há cadastro', t: 'sn', p: 'sim' },
       { id: 'enderecoCedo', rot: 'Pede o endereço logo depois de entrega/retirada', t: 'sn', p: 'sim' },
       { id: 'aprovacaoLoja', rot: 'Pedido passa pela aprovação da loja antes de entrar', t: 'sn', p: 'sim' },
@@ -679,6 +710,33 @@
     }) : [];
     return { valores: v, tamanhos: tam, outras: [], cardapio: copiaCardapio(c), bairros: [], pagamento: pagamentoPadrao(v) };
   }
+  // pedaços da ficha usados fora de pgFicha (Horários e Entrega, 26/11/2026)
+  var ITEM_FICHA = {};
+  FICHA_GRUPOS.forEach(function (g) { g.itens.forEach(function (it) { ITEM_FICHA[it.id] = it; }); });
+  function fichaParaEditar(l) {
+    var f = JSON.parse(JSON.stringify(l.config.ficha || fichaPadrao(l))), pad = fichaPadrao(l);
+    f.valores = f.valores || {};
+    Object.keys(pad.valores).forEach(function (k) { if (f.valores[k] === undefined) f.valores[k] = pad.valores[k]; });
+    return f;
+  }
+  function htmlSn(it, v, dis) {
+    v = v == null ? '' : v;
+    return '<div class="item-ficha"><span>' + esc(it.rot) + '</span><div class="seg" data-sn="' + it.id + '">' +
+      SIM_NAO.map(function (o) { return '<button type="button" data-v="' + o[0] + '" class="' + (v === o[0] ? 'on' : '') + '"' + dis + '>' + o[1] + '</button>'; }).join('') + '</div></div>';
+  }
+  function ligaSn(el, valores) {
+    el.querySelectorAll('[data-sn]').forEach(function (seg) {
+      seg.addEventListener('click', function (ev) {
+        var b = ev.target.closest('button'); if (!b || b.disabled) return;
+        valores[seg.getAttribute('data-sn')] = b.getAttribute('data-v');
+        seg.querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); });
+      });
+    });
+  }
+  // selo do cartao: o mesmo da aba, por extenso
+  function seloCard(ef) {
+    return '<span class="badge selo-card s-' + ef + '" title="' + esc(SELOS[ef][1]) + '">' + seloAba(ef) + SELOS[ef][0] + '</span>';
+  }
 
   // ------------------------------------------------------------- Entrega (25/11/2026)
   // Pagina pensada para pizzaria de qualquer lugar do Brasil (Fábio: "imaginando que clientes de
@@ -751,8 +809,7 @@
   function pgEntrega(raiz, l) {
     raiz.innerHTML = ''; var el = document.createElement('div'); el.className = 'pagina'; raiz.appendChild(el);
     var pode = l.pode.horario, dis = pode ? '' : ' disabled';
-    var salva = l.config.ficha, f = JSON.parse(JSON.stringify(salva || fichaPadrao(l)));
-    f.valores = f.valores || {};
+    var f = fichaParaEditar(l);
     var sis = l.padroes && l.padroes.entrega, nova = !f.entrega;
     var e = f.entrega ? JSON.parse(JSON.stringify(f.entrega)) : entregaInicial(f, sis);
     e.origem = e.origem || {}; e.faixas = e.faixas || []; e.cidades = e.cidades || []; e.bairros = e.bairros || [];
@@ -798,6 +855,9 @@
         ? 'Esta página <b>muda a Izza</b>, mas ainda não foi salva: hoje a taxa sai do sistema da loja, e é isso que já está preenchido abaixo. Confira e salve para passar a valer daqui.'
         : '<b>Vale na Izza</b>: o que se salva aqui muda a taxa, a área e o pedido mínimo em até 1 minuto. Última edição: ' + esc(quem(l.config.fichaPor)) + ' · ' + esc(dataHora(l.config.fichaEm)) + '.') + '</div>' +
       '<div id="ent-prob" hidden></div>' +
+      // entrega e retirada vieram de "Regras da loja" (26/11/2026); salvam junto com a entrega
+      '<div class="card"><h2>Entrega e retirada ' + seloCard('reg') + '</h2><p class="desc">O que a loja oferece. Fica na ficha da loja e salva com o botão <b>Salvar entrega</b>.</p>' +
+        '<div class="stack" style="margin-top:12px">' + htmlSn(ITEM_FICHA.entrega, f.valores.entrega, dis) + htmlSn(ITEM_FICHA.retirada, f.valores.retirada, dis) + '</div></div>' +
       // ponto de partida
       '<div class="card"><h2>Endereço da loja</h2><p class="desc">De onde sai a entrega. Digite o CEP para preencher o resto e confira o pino no mapa: a distância é medida a partir dele.</p>' +
       '<div class="ent-end">' +
@@ -825,6 +885,7 @@
       '<div id="ent-teste-res" style="margin-top:10px"></div>' +
       '<p class="muted small">O teste localiza o endereço pelo OpenStreetMap; a Izza usa o Google, então o ponto pode variar um pouco.</p></div>';
 
+    ligaSn(el, f.valores);
     function mostraProblemas() {
       var p = problemas(), box = $('#ent-prob', el);
       box.hidden = !p.length;
@@ -1080,7 +1141,7 @@
   // Uma ficha so (config.ficha), mostrada em duas paginas: "Cardápio" (ex-"Tamanhos e sabores"; tamanhos,
   // regra de preco e o cardapio editavel) e "Particularidades" (o resto). Cada uma salva a ficha inteira.
   // Em que pagina fica cada bloco da ficha. Todas salvam a ficha inteira.
-  var FICHA_PAG = { 'Atendimento': 'regras', 'Entrega': 'entrega', 'Regra de preço': 'tamanhos', 'Borda, adicionais e bebida': 'tamanhos', 'Pizza': 'tamanhos', 'Pagamento': 'pagamento' };
+  var FICHA_PAG = { 'Atendimento': 'regras', 'Entrega': 'entrega', 'Entrega e retirada': 'entrega', 'Agendamento': 'horarios', 'Regra de preço': 'tamanhos', 'Borda, adicionais e bebida': 'tamanhos', 'Pizza': 'tamanhos', 'Pagamento': 'pagamento' };
   var FICHA_CAB = {
     tamanhos: ['Cardápio', function (n) { return 'Tamanhos, sabores, preços, bordas, bebidas, promoções e o código de integração de cada item da ' + n + '.'; }],
     pagamento: ['Pagamento', function (n) { return 'Como o cliente da ' + n + ' pode pagar.'; }],
@@ -1183,21 +1244,28 @@
     var cab = FICHA_CAB[modo] || FICHA_CAB.regras;
     el.innerHTML = '<div class="page-head"><div><h1>' + cab[0] + '</h1><p>' + esc(cab[1](l.nome)) + '</p></div>' +
       (pode ? '<button class="btn pri" id="sv-ficha">Salvar ficha</button>' : '') + '</div>' +
-      '<div class="aviso">Ficha de referência: o que se marca aqui fica registrado no painel e <b>ainda não muda o bot</b>. ' +
+      '<div class="aviso">' + (tam
+        ? 'Nesta página <b>só as promoções e os códigos de integração mudam a Izza</b> (em até 1 minuto); o resto é ficha de referência. Cada bloco tem o selo. '
+        : 'Ficha de referência: o que se marca aqui fica registrado no painel e <b>ainda não muda o bot</b>. ') +
       (salva ? 'Última edição: ' + esc(quem(l.config.fichaPor)) + ' · ' + esc(dataHora(l.config.fichaEm)) + '.' : 'Veio pré-preenchida com o que a Izza faz hoje (código e cardápio do sistema). Confira e salve.') + '</div>' +
+      // atalhos do Cardápio (pagina comprida, 26/11/2026)
+      (!tam ? '' : '<div class="ancoras" role="navigation" aria-label="Partes do cardápio">' +
+        [['c-tam', 'Tamanhos'], ['c-regras', 'Regras de preço e adicionais'], ['c-sabores', 'Sabores e preços']].map(function (a) {
+          return '<button type="button" class="chip" data-ancora="' + a[0] + '">' + a[1] + '</button>';
+        }).join('') + '</div>') +
       // tamanhos
-      (!tam ? '' : '<div class="card"><h2>Tamanhos</h2><p class="desc">Quais tamanhos a loja vende e quantos sabores e fatias tem cada um.</p>' +
+      (!tam ? '' : '<div class="card" id="c-tam"><h2>Tamanhos ' + seloCard('parte') + '</h2><p class="desc">Quais tamanhos a loja vende e quantos sabores e fatias tem cada um. Só o <b>código de integração</b> vale na Izza.</p>' +
       '<div class="tabela-wrap"><table><thead><tr><th>Vende</th><th>Tamanho</th><th>cm</th><th>Preço base</th><th>Sabores (mín–máx)</th><th>Fatias</th><th class="hide-m">Serve</th><th title="Código do tamanho no sistema que recebe o pedido (Configurações > Integrações; hoje a Saipos): é com ele que a Izza lança a pizza">Código Integração</th><th></th></tr></thead><tbody id="tb-tam"></tbody></table></div>' +
       (pode ? '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" id="add-tam">+ Tamanho</button></div>' : '') + '</div>') +
       // checklist
-      (modo === 'pagamento' ? pagHtml() : '<div class="' + (grupos.length > 1 ? 'grid-2' : '') + '">' + grupos.map(function (g) {
-        return '<div class="card"><h2>' + esc(g.titulo) + '</h2><div class="stack" style="margin-top:12px">' + g.itens.map(itemFicha).join('') + '</div></div>';
+      (modo === 'pagamento' ? pagHtml() : '<div' + (tam ? ' id="c-regras"' : '') + ' class="' + (grupos.length > 1 ? 'grid-2' : '') + '">' + grupos.map(function (g) {
+        return '<div class="card"><h2>' + esc(g.titulo) + (tam ? ' ' + seloCard('reg') : '') + '</h2><div class="stack" style="margin-top:12px">' + g.itens.map(itemFicha).join('') + '</div></div>';
       }).join('') + '</div>') +
       // outras
       (modo !== 'regras' ? '' : '<div class="card"><h2>Outras regras</h2><p class="desc">O que não coube nas outras páginas: regra da casa, exceção, combinado com o cliente.</p><div class="stack" id="outras"></div>' +
       (pode ? '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" id="add-outra">+ Particularidade</button></div>' : '') + '</div>') +
       // cardapio do sistema
-      (!tam ? '' : '<div class="card"><div class="cab-card"><div><h2>Sabores e preços</h2><p class="desc">Começa igual ao cardápio do sistema da loja (planilha CARDAPIO). Sabores, bordas, bebidas e combos daqui ficam na ficha (ainda não mudam o bot). <b>As promoções mudam o bot</b>: o que a Izza oferece, responde e cobra. <b>O código de integração também</b>: é o código de cada item no sistema que recebe o pedido (Integrações; hoje a Saipos), com o qual a Izza lança o pedido. Trocou o sistema, troque os códigos. Vem do de/para do sistema e, mudado aqui, vale a partir do próximo pedido (a linha ganha <span class="badge warn">código mudou</span>). ' +
+      (!tam ? '' : '<div class="card" id="c-sabores"><div class="cab-card"><div><h2>Sabores e preços ' + seloCard('parte') + '</h2><p class="desc">Começa igual ao cardápio do sistema da loja (planilha CARDAPIO). Sabores, bordas, bebidas e combos daqui ficam na ficha (ainda não mudam o bot). <b>As promoções mudam o bot</b>: o que a Izza oferece, responde e cobra. <b>O código de integração também</b>: é o código de cada item no sistema que recebe o pedido (Integrações; hoje a Saipos), com o qual a Izza lança o pedido. Trocou o sistema, troque os códigos. Vem do de/para do sistema e, mudado aqui, vale a partir do próximo pedido (a linha ganha <span class="badge warn">código mudou</span>). ' +
       'Linha diferente do sistema ganha a marca <span class="badge warn">mudou</span>; linha que o sistema não tem, <span class="badge acc">novo</span>.</p></div>' +
       (pode && c ? '<button class="btn sm" id="rl-card">Recarregar do sistema</button>' : '') + '</div>' +
       (f.cardapio ? '<div id="cardapio-ed"></div>' : '<div class="vazio">O bot desta loja ainda não mandou o cardápio.</div>') + '</div>');
@@ -1489,6 +1557,9 @@
         f.valores[seg.getAttribute('data-sn')] = b.getAttribute('data-v');
         seg.querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); });
       });
+    });
+    el.querySelectorAll('[data-ancora]').forEach(function (b) {
+      b.onclick = function () { var alvo = $('#' + b.getAttribute('data-ancora'), el); if (alvo) try { alvo.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) { alvo.scrollIntoView(); } };
     });
     if ($('#add-tam', el)) $('#add-tam', el).onclick = function () { f.tamanhos.push({ id: 't' + Date.now().toString(36), nome: '', cm: '', preco: '', min: 1, max: 2, fatias: '', serve: '', ativo: true }); desenhaTam(); var ins = el.querySelectorAll('#tb-tam [data-k=nome]'); if (ins.length) ins[ins.length - 1].focus(); };
     desenhaFormas();
@@ -2756,12 +2827,13 @@
     setTimeout(function () { try { ifr.contentWindow.focus(); ifr.contentWindow.print(); } catch (e) { toast('Não consegui abrir a impressão.', true); } setTimeout(function () { ifr.remove(); }, 2000); }, 250);
   }
 
-  function pgComanda(el, l) {
+  function pgComanda(el, l, emb) {
     var pag = document.createElement('div'); pag.className = 'pagina'; el.innerHTML = ''; el.appendChild(pag);
+    var H = emb ? 'h2' : 'h1';
     var cfg = cfgComanda(l), pode = l.pode.horario, dis = pode ? '' : ' disabled', pedidos = [], fonte = 'exemplo';
-    pag.innerHTML = '<div class="page-head"><div><h1>Comanda</h1><p>Como sai a comanda que a Izza imprime quando a ' + esc(l.nome) + ' aprova o pedido pelo painel.</p></div>' +
+    pag.innerHTML = '<div class="page-head' + (emb ? ' sec-head' : '') + '"><div><' + H + '>Comanda</' + H + '><p>Como sai a comanda que a Izza imprime quando a ' + esc(l.nome) + ' aprova o pedido pelo painel.</p></div>' +
       (pode ? '<button class="btn pri" id="cm-salvar">Salvar comanda</button>' : '') + '</div>' +
-      '<div class="aviso">Vale para a loja que trabalha só com a Izza. A comanda sai pela <b>Izza Impressora</b> (Loja &gt; Impressoras); sem ela, pela janela de impressão do navegador. ' +
+      '<div class="aviso">Vale para a loja que trabalha só com a Izza. A comanda sai pela <b>Izza Impressora</b> (bloco Impressoras, acima); sem ela, pela janela de impressão do navegador. ' +
       'Com o Titan ou a Saipos, quem imprime é o sistema da loja, com o modelo dele (ver <b>Integrações</b>).</div>' +
       '<div class="cm-grid">' +
         '<div class="stack">' +
@@ -2813,6 +2885,20 @@
     }).catch(function () {});
   }
 
+  // ------------------------------------------------------------- Impressão (26/11/2026)
+  // Comanda e Impressoras eram duas abas que mandavam uma para a outra: agora uma pagina so,
+  // primeiro onde imprime (computadores e impressoras), depois como sai (modelo da comanda).
+  function pgImpressao(el, l) {
+    el.innerHTML = '<div class="page-head"><div><h1>Impressão</h1><p>Onde a comanda da ' + esc(l.nome) + ' sai e como ela sai.</p></div></div>' +
+      '<div class="ancoras" role="navigation" aria-label="Partes da impressão"><button type="button" class="chip" data-ancora="imp-a">Impressoras</button><button type="button" class="chip" data-ancora="imp-b">Modelo da comanda</button></div>' +
+      '<div id="imp-a"></div><div id="imp-b" class="sec-sep"></div>';
+    el.querySelectorAll('[data-ancora]').forEach(function (b) {
+      b.onclick = function () { var alvo = $('#' + b.getAttribute('data-ancora'), el); if (alvo) try { alvo.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) { alvo.scrollIntoView(); } };
+    });
+    pgImpressoras($('#imp-a', el), l, true);
+    pgComanda($('#imp-b', el), l, true);
+  }
+
   // ------------------------------------------------------------- Impressoras (Izza Impressora)
   // O programa do Windows pareia com a loja por codigo, pergunta a cada 3 s se ha comanda
   // e imprime direto na impressora (termica ou comum). Servidor: impressao.php.
@@ -2824,14 +2910,15 @@
     return api('imprimir', corpo).then(function (j) {
       toast(j.trabalhos === 1 ? 'Enviado para a impressora.' : 'Enviado para ' + j.trabalhos + ' impressoras.');
     }).catch(function (e) {
-      if (e.message === 'sem_impressora') { if (plano) plano(); else toast('Nenhuma impressora ligada. Veja em Loja > Impressoras.', true); }
+      if (e.message === 'sem_impressora') { if (plano) plano(); else toast('Nenhuma impressora ligada. Veja em Loja > Impressão.', true); }
       else toast(e.message, true);
     });
   }
-  function pgImpressoras(el, l) {
+  function pgImpressoras(el, l, emb) {
     var pag = document.createElement('div'); pag.className = 'pagina'; el.innerHTML = ''; el.appendChild(pag);
+    var H = emb ? 'h2' : 'h1';
     var pode = l.pode.horario, dis = pode ? '' : ' disabled', dados = null, linhas = [], auto = false, sujo = false, timer = null, codigo = null;
-    pag.innerHTML = '<div class="page-head"><div><h1>Impressoras</h1><p>A comanda sai sozinha na impressora da ' + esc(l.nome) + ', sem abrir a janela de impressão do navegador.</p></div>' +
+    pag.innerHTML = '<div class="page-head' + (emb ? ' sec-head' : '') + '"><div><' + H + '>Impressoras</' + H + '><p>A comanda sai sozinha na impressora da ' + esc(l.nome) + ', sem abrir a janela de impressão do navegador.</p></div>' +
       (pode ? '<button class="btn pri" id="imp-salvar" disabled>Salvar impressoras</button>' : '') + '</div><div class="card vazio">Carregando…</div>';
     function chave(d, n) { return d + '|' + n; }
     // uma linha por impressora que cada computador enxerga (e as configuradas que sumiram dele)
@@ -3003,7 +3090,7 @@
           campo('webhook', 'url', 'Endereço (https://)', 'https://seusistema.com.br/izza/pedido') + segredo('webhook', 'segredo', 'Segredo da assinatura') + '</div>' +
           (pode ? '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" id="int-teste">Enviar pedido de teste</button><span class="muted small" id="int-teste-r"></span></div>' : '') + '</div>' : '') +
         (it.pedidos === 'izza' ? '<div class="card"><h2>Só a Izza</h2><p class="desc">Pedido novo aparece em <b>Pedidos</b> e em <b>Alertas</b>, com som e notificação. A comanda sai pelo navegador: ajuste em <b>Comanda</b>.</p>' +
-          '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" data-ir="comanda">Abrir a comanda</button><button class="btn sm" data-ir="alertas">Ver alertas</button></div></div>' : '');
+          '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" data-ir="impressao">Abrir a impressão</button><button class="btn sm" data-ir="alertas">Ver alertas</button></div></div>' : '');
       pag.querySelectorAll('input[name=int-pedidos]').forEach(function (r) { r.onchange = function () { it.pedidos = r.value; desenha(); }; });
       pag.querySelectorAll('[data-if]').forEach(function (s) { s.onclick = function (ev) { var b = ev.target.closest('button'); if (!b || b.disabled) return; it[s.getAttribute('data-if')] = b.getAttribute('data-v'); desenha(); }; });
       if ($('#int-sp-url', pag)) $('#int-sp-url', pag).onclick = function () {

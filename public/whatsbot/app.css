@@ -375,6 +375,24 @@ body.quadro-cheio .qcol { max-height: calc(100dvh - 90px); }
 .sub-abas button.on { background: var(--card); color: var(--text); box-shadow: 0 1px 2px rgba(16,24,40,.05); }
 .sub-conteudo { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
 @media (max-width: 720px) { .sub-bar { padding: 10px 12px; } .sub-abas { width: 100%; } }
+/* selo das abas de Loja (26/11/2026): cheio = vale na hora, meio = vale em parte, vazado = so registro */
+.selo-aba { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-left: 6px; vertical-align: middle; flex: none; border: 1.5px solid var(--success); box-sizing: border-box; }
+.selo-aba.s-vale { background: var(--success); }
+.selo-aba.s-parte { background: linear-gradient(90deg, var(--success) 50%, transparent 50%); }
+.selo-aba.s-reg { border-color: var(--muted); background: transparent; }
+.badge .selo-aba { margin-left: 0; }
+.selo-card { vertical-align: middle; margin-left: 4px; font-size: 11px; }
+.selo-card.s-vale, .selo-card.s-parte { background: var(--success-bg); color: var(--success); }
+.sub-legenda { display: flex; gap: 14px; flex-wrap: wrap; width: 100%; font-size: 12px; color: var(--muted); }
+.sub-legenda span { display: inline-flex; align-items: center; gap: 6px; }
+.sub-legenda .selo-aba { margin-left: 0; }
+/* atalhos de pagina comprida (Cardápio, Impressão) */
+.ancoras { display: flex; gap: 8px; flex-wrap: wrap; }
+.ancoras .chip { border: 1px solid var(--border); background: var(--card); color: var(--text-2); border-radius: 99px; padding: 6px 14px; font: inherit; font-size: 13px; cursor: pointer; }
+.ancoras .chip:hover { color: var(--accent); border-color: var(--accent); }
+#c-tam, #c-regras, #c-sabores, #imp-a, #imp-b { scroll-margin-top: 72px; }
+.sec-sep { border-top: 1px solid var(--border); padding-top: 20px; }
+.page-head.sec-head h2 { font-size: 20px; margin: 0; }
 
 /* Chamado de atendente em tela cheia (24/11/2026), igual ao Titan (#wzHumano): laranja, telefone
    como o maior tipo da tela, porque e o dado que a atendente vai usar. */
