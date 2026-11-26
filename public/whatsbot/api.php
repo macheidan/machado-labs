@@ -824,7 +824,8 @@ case 'quadro_mover':
 // historico/kanban"). So o admin geral. O id vai para pedidos-excluidos-<loja>.json para o bot nao
 // trazer de volta no proximo envio do historico. Nao mexe na Saipos: venda la se cancela la.
 case 'pedido_excluir':
-    if (!$eu['superadmin']) falha(403, 'Só o administrador geral exclui pedidos.');
+    $daBancada = !empty($eu['automacao']) && isset($d['id']) && strpos((string)$d['id'], 'wa-undefined-') === 0;
+    if (!$eu['superadmin'] && !$daBancada) falha(403, 'Só o administrador geral exclui pedidos.');
     exige($eu, $db, $loja, 'ver');
     $pid = isset($d['id']) ? substr((string)$d['id'], 0, 80) : '';
     if ($pid === '') falha(400, 'id');

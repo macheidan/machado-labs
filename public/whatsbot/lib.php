@@ -23,7 +23,9 @@ const PAPEIS = array('operador' => 1, 'gerente' => 2, 'dono' => 3);
 // de teste (id comecando com "teste"), para o bot de desenvolvimento nao usar o token da Dame.
 // Aparece no Log como claude@automacao.
 const AUTOMACAO_HASH = '25d2ed489158e5c6913f07ce4a4cee94e315c511f018fdc2f2212dbea6133ef4';
-const AUTOMACAO_ACOES = array('estado', 'pausa', 'numero', 'numero_del', 'config', 'loja', 'loja_token');
+// pedido_excluir: so pedido de teste da bancada (id wa-undefined-*), checado no api.php (25/11/2026,
+// Fábio: "Se foram testes delete do painel").
+const AUTOMACAO_ACOES = array('estado', 'pausa', 'numero', 'numero_del', 'config', 'loja', 'loja_token', 'pedido_excluir');
 function usuario_automacao($db, $acao, $corpo) {
     $k = isset($_SERVER['HTTP_X_WB_AUTOMACAO']) ? (string)$_SERVER['HTTP_X_WB_AUTOMACAO'] : '';
     if ($k === '' || !hash_equals(AUTOMACAO_HASH, hash('sha256', $k))) return null;
