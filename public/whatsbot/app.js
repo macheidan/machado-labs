@@ -1273,7 +1273,7 @@
         '</div>' +
         '<div class="grid-2">' +
           '<div class="card"><h2>Pix antecipado</h2><div class="stack" style="margin-top:12px">' + itens(['pix', 'pixChave']) + '<p class="muted small">O comprovante é sempre conferido por uma pessoa da loja: a Izza nunca confirma que o dinheiro entrou.</p></div></div>' +
-          '<div class="card"><h2>Na conversa</h2><p class="desc">O que a atendente virtual pergunta na hora de fechar.</p><div class="stack" style="margin-top:12px">' + itens(['trocoPergunta', 'cartaoBandeira']) + '</div></div>' +
+          '<div class="card"><h2>Na conversa</h2><p class="desc">O que a atendente virtual pergunta na hora de fechar.</p><div class="stack" style="margin-top:12px">' + itens(['trocoPergunta', 'cartaoBandeira', 'formaSoOnde', 'pixNaHora']) + '</div></div>' +
         '</div>';
     }
     function desenhaFormas() {
