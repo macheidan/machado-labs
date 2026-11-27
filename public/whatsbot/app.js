@@ -1823,57 +1823,89 @@
     'Sabor achado por outro nome entra direto, sem "você quis dizer?".',
   ];
   var NOMES_FIXOS = ['guaraná = Fruki', 'família ou super família = Super', 'requeijão = Catupiry', 'mussarela = Mozzarella', 'copa = Coppa', 'cogumelo = Champignon', 'alho e óleo = Alho'];
+  // Em TEXTO, como as Regras da casa (Fábio, 27/11/2026: "não seria melhor colocar em forma de texto
+  // como as regras da casa?"). Uma regra por linha; "X = Y" e outro nome ("borda de X = Y" para
+  // borda). Ao salvar, cada linha e casada com a regra que o codigo conhece (aceita mudanca de
+  // palavras); linha apagada desliga a regra. O bot continua lendo ficha.valores e ficha.apelidos.
+  function rcNorm(t) { return String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim(); }
+  function rcPalavras(t) { return rcNorm(t).split(' ').filter(function (p) { return p.length >= 4; }); }
+  var RC_TITULO_NOMES = 'Outros nomes que o cliente usa:';
+  function rcTexto(f, regras) {
+    var linhas = regras.filter(function (r) { return f.valores[r.id] !== 'nao'; }).map(function (r) { return r.rot; });
+    var extras = (f.regrasCodigoExtras || []).filter(function (x) { return String(x || '').trim(); });
+    var nomes = (f.apelidos || []).filter(function (a) { return a.ativo !== false; }).map(function (a) { return (a.tipo === 'borda' ? 'borda de ' : '') + a.diz + ' = ' + a.e; });
+    return linhas.concat(extras).join('\n') + '\n\n' + RC_TITULO_NOMES + '\n' + nomes.join('\n');
+  }
+  function rcLe(texto, regras) {
+    var achadas = {}, apelidos = [], extras = [];
+    String(texto || '').split(/\r?\n/).forEach(function (linha) {
+      var t = linha.trim();
+      if (!t || rcNorm(t) === rcNorm(RC_TITULO_NOMES)) return;
+      var m = t.match(/^([^=]{1,60})=([^=]{1,60})$/);
+      if (m) {
+        var diz = m[1].trim(), e = m[2].trim().replace(/[.;]+$/, ''), borda = /^bordas?\s+(de|do|da)?\s*/i.test(diz);
+        if (borda) diz = diz.replace(/^bordas?\s+(de|do|da)?\s*/i, '').trim();
+        if (diz && e) apelidos.push({ diz: diz, e: e, tipo: borda ? 'borda' : 'sabor', ativo: true });
+        return;
+      }
+      // a regra mais parecida (palavras em comum); pouco parecida = linha que o codigo nao conhece
+      var pl = rcPalavras(t), melhor = null, nota = 0;
+      regras.forEach(function (r) {
+        if (achadas[r.id]) return;
+        var pr = rcPalavras(r.rot), comum = pl.filter(function (x) { return pr.indexOf(x) >= 0; }).length;
+        var n = comum / Math.max(1, Math.min(pl.length, pr.length));
+        if (n > nota) { nota = n; melhor = r; }
+      });
+      if (melhor && nota >= 0.5) achadas[melhor.id] = true; else extras.push(t);
+    });
+    var valores = {};
+    regras.forEach(function (r) { valores[r.id] = achadas[r.id] ? 'sim' : 'nao'; });
+    return { valores: valores, apelidos: apelidos, extras: extras };
+  }
   function pgRegrasCodigo(el, l, htmlAbas, ligaAbas) {
-    var pode = l.pode.instrucoes && l.pode.horario, dis = pode ? '' : ' disabled';
+    var pode = l.pode.instrucoes && l.pode.horario;
     var f = fichaParaEditar(l);
     var regras = FICHA_GRUPOS.filter(function (g) { return g.titulo === 'Regras do código'; })[0].itens;
-    // linha desligada pelo "Vale" antigo nao aparece: aqui, escrita e ativa
-    f.apelidos = (f.apelidos || []).filter(function (a) { return a.ativo !== false; });
+    var texto = rcTexto(f, regras);
     el.innerHTML += '<div class="aviso">' + (fichaViva(l)
-      ? '<b>Vale na Izza</b>: o que está escrito aqui é o que o código dela faz nesta loja. Tirou a linha, a regra deixa de valer; salvou, muda em até 1 minuto.'
+      ? '<b>Vale na Izza</b>: o que está escrito aqui é o que o código dela faz nesta loja, em até 1 minuto depois de salvar. Regra escrita está valendo; apagou a linha, deixa de valer.'
       : 'O bot desta loja ainda não lê estas regras do painel (versão antiga).') + '</div>' +
       '<div class="card">' + htmlAbas +
-      '<p class="desc">O que a Izza faz por código, fora do texto das instruções. Não tem liga e desliga: regra escrita está valendo.</p>' +
-      '<h3 class="small" style="margin:14px 0 6px">Regras</h3><div class="stack" id="rc-regras"></div>' +
-      '<div id="rc-fora"></div>' +
-      '<h3 class="small" style="margin:18px 0 4px">Outros nomes que o cliente usa</h3>' +
-      '<p class="desc">Quando o cliente fala de um jeito e o cardápio chama de outro, a Izza entende direto. Escreva o item igual ao nome no cardápio. "Com" e "e" valem um pelo outro.</p>' +
-      '<div class="stack" id="rc-nomes"></div>' +
-      (pode ? '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" id="rc-add">+ Outro nome</button></div>' : '') +
+      '<p class="desc">O que a Izza faz por código, fora do texto das instruções. Uma regra por linha. Dá para ajustar as palavras de uma regra; se mudar demais, o aviso logo abaixo mostra que ela deixou de valer. Para desligar, apague a linha. ' +
+      'Outro nome se escreve assim: <code>chocomisto = Chocoduo</code>; de borda, <code>borda de chocolate = Choco Preto</code> (o item igual ao nome no cardápio). ' +
+      'Regra nova, que o código não conhece, não tem efeito aqui: essa vai em Regras da casa.</p><div id="rc-aviso"></div>' +
+      '<div class="linha" style="justify-content:flex-end;margin-bottom:8px"><span class="muted small"><span id="rc-cont">0</span> caracteres</span></div>' +
+      '<textarea id="rc-txt" class="mono" rows="20"' + (pode ? '' : ' readonly') + '>' + esc(texto) + '</textarea>' +
+      '<div class="acoes">' + (pode ? '<button class="btn" id="rc-padrao">Voltar ao padrão</button><button class="btn pri" id="rc-salva">Salvar</button>' : '') + '</div>' +
       '<h3 class="small" style="margin:18px 0 6px">Sempre valem (não saem pelo painel)</h3>' +
-      '<div class="stack">' + CODIGO_FIXO.map(function (t) { return '<div class="regra off"><div class="txt" style="flex:1">' + esc(t) + '</div></div>'; }).join('') +
-      '<div class="regra off"><div class="txt" style="flex:1">Nomes que a casa já entende: ' + esc(NOMES_FIXOS.join('; ')) + '.</div></div></div>' +
-      (pode ? '<div class="acoes"><button class="btn pri" id="rc-salva">Salvar</button></div>' : '') + '</div>';
+      '<textarea class="mono" rows="6" readonly>' + esc(CODIGO_FIXO.join('\n') + '\n\nNomes que a casa já entende: ' + NOMES_FIXOS.join('; ') + '.') + '</textarea></div>';
     ligaAbas();
-    function desenha() {
-      var dentro = regras.filter(function (r) { return f.valores[r.id] !== 'nao'; }), fora = regras.filter(function (r) { return f.valores[r.id] === 'nao'; });
-      $('#rc-regras', el).innerHTML = dentro.length ? dentro.map(function (r) {
-        return '<div class="regra"><div class="txt" style="flex:1">' + esc(r.rot) + '</div>' + (pode ? '<div><button class="btn link perigo" data-rc-tira="' + r.id + '">Tirar</button></div>' : '') + '</div>';
-      }).join('') : '<div class="muted small">Nenhuma regra escrita.</div>';
-      $('#rc-fora', el).innerHTML = fora.length ? '<h3 class="small" style="margin:14px 0 6px">Tiradas (não valem)</h3><div class="stack">' + fora.map(function (r) {
-        return '<div class="regra off"><div class="txt muted" style="flex:1">' + esc(r.rot) + '</div>' + (pode ? '<div><button class="btn link" data-rc-poe="' + r.id + '">Repor</button></div>' : '') + '</div>';
-      }).join('') + '</div>' : '';
-      el.querySelectorAll('[data-rc-tira]').forEach(function (b) { b.onclick = function () { f.valores[b.getAttribute('data-rc-tira')] = 'nao'; desenha(); }; });
-      el.querySelectorAll('[data-rc-poe]').forEach(function (b) { b.onclick = function () { f.valores[b.getAttribute('data-rc-poe')] = 'sim'; desenha(); }; });
-      var itens = f.cardapio ? (f.cardapio.sabores || []).concat(f.cardapio.bordas || []).map(function (x) { return x.nome; }).filter(Boolean) : [];
-      $('#rc-nomes', el).innerHTML = (f.apelidos.length ? f.apelidos.map(function (a, i) {
-        return '<div class="linha" style="flex-wrap:wrap;gap:8px;align-items:center"><span class="muted small">O cliente diz</span>' +
-          '<input type="text" data-rn="' + i + '" data-k="diz" value="' + esc(a.diz) + '" maxlength="60" style="max-width:240px"' + dis + ' placeholder="Ex.: chocomisto">' +
-          '<span class="muted small">é</span><select data-rn="' + i + '" data-k="tipo"' + dis + '><option value="sabor"' + (a.tipo !== 'borda' ? ' selected' : '') + '>o sabor</option><option value="borda"' + (a.tipo === 'borda' ? ' selected' : '') + '>a borda</option></select>' +
-          '<input type="text" data-rn="' + i + '" data-k="e" value="' + esc(a.e) + '" maxlength="60" style="max-width:220px" list="rc-itens"' + dis + ' placeholder="Nome no cardápio">' +
-          (pode ? '<button class="btn link perigo" data-rn-tira="' + i + '">Tirar</button>' : '') + '</div>';
-      }).join('') : '<div class="muted small">Nenhum.</div>') +
-        '<datalist id="rc-itens">' + itens.map(function (n) { return '<option value="' + esc(n) + '">'; }).join('') + '</datalist>';
-      el.querySelectorAll('[data-rn]').forEach(function (inp) {
-        inp.addEventListener(inp.tagName === 'SELECT' ? 'change' : 'input', function () { var a = f.apelidos[+inp.getAttribute('data-rn')]; if (a) a[inp.getAttribute('data-k')] = inp.value; });
-      });
-      el.querySelectorAll('[data-rn-tira]').forEach(function (b) { b.onclick = function () { f.apelidos.splice(+b.getAttribute('data-rn-tira'), 1); desenha(); }; });
-    }
-    desenha();
-    if ($('#rc-add', el)) $('#rc-add', el).onclick = function () { f.apelidos.push({ diz: '', e: '', tipo: 'sabor', ativo: true }); desenha(); };
+    var tx = $('#rc-txt', el), ct = $('#rc-cont', el);
+    var confere = function () {
+      ct.textContent = tx.value.length.toLocaleString('pt-BR');
+      var lido = rcLe(tx.value, regras);
+      var fora = regras.filter(function (r) { return lido.valores[r.id] === 'nao'; });
+      $('#rc-aviso', el).innerHTML =
+        (fora.length ? '<div class="aviso" style="margin-bottom:8px">Sem a linha, <b>deixa' + (fora.length > 1 ? 'm' : '') + ' de valer</b>: ' + fora.map(function (r) { return esc(r.rot); }).join(' · ') + '</div>' : '') +
+        (lido.extras.length ? '<div class="aviso" style="margin-bottom:8px">Linha que o código não conhece (fica guardada, <b>sem efeito</b>): ' + lido.extras.map(esc).join(' · ') + '</div>' : '');
+      return lido;
+    };
+    tx.oninput = confere; confere();
+    var grava = function (lido, msg) {
+      f.valores = Object.assign({}, f.valores, lido.valores);
+      f.apelidos = lido.apelidos; f.regrasCodigoExtras = lido.extras;
+      return salvar('ficha', { loja: l.id, ficha: f }, msg);
+    };
     if ($('#rc-salva', el)) $('#rc-salva', el).onclick = function () {
-      f.apelidos = f.apelidos.filter(function (a) { return String(a.diz || '').trim() && String(a.e || '').trim(); }).map(function (a) { return { diz: a.diz.trim(), e: a.e.trim(), tipo: a.tipo === 'borda' ? 'borda' : 'sabor', ativo: true }; });
-      salvar('ficha', { loja: l.id, ficha: f }, 'Salvo. Vale na Izza em até 1 minuto.');
+      if (tx.value.trim() === texto.trim()) return toast('Nada mudou.');
+      var lido = confere();
+      confirma('Salvar as regras do código? A Izza da ' + l.nome + ' passa a seguir o que está escrito em até 1 min.', 'Salvar', function () { return grava(lido, 'Salvo. Vale em até 1 min.'); });
+    };
+    if ($('#rc-padrao', el)) $('#rc-padrao', el).onclick = function () {
+      confirma('Voltar todas as regras do código e os outros nomes ao padrão?', 'Voltar ao padrão', function () {
+        var v = {}; regras.forEach(function (r) { v[r.id] = 'sim'; });
+        return grava({ valores: v, apelidos: JSON.parse(JSON.stringify(APELIDOS_PADRAO)), extras: [] }, 'De volta ao padrão.');
+      });
     };
   }
 
