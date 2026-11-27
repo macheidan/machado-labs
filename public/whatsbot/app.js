@@ -787,7 +787,8 @@
   FICHA_GRUPOS.forEach(function (g) { g.itens.forEach(function (it) { ITEM_FICHA[it.id] = it; }); });
   function fichaParaEditar(l) {
     var f = JSON.parse(JSON.stringify(l.config.ficha || fichaPadrao(l))), pad = fichaPadrao(l);
-    f.valores = f.valores || {};
+    // valores vazios voltam do servidor como lista ([]): lista perde os itens ao salvar (27/11/2026)
+    if (!f.valores || Array.isArray(f.valores)) f.valores = {};
     Object.keys(pad.valores).forEach(function (k) { if (f.valores[k] === undefined) f.valores[k] = pad.valores[k]; });
     // ficha salva antes de 27/11/2026 nao tem a lista: nasce com a de fabrica, que e o que o bot ja usa
     if (!Array.isArray(f.apelidos)) f.apelidos = JSON.parse(JSON.stringify(APELIDOS_PADRAO));
@@ -1231,7 +1232,8 @@
     var raiz = el; raiz.innerHTML = ''; el = document.createElement('div'); el.className = 'pagina'; raiz.appendChild(el);
     var salva = l.config.ficha, f = JSON.parse(JSON.stringify(salva || fichaPadrao(l))), pode = l.pode.horario;
     var c = l.padroes && l.padroes.cardapio;
-    f.valores = f.valores || {}; f.tamanhos = f.tamanhos || []; f.outras = f.outras || [];
+    if (!f.valores || Array.isArray(f.valores)) f.valores = {};
+    f.tamanhos = f.tamanhos || []; f.outras = f.outras || [];
     // ficha salva antes da coluna de fatias: preenche com o que a Izza informa hoje
     f.tamanhos.forEach(function (t) { if (t.fatias == null) t.fatias = FATIAS[chaveTam(t.nome)] || ''; });
     // id de cada tamanho: chave dos precos por tamanho de bordas e adicionais (o nome pode mudar)
