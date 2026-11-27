@@ -634,6 +634,9 @@
       { id: 'enderecoCedo', rot: 'Pede o endereço logo depois de entrega/retirada', t: 'sn', p: 'sim' },
       { id: 'aprovacaoLoja', rot: 'Pedido passa pela aprovação da loja antes de entrar', t: 'sn', p: 'sim' },
       { id: 'pedidoExistente', rot: 'Assunto de pedido já feito vai para um atendente', t: 'sn', p: 'sim' },
+      // regras de 26 e 27/11/2026 que estavam so no codigo do bot (whatsbot src/loja.js PADRAO)
+      { id: 'promoSaborDito', rot: 'Promoção só entra com o sabor dito pelo cliente (sem sabor, a Izza pergunta)', t: 'sn', p: 'sim' },
+      { id: 'observacaoLida', rot: '"Nada mais, obrigado" na pergunta da observação é encerramento, não observação', t: 'sn', p: 'sim' },
     ] },
     { titulo: 'Entrega', itens: [
       { id: 'enderecoLoja', rot: 'Endereço da loja (de onde parte o raio)', t: 'txt', p: 'loja:endereco' },
@@ -661,10 +664,15 @@
     { titulo: 'Pizza', itens: [
       { id: 'fatiada', rot: 'Fatiada', t: 'radio', op: [['sim', 'Vem fatiada'], ['sePedir', 'Não vem; fatia se pedir'], ['nao', 'Não fatia']], p: 'sePedir' },
       { id: 'linkCardapio', rot: 'Link do cardápio que a Izza manda', t: 'txt', p: 'loja:link' },
+      { id: 'cortarFatiada', rot: '"Cortar" quer dizer fatiada (vai anotado na pizza)', t: 'sn', p: 'sim' },
+      { id: 'pequenaCombo', rot: 'Pequena doce inteira junto de Grande ou Super entra como combo', t: 'sn', p: 'sim' },
+      { id: 'pequenaSemComentar', rot: 'Pequena fora do combo (meio a meio, outro sabor) sai pela tabela sem a Izza comentar', t: 'sn', p: 'sim' },
     ] },
     { titulo: 'Pagamento', itens: [
       { id: 'dinheiro', rot: 'Aceita dinheiro', t: 'sn', p: 'sim' },
       { id: 'trocoPergunta', rot: 'Pergunta o troco', t: 'sn', p: 'sim' },
+      { id: 'formaSoOnde', rot: 'Cliente respondeu só "na entrega" ou "na retirada": a Izza pergunta a forma', t: 'sn', p: 'sim' },
+      { id: 'pixNaHora', rot: '"Pix na hora de pagar" ou "pix na máquina" é Pix na maquininha (não manda a chave)', t: 'sn', p: 'sim' },
       { id: 'cartao', rot: 'Oferecer pagamento com cartão de crédito na entrega', t: 'sn', p: 'sim' },
       { id: 'cartaoBandeira', rot: 'Pergunta a bandeira do cartão', t: 'sn', p: 'nao' },
       { id: 'pix', rot: 'Pix antecipado', t: 'sn', p: 'sim' },
@@ -737,6 +745,15 @@
   function chaveTam(nome) { return String(nome || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').split(/\s/)[0]; }
   function brl(v) { return v == null || v === '' ? '' : 'R$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 
+  // Outros nomes que o cliente usa (27/11/2026). A MESMA lista do bot: whatsbot src/loja.js APELIDOS_PADRAO.
+  var APELIDOS_PADRAO = [
+    { diz: 'chocomisto', e: 'Chocoduo', tipo: 'sabor', ativo: true },
+    { diz: 'choco misto', e: 'Chocoduo', tipo: 'sabor', ativo: true },
+    { diz: 'chocolate misto', e: 'Chocoduo', tipo: 'sabor', ativo: true },
+    { diz: 'chocolate preto com branco', e: 'Chocoduo', tipo: 'sabor', ativo: true },
+    { diz: 'chocolate branco com preto', e: 'Chocoduo', tipo: 'sabor', ativo: true },
+    { diz: 'chocolate', e: 'Choco Preto', tipo: 'borda', ativo: true },
+  ];
   function fichaPadrao(l) {
     var c = l.padroes && l.padroes.cardapio, v = {};
     FICHA_GRUPOS.forEach(function (g) {
@@ -759,7 +776,7 @@
       var min = Math.min.apply(null, [t.min].concat(vars.map(function (v) { return v.min; })));
       return { id: t.id, nome: t.nome.replace(/\s*\d+\s*cm.*/, ''), cm: cm, preco: t.preco, min: min, max: t.max, serve: SERVE[t.id] || '', fatias: FATIAS[t.id] || '', ativo: true };
     }) : [];
-    return { valores: v, tamanhos: tam, outras: [], cardapio: copiaCardapio(c), bairros: [], pagamento: pagamentoPadrao(v) };
+    return { valores: v, tamanhos: tam, outras: [], apelidos: JSON.parse(JSON.stringify(APELIDOS_PADRAO)), cardapio: copiaCardapio(c), bairros: [], pagamento: pagamentoPadrao(v) };
   }
   // pedaços da ficha usados fora de pgFicha (Horários e Entrega, 26/11/2026)
   var ITEM_FICHA = {};
@@ -768,6 +785,8 @@
     var f = JSON.parse(JSON.stringify(l.config.ficha || fichaPadrao(l))), pad = fichaPadrao(l);
     f.valores = f.valores || {};
     Object.keys(pad.valores).forEach(function (k) { if (f.valores[k] === undefined) f.valores[k] = pad.valores[k]; });
+    // ficha salva antes de 27/11/2026 nao tem a lista: nasce com a de fabrica, que e o que o bot ja usa
+    if (!Array.isArray(f.apelidos)) f.apelidos = JSON.parse(JSON.stringify(APELIDOS_PADRAO));
     // formas de pagamento so entram na ficha pela pagina Pagamento (com a ficha viva elas mudam a Izza)
     if (!(l.config.ficha && l.config.ficha.pagamento)) delete f.pagamento;
     return f;
@@ -1222,6 +1241,7 @@
     var pad = fichaPadrao(l);
     Object.keys(pad.valores).forEach(function (k) { if (f.valores[k] === undefined) f.valores[k] = pad.valores[k]; });
     if (!f.cardapio) f.cardapio = pad.cardapio;
+    if (!Array.isArray(f.apelidos)) f.apelidos = pad.apelidos;
     f.bairros = f.bairros || [];
     if (!f.pagamento) f.pagamento = pagamentoPadrao(f.valores);
     f.pagamento.outras = f.pagamento.outras || [];
@@ -1325,6 +1345,11 @@
       // outras
       (modo !== 'regras' ? '' : '<div class="card"><h2>Outras regras</h2><p class="desc">O que não coube nas outras páginas: regra da casa, exceção, combinado com o cliente.' + (viva ? ' Cada regra marcada entra nas instruções da Izza (até 300 caracteres cada, 1.500 no total): escreva curto e direto, como uma ordem.' : '') + '</p><div class="stack" id="outras"></div>' +
       (pode ? '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" id="add-outra">+ Particularidade</button></div>' : '') + '</div>') +
+      // outros nomes que o cliente usa (27/11/2026)
+      (!tam ? '' : '<div class="card" id="c-apelidos"><h2>Outros nomes que o cliente usa ' + seloFicha(l, 'reg') + '</h2><p class="desc">Quando o cliente fala de um jeito e o cardápio chama de outro. ' +
+        'A Izza entende direto, sem perguntar "você quis dizer?". Ex.: "chocomisto" é o Chocoduo; "borda de chocolate" é a Choco Preto. ' +
+        'Escreva o item igual ao nome no cardápio. "Com" e "e" valem um pelo outro.</p><div class="stack" id="apelidos"></div>' +
+        (pode ? '<div class="acoes" style="justify-content:flex-start"><button class="btn sm" id="add-apelido">+ Outro nome</button></div>' : '') + '</div>') +
       // cardapio do sistema
       (!tam ? '' : '<div class="card" id="c-sabores"><div class="cab-card"><div><h2>Sabores e preços ' + seloFicha(l, 'parte') + '</h2><p class="desc">' + (viva
         ? 'Começa igual ao cardápio do sistema da loja (planilha CARDAPIO) e <b>tudo aqui vale na Izza</b>: o que ela oferece, responde e cobra. Item novo precisa do <b>código de integração</b> (o código dele no sistema que recebe o pedido; hoje a Saipos), senão o sistema recusa o pedido e acende o alerta. '
@@ -1369,6 +1394,26 @@
         else f.tamanhos.splice(i, 1);
         desenhaTam(); desenhaCardapio();
       }; });
+    }
+    function desenhaApelidos() {
+      var box = $('#apelidos', el); if (!box) return;
+      var nomes = f.cardapio ? (f.cardapio.sabores || []).concat(f.cardapio.bordas || []).map(function (x) { return x.nome; }).filter(Boolean) : [];
+      box.innerHTML = (f.apelidos.length ? f.apelidos.map(function (a, i) {
+        return '<div class="linha" style="flex-wrap:wrap;gap:8px;align-items:center"><input type="checkbox" data-ap="' + i + '" data-k="ativo"' + (a.ativo !== false ? ' checked' : '') + dis + ' title="Vale">' +
+          '<span class="muted small">O cliente diz</span><input type="text" data-ap="' + i + '" data-k="diz" value="' + esc(a.diz) + '" maxlength="60" style="max-width:240px"' + dis + ' placeholder="Ex.: chocomisto">' +
+          '<span class="muted small">é</span><select data-ap="' + i + '" data-k="tipo"' + dis + '><option value="sabor"' + (a.tipo !== 'borda' ? ' selected' : '') + '>o sabor</option><option value="borda"' + (a.tipo === 'borda' ? ' selected' : '') + '>a borda</option></select>' +
+          '<input type="text" data-ap="' + i + '" data-k="e" value="' + esc(a.e) + '" maxlength="60" style="max-width:220px" list="ap-itens"' + dis + ' placeholder="Nome no cardápio">' +
+          (pode ? '<button class="btn link perigo" data-rm-ap="' + i + '">Tirar</button>' : '') + '</div>';
+      }).join('') : '<div class="muted small">Nenhum.</div>') +
+        '<datalist id="ap-itens">' + nomes.map(function (n) { return '<option value="' + esc(n) + '">'; }).join('') + '</datalist>';
+      box.querySelectorAll('[data-ap]').forEach(function (inp) {
+        var ev = inp.tagName === 'SELECT' || inp.type === 'checkbox' ? 'change' : 'input';
+        inp.addEventListener(ev, function () {
+          var a = f.apelidos[+inp.getAttribute('data-ap')]; if (!a) return;
+          a[inp.getAttribute('data-k')] = inp.type === 'checkbox' ? inp.checked : inp.value;
+        });
+      });
+      box.querySelectorAll('[data-rm-ap]').forEach(function (b) { b.onclick = function () { f.apelidos.splice(+b.getAttribute('data-rm-ap'), 1); desenhaApelidos(); }; });
     }
     function desenhaOutras() {
       if (!$('#outras', el)) return;
@@ -1639,7 +1684,7 @@
     }
     if (tam) atualizaDoSistema();
 
-    desenhaTam(); desenhaOutras(); desenhaCardapio();
+    desenhaTam(); desenhaOutras(); desenhaApelidos(); desenhaCardapio();
     if ($('#ficha-desfaz', el)) $('#ficha-desfaz', el).onclick = function () {
       confirma('Voltar a ficha da loja (cardápio, pagamento, regras e entrega) para como estava antes da última alteração?', 'Desfazer', function () { return salvar('ficha_desfazer', { loja: l.id }, 'Ficha de volta à versão anterior.'); });
     };
@@ -1691,6 +1736,7 @@
     if ($('#add-tam', el)) $('#add-tam', el).onclick = function () { f.tamanhos.push({ id: 't' + Date.now().toString(36), nome: '', cm: '', preco: '', min: 1, max: 2, fatias: '', serve: '', ativo: true }); desenhaTam(); var ins = el.querySelectorAll('#tb-tam [data-k=nome]'); if (ins.length) ins[ins.length - 1].focus(); };
     desenhaFormas();
     if ($('#add-fp', el)) $('#add-fp', el).onclick = function () { f.pagamento.outras.push({ nome: '', tipo: 'ref', ativo: true }); desenhaFormas(); var ins = el.querySelectorAll('#fp-grid .fp-txt'); if (ins.length) ins[ins.length - 1].focus(); };
+    if ($('#add-apelido', el)) $('#add-apelido', el).onclick = function () { f.apelidos.push({ diz: '', e: '', tipo: 'sabor', ativo: true }); desenhaApelidos(); };
     if ($('#add-outra', el)) $('#add-outra', el).onclick = function () { f.outras.push({ texto: '', ativa: true }); desenhaOutras(); var ins = el.querySelectorAll('#outras input[type=text]'); if (ins.length) ins[ins.length - 1].focus(); };
     $('#sv-ficha', el).onclick = function () {
       f.outras = f.outras.filter(function (o) { return (o.texto || '').trim(); });
@@ -1701,6 +1747,7 @@
         f.pagamento.outras = f.pagamento.outras.filter(function (o) { return (o.nome || '').trim(); });
         sincPag();
       } else delete f.pagamento;
+      if (Array.isArray(f.apelidos)) f.apelidos = f.apelidos.filter(function (a) { return String(a.diz || '').trim() && String(a.e || '').trim(); });
       if (tam) marcaOQueMudou();
       if (f.cardapio) Object.keys(ROT_LISTA).forEach(function (k) { f.cardapio[k] = (f.cardapio[k] || []).filter(function (x) { return String(x.nome || '').trim(); }); });
       if (f.cardapio && f.cardapio.promocoes) {
